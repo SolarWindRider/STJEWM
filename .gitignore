@@ -1,0 +1,58 @@
+# ============================================
+# ST-JEWM .gitignore
+# Push: code + docs + small figures only
+# ============================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Virtual envs / conda
+venv/
+.venv/
+env/
+miniconda3/
+
+# Data (npz files — too large for git, see OBS for download)
+data/
+*.npz
+*.npy
+*.h5
+*.hdf5
+*.pkl
+*.pkl.gz
+
+# Trained model checkpoints (too large for git, see OBS)
+results/
+*.pt
+*.pth
+*.ckpt
+*.bin
+
+# Logs and temp files
+logs/
+*.log
+nohup.out
+*.tmp
+*.swp
+*.swo
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# MuJoCo log
+MUJOCO_LOG.TXT
+
+# Local secrets
+.env
+*.local

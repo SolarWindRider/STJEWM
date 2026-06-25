@@ -1,0 +1,311 @@
+% ST-JEWM manuscript draft generated from the experimental report uploaded on 2026-06-25.
+% This is a paper-structured TeX draft, not a final camera-ready submission.
+% Replace placeholder citations in references.bib with official BibTeX before submission.
+
+\documentclass[10pt]{article}
+
+\usepackage[margin=0.85in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{microtype}
+\usepackage{authblk}
+\usepackage{enumitem}
+
+\newcommand{\method}{ST-JEWM}
+\newcommand{\trace}{\mathbf{r}}
+\newcommand{\spike}{\mathbf{s}}
+\newcommand{\mem}{\mathbf{v}}
+\newcommand{\latent}{\mathbf{z}}
+\newcommand{\action}{\mathbf{a}}
+\newcommand{\obs}{\mathbf{o}}
+\newcommand{\loss}{\mathcal{L}}
+\newcommand{\mse}{\mathrm{MSE}}
+\newcommand{\sr}{\mathrm{SR}}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+
+\title{Spike Traces as Predictive States for Latent World Models}
+\author[1]{Anonymous Authors}
+\affil[1]{Anonymous Institution}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Latent world models usually assume that the predictive state used for future prediction and planning is a continuous neural embedding. Spiking neural networks offer a different computational substrate, but many spiking models still expose membrane potentials or voltage readouts to downstream predictors, leaving an analog-state shortcut that makes it difficult to determine whether predictive information is genuinely carried by spike events. We introduce \method{} (Spike-Trace Joint-Embedding World Model), a spiking latent world model that uses membrane potentials only as internal pre-spike variables and exposes to the predictor only a post-spike trace: a bounded, gated summary of emitted spike events. The model combines a frozen observation encoder, a four-layer multi-compartment spiking stack, a content-gated spike trace, and a joint-embedding prediction objective inspired by joint-embedding predictive architectures \citep{jepa}. Across 25 MuJoCo-based robotic systems, \method{} achieves mean next-step cosine similarity of 0.9862 and mean real-simulation closed-loop cosine similarity of 0.9734, with 24/25 environments above 0.97 in closed-loop evaluation. In control-oriented tests, \method{} reaches 10--20\% success on a real MuJoCo Reacher task and improves target-conditioned manipulator configurations in 87.5\% of episodes, compared with 37.5\% for a parameter-matched Transformer world-model baseline. These results do not yet establish state-of-the-art control, and several limitations remain, including single-seed evaluation, low absolute goal-reaching success, and failure on a highly underactuated gripper. They do, however, support a narrower mechanistic claim: post-spike traces can be sufficient predictive states for action-conditioned latent world modeling when continuous membrane-state shortcuts are removed.
+\end{abstract}
+
+\noindent\textbf{Keywords:} spiking neural networks; world models; joint-embedding prediction; predictive state representations; robotic control; MuJoCo
+
+\section{Introduction}
+
+World models learn compact predictive states that support planning, control, and counterfactual reasoning \citep{worldmodels2018,dreamer,lewm2024}. In most contemporary latent world models, this state is a dense continuous vector. Such a representation is powerful, but it implicitly assumes that the agent's internal world state is maintained and communicated as an analog embedding. Spiking neural networks (SNNs) offer a contrasting possibility: information may be carried by sparse event histories rather than dense hidden states. This raises a basic question for world modeling: can the event history of a spiking dynamical system itself serve as a predictive state?
+
+This question is not answered merely by replacing an artificial neural network with spiking neurons. In many SNN systems, membrane potentials or voltage readouts remain accessible to downstream modules. This is practical for optimization, but it creates an ambiguity: prediction and planning may rely on continuous membrane-state memory rather than on emitted spikes. We refer to this as an \emph{analog-state shortcut}. From the viewpoint of world modeling, this shortcut weakens the claim that spiking event dynamics are carrying the predictive state.
+
+We therefore study a stricter formulation. In \method{}, membrane potentials are internal pre-spike variables. They participate in the recurrent spiking computation, but they are not exposed as the world-model latent state. The predictor and planner receive a \emph{post-spike trace}, a bounded and gated accumulation of emitted spikes. This design turns the question of a ``truly spiking'' world model into an operational constraint: remove direct membrane-potential readout and test whether spike-derived event histories remain predictive.
+
+The contribution is threefold. First, we formulate post-spike traces as predictive states for latent world modeling. Second, we instantiate this idea in a joint-embedding world model with a spike-trace bottleneck and a multi-compartment SNN stack. Third, we evaluate the resulting model on a broad set of state-based MuJoCo robotic dynamics and planning tasks, including 25 closed-loop simulation environments, a physical Reacher reaching task, and a target-conditioned manipulator planning task. The experiments show that spike traces are sufficient for accurate short-horizon latent prediction across many systems and can support limited planning, while also revealing important failure modes.
+
+\section{Results}
+
+\subsection{A spike-trace bottleneck removes membrane-state shortcuts}
+
+The central design choice in \method{} is to distinguish between three neuronal variables: membrane potential, instantaneous spike, and spike trace. The membrane potential $\mem_t$ is a continuous pre-spike internal state. The spike $\spike_t \in \{0,1\}^N$ is a sparse event emitted after thresholding. The trace $\trace_t$ is a decayed or gated event-history summary. In the current implementation, the trace is defined as
+\begin{equation}
+    \trace_t = \alpha_t \trace_{t-1} + (1-\alpha_t)\spike_t,
+    \quad
+    \alpha_t = \sigma\left(W[\trace_{t-1}, \spike_t, \mathbf{c}_t]\right),
+    \label{eq:trace}
+\end{equation}
+where $\mathbf{c}_t$ is the current contextual representation and $\alpha_t\in(0,1)$ is a content-aware forget gate. The exposed predictive latent is
+\begin{equation}
+    \latent_t = \mathbf{h}_t + P\trace_t,
+\end{equation}
+where $\mathbf{h}_t$ is the output of the spiking stack and $P$ is a learned trace projection. The downstream predictor and planner use $\latent_t$; they do not read $\mem_t$ directly.
+
+This matters because membrane potentials are continuous recurrent variables and can function like hidden states in a leaky RNN. A world model that directly exposes them may still be useful, but it does not isolate whether spike events themselves form a predictive state. By contrast, the trace in Eq.~\ref{eq:trace} is post-spike: information must pass through the spike-generation bottleneck before it can enter the predictive state.
+
+\subsection{Architecture}
+
+\method{} has four components: a frozen observation encoder, a four-layer multi-compartment SNN stack, a gated spike trace, and a joint-embedding prediction head. For pixel observations, the frozen encoder is a ViT-Tiny module; for state observations, it is a two-layer MLP. The SNN stack contains 192 neurons per layer, with three dendritic compartments and one spiking soma per cell. The ATan surrogate gradient is used during training, following the common practice of differentiable surrogate learning in SNNs \citep{surrogate_snn}. The trainable parameter count is 4.99M for the pixel configuration and 5.03M for the state configuration. Random-initialization smoke tests give spike sparsity of 85.4\% and a trace range of $[0.0000,0.1729]$.
+
+\begin{table}[t]
+\centering
+\caption{Model summary. The key restriction is that membrane potentials are internal-only; the exposed world-model state is derived from post-spike traces.}
+\label{tab:model_summary}
+\small
+\begin{tabular}{llll}
+\toprule
+Component & Implementation & Parameters & Role \\
+\midrule
+Observation encoder & ViT-Tiny or 2-layer MLP & frozen / 0.10M & map observations to latent inputs \\
+Spiking stack & 4-layer multi-compartment SNN & approx. 4.0M & event-driven recurrent computation \\
+Gated trace & Eq.~\ref{eq:trace} & 0.15M & post-spike predictive-state memory \\
+Action encoder & 1-layer MLP & 0.04M & action conditioning \\
+Prediction head & latent projection and cost & included & joint-embedding prediction and CEM cost \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The trace is a sufficient short-horizon predictive state across 25 systems}
+
+We first evaluated whether the spike-trace latent can predict short-horizon dynamics across a broad set of robotic systems. The evaluation covers 25 environments from dm\_control, AdroitHand, hand manipulation suites, industrial arms, and an underactuated gripper. For each environment, we measured next-step latent prediction on held-out transitions and real-simulation closed-loop prediction over 50 MuJoCo steps. The closed-loop metric uses the actual current state and action, advances the real simulator, and compares the predicted next latent with the encoded actual next latent.
+
+\begin{table}[t]
+\centering
+\caption{Aggregate prediction results across 25 robotic systems. Cosine similarity is computed between predicted and encoded next-state latents.}
+\label{tab:aggregate_25}
+\begin{tabular}{ll}
+\toprule
+Metric & Value \\
+\midrule
+Mean next-step cosine similarity & 0.9862 \\
+Mean closed-loop cosine similarity & 0.9734 \\
+Environments with next-step cosine similarity $\geq 0.97$ & 25/25 \\
+Environments with closed-loop cosine similarity $\geq 0.97$ & 24/25 \\
+Best next-step environment & humanoid\_CMU, 0.9998 \\
+Worst closed-loop environment & robotiq\_gripper, 0.6938 \\
+Mean spike sparsity & approx. 85\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The main observation is that the spike-trace latent is sufficient for one-step prediction across all 25 systems. Closed-loop evaluation degrades only slightly on average, from 0.9862 to 0.9734. The only substantial failure is RobotiqGripper, which has one actuator controlling eight joints; the closed-loop cosine similarity falls to 0.6938 and the mean-squared error diverges. This failure suggests a boundary condition: a trace built from sparse spike events may not capture highly underactuated dynamics when the action-state coupling is strongly nonlinear and poorly identifiable from the event history alone.
+
+\subsection{Planning: Reacher and target-conditioned manipulation}
+
+We next tested whether the learned latent can support planning. In Reacher, the agent plans in latent space using CEM and executes in real MuJoCo 3.10, not by dataset replay. The state is four-dimensional: two joint positions and the two-dimensional target position. Success requires fingertip-target distance below 5 cm. The final \method{} model trained on 250K MuJoCo rollouts reaches 20\% success on 30 episodes and 10\% success on 100 episodes. A LeWM-style Transformer baseline trained on 1M rollouts reaches 6\% success on 50 episodes. The 30-episode gap is positive but statistically unstable; the 100-episode comparison is only marginal.
+
+\begin{table}[t]
+\centering
+\caption{Real MuJoCo Reacher planning results. Unlike dataset-replay protocols, this evaluation advances the simulator and replans during execution.}
+\label{tab:reacher}
+\small
+\begin{tabular}{llllll}
+\toprule
+Model & Data & Episodes & Success & Initial distance & Final distance \\
+\midrule
+\method{} v4.4 & 50K MuJoCo & 50 & 6.7\% & -- & 0.255 \\
+\method{} v4.5 final & 250K MuJoCo & 30 & 20.0\% & 0.268 & 0.180 \\
+\method{} v4.5 final & 250K MuJoCo & 100 & 10.0\% & 0.260 & 0.231 \\
+\method{} v4.6 & 1M MuJoCo & 50 & 14.0\% & -- & 0.217 \\
+Transformer baseline & 1M MuJoCo & 50 & 6.0\% & 0.272 & 0.274 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The manipulator target-conditioned task is more difficult. The 17-dimensional state contains a 14-dimensional joint configuration and a three-dimensional target ball position. The planner first finds an inverse-kinematics goal configuration, then uses CEM in latent space to move the real simulator toward that goal. The primary metric is whether the final joint-space distance to the goal is lower than the initial distance. With 1M rollouts and the best intermediate checkpoint at 15K training steps, \method{} improves 14/16 episodes (87.5\%), whereas the Transformer baseline improves 6/16 episodes (37.5\%). However, the absolute success rate with threshold 0.1 is 0\% for all evaluated models. The model finds local improvements but does not solve long-horizon reaching.
+
+\begin{table}[t]
+\centering
+\caption{Target-conditioned manipulator planning. Improvement means final joint-space distance to the IK goal is lower than the initial distance. Absolute success remains 0\% for all runs.}
+\label{tab:target_manipulator}
+\small
+\begin{tabular}{llllll}
+\toprule
+Model & Data & Steps & Improved & Init. dist. & Final dist. \\
+\midrule
+\method{} & 25K & final & 50.0\% & -- & -- \\
+\method{} & 50K & step 5K & 56.2\% & -- & -- \\
+\method{} & 500K & final & 81.2\% & -- & -- \\
+\method{} & 1M & step 5K & 68.8\% & 2.807 & 2.768 \\
+\method{} & 1M & step 15K & 87.5\% & 2.807 & 2.751 \\
+Transformer baseline & 1M & final & 37.5\% & 2.807 & 2.807 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Theory and empirical trace statistics}
+
+The trace update has three useful properties. First, if $\trace_0\in[0,1]$ and $\spike_t\in\{0,1\}$, then $\trace_t\in[0,1]$ for all $t$, because the update is a convex combination. Second, the content-aware gate is Lipschitz because the sigmoid derivative is bounded by $1/4$. Third, adding a trace projection introduces a bounded variance term because the trace itself lies in the unit interval. The experimental code includes executable doctests for these algebraic checks, with three tests passed and no failures. Empirically, the mean spike rate is 0.146, the trace mean is 0.0412, and the trace range remains within the predicted bounded interval.
+
+\section{Discussion}
+
+These experiments support a restrained but important claim: a post-spike trace can serve as a sufficient predictive state for short-horizon latent world modeling across a wide set of robotic dynamics. The strongest evidence is not the absolute control score, which remains modest, but the breadth and stability of latent prediction: 25/25 systems exceed 0.97 next-step cosine similarity and 24/25 exceed 0.97 in real-simulation closed-loop evaluation.
+
+The results also clarify what this work does \emph{not} prove. It does not yet establish a state-of-the-art control system. It does not beat the original LeWM Reacher number, which was reported under a different dataset-replay protocol rather than the real MuJoCo evaluation used here. It does not solve target-conditioned manipulation, as the success rate remains 0\% even when the direction of improvement is often correct. It also lacks multi-seed confidence intervals and key ablations such as direct membrane-latent readout versus spike-trace readout.
+
+The scientific value is therefore mechanistic rather than purely benchmark-driven. By preventing downstream prediction from reading membrane potentials, \method{} tests whether spike-mediated event histories can carry predictive state information. The answer from the current experiments is partially positive: the trace is predictive, stable, sparse, and broadly transferable for short-horizon robotic dynamics, but it is not yet sufficient for robust long-horizon goal reaching or highly underactuated systems.
+
+\section{Methods}
+
+\subsection{Model}
+
+For a sequence of observations $\obs_{1:T}$ and actions $\action_{1:T}$, the encoder maps each observation into a latent input. The action is projected through a one-layer MLP and combined with the observation latent. The multi-compartment spiking stack updates internal membrane variables and emits spikes. Only emitted spikes and their traces are exposed to the prediction head. The prediction objective uses a context window of length $H=3$ and predicts $T_{\mathrm{pred}}=3$ future latent steps.
+
+\subsection{Training objective}
+
+The total training objective is
+\begin{equation}
+    \loss = \loss_{\mathrm{pred}} + \lambda_{\mathrm{sigreg}}\loss_{\mathrm{sigreg}} + \lambda_{\mathrm{goal}}\loss_{\mathrm{goal}},
+\end{equation}
+where $\loss_{\mathrm{pred}}$ is the MSE between predicted and target latent embeddings, $\loss_{\mathrm{sigreg}}$ is a variance/covariance regularizer inherited from the LeWM-style training recipe, and $\loss_{\mathrm{goal}}$ encourages the final predicted embedding to match a later goal embedding. We use $\lambda_{\mathrm{sigreg}}=0.09$, $\lambda_{\mathrm{goal}}=0.5$, AdamW with learning rate $3\times10^{-4}$, weight decay $10^{-3}$, gradient clipping at 1.0, and bf16 mixed precision. Batch size is 64 for Reacher and 64--128 for 3D datasets.
+
+\subsection{Datasets}
+
+The experiments use 17 dataset files and 2.19M transition samples. Reacher uses 250K MuJoCo rollouts. The 3D suite includes 12 dm\_control environments, four AdroitHand environments, four hand manipulation environments, four industrial-arm environments, and one underactuated Robotiq gripper environment. Target-conditioned manipulator data are generated at multiple scales from 25K to 1M transitions. Each transition stores observation, next observation, action, reward, and done arrays; rewards and done flags are not used by the main world-model objective.
+
+\subsection{Planning protocol}
+
+Reacher planning uses CEM in latent space with horizon 5, receding replanning every 3 environment steps, and up to 50 real MuJoCo steps per episode. The default big-CEM setting uses 128 samples, 16 elites, and 5 iterations. The target-conditioned manipulator protocol uses 64 samples, 8 elites, 3 iterations, horizon 10, and replanning every 3 steps.
+
+\section{Limitations and next experiments}
+
+The current evidence should be treated as an early mechanistic study rather than a complete control benchmark. The most urgent next experiments are: (i) a direct ablation comparing spike-trace latent, membrane-potential latent, instantaneous-spike latent, and ANN Transformer latent under the same data and CEM budget; (ii) multi-seed evaluation with confidence intervals; (iii) a LeWM-compatible dataset-replay evaluation to make the comparison protocol identical; (iv) stronger long-horizon planning or policy learning for the manipulator task; and (v) pixel-based benchmarks such as Two-Room, Push-T, or Cube to verify that the trace bottleneck works beyond state-vector inputs.
+
+\section*{Data and code availability}
+The current implementation is organized in five source files and 24 generation, training, and evaluation scripts under the project directory. Exact paths, MD5 fingerprints, and commands are preserved in the experimental notebook. These will be released upon acceptance or after internal review. \todo{Replace with public repository URL.}
+
+\section*{Acknowledgements}
+\todo{Add funding and institutional acknowledgements.}
+
+\begin{thebibliography}{9}
+
+\bibitem[Ha and Schmidhuber(2018)]{worldmodels2018}
+Ha, D. and Schmidhuber, J. World Models. \emph{arXiv preprint arXiv:1803.10122}, 2018.
+
+\bibitem[Hafner et~al.(2019)]{dreamer}
+Hafner, D. et~al. Dreamer: Learning Latent Dynamics for Planning from Pixels. \emph{arXiv preprint}, 2019. \textit{Placeholder entry; replace with official BibTeX.}
+
+\bibitem[LeCun(2022)]{jepa}
+LeCun, Y. A Path Towards Autonomous Machine Intelligence. Open review / position paper, 2022.
+
+\bibitem[LeWM Authors(2024)]{lewm2024}
+LeWM Authors. LeWorldModel: Joint-Embedding Predictive World Models for Planning. 2024. \textit{Placeholder entry; replace with the official BibTeX.}
+
+\bibitem[Surrogate Gradient Authors(2020)]{surrogate_snn}
+Surrogate Gradient Authors. Surrogate Gradient Learning in Spiking Neural Networks. 2020. \textit{Placeholder entry; replace with a specific SNN surrogate-gradient citation.}
+
+\end{thebibliography}
+
+\clearpage
+\appendix
+
+\section{Full closed-loop environment table}
+
+\begin{longtable}{llllrrr}
+\caption{Full 25-environment prediction table. Closed-loop evaluation advances the real MuJoCo simulator and compares predicted and encoded next-state latents.}\\
+\toprule
+Source & Environment & $n_q$ & $n_u$ & Next-step cos. & Closed-loop cos. & Closed MSE \\
+\midrule
+\endfirsthead
+\toprule
+Source & Environment & $n_q$ & $n_u$ & Next-step cos. & Closed-loop cos. & Closed MSE \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+dm\_control & ball\_in\_cup & 2 & 2 & 0.9959 & 0.9960 & 0.00227 \\
+dm\_control & cheetah & 9 & 6 & 0.9774 & 0.9798 & 0.01545 \\
+dm\_control & dog & 87 & 38 & 0.9959 & 0.9954 & 0.00432 \\
+dm\_control & finger & 3 & 2 & 0.9855 & 0.9886 & 0.00499 \\
+dm\_control & fish & 14 & 5 & 0.9708 & 0.9745 & 5449.02 \\
+dm\_control & hopper & 7 & 4 & 0.9882 & 0.9856 & 0.00653 \\
+dm\_control & humanoid & 28 & 21 & 0.9950 & 0.9949 & 0.00240 \\
+dm\_control & humanoid\_CMU & 63 & 56 & 0.9998 & 0.9998 & 0.00018 \\
+dm\_control & manipulator & 14 & 5 & 0.9951 & 0.9942 & 0.00163 \\
+dm\_control & quadruped & 30 & 12 & 0.9757 & 0.9753 & 0.00800 \\
+dm\_control & stacker & 20 & 5 & 0.9823 & 0.9835 & 0.00331 \\
+dm\_control & walker & 9 & 6 & 0.9966 & 0.9965 & 0.00236 \\
+AdroitHand & adroit\_door & 30 & 28 & 0.9847 & 0.9836 & 0.00525 \\
+AdroitHand & adroit\_hammer & 33 & 26 & 0.9772 & 0.9701 & 0.00485 \\
+AdroitHand & adroit\_pen & 30 & 24 & 0.9840 & 0.9853 & 0.01085 \\
+AdroitHand & adroit\_relocate & 36 & 30 & 0.9886 & 0.9911 & 0.00488 \\
+Hand & hand\_manipulate\_block & 38 & 20 & 0.9866 & 0.9817 & 0.00404 \\
+Hand & hand\_manipulate\_egg & 38 & 20 & 0.9816 & 0.9757 & 0.00415 \\
+Hand & hand\_manipulate\_pen & 38 & 20 & 0.9907 & 0.9875 & 0.00338 \\
+Hand & hand\_reach & 24 & 20 & 0.9901 & 0.9867 & 0.00341 \\
+Jaco & jaco\_arm & 6 & 6 & 0.9979 & 0.9981 & 0.00029 \\
+Franka & franka\_kitchen & 30 & 9 & 0.9762 & 0.9744 & 0.01254 \\
+TestArm & test\_arm & 9 & 9 & 0.9848 & 0.9717 & 0.00658 \\
+UR5e & ur5e & 6 & 6 & 0.9724 & 0.9711 & 0.01306 \\
+RobotiqGripper & robotiq\_gripper & 8 & 1 & 0.9831 & 0.6938 & 278.13 \\
+\end{longtable}
+
+\section{Dataset inventory}
+
+\begin{table}[h]
+\centering
+\caption{Dataset inventory summarized from the experimental notebook.}
+\small
+\begin{tabular}{llllr}
+\toprule
+Dataset group & Files & State dims & Action dims & Samples \\
+\midrule
+Reacher MuJoCo & 1 & 4 & 2 & 250K \\
+dm\_control 3D & 12 & 3--87 & 2--56 & 600K \\
+Target-conditioned manipulator & 4 & 17 & 5 & 1.775M \\
+Adroit/hand/industrial/underactuated & multiple & 6--38 & 1--30 & see notebook \\
+\midrule
+Total unique transition samples & 17 files & -- & -- & 2.19M \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Honest disclosure}
+
+The following caveats must remain visible in future drafts. First, the Reacher success rate is unstable: 20\% at $n=30$ falls to 10\% at $n=100$. Second, the manipulator target-conditioned experiment has 87.5\% improvement but 0\% absolute success. Third, the Transformer comparison is parameter-matched and data-matched for the manipulator task, but not a complete reproduction of the original LeWM protocol. Fourth, all reported experiments are single-seed results. Fifth, the best 1M manipulator checkpoint is an intermediate checkpoint because the 5-epoch run was externally killed before saving a final model.
+
+\section{Recommended ablation plan}
+
+The story will become much stronger if the final paper includes the following ablations:
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Membrane-latent ablation}: expose membrane potentials directly and compare to post-spike trace latent.
+    \item \textbf{Spike-only ablation}: use instantaneous spikes without trace accumulation.
+    \item \textbf{Trace gate ablation}: replace the content-aware gate with a fixed decay constant.
+    \item \textbf{ANN-latent baseline}: run the same CEM, loss, data, and parameter budget with a Transformer or MLP latent world model.
+    \item \textbf{Planning horizon ablation}: vary CEM horizon and replan frequency to test whether trace latents degrade under longer rollouts.
+    \item \textbf{POMDP diagnostic suite}: add T-Maze or hierarchical POMDP tasks to directly test whether spike traces preserve hidden cues.
+\end{enumerate}
+
+\end{document}
+
