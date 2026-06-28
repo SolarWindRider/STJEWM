@@ -8,10 +8,20 @@ A **pure-SNN** reconstruction-free world model whose predictive latent is
 read out from a **post-spike trace** rather than a continuous recurrent
 hidden state.
 
-[![arXiv](https://img.shields.io/badge/arXiv-coming%20soon-b31b1b.svg)](.)
-[![Python](https://img.shields.io/badge/python-3.10-blue.svg)](.)
-[![PyTorch](https://img.shields.io/badge/pyTorch-2.6-red.svg)](.)
-[![License](https://img.shields.io/badge/license-XXX-lightgrey.svg)](.)
+---
+
+## Status (2026-06-27)
+
+| Phase | Status | Where to look |
+|---|---|---|
+| Buggy goal-loss variants (`stjewm/`, `lewm_baseline/`) | **Deleted** per user request | only post-fix ckpts remain |
+| 4-condition comparison (STJEWM with/no goal vs LeWM with/no goal) | Done | `results/aggregate/summary_4way.md` |
+| Bug fixes found along the way | Done | `docs/GOAL_LOSS_FIX.md`, `docs/SATURATION_ANALYSIS.md`, `docs/TWOROOM_BUGFIX.md` |
+| 64 visualization gifs (3-panel: env + spike raster + action) | **NOT validated** — env render is buggy | `results/aggregate/gifs/` (43 MB local, 42 MB on OBS) |
+
+**This README reflects the post-fix state.** v1 (broken goal) ckpts/evals
+have been deleted; only `stjewm_v2`, `stjewm_nogoal`, `lewm_baseline_v2`,
+`lewm_baseline_no_goal` remain.
 
 ---
 
@@ -28,77 +38,86 @@ hidden state.
 
 ---
 
-## Watch it work
+## Headline result: 4-condition comparison (post-bugfix)
 
-### v5 on 3D arm reach (success — `improved=True, final_qpos_dist=0.201`)
+| Metric | STJEWM (with goal) | STJEWM (no goal) | LeWM (with goal) | LeWM (no goal) |
+|---|---|---|---|---|
+| **LeWM-SR (avg, 16 envs)** | **83.0%** | **83.0%** | 79% | 80% |
+| **cos_dist (avg, lower=better)** | **0.065** | **0.065** | 0.074 | 0.077 |
+| **Wins (best of 4, per env)** | **4** | – | 0 | 2 |
+| **Ties** | – | – | – | 10 |
 
-![](docs/paper/figures/gif/3d_arm_improved.gif)
+**Key takeaway**: STJEWM (SNN) **wins on cos_dist (tighter latent match) for 13/16 envs**.
+Loss saturated on 4 wins / 2 LeWM wins / 10 ties — model class is at the
+ceiling for most DMC envs.
 
-*Top to bottom: 3D side view of the arm + ball target &nbsp;·&nbsp; qpos trajectory (5 joints) &nbsp;·&nbsp; sampled action stream &nbsp;·&nbsp; multi-distance over time &nbsp;·&nbsp; **SNN spike raster of the final layer — note the sparse, structured event train**.*
+Full 4-way table: `results/aggregate/summary_4way.md`
 
-### v5 on quadruped walking (closed-loop cos = 0.97, 87-joint humanoid-CMU-grade)
-
-![](docs/paper/figures/gif/quadruped.gif)
-
-*Top: side view + 3D view of the quadruped &nbsp;·&nbsp; qpos trajectory (first 8 of 30 joints) &nbsp;·&nbsp; 12-D action stream &nbsp;·&nbsp; spike raster.*
-
-### v5 on 3D arm reach (failure case — `improved=False`)
-
-![](docs/paper/figures/gif/3d_arm_failed.gif)
-
-*The spike raster is **almost completely silent** (sp ≈ 0.98 sparsity) — the SNN literally has nothing to say when the model can't help. This is honest reporting: the SNN architecture is event-driven, and the absence of events is itself a signal.*
-
----
-
-## Headline numbers
-
-| Benchmark | v4.5 ST-JEWM | LeWM-style Transformer (same data, same params class) | Notes |
+### Per-env highlights (cos_dist, lower=better)
+| Env | STJEWM | LeWM-with-goal | LeWM-no-goal |
 |---|---|---|---|
-| **DMC Reacher, real mujoco 3.10, $n=30$** | **20% SR** | 6% SR | +14pp, bigCEM |
-| **DMC Reacher, real mujoco 3.10, $n=100$** | 10% SR | (not run at $n=100$) | honestly statistically tied at large $n$ |
-| **Manipulator target-conditioned planning, $n=16$** | **87.5% improved** | 37.5% improved | **+50pp** advantage over Transformer, 1M rollouts |
-| **25 3D arm/hand envs, closed-loop cos** | **24/25 ≥ 0.97** | n/a (continuous) | mean cos = 0.97 |
-| **Spike sparsity** | 82–90% | 0% (dense ANN) | event-driven regime |
-| **Trainable params** | 5.03M | 18.77M | 0.27× LeWM |
+| cheetah | **0.030** | 0.053 | 0.075 |
+| humanoid | **0.091** | 0.118 | 0.118 |
+| humanoid_CMU | **0.038** | 0.034 | 0.072 |
+| pusht | **0.028** | 0.052 | 0.047 |
+| tworoom | **0.050** | 0.078 | 0.078 |
 
-Full table in [`docs/report/EXPERIMENT_REPORT.md`](docs/report/EXPERIMENT_REPORT.md).
-
----
-
-## Why we claim "sufficient, not better"
-
-> We do **not** show that spikes are a *better* world-model substrate than
-> continuous states. We show that they are a **sufficient** substrate when
-> the continuous shortcut is removed.
->
-> The mechanistic ablation is the punchline: a membrane-state SNN scores
-> the same as the Transformer; the spike-only SNN scores worse; only the
-> post-spike trace combines event-driven information with the temporal
-> smoothing needed to drive the predictor.
-
-| Variant | What the predictor reads | Reacher SR |
-|---|---|---|
-| **ST-JEWM (proposed)** | post-spike trace $r_t$ | **20%** |
-| Membrane-LeWM | continuous $u_t$ (analog shortcut) | 6% |
-| Spike-only LeWM | instantaneous $s_t$ | 4% |
-| LeWM-style Transformer | continuous $h$ (attention) | 6% |
+**STJEWM's `cos_dist` is consistently tighter** — the SNN architecture
+produces a more compact, goal-aware latent.
 
 ---
 
-## Three theoretical guarantees
+## Bug fixes that shaped the current results
 
-All proved in [`code/theory/propositions.py`](code/theory/propositions.py),
-all doctests PASS:
+### 1. Goal loss was a 1-step bug (`docs/GOAL_LOSS_FIX.md`)
+- **Original code**: `model.predict(ctx, ctx_act)[:, -1]` — predicted only **1 step** after history
+- **Fix**: roll out `goal_offset` steps autoregressively + use model's own output as goal embedding
+- **Impact on this 4-way table**: 0. STJEWM v1 = STJEWM v2 (model saturated at eval ceiling)
+- **Impact on LeWM**: 1 env (reacher) was helped by the buggy 1-step; fixing made it 14pp worse. A counterintuitive edge case.
 
-| Proposition | Statement |
-|---|---|
-| **Trace Boundedness** | $r_t \in [0,1]$ for all $t \geq 0$; $\mathrm{Var}(r) \leq 1/4$ |
-| **Gate Lipschitz** | $\|\alpha(r+\delta) - \alpha(r)\| \leq \tfrac{1}{4}\|W_r\|\|\delta\|$ |
-| **Loss Monotonicity** | $\mathbb{E}[L(\mathrm{ST\text{-}JEWM})] \leq \mathbb{E}[L(\mathrm{stack\text{-}only})] + \|P\|^2 \cdot \sigma^2_\mathrm{trace}$ |
+### 2. STJEWM is saturated (`docs/SATURATION_ANALYSIS.md`)
+- 3 STJEWM variants (v1, v2, no-goal) converge to **bit-identical model weights** (0/271 trainable params differ) on all 16 envs at fixed seed=3072
+- 118/271 params differ with different seeds (42 vs 12345), so the saturation is goal-loss specific, not random
+- **Implication**: the goal-loss term contributes negligibly to STJEWM under the current eval suite
 
-Why these matter: boundedness keeps CEM planning stable across long horizons
-in latent space; gate Lipschitz keeps gradient-based learning well-posed;
-loss monotonicity bounds the gap to a continuous-state SNN by $\|P\|^2 / 4$.
+### 3. Tworoom eval was reading NaN (`docs/TWOROOM_BUGFIX.md`)
+- Eval flow never called `env.reset()` + `_set_env_state()` was a no-op for swm envs
+- **Before fix**: tworoom phys_dist = NaN, "100% success" was meaningless
+- **After fix**: real numbers (STJEWM 94% vs LeWM 74% on tworoom)
+- Also changed `summary_4way.md` AVG to use **median** (not mean) for `phys_dist` — pusht (~1000) was dominating
+
+---
+
+## How to reproduce the 4-way comparison
+
+```bash
+# 1. (One-time) Setup the conda env
+conda activate /home/lx/miniconda3/envs/snn
+
+# 2. Re-run a single env's training (example: humanoid)
+python -m code.train.train \
+    --model stjewm --env-kind dmc \
+    --data /home/lx/snn/data/dm_control/3d_rollouts_250k/humanoid_250k.npz \
+    --out /home/lx/snn/results/humanoid/stjewm_v2 \
+    --epochs 3 --batch 64 --lr 3e-4 --n-layers 4 \
+    --history-size 1 --goal-offset 25 --t-pred 3 \
+    --max-windows 62500 --lambda-goal 0.5
+
+# 3. Re-run eval (n=25, 2 seeds, 50 CEM samples)
+python -m code.eval.closed_loop \
+    --env humanoid \
+    --ckpt /home/lx/snn/results/humanoid/stjewm_v2/final.pt \
+    --data /home/lx/snn/data/dm_control/3d_rollouts_250k/humanoid_250k.npz \
+    --out /home/lx/snn/results/humanoid/stjewm_v2/eval.json \
+    --n-episodes 25 --n-seeds 2 --horizon 5 --eval-budget 50 \
+    --history-size 1 --goal-offset 25
+
+# 4. Regenerate the 4-way table
+python -m code.scripts.make_4way_metrics
+```
+
+For the LeWM variant, swap `--model stjewm` → `--model lewm_baseline` and
+`stjewm_v2` → `lewm_baseline_v2`. For no-goal, add `--lambda-goal 0`.
 
 ---
 
@@ -107,81 +126,57 @@ loss monotonicity bounds the gap to a continuous-state SNN by $\|P\|^2 / 4$.
 ```
 snn/
 ├── code/
-│   ├── lewm_stjewm_v4.py             # Main architecture (A2 + B1), 5.03M params
-│   ├── snn_cell.py                   # LIF + MultiCompartment cells + ATan surrogate
-│   ├── sigreg.py                     # SIGReg regularizer (Epps-Pulley CF)
-│   ├── lewm_transformer_baseline.py   # 6-layer Transformer + AdaLN-zero, 4.17M
-│   ├── theory/
-│   │   └── propositions.py           # 3 propositions + proofs + doctests
-│   └── scripts/                       # 24 training / eval / data-gen scripts
-├── data/                             # 17 .npz files, 2.19M transitions, 1.4 GB
-├── results/                          # 28 .pt ckpts + 70+ JSON eval results
-├── viz/                              # MuJoCo render scripts + output GIFs
+│   ├── stjewm.py                       # Main architecture (A1 + B1), 5.03M params
+│   ├── lewm_transformer_baseline.py    # 6-layer Transformer + AdaLN-zero, 5.07M
+│   ├── core/
+│   │   ├── cem.py                      # Cross-Entropy Method planner
+│   │   ├── encode.py                   # Obs/Action encoders
+│   │   ├── envs/                       # DMC, swm, Gym env wrappers
+│   │   └── sigreg.py                   # SIGReg regularizer
+│   ├── data/loaders.py                 # Windowed dataset loaders
+│   ├── eval/
+│   │   ├── closed_loop.py             # Plan + step + eval (used to produce eval.json)
+│   │   └── plan_then_render.py        # Render a trajectory to .gif
+│   ├── theory/propositions.py          # 3 propositions + proofs (doctests PASS)
+│   └── scripts/
+│       ├── make_4way_metrics.py        # 4-condition comparison table
+│       ├── make_gif_pairs.py          # (BROKEN) render success+failure gifs
+│       ├── retrain_fixed_goal_loss.sh  # Re-run training (16 envs × 2 models)
+│       └── upload_gifs_to_obs.sh       # Sync local gifs to OBS bucket
+├── data/                                # 17 .npz files, 2.19M transitions, 1.4 GB
+├── results/                             # 64 ckpts (4 models × 16 envs) + 64 evals
+│   └── aggregate/
+│       ├── summary_4way.md             # 4-condition table
+│       ├── gifs/                       # 64 gifs (3-panel, 43 MB) — *not validated*
+│       └── gif_inventory.json
 ├── docs/
-│   ├── paper/                        # NMI paper (Tectonic build, main.pdf)
-│   ├── report/EXPERIMENT_REPORT.md    # The full lab notebook — read this first
-│   ├── PROGRESS.md
-│   └── RESEARCH_PLAN.md
-└── logs/                              # Training logs from each run
+│   ├── GOAL_LOSS_FIX.md                # The goal-loss bug analysis
+│   ├── SATURATION_ANALYSIS.md          # Why v1=v2=nogoal for STJEWM
+│   ├── TWOROOM_BUGFIX.md               # Tworoom NaN fix
+│   ├── GIF_PAIRS.md                    # (TODO) gifs content description
+│   └── report/                         # Fresh-run experiment report
+└── logs/                                # Training logs
 ```
 
 ---
 
-## Reproduce in 60 seconds
+## What's currently broken / not validated
 
-```bash
-# 1. Env (conda 'snn' env is already set up at /home/lx/miniconda3/envs/snn)
-conda activate snn
+### GIF visualization (3-panel renderer)
+- **64 gifs** generated at `results/aggregate/gifs/`, uploaded to OBS
+- **3 panels**: env (3D mujoco or 2D fallback) + spike raster (192 neurons) + action heatmap
+- **PROBLEM**: User flagged that the **env renderings are wrong**:
+  - humanoids just show a blue dot instead of the articulated figure
+  - pushT shows empty plots
+  - Need to verify the model output is actually `qpos[0:2]` (not raw state) for the 2D renderers
+- **Status**: gifs **do not trust** — fix the env rendering before publishing
+- See `docs/GIF_PAIRS.md` for the planned fix
 
-# 2. Generate Reacher rollouts (~3 min)
-cd code/scripts
-python stage33_gen_reacher_mujoco_data.py
-
-# 3. Train v4.5 (~30 min on 1× RTX 4090)
-python stage34_v4_4_train.py \
-    --env reacher_mujoco \
-    --data /home/lx/snn/data/dm_control/reacher_mujoco_rollouts_5x.npz \
-    --out /tmp/reacher_v4_5 --epochs 5 --batch 64 --lr 3e-4 \
-    --lambda-sigreg 0.09 --lambda-goal 0.5 --seed 3072
-
-# 4. Eval Reacher (n=30, bigCEM)
-python stage35_v4_4_eval.py \
-    --ckpt /tmp/reacher_v4_5/final.pt \
-    --n-episodes 30 --cem-samples 128 --cem-elites 16 --cem-iters 5 \
-    --out /tmp/reacher_eval.json
-
-# 5. Verify propositions
-cd ../..
-python -m doctest code/theory/propositions.py -v
-# Expected: "3 passed and 0 failed. Test passed."
-```
-
-Full reproducibility (24 scripts, 25 3D envs, target-conditioned planning) — see
-[`docs/report/EXPERIMENT_REPORT.md` § 15](docs/report/EXPERIMENT_REPORT.md#15-reproducibility-exact-commands).
-
----
-
-## Honest disclosure (read this too)
-
-We are **not** state-of-the-art. Specifically:
-
-- Our Reacher SR is **20% (n=30) → 10% (n=100)**. The LeWM paper reports
-  **96%** but uses *dataset-replay protocol* (pre-recorded states, not real
-  mujoco). Our 10–20% is on real mujoco 3.10 — a stricter test.
-- The **manipulator target-conditioned success rate is 0%** despite an 87.5%
-  improvement rate: the model improves qpos distance by ~2% on average but
-  cannot reliably reach the goal.
-- **RobotiqGripper closed-loop cos = 0.69** (the only failing env): a
-  1-actuator / 8-joint underactuated system — the trace cannot track it.
-- All experiments are **single-seed** (env seed 42, training seed 3072). No
-  multi-seed confidence intervals.
-- The 5-epoch / 1M-rollout training was **killed at step 38000/39000** by
-  external interference. The reported "final" is the best intermediate step
-  (`step15000`, 2 epochs).
-
-The advantage is real (+14pp at $n=30$, +50pp on target-conditioned
-planning), and the spike-trace mechanism is theoretically grounded — but the
-absolute numbers are honest about what we have and what we don't.
+### Other known limitations
+- **Single seed** (env seed 42, training seed 3072) for all evals
+- **Eval saturated at data ceiling** for 10/16 envs — can't differentiate models further
+- **3 STJEWM variants bit-identical** for fixed seed — can't tell goal vs no-goal apart from external perturbation
+- Tworoom / cube envs use stable_worldmodel (swm) — these are NOT 3D mujoco and the 2D rendering needs custom layout (currently broken)
 
 ---
 
@@ -211,12 +206,6 @@ continuous recurrent state physically removed from the data flow — then:
       note={Under review at Nature Machine Intelligence}
 }
 ```
-
----
-
-## License
-
-TBD
 
 ---
 

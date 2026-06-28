@@ -31,12 +31,12 @@ data/
 
 # Trained model checkpoints (too large for git, see OBS)
 results/
-*.pt
-*.pth
-*.ckpt
-*.bin
-
-# Logs and temp files
+# But include the small aggregate summary files (git add -f)
+# results/aggregate/summary_*.md
+# results/aggregate/gif_inventory.json
+# Exclude gifs (43 MB) - those go to OBS
+results/aggregate/gifs/
+results/aggregate/eval_logs/
 logs/
 *.log
 nohup.out

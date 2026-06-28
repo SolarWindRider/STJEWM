@@ -1,0 +1,456 @@
+{
+  "generated_at": "2026-06-27T12:15:13.319026",
+  "total_gifs": 64,
+  "base_dir": "/home/lx/snn/results/aggregate/gifs",
+  "description": "Each gif is a 3-panel visualization: TOP=env state, MIDDLE=spike raster, BOTTOM=action heatmap",
+  "gifs": [
+    {
+      "env": "ball_in_cup",
+      "model": "lewm_baseline_v2",
+      "filename": "ball_in_cup_lewm_baseline_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 217936
+    },
+    {
+      "env": "ball_in_cup",
+      "model": "lewm_baseline_v2",
+      "filename": "ball_in_cup_lewm_baseline_v2_success.gif",
+      "type": "success",
+      "size_bytes": 206447
+    },
+    {
+      "env": "ball_in_cup",
+      "model": "stjewm_v2",
+      "filename": "ball_in_cup_stjewm_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 1058080
+    },
+    {
+      "env": "ball_in_cup",
+      "model": "stjewm_v2",
+      "filename": "ball_in_cup_stjewm_v2_success.gif",
+      "type": "success",
+      "size_bytes": 1057031
+    },
+    {
+      "env": "cartpole_2d",
+      "model": "lewm_baseline_v2",
+      "filename": "cartpole_2d_lewm_baseline_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 105336
+    },
+    {
+      "env": "cartpole_2d",
+      "model": "lewm_baseline_v2",
+      "filename": "cartpole_2d_lewm_baseline_v2_success.gif",
+      "type": "success",
+      "size_bytes": 123327
+    },
+    {
+      "env": "cartpole_2d",
+      "model": "stjewm_v2",
+      "filename": "cartpole_2d_stjewm_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 947612
+    },
+    {
+      "env": "cartpole_2d",
+      "model": "stjewm_v2",
+      "filename": "cartpole_2d_stjewm_v2_success.gif",
+      "type": "success",
+      "size_bytes": 747259
+    },
+    {
+      "env": "cheetah",
+      "model": "lewm_baseline_v2",
+      "filename": "cheetah_lewm_baseline_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 189213
+    },
+    {
+      "env": "cheetah",
+      "model": "lewm_baseline_v2",
+      "filename": "cheetah_lewm_baseline_v2_success.gif",
+      "type": "success",
+      "size_bytes": 197096
+    },
+    {
+      "env": "cheetah",
+      "model": "stjewm_v2",
+      "filename": "cheetah_stjewm_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 1146848
+    },
+    {
+      "env": "cheetah",
+      "model": "stjewm_v2",
+      "filename": "cheetah_stjewm_v2_success.gif",
+      "type": "success",
+      "size_bytes": 1224566
+    },
+    {
+      "env": "dog",
+      "model": "lewm_baseline_v2",
+      "filename": "dog_lewm_baseline_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 140610
+    },
+    {
+      "env": "dog",
+      "model": "lewm_baseline_v2",
+      "filename": "dog_lewm_baseline_v2_success.gif",
+      "type": "success",
+      "size_bytes": 157955
+    },
+    {
+      "env": "dog",
+      "model": "stjewm_v2",
+      "filename": "dog_stjewm_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 2582947
+    },
+    {
+      "env": "dog",
+      "model": "stjewm_v2",
+      "filename": "dog_stjewm_v2_success.gif",
+      "type": "success",
+      "size_bytes": 2559671
+    },
+    {
+      "env": "finger",
+      "model": "lewm_baseline_v2",
+      "filename": "finger_lewm_baseline_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 156056
+    },
+    {
+      "env": "finger",
+      "model": "lewm_baseline_v2",
+      "filename": "finger_lewm_baseline_v2_success.gif",
+      "type": "success",
+      "size_bytes": 137259
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_v2",
+      "filename": "finger_stjewm_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 1003562
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_v2",
+      "filename": "finger_stjewm_v2_success.gif",
+      "type": "success",
+      "size_bytes": 1016986
+    },
+    {
+      "env": "fish",
+      "model": "lewm_baseline_v2",
+      "filename": "fish_lewm_baseline_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 130858
+    },
+    {
+      "env": "fish",
+      "model": "lewm_baseline_v2",
+      "filename": "fish_lewm_baseline_v2_success.gif",
+      "type": "success",
+      "size_bytes": 107154
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_v2",
+      "filename": "fish_stjewm_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 1146118
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_v2",
+      "filename": "fish_stjewm_v2_success.gif",
+      "type": "success",
+      "size_bytes": 1157502
+    },
+    {
+      "env": "hopper",
+      "model": "lewm_baseline_v2",
+      "filename": "hopper_lewm_baseline_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 184900
+    },
+    {
+      "env": "hopper",
+      "model": "lewm_baseline_v2",
+      "filename": "hopper_lewm_baseline_v2_success.gif",
+      "type": "success",
+      "size_bytes": 108848
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_v2",
+      "filename": "hopper_stjewm_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 1085235
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_v2",
+      "filename": "hopper_stjewm_v2_success.gif",
+      "type": "success",
+      "size_bytes": 1068793
+    },
+    {
+      "env": "humanoid",
+      "model": "lewm_baseline_v2",
+      "filename": "humanoid_lewm_baseline_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 161067
+    },
+    {
+      "env": "humanoid",
+      "model": "lewm_baseline_v2",
+      "filename": "humanoid_lewm_baseline_v2_success.gif",
+      "type": "success",
+      "size_bytes": 153040
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_v2",
+      "filename": "humanoid_stjewm_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 1453047
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_v2",
+      "filename": "humanoid_stjewm_v2_success.gif",
+      "type": "success",
+      "size_bytes": 1397543
+    },
+    {
+      "env": "humanoid_CMU",
+      "model": "lewm_baseline_v2",
+      "filename": "humanoid_CMU_lewm_baseline_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 115684
+    },
+    {
+      "env": "humanoid_CMU",
+      "model": "lewm_baseline_v2",
+      "filename": "humanoid_CMU_lewm_baseline_v2_success.gif",
+      "type": "success",
+      "size_bytes": 125074
+    },
+    {
+      "env": "humanoid_CMU",
+      "model": "stjewm_v2",
+      "filename": "humanoid_CMU_stjewm_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 2567353
+    },
+    {
+      "env": "humanoid_CMU",
+      "model": "stjewm_v2",
+      "filename": "humanoid_CMU_stjewm_v2_success.gif",
+      "type": "success",
+      "size_bytes": 2510941
+    },
+    {
+      "env": "pendulum_2d",
+      "model": "lewm_baseline_v2",
+      "filename": "pendulum_2d_lewm_baseline_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 158842
+    },
+    {
+      "env": "pendulum_2d",
+      "model": "lewm_baseline_v2",
+      "filename": "pendulum_2d_lewm_baseline_v2_success.gif",
+      "type": "success",
+      "size_bytes": 163880
+    },
+    {
+      "env": "pendulum_2d",
+      "model": "stjewm_v2",
+      "filename": "pendulum_2d_stjewm_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 808747
+    },
+    {
+      "env": "pendulum_2d",
+      "model": "stjewm_v2",
+      "filename": "pendulum_2d_stjewm_v2_success.gif",
+      "type": "success",
+      "size_bytes": 828000
+    },
+    {
+      "env": "pusht",
+      "model": "lewm_baseline_v2",
+      "filename": "pusht_lewm_baseline_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 309741
+    },
+    {
+      "env": "pusht",
+      "model": "lewm_baseline_v2",
+      "filename": "pusht_lewm_baseline_v2_success.gif",
+      "type": "success",
+      "size_bytes": 298721
+    },
+    {
+      "env": "pusht",
+      "model": "stjewm_v2",
+      "filename": "pusht_stjewm_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 918066
+    },
+    {
+      "env": "pusht",
+      "model": "stjewm_v2",
+      "filename": "pusht_stjewm_v2_success.gif",
+      "type": "success",
+      "size_bytes": 921082
+    },
+    {
+      "env": "quadruped",
+      "model": "lewm_baseline_v2",
+      "filename": "quadruped_lewm_baseline_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 170375
+    },
+    {
+      "env": "quadruped",
+      "model": "lewm_baseline_v2",
+      "filename": "quadruped_lewm_baseline_v2_success.gif",
+      "type": "success",
+      "size_bytes": 131917
+    },
+    {
+      "env": "quadruped",
+      "model": "stjewm_v2",
+      "filename": "quadruped_stjewm_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 1252236
+    },
+    {
+      "env": "quadruped",
+      "model": "stjewm_v2",
+      "filename": "quadruped_stjewm_v2_success.gif",
+      "type": "success",
+      "size_bytes": 1258690
+    },
+    {
+      "env": "reacher",
+      "model": "lewm_baseline_v2",
+      "filename": "reacher_lewm_baseline_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 12937
+    },
+    {
+      "env": "reacher",
+      "model": "lewm_baseline_v2",
+      "filename": "reacher_lewm_baseline_v2_success.gif",
+      "type": "success",
+      "size_bytes": 12412
+    },
+    {
+      "env": "reacher",
+      "model": "stjewm_v2",
+      "filename": "reacher_stjewm_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 968228
+    },
+    {
+      "env": "reacher",
+      "model": "stjewm_v2",
+      "filename": "reacher_stjewm_v2_success.gif",
+      "type": "success",
+      "size_bytes": 1029090
+    },
+    {
+      "env": "stacker",
+      "model": "lewm_baseline_v2",
+      "filename": "stacker_lewm_baseline_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 135087
+    },
+    {
+      "env": "stacker",
+      "model": "lewm_baseline_v2",
+      "filename": "stacker_lewm_baseline_v2_success.gif",
+      "type": "success",
+      "size_bytes": 115851
+    },
+    {
+      "env": "stacker",
+      "model": "stjewm_v2",
+      "filename": "stacker_stjewm_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 1092398
+    },
+    {
+      "env": "stacker",
+      "model": "stjewm_v2",
+      "filename": "stacker_stjewm_v2_success.gif",
+      "type": "success",
+      "size_bytes": 1120825
+    },
+    {
+      "env": "tworoom",
+      "model": "lewm_baseline_v2",
+      "filename": "tworoom_lewm_baseline_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 134089
+    },
+    {
+      "env": "tworoom",
+      "model": "lewm_baseline_v2",
+      "filename": "tworoom_lewm_baseline_v2_success.gif",
+      "type": "success",
+      "size_bytes": 165892
+    },
+    {
+      "env": "tworoom",
+      "model": "stjewm_v2",
+      "filename": "tworoom_stjewm_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 186880
+    },
+    {
+      "env": "tworoom",
+      "model": "stjewm_v2",
+      "filename": "tworoom_stjewm_v2_success.gif",
+      "type": "success",
+      "size_bytes": 946995
+    },
+    {
+      "env": "walker",
+      "model": "lewm_baseline_v2",
+      "filename": "walker_lewm_baseline_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 124313
+    },
+    {
+      "env": "walker",
+      "model": "lewm_baseline_v2",
+      "filename": "walker_lewm_baseline_v2_success.gif",
+      "type": "success",
+      "size_bytes": 130125
+    },
+    {
+      "env": "walker",
+      "model": "stjewm_v2",
+      "filename": "walker_stjewm_v2_failure.gif",
+      "type": "failure",
+      "size_bytes": 1210832
+    },
+    {
+      "env": "walker",
+      "model": "stjewm_v2",
+      "filename": "walker_stjewm_v2_success.gif",
+      "type": "success",
+      "size_bytes": 1110608
+    }
+  ]
+}

@@ -1,12 +1,12 @@
 """LeWM-style Transformer baseline for state-based 3D arm world model.
 
 Faithful port of LeWM's JEPA architecture but for state input:
-- 6-layer Transformer (vs 4-layer SNN in v5)
+- 6-layer Transformer (vs 4-layer SNN stack in ST-JEWM)
 - AdaLN-zero conditioning (LeWM's signature)
 - ViT-like state encoder (Linear + LayerNorm)
 - ~3.5M trainable params (similar to LeWM 3.49M for reacher)
 
-Used as baseline to compare against v5 SNN on the SAME 3D arm bench.
+Used as the baseline for comparison against ST-JEWM on the SAME 3D arm bench.
 """
 from __future__ import annotations
 import torch
@@ -94,8 +94,11 @@ class LeWMTransformerBaseline(nn.Module):
         # Encoders
         self.state_encoder = StateEncoder(state_dim, embed_dim)
         self.action_encoder = ActionEncoder(action_dim, embed_dim)
-        # Learnable position embedding
-        self.pos_embed = nn.Parameter(torch.zeros(1, 64, embed_dim))
+        # LeWM-style baseline uses 6 layers by default (LeWM paper)
+        # pos_embed size must be >= max(goal_offset + history + 1) across all envs.
+        # LeWM paper uses goal_offset=100 (TwoRoom), so we need 1+1+100+1=102.
+        # Use 256 to be safe.
+        self.pos_embed = nn.Parameter(torch.zeros(1, 256, embed_dim))
         nn.init.trunc_normal_(self.pos_embed, std=0.02)
 
         # Transformer blocks (LeWM style: AdaLN-zero)
@@ -106,6 +109,13 @@ class LeWMTransformerBaseline(nn.Module):
 
         # Output projection
         self.proj_out = nn.Linear(embed_dim, embed_dim)
+
+    def encode(self, state, action):
+        """Alias of forward() to satisfy the model API contract in code/core/encode.py.
+
+        Both STJEWM and LeWMTransformerBaseline expose:
+        """
+        return self.forward(state, action)
 
     def forward(self, state, action):
         """
