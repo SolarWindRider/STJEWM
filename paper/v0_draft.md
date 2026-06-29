@@ -377,40 +377,21 @@ per-env breakdown is in `results/aggregate/summary_5way.md`.
 
 **Table 1 — LeWM-SR (avg, %) and cos_dist (avg) on 16 saturated envs.**
 
-| Model | LeWM-SR (avg) | cos_dist (avg) | n_params |
-|---|---|---|---|
-| STJEWM-trace    | **69.1 (14 envs)**  | 0.092 (14 envs) | 5.03M |
-| STJEWM-spike    | 66.2 (14 envs)  | 0.089 (14 envs) | 5.03M |
-| STJEWM-leak     | 59.5 (14 envs)  | 0.111 (14 envs) | 5.03M |
-| STJEWM-no-trace | (training)     | (training)     | 5.03M |
-| LeWM            | 79.1 (16 envs) | 0.074 (16 envs) | 5.07M |
+| Model | LeWM-SR (avg) | cos_dist (avg) | epoch | n_params |
+|---|---|---|---|---|---|
+| STJEWM with goal (v2) | **83.0** | **0.065** | 5 | 5.03M |
+| STJEWM nogoal (v2) | **82.6** | **0.065** | 5 | 5.03M |
+| STJEWM-trace (membrane forbidden) | 71.6 | 0.086 | **3** | 5.03M |
+| STJEWM-spike | 64.8 | 0.098 | 3 | 5.03M |
+| STJEWM-leak | 60.9 | 0.111 | 3 | 5.03M |
+| LeWM with goal (v2) | 79.1 | 0.074 | 5 | 5.07M |
+| LeWM nogoal (v2) | 80.0 | 0.077 | 5 | 5.07M |
 
-**Per-env LeWM-SR for the saturated suite (14/16 envs complete; full
-table in `results/aggregate/summary_5way.md`):**
-
-| Env | STJEWM-trace | STJEWM-leak | STJEWM-spike | LeWM |
-|---|---|---|---|---|
-| ball_in_cup | 100% | 100% | 100% | 100% |
-| cartpole_2d | 82% | 82% | 86% | 86% |
-| cheetah | 98% | 90% | 98% | 88% |
-| dog | 26% | 2% | 20% | 68% |
-| finger | 44% | 48% | 46% | 78% |
-| hopper | 88% | 78% | 88% | 88% |
-| humanoid | 38% | 4% | 10% | 56% |
-| humanoid_CMU | 86% | 86% | 86% | 86% |
-| pendulum_2d | 26% | 24% | 26% | 28% |
-| pusht | 74% | 10% | 42% | 82% |
-| reacher | 54% | — | — | 66% |
-| stacker | 86% | 86% | 86% | 88% |
-| tworoom | 92% | 94% | 90% | 74% |
-| walker | 74% | 70% | 82% | 94% |
-
-Key observations: (1) Retrained 3 epochs (vs 5 for LeWM) — STJEWM-trace
-undertrained. (2) STJEWM-trace > LeWM on 4 envs (cheetah 98>88,
-tworoom 92>74). (3) STJEWM-trace > STJEWM-leak on 10/14 envs.
-(4) Strongest on hardest envs (humanoid: 38% vs 4% leak, 9.5x gap).
-(5) LeWM still wins on dog (68 vs 26), walker (94 vs 74).
-(6) 9 of 14 envs at 80%+ for all models — the suite is saturated.
+*Note: STJEWM nogoal (82.6%) ≈ STJEWM with goal (83.0%), confirming the
+goal loss term contributes negligibly on the saturated suite. The 3-epoch
+retrain (71.6%) is 11.4pp below the 5-epoch original (83.0%) — an
+undertraining artifact. Extending the 3-epoch retrain to 5 epochs should
+close most of this gap.*
 
 ### 4.2 The unsaturated stress suite (Goal 2)
 

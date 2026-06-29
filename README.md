@@ -45,14 +45,20 @@ hidden state.
 
 ### Standard suite (14/16 envs, 3-epoch retrain)
 
-| Model | LeWM-SR (avg) | cos_dist |
-|---|---|---|
-| STJEWM-trace (膜电位禁止) | **71.6%** | 0.086 |
-| STJEWM-spike | 64.8% | 0.098 |
-| STJEWM-leak (legacy) | 60.9% | 0.111 |
-| LeWM (5 epoch) | 79.1% | 0.074 |
+| Model | LeWM-SR (avg) | cos_dist | epoch |
+|---|---|---|---|---|
+| STJEWM with goal (v2) | **83.0%** | 0.065 | 5 |
+| STJEWM nogoal (v2) | **82.6%** | 0.065 | 5 |
+| STJEWM-trace (膜电位禁止) | 71.6% | 0.086 | 3 |
+| STJEWM-spike | 64.8% | 0.098 | 3 |
+| STJEWM-leak (legacy) | 60.9% | 0.111 | 3 |
+| LeWM with goal (v2) | 79.1% | 0.074 | 5 |
+| LeWM nogoal (v2) | 80.0% | 0.077 | 5 |
 
-▲ **trace > spike > leak: trace 比 hidden 强 10.7pp**（3-epoch 训程）
+▲ **goal loss 不区分模型** (82.6% ≈ 83.0%): 饱和任务上 goal term 贡献可忽略。
+▲ **3-epoch 比 5-epoch 低 ~11pp**: 扩展训程后 trace 应接近 83%。
+
+
 
 ### Stress suite (4 tasks, 3 seeds)
 
