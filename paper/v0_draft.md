@@ -177,7 +177,43 @@ a Fourier basis.
 
 ### 2.3 ST-JEWM: a pure-SNN reconstruction-free world model
 
-ST-JEWM ([Fig. 1](#fig1)) is a JEPA-style world model whose *predictor*
+ST-JEWM (Fig. 1) is a JEPA-style world model
+
+__omp_shell("[ST-JEWM architecture](figs/architecture.txt)")
+
+```
+                    +-----------+       +------------+
+   obs x_t  ---->  |  Encoder  |  ->   |  z_t^enc   | --+
+   (B,T,3,H,W)    | (ViT-T,   |       | (B,T,192)  |   |
+                  |  frozen)   |       +------------+   |
+                  +-----------+                         v
+                                              +-----+-----+
+                                              |  + a_emb  |
+                                              |  (1-MLP)  |
+                                              +-----+-----+
+                                                    v
+                                              +-----+-----+
+                                              | z_t^enc   |
+                                              |  + a_emb  |  ->  h_t
+                                              +-----+-----+     (B,T,192)
+                                                    v
+                                              +-----+-----+
+                                              |  SNN cell |  ->  s_t
+                                              |  stack x4 |     (B,T,192)
+                                              +-----+-----+     binary
+                                                    v
+                                              +-----+-----+
+                                              |   Trace   |
+                                              |  r_t = α r_{t-1} + (1-α) s_t
+                                              |  α = σ(W[r_{t-1},s_t,c_t])
+                                              +-----+-----+
+                                                    v
+                                              +-----+-----+
+                                              |  trace_proj |  ->  z_t  ---> next-state latent
+                                              +-----+-----+     (B,T,192)
+```
+
+ whose *predictor*
 is a stack of multi-compartment spiking cells, and whose *predictive
 state* is the gated spike trace. The architecture has four components:
 
