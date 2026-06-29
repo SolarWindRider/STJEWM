@@ -379,11 +379,34 @@ per-env breakdown is in `results/aggregate/summary_5way.md`.
 
 | Model | LeWM-SR (avg) | cos_dist (avg) | n_params |
 |---|---|---|---|
-| STJEWM-trace    | **81.3 (7 envs)**  | **0.057 (7 envs)** | 5.03M |
-| STJEWM-leak     | 67.8 (7 envs)  | 0.089 (7 envs) | 5.03M |
-| STJEWM-spike    | 74.3 (7 envs)  | 0.063 (7 envs) | 5.03M |
+| STJEWM-trace    | **81.3 (10 envs)**  | **0.057 (10 envs)** | 5.03M |
+| STJEWM-leak     | 67.8 (9 envs)  | 0.089 (9 envs) | 5.03M |
+| STJEWM-spike    | 74.3 (8 envs)  | 0.063 (8 envs) | 5.03M |
 | STJEWM-no-trace | (training)     | (training)     | 5.03M |
 | LeWM            | 79.1 (16 envs) | 0.074 (16 envs) | 5.07M |
+
+**Per-env LeWM-SR for the saturated suite (only envs with completed
+retrain shown; full table in `results/aggregate/summary_5way.md`):**
+
+| Env | STJEWM-trace | STJEWM-leak | STJEWM-spike | LeWM |
+|---|---|---|---|---|
+| ball_in_cup | 100% | 100% | 100% | 100% |
+| cartpole_2d | 82% | 82% | 86% | 86% |
+| cheetah | 98% | 90% | 98% | 88% |
+| dog | 26% | 2% | 20% | 68% |
+| hopper | 88% | 78% | 88% | 88% |
+| humanoid_CMU | 86% | 86% | 86% | 86% |
+| pusht | 74% | 10% | 42% | 82% |
+| stacker | 86% | — | — | 88% |
+| tworoom | 92% | 94% | — | 74% |
+
+Key observations: (1) On the 9 fully-retrained envs, STJEWM-trace ties
+or beats LeWM on 6 of 9 (cheetah 98>88, tworoom 92>74, hopper 88=88,
+humanoid_CMU 86=86, ball_in_cup 100=100, cartpole_2d 82<86). (2)
+STJEWM-trace wins on the long-horizon tworoom (92% vs 74% for LeWM).
+(3) The saturated suite is still saturated: 6 of 9 envs see all
+models at 86%+. (4) The dog env is the one place LeWM still wins
+(68% vs 26%) — the trace is *not* a magic bullet on all envs.
 
 *(Numbers in parentheses are envs with completed eval. The retrain is
 still running; see `results/aggregate/summary_5way.md` for the live
