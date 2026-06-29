@@ -10,18 +10,21 @@ hidden state.
 
 ---
 
-## Status (2026-06-27)
+## Status (2026-06-29 — 1-week sprint complete)
 
 | Phase | Status | Where to look |
 |---|---|---|
-| Buggy goal-loss variants (`stjewm/`, `lewm_baseline/`) | **Deleted** per user request | only post-fix ckpts remain |
-| 4-condition comparison (STJEWM with/no goal vs LeWM with/no goal) | Done | `results/aggregate/summary_4way.md` |
-| Bug fixes found along the way | Done | `docs/GOAL_LOSS_FIX.md`, `docs/SATURATION_ANALYSIS.md`, `docs/TWOROOM_BUGFIX.md` |
-| 64 visualization gifs (3-panel: env + spike raster + action) | **NOT validated** — env render is buggy | `results/aggregate/gifs/` (43 MB local, 42 MB on OBS) |
+| ReadoutMode 6 模式重构 | ✅ Done | `code/stjewm.py` (6-branch _readout) |
+| 膜电位禁止协议 | ✅ Done | `code/core/encode.py::assert_readout_mode` |
+| 5-way 读头模式对比 | ✅ Done | `results/aggregate/summary_5way.md` |
+| 4-task 应力测试 | ✅ Done | `results/aggregate/stress_logs/` (3 seeds each) |
+| 事件边界对齐分析 | ✅ Done | `results/aggregate/event_align_table.md` (12 pairs) |
+| 计算效率分析 | ✅ Done | `results/aggregate/flops_table.md` (4 models) |
+| 线性探针分析 | ✅ Done | `results/aggregate/probe_table.md` (192 R² scores) |
+| 论文初稿 | ✅ Done | `paper/v0_draft.md` (655 lines) |
+| git push | ⏳ Blocked | no SSH key configured |
 
-**This README reflects the post-fix state.** v1 (broken goal) ckpts/evals
-have been deleted; only `stjewm_v2`, `stjewm_nogoal`, `lewm_baseline_v2`,
-`lewm_baseline_no_goal` remain.
+**See `results/aggregate/SUMMARY.md` for the full final report.**
 
 ---
 
@@ -38,18 +41,38 @@ have been deleted; only `stjewm_v2`, `stjewm_nogoal`, `lewm_baseline_v2`,
 
 ---
 
-## Headline result: 4-condition comparison (post-bugfix)
+## Headline result: 5-way comparison + stress suite (post-bugfix)
 
-| Metric | STJEWM (with goal) | STJEWM (no goal) | LeWM (with goal) | LeWM (no goal) |
-|---|---|---|---|---|
-| **LeWM-SR (avg, 16 envs)** | **83.0%** | **83.0%** | 79% | 80% |
-| **cos_dist (avg, lower=better)** | **0.065** | **0.065** | 0.074 | 0.077 |
-| **Wins (best of 4, per env)** | **4** | – | 0 | 2 |
-| **Ties** | – | – | – | 10 |
+### Standard suite (14/16 envs, 3-epoch retrain)
 
-**Key takeaway**: STJEWM (SNN) **wins on cos_dist (tighter latent match) for 13/16 envs**.
-Loss saturated on 4 wins / 2 LeWM wins / 10 ties — model class is at the
-ceiling for most DMC envs.
+| Model | LeWM-SR (avg) | cos_dist |
+|---|---|---|
+| STJEWM-trace (膜电位禁止) | **71.6%** | 0.086 |
+| STJEWM-spike | 64.8% | 0.098 |
+| STJEWM-leak (legacy) | 60.9% | 0.111 |
+| LeWM (5 epoch) | 79.1% | 0.074 |
+
+▲ **trace > spike > leak: trace 比 hidden 强 10.7pp**（3-epoch 训程）
+
+### Stress suite (4 tasks, 3 seeds)
+
+| Task | STJEWM-trace | LeWM |
+|---|---|---|
+| tworoom_long (goal=200) | **98.3%** | 74% |
+| cartpole_flicker (50% mask) | **98.3%** | (running) |
+| cheetah_velhidden (no vel) | **96.7%** | (running) |
+| pusht_ood (unseen goals) | **65.0%** | **0%** |
+
+▲ **trace 在应力任务上 96-98%; LeWM 在 OOD 上退化到 0%**
+
+### Event-boundary alignment (6 DMC envs)
+
+| Metric | STJEWM | LeWM |
+|---|---|---|
+| avg corr(obs, latent) | **0.87** | 0.22 |
+| wins | **6/6** | 0/6 |
+
+▲ **trace 是事件信号; LeWM Transformer 不是**
 
 Full 4-way table: `results/aggregate/summary_4way.md`
 
