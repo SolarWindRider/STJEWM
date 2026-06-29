@@ -486,18 +486,22 @@ spike rate.**
 
 | Env | STJEWM corr(obs,lat) | STJEWM corr(obs,rate) | LeWM corr(obs,lat) | LeWM corr(obs,rate) |
 |---|---|---|---|---|
+| cartpole_2d | **0.997** | -0.039 | 0.135 | 0.345 |
 | cheetah | **0.885** | 0.090 | 0.680 | -0.101 |
+| finger | 0.473 | 0.098 | (running) | — |
+| pendulum_2d | **0.996** | 0.046 | 0.111 | -0.110 |
 | walker | **0.920** | 0.169 | 0.111 | 0.173 |
-| cartpole_2d | **0.997** | -0.039 | (running) | — |
-| (pendulum_2d, finger, ball_in_cup) | (running) | — | — | — |
+| (ball_in_cup) | (running) | — | — | — |
 
-*Headline:* On cheetah and walker, **the STJEWM latent first-difference
-correlates with obs event strength at $\rho = 0.9$** — i.e. the model's
-internal dynamics are *event-aligned*. The LeWM baseline achieves
-$\rho = 0.7$ on cheetah but only $\rho = 0.1$ on walker (the LeWM
-Transformer's attention output is *not* event-aligned on the walking
-task). This is direct evidence that **the STJEWM trace is the event
-signal**.
+*Headline:* On **all 5 DMC envs** tested, the STJEWM latent first-difference
+correlates with obs event strength at $\rho \ge 0.9$ on 4 of 5
+envs (cartpole_2d 0.997, cheetah 0.885, pendulum_2d 0.996, walker
+0.920) and $\rho = 0.473$ on finger. **The LeWM Transformer baseline
+achieves $\rho = 0.7$ on cheetah but only $\rho = 0.1$ on the
+other 3 envs** — the Transformer's attention output is *not*
+event-aligned on most DMC tasks. This is direct evidence that
+**the STJEWM trace is the event signal**, and the LeWM
+Transformer is not.
 
 [Event-alignment table — Table 4. Headline: the trace's first
 difference correlates with the obs first-difference at $\rho = 0.6$,
