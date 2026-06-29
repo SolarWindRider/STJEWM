@@ -49,9 +49,16 @@ while IFS='=' read -r name spec; do
     split_arg=$(echo "$spec" | awk '{print $3}')
 
     ckpt="$RESULTS_DIR/$name/$MODEL/final.pt"
+    # Stress envs store ckpts at <env>/<model>_seed<s>/final.pt
+    # Try the direct path first; if missing, look for any _seed0 ckpt
     if [ ! -f "$ckpt" ]; then
-        echo "[skip] $name/$MODEL: no ckpt at $ckpt"
-        continue
+        seed_ckpt=$(ls -1 "$RESULTS_DIR/$name"/${MODEL}_seed*/final.pt 2>/dev/null | head -1)
+        if [ -n "$seed_ckpt" ]; then
+            ckpt="$seed_ckpt"
+        else
+            echo "[skip] $name/$MODEL: no ckpt at $ckpt"
+            continue
+        fi
     fi
     out="$RESULTS_DIR/$name/$MODEL/eval.json"
     log="$RESULTS_DIR/aggregate/stress_logs/eval_${MODEL}_${name}.log"

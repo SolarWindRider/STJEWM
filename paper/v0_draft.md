@@ -343,9 +343,9 @@ per-env breakdown is in `results/aggregate/summary_5way.md`.
 
 | Model | LeWM-SR (avg) | cos_dist (avg) | n_params |
 |---|---|---|---|
-| STJEWM-trace    | **73.0 (4 envs)**  | **0.073 (4 envs)** | 5.03M |
-| STJEWM-leak     | 65.0 (2 envs)  | 0.094 (2 envs) | 5.03M |
-| STJEWM-spike    | 53.0 (2 envs)  | 0.098 (2 envs) | 5.03M |
+| STJEWM-trace    | **76.0 (5 envs)**  | **0.067 (5 envs)** | 5.03M |
+| STJEWM-leak     | 65.0 (3 envs)  | 0.094 (3 envs) | 5.03M |
+| STJEWM-spike    | 72.5 (3 envs)  | 0.069 (3 envs) | 5.03M |
 | STJEWM-no-trace | (training)     | (training)     | 5.03M |
 | LeWM            | 79.1 (16 envs) | 0.074 (16 envs) | 5.07M |
 

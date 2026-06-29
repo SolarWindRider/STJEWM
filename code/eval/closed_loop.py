@@ -352,10 +352,11 @@ def _load_eval_dataset(env, data_path, history_size, goal_offset, split: str = "
     if data_path.endswith(".npz") or data_path.endswith(".h5"):
         ds = load_dataset(_infer_env_kind(env), path=data_path,
                           history_size=history_size, goal_offset=goal_offset)
+        spec_dim = ds.spec.obs_dim
         # B4: OOD split for held-out goal states
         if split == "unseen_goal" and hasattr(ds, "spec"):
             ds = _make_unseen_goal_subset(ds)
-        return ds, ds.spec.obs_dim
+        return ds, spec_dim
     # gym_live: collect from env
     ds = load_dataset("gym_live", path=data_path, history_size=history_size,
                       goal_offset=goal_offset, n_episodes=20, seed=42)
