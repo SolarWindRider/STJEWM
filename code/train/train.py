@@ -64,10 +64,15 @@ def parse_args():
                    help="Number of episodes to collect (for env-based data, e.g. ogb_cube_env)")
     p.add_argument("--max-steps-per-ep", type=int, default=200,
                    help="Max steps per collected episode (for env-based data)")
+    p.add_argument("--readout-mode", type=str, default="hidden_leak",
+                   choices=["trace_only", "hidden_leak", "membrane_readout",
+                            "spike_only", "rate_only", "no_trace"],
+                   help="STJEWM readout mode (membrane-forbidden protocol)")
     return p.parse_args()
 # Model builders
 # ============================================================
-def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int):
+def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int,
+                readout_mode: str = "hidden_leak"):
     if model_kind == "stjewm":
         from code.stjewm import STJEWM
         return STJEWM(
@@ -76,6 +81,7 @@ def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int):
             state_dim=obs_dim,
             cell_n_layers=n_layers, n_d=3,
             trace_beta=0.9, freeze_encoder=True,
+            readout_mode=readout_mode,
         )
     if model_kind == "lewm_baseline":
         from code.lewm_transformer_baseline import LeWMTransformerBaseline
@@ -273,7 +279,7 @@ def main():
         args.embed_dim = 256
     else:
         args.embed_dim = 192
-    model = build_model(args.model, obs_dim, action_dim, n_layers).to(device)
+    model = build_model(args.model, obs_dim, action_dim, n_layers, args.readout_mode).to(device)
     assert_model_compatible(model)
 
     save_dir = Path(args.out)

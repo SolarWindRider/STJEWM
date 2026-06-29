@@ -32,7 +32,7 @@ import torch
 sys.path.insert(0, "/home/lx/snn")
 
 from code.core.cem import CEM
-from code.core.encode import encode_history, encode_obs, assert_model_compatible
+from code.core.encode import encode_history, encode_obs, assert_model_compatible, assert_readout_mode
 from code.core.envs import (
     PushTEnv, TwoRoomEnv, OGBCubeEnv, OGBenchSceneEnv, ReacherEnv,
     make_gym_env, make_dmc_env, BaseEnv,
@@ -46,8 +46,13 @@ from code.data import load_dataset
 def make_env(env_kind: str, data_path: str = None) -> BaseEnv:
     if env_kind == "pusht":
         return PushTEnv()
-    if env_kind == "tworoom":
+    if env_kind == "tworoom" or env_kind == "tworoom_long":
+        # tworoom_long uses the same env, but eval_closed_loop forces
+        # goal_offset=200 to make the planning horizon much harder.
         return TwoRoomEnv()
+    if env_kind == "pusht_ood":
+        # Same env as pusht; OOD split is applied in _load_ood_split
+        return PushTEnv()
     if env_kind == "cube":
         return OGBCubeEnv()
     if env_kind == "scene":
@@ -60,6 +65,19 @@ def make_env(env_kind: str, data_path: str = None) -> BaseEnv:
         "dog", "fish", "stacker", "manipulator",
     ):
         return make_dmc_env(env_kind)
+    if env_kind == "cartpole_flicker" or env_kind == "flickering_dmc":
+        # FlickeringDMCEnv: obs randomly masked to zero with prob 0.5
+        from code.core.envs.dmc_env import FlickeringDMCEnv
+        base_kind = "cartpole" if env_kind == "cartpole_flicker" else "cartpole"
+        return FlickeringDMCEnv(base_kind, mask_ratio=0.5)
+    if env_kind.startswith("vel_hidden_") or env_kind.endswith("_velhidden"):
+        # e.g. "vel_hidden_cheetah" or "cheetah_velhidden" -> make_vel_hidden_env("cheetah")
+        from code.core.envs.dmc_env import make_vel_hidden_env
+        if env_kind.startswith("vel_hidden_"):
+            sub = env_kind.replace("vel_hidden_", "")
+        else:
+            sub = env_kind.replace("_velhidden", "")
+        return make_vel_hidden_env(sub)
     if env_kind in ("cartpole_v1", "acrobot", "pendulum_v1", "mountaincar", "mountaincar_cont"):
         eid = {
             "cartpole_v1": "swm/CartPoleControl-v1",
@@ -117,6 +135,8 @@ def eval_closed_loop(
     history_size: int = 3,
     success_threshold_cos: float = 0.1,
     device: str = "cuda",
+    goal_offset_override: Optional[int] = None,
+    split: str = "in_dist",
 ) -> ClosedLoopResult:
     """Run closed-loop CEM planning eval. LeWM-paper protocol + env-native.
 
@@ -129,11 +149,28 @@ def eval_closed_loop(
     """
     model = model.to(device).eval()
     assert_model_compatible(model)
+    # Membrane-forbidden protocol: planner/predictor should be in TRACE_ONLY mode.
+    # For ablation / comparison purposes, we WARN for other STJEWM modes (hidden_leak,
+    # spike_only, no_trace) and raise only for LeWM-style baselines (which do not
+    # satisfy any membrane-forbidden contract).
+    if hasattr(model, "readout_mode"):
+        from code.stjewm import ReadoutMode
+        if model.readout_mode != ReadoutMode.TRACE_ONLY:
+            import warnings
+            warnings.warn(
+                f"[closed_loop] model readout_mode={model.readout_mode} is NOT trace_only. "
+                f"This is allowed for ablation, but the trace-only protocol expects hidden_leak=0."
+            )
     action_dim = env.spec.action_dim
     action_low = env.spec.action_low
     action_high = env.spec.action_high
+    # B2: Stress env override — if the env (or caller) requests a
+    # different goal_offset (e.g. tworoom_long=200), honor it.
+    effective_goal_offset = goal_offset_override if goal_offset_override is not None else goal_offset
     # Load dataset for sampling init/goal
-    ds, state_dim = _load_eval_dataset(env, data_path, history_size, goal_offset)
+    ds, state_dim = _load_eval_dataset(
+        env, data_path, history_size, effective_goal_offset, split=split,
+    )
     # Note: we do NOT rebuild the model here — caller is expected to build
     # the model with the correct state_dim (e.g. read from ckpt). state_dim
     # is used only for sanity checks below.
@@ -295,7 +332,7 @@ def eval_closed_loop(
 # ============================================================
 # Helpers
 # ============================================================
-def _load_eval_dataset(env, data_path, history_size, goal_offset):
+def _load_eval_dataset(env, data_path, history_size, goal_offset, split: str = "in_dist"):
     """Load the eval dataset for sampling init/goal pairs.
 
     Returns (ds, state_dim). ds may be None if no dataset is available
@@ -315,11 +352,30 @@ def _load_eval_dataset(env, data_path, history_size, goal_offset):
     if data_path.endswith(".npz") or data_path.endswith(".h5"):
         ds = load_dataset(_infer_env_kind(env), path=data_path,
                           history_size=history_size, goal_offset=goal_offset)
+        # B4: OOD split for held-out goal states
+        if split == "unseen_goal" and hasattr(ds, "spec"):
+            ds = _make_unseen_goal_subset(ds)
         return ds, ds.spec.obs_dim
     # gym_live: collect from env
     ds = load_dataset("gym_live", path=data_path, history_size=history_size,
                       goal_offset=goal_offset, n_episodes=20, seed=42)
     return ds, ds.spec.obs_dim
+
+
+def _make_unseen_goal_subset(ds) -> "torch.utils.data.Subset":
+    """Return a Subset of `ds` that only contains the held-out 20% of windows.
+
+    The split is by dataset index (deterministic). The eval will use these
+    windows as (init, goal) pairs — the goal states will be from a region
+    of the trajectory distribution not seen during training, so the
+    model has to generalize.
+    """
+    n = len(ds)
+    if n <= 10:
+        return ds  # too small to split
+    cut = int(n * 0.8)
+    indices = list(range(cut, n))
+    return torch.utils.data.Subset(ds, indices)
 
 
 def _infer_env_kind(env: BaseEnv) -> str:
@@ -355,91 +411,7 @@ def _set_env_state(env: BaseEnv, state: np.ndarray) -> None:
         else:
             env._data.qpos[: env._nq] = state[: env._nq]
         env._data.qvel[:] = 0.0
-        mujoco.mj_forward(env._model, env._data)
-    """Best-effort: set the env to a specific state.
-    """
-    import mujoco
-    if isinstance(env, ReacherEnv):
-        env._data.qpos[:2] = state[:2]
-        env._data.qvel[:] = 0.0
-        env._model.geom_pos[env._target_id, :2] = state[2:4]
-        mujoco.mj_forward(env._model, env._data)
-        return
-    if hasattr(env, "_model") and hasattr(env, "_data") and hasattr(env, "_nq"):
-        if env._expand_pendulum:
-            angle = float(np.arctan2(state[1], state[0]))
-            env._data.qpos[0] = angle
-        else:
-            env._data.qpos[: env._nq] = state[: env._nq]
-        env._data.qvel[:] = 0.0
-        mujoco.mj_forward(env._model, env._data)
-        env._data.qpos[:2] = state[:2]
-        env._data.qvel[:] = 0.0
-        env._model.geom_pos[env._target_id, :2] = state[2:4]
-        mujoco.mj_forward(env._model, env._data)
-        return
-    # DMC state env: set qpos directly
-    if hasattr(env, "_model") and hasattr(env, "_data") and hasattr(env, "_nq"):
-        if env._expand_pendulum:
-            angle = float(np.arctan2(state[1], state[0]))
-            env._data.qpos[0] = angle
-        else:
-            env._data.qpos[: env._nq] = state[: env._nq]
-        env._data.qvel[:] = 0.0
-        mujoco.mj_forward(env._model, env._data)
-    """Best-effort: set the env to a specific state.
-
-    For DMCStateEnv: set qpos[:nq] from state (only the qpos part — no target).
-    For ReacherEnv: qpos[:2] + target[:2].
-    """
-    import mujoco
-    if isinstance(env, ReacherEnv):
-        env._data.qpos[:2] = state[:2]
-        env._data.qvel[:] = 0.0
-        env._model.geom_pos[env._target_id, :2] = state[2:4]
-        mujoco.mj_forward(env._model, env._data)
-        return
-    # DMC state env: set qpos directly
-    if hasattr(env, "_model") and hasattr(env, "_data") and hasattr(env, "_nq"):
-        if env._expand_pendulum:
-            # state is (cos, sin); convert back to single angle
-            angle = float(np.arctan2(state[1], state[0]))
-            env._data.qpos[0] = angle
-        else:
-            env._data.qpos[: env._nq] = state[: env._nq]
-        env._data.qvel[:] = 0.0
-        mujoco.mj_forward(env._model, env._data)
-    """Best-effort: set the env to a specific state.
-    """
-    import mujoco
-    if isinstance(env, ReacherEnv):
-        env._data.qpos[:2] = state[:2]
-        env._data.qvel[:] = 0.0
-        env._model.geom_pos[env._target_id, :2] = state[2:4]
-        mujoco.mj_forward(env._model, env._data)
-        return
-    if hasattr(env, "_model") and hasattr(env, "_data") and hasattr(env, "_nq"):
-        if env._expand_pendulum:
-            angle = float(np.arctan2(state[1], state[0]))
-            env._data.qpos[0] = angle
-        else:
-            env._data.qpos[: env._nq] = state[: env._nq]
-        env._data.qvel[:] = 0.0
-        mujoco.mj_forward(env._model, env._data)
-        env._data.qpos[:2] = state[:2]
-        env._data.qvel[:] = 0.0
-        env._model.geom_pos[env._target_id, :2] = state[2:4]
-        mujoco.mj_forward(env._model, env._data)
-        return
-    # DMC state env: set qpos directly
-    if hasattr(env, "_model") and hasattr(env, "_data") and hasattr(env, "_nq"):
-        if env._expand_pendulum:
-            angle = float(np.arctan2(state[1], state[0]))
-            env._data.qpos[0] = angle
-        else:
-            env._data.qpos[: env._nq] = state[: env._nq]
-        env._data.qvel[:] = 0.0
-        mujoco.mj_forward(env._model, env._data)
+    return
 # ============================================================
 # CLI
 # ============================================================
@@ -456,8 +428,11 @@ def parse_args():
     p.add_argument("--cem-iters", type=int, default=10)
     p.add_argument("--horizon", type=int, default=5)
     p.add_argument("--eval-budget", type=int, default=50)
-    p.add_argument("--goal-offset", type=int, default=25)
     p.add_argument("--history-size", type=int, default=3)
+    p.add_argument("--goal-offset", type=int, default=25,
+                   help="Default goal_offset (overridden by stress env like tworoom_long)")
+    p.add_argument("--split", choices=["in_dist", "unseen_goal"], default="in_dist",
+                   help="Dataset split: 'in_dist' (default) or 'unseen_goal' (B4: held-out)")
     return p.parse_args()
 
 
@@ -482,24 +457,32 @@ def main():
     else:
         from code.stjewm import STJEWM
         n_layers = ck_args.get("n_layers", 4)
+        # ReadoutMode: read from ckpt args (added by Workstream A)
+        ck_readout_mode = ck_args.get("readout_mode", "hidden_leak")
         model = STJEWM(
             d_hid=192, embed_dim=192, action_dim=action_dim, action_emb_dim=192,
             state_dim=state_dim, cell_n_layers=n_layers, n_d=3,
             trace_beta=0.9, freeze_encoder=True,
+            readout_mode=ck_readout_mode,
         )
     model.load_state_dict(ck["model"])
+
+    # B2: stress env goal_offset override (tworoom_long -> 200)
+    goal_offset_override = None
+    if args.env == "tworoom_long":
+        goal_offset_override = 200
 
     # Run eval
     result = eval_closed_loop(
         model, env, args.data,
         n_episodes=args.n_episodes,
         n_seeds=args.n_seeds,
-        cem_samples=args.cem_samples, cem_elites=args.cem_elites, cem_iters=args.cem_iters,
-        horizon=args.horizon, eval_budget=args.eval_budget,
         goal_offset=args.goal_offset, history_size=args.history_size,
+        horizon=args.horizon, eval_budget=args.eval_budget,
         device=device,
+        goal_offset_override=goal_offset_override,
+        split=args.split,
     )
-
     # Save
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     with open(args.out, "w") as f:

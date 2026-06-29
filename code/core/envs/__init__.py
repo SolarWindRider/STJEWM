@@ -26,6 +26,7 @@ from .gym_envs import GymControlEnv, make_gym_env
 from .dmc_env import (
     DMCStateEnv, OGBenchSceneEnv, DMC_ENVS,
     make_dmc_env, make_ogb_scene_env,
+    FlickeringDMCEnv, VEL_INDICES, make_vel_hidden_env,
 )
 
 __all__ = [
@@ -35,4 +36,5 @@ __all__ = [
     "GymControlEnv", "make_gym_env",
     "DMCStateEnv", "OGBenchSceneEnv", "DMC_ENVS",
     "make_dmc_env", "make_ogb_scene_env",
+    "FlickeringDMCEnv", "VEL_INDICES", "make_vel_hidden_env",
 ]

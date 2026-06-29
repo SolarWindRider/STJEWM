@@ -97,3 +97,25 @@ def assert_model_compatible(model) -> None:
             f"model.predict() must accept at least 2 positional parameters. "
             f"Got signature: {sig}"
         )
+
+
+def assert_readout_mode(model, expected) -> None:
+    """Raise AssertionError if `model.readout_mode` != `expected`.
+
+    `expected` is a `code.stjewm.ReadoutMode` enum value. Used by eval to
+    enforce the membrane-forbidden protocol: planner/predictor must not read
+    the continuous hidden state.
+    """
+    from code.stjewm import ReadoutMode
+    actual = getattr(model, "readout_mode", None)
+    if actual is None:
+        # Baseline / non-stjewm models don't carry a ReadoutMode.
+        # We allow that — only enforce when the attribute is set.
+        return
+    if not isinstance(expected, ReadoutMode):
+        expected = ReadoutMode(expected)
+    if actual != expected:
+        raise AssertionError(
+            f"Model readout_mode={actual} != expected={expected}. "
+            f"The planner/predictor must satisfy the {expected.value} contract."
+        )

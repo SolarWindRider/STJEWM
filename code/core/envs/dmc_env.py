@@ -49,6 +49,33 @@ os.environ.setdefault("MUJOCO_GL", "egl")
 
 DMC_XML_DIR = "/home/lx/miniconda3/envs/snn/lib/python3.10/site-packages/dm_control/suite"
 
+# ============================================================
+# Stress suite B3: Velocity-hidden DMC
+# ============================================================
+# Approximate velocity slice indices per DMC env. These cover the qvel[] part
+# of the state vector. We mask the velocity slice at runtime to test whether
+# trace-based models can still plan when continuous velocity is hidden.
+# Source: DM Control Suite proprioceptive obs layout. For low-dim qpos-only
+# envs (cartpole, pendulum, reacher) the slice still approximates the
+# "velocity" channel of the obs.
+VEL_INDICES = {
+    "cheetah":       slice(3, 6),    # x_pos, y_pos skipped; velocity is indices 3-5
+    "walker":        slice(3, 6),
+    "cartpole":      slice(2, 4),
+    "pendulum":      slice(1, 2),
+    "hopper":        slice(3, 6),
+    "humanoid":      slice(22, 36),
+    "humanoid_cmu":  slice(22, 36),
+    "quadruped":     slice(6, 12),
+    "dog":           slice(6, 12),
+    "fish":          slice(3, 6),
+    "finger":        slice(3, 6),
+    "ball_in_cup":   slice(3, 6),
+    "stacker":       slice(3, 6),
+    "manipulator":   slice(3, 6),
+    "reacher":       slice(2, 4),
+}
+
 
 # ============================================================
 # Env registry: (env_kind, xml_name, obs_dim, action_dim, max_episode_steps)
@@ -239,6 +266,97 @@ class OGBenchSceneEnv(BaseEnv):
 # ============================================================
 def make_dmc_env(env_kind: str) -> BaseEnv:
     return DMCStateEnv(env_kind)
+
+
+# ============================================================
+# Stress suite B1: Flickering DMC
+# ============================================================
+class FlickeringDMCEnv(DMCStateEnv):
+    """DMC state env where the obs is randomly masked to zero with prob mask_ratio.
+
+    Forces the model to integrate over time (a key strength of the trace).
+    Used as a stress test for the trace-only protocol.
+    """
+
+    def __init__(self, *args, mask_ratio: float = 0.5, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.mask_ratio = float(mask_ratio)
+
+    def step(self, action: np.ndarray) -> Tuple[dict, float, bool, dict]:
+        obs, reward, done, info = super().step(action)
+        if np.random.rand() < self.mask_ratio:
+            obs["state"] = np.zeros_like(obs["state"])
+        info["mask_ratio"] = self.mask_ratio
+        return obs, reward, done, info
+
+    def reset(self, seed: Optional[int] = None, **kwargs) -> dict:
+        obs = super().reset(seed=seed, **kwargs)
+        if np.random.rand() < self.mask_ratio:
+            obs["state"] = np.zeros_like(obs["state"])
+        return obs
+
+
+
+# ============================================================
+# Stress suite B3: Velocity-hidden DMC factory
+# ============================================================
+def make_vel_hidden_env(env_kind: str) -> BaseEnv:
+    """Return a DMC env with velocity components of the obs zeroed at every step.
+
+    This is a runtime wrapper that does NOT modify the underlying mujoco model.
+    The wrapper inherits from the base env class and masks velocity indices
+    in obs. Used to test whether trace-based models can still plan when
+    continuous velocity is hidden at evaluation time.
+    """
+    base = make_dmc_env(env_kind)
+    vel_slice = VEL_INDICES.get(env_kind, slice(0, 0))
+    parent_class = type(base)
+
+    class _VelHiddenWrapper(parent_class):
+        def __init__(self, base_env, vel_slice):
+            # Copy attributes from base
+            self._base = base_env
+            self._vel_slice = vel_slice
+            self._step_count = 0
+            self.spec = base_env.spec
+            self._env_kind = getattr(base_env, "_env_kind", env_kind)
+
+        def reset(self, seed=None, **kwargs):
+            obs = self._base.reset(seed=seed, **kwargs)
+            self._step_count = 0
+            return self._mask_obs(obs)
+
+        def step(self, action):
+            obs, r, done, info = self._base.step(action)
+            self._step_count += 1
+            return self._mask_obs(obs), r, done, info
+
+        def _mask_obs(self, obs):
+            if isinstance(obs, dict) and "state" in obs:
+                obs = dict(obs)
+                obs["state"] = self._mask(obs["state"])
+                return obs
+            return self._mask(obs)
+
+        def _mask(self, obs):
+            arr = np.array(obs, dtype=np.float32, copy=True)
+            arr[self._vel_slice] = 0.0
+            return arr
+
+        def get_state(self):
+            return self._mask(self._base.get_state())
+
+        def check_success(self, final_state, goal_state):
+            return self._base.check_success(self._mask(final_state), self._mask(goal_state))
+
+        def render(self, *args, **kwargs):
+            return self._base.render(*args, **kwargs)
+
+        def close(self):
+            self._base.close()
+
+    return _VelHiddenWrapper(base, vel_slice)
+
 
 
 def make_ogb_scene_env() -> BaseEnv:

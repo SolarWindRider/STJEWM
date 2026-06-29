@@ -24,6 +24,7 @@ Trainable params: ~4.6M
 from __future__ import annotations
 
 import sys
+from enum import Enum
 
 sys.path.insert(0, "/home/lx/LeWM")
 sys.path.insert(0, "/home/lx/snn/code")
@@ -36,6 +37,25 @@ from src.encoder import Encoder
 
 from snn_cell import MultiCompartmentCell
 
+
+class ReadoutMode(str, Enum):
+    """Controls what latent state is exposed by `forward()` and `predict()`.
+
+    The membrane-forbidden protocol mandates that planner / predictor modules
+    cannot read the full continuous hidden state. We support:
+        - HIDDEN_LEAK       (default, legacy): z_final = h + trace_proj(trace)
+        - TRACE_ONLY        (NMI requirement): z_final = trace_proj(trace)
+        - MEMBRANE_READOUT  : z_final = h_post_cell.detach()  # discrete state
+        - SPIKE_ONLY        : z_final = post_mlp(spike).detach()
+        - RATE_ONLY         : z_final = moving_average(spike).detach()
+        - NO_TRACE          : z_final = h  # ablation: no trace branch
+    """
+    TRACE_ONLY = "trace_only"
+    HIDDEN_LEAK = "hidden_leak"
+    MEMBRANE_READOUT = "membrane_readout"
+    SPIKE_ONLY = "spike_only"
+    RATE_ONLY = "rate_only"
+    NO_TRACE = "no_trace"
 
 # ============== B1: Gated Spike Trace (reused from v3) ==============
 class GatedSpikeTrace(nn.Module):
@@ -225,6 +245,7 @@ class STJEWM(nn.Module):
         freeze_encoder: bool = True,
         image_size: int = 224,
         patch_size: int = 14,
+        readout_mode: str = "hidden_leak",
     ):
         super().__init__()
         self.d_hid = d_hid
@@ -232,6 +253,7 @@ class STJEWM(nn.Module):
         self.action_dim = action_dim
         self.state_dim = state_dim
         self.trace_beta = trace_beta
+        self.readout_mode = ReadoutMode(readout_mode)
 
         # ViT-Tiny encoder (frozen by default)
         self.encoder = Encoder(image_size=image_size, patch_size=patch_size)
@@ -295,6 +317,35 @@ class STJEWM(nn.Module):
         emb = self.projector(feat).reshape(B, T, -1)
         return emb
 
+    # ============== Readout mode (membrane-forbidden protocol) ==============
+    def _readout(self, h: torch.Tensor, spike: torch.Tensor, trace: torch.Tensor) -> torch.Tensor:
+        """Apply the configured readout mode to combine h/spike/trace into z_final.
+
+        - HIDDEN_LEAK:       z = h + trace_proj(trace)  (legacy)
+        - TRACE_ONLY:        z = trace_proj(trace)        (NMI)
+        - MEMBRANE_READOUT:  z = h.detach()               (treat h as discrete latent)
+        - SPIKE_ONLY:        z = h * spike.float().detach()  (mask h by spikes)
+        - RATE_ONLY:         z = F.avg_pool1d(h.transpose(1,2), kernel_size=4, stride=1).transpose(1,2)
+                             (downsampled h, no trace; rate-like)
+        - NO_TRACE:          z = h                        (ablation)
+        """
+        mode = self.readout_mode
+        if mode == ReadoutMode.HIDDEN_LEAK:
+            return h + self.trace_proj(trace)
+        if mode == ReadoutMode.TRACE_ONLY:
+            return self.trace_proj(trace)
+        if mode == ReadoutMode.MEMBRANE_READOUT:
+            return h.detach()
+        if mode == ReadoutMode.SPIKE_ONLY:
+            return h * spike.float().detach()
+        if mode == ReadoutMode.RATE_ONLY:
+            # downsample h along time as a rate-style readout
+            h_t = h.transpose(1, 2)  # (B, D, T)
+            pooled = F.avg_pool1d(h_t, kernel_size=4, stride=1, padding=2)
+            return pooled.transpose(1, 2)[:, : h.shape[1], :]
+        if mode == ReadoutMode.NO_TRACE:
+            return h
+        raise ValueError(f"Unknown readout mode: {mode}")
     # ============== API: match v3 exactly ==============
     def encode(self, x: torch.Tensor, a: torch.Tensor) -> dict:
         """Encode (obs, action) -> {'emb': (B,T,D), 'act_emb': (B,T,D)}.
@@ -318,8 +369,8 @@ class STJEWM(nn.Module):
         # B1: Gated Spike Trace — context = [a_emb, h]
         context = torch.cat([act_emb, h], dim=-1)  # (B, T, 2D)
         trace = self.gated_trace(spike, context)    # (B, T, D)
-        # z_final = h + trace_proj(trace)
-        z_final = h + self.trace_proj(trace)
+        # z_final = h + trace_proj(trace)  (legacy; replaced by _readout)
+        z_final = self._readout(h, spike, trace)
         return {
             "emb": z_final,
             "emb_pre_cell": emb,
@@ -347,7 +398,7 @@ class STJEWM(nn.Module):
         # Gated trace
         context = torch.cat([act_emb, h], dim=-1)
         trace = self.gated_trace(spike, context)
-        return h + self.trace_proj(trace)
+        return self._readout(h, spike, trace)
 
     @staticmethod
     def criterion(pred_emb: torch.Tensor, tgt_emb: torch.Tensor) -> torch.Tensor:
@@ -419,6 +470,7 @@ def make_stjewm(
     freeze_encoder: bool = True,
     image_size: int = 224,
     patch_size: int = 14,
+    readout_mode: str = "hidden_leak",
 ) -> STJEWM:
     """Factory: build a pure-SNN STJEWM world model.
 
@@ -434,6 +486,8 @@ def make_stjewm(
         freeze_encoder: freeze ViT weights.
         image_size: ViT image size.
         patch_size: ViT patch size.
+        readout_mode: how `forward()` / `predict()` combine h/spike/trace
+            (see `ReadoutMode`). Default `"hidden_leak"` reproduces v2 behavior.
 
     Returns:
         STJEWM model.
@@ -455,6 +509,7 @@ def make_stjewm(
         freeze_encoder=freeze_encoder,
         image_size=image_size,
         patch_size=patch_size,
+        readout_mode=readout_mode,
     )
 
 
