@@ -41,7 +41,7 @@ trace > hidden_leak 13 倍（65% vs 5%）。LeWM 在 OOD 上退化到 0%。
 |---|---|---|
 | cartpole | 0.997 | 0.135 |
 | pendulum | 0.996 | 0.111 |
-| ball_in_cup | 0.976 | (running) |
+| ball_in_cup | 0.976 | 0.111 |
 | walker | 0.920 | 0.111 |
 | cheetah | 0.885 | 0.680 |
 | finger | 0.473 | 0.037 |
