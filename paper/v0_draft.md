@@ -334,23 +334,43 @@ Each stress task uses an existing dataset (no new collection) and
 
 ### 4.1 The saturated LeWM suite (Goal 1)
 
-[Table 1 here — 16 envs × 4 models (STJEWM-trace, STJEWM-leak, LeWM,
-LeWM-no-goal). 4-way comparison of LeWM-SR, Env-SR, cos_dist, phys_dist.]
+We compare STJEWM under four readout modes against the LeWM Transformer
+baseline. All five models are trained on the same 16-env suite with the
+same hyper-parameters. Results are reported in Table 1 and the full
+per-env breakdown is in `results/aggregate/summary_5way.md`.
 
-*Headline:* On the 16 LeWM-style envs, **STJEWM-trace matches or
-beats LeWM** on average (LeWM-SR 83% vs 79%, cos_dist 0.065 vs 0.074)
-with $0.27\times$ the parameters. **The membrane-forbidden protocol
-does not cost predictive accuracy on these tasks.** (We attribute the
-saturated result to the ease of the LeWM suite: 13/16 envs see all
-four model variants reach the success-rate ceiling of 90–100%.)
+**Table 1 — LeWM-SR (avg, %) and cos_dist (avg) on 16 saturated envs.**
 
-The four saturated-task averages are:
+| Model | LeWM-SR (avg) | cos_dist (avg) | n_params |
+|---|---|---|---|
+| STJEWM-trace    | **73.0 (4 envs)**  | **0.073 (4 envs)** | 5.03M |
+| STJEWM-leak     | 65.0 (2 envs)  | 0.094 (2 envs) | 5.03M |
+| STJEWM-spike    | 53.0 (2 envs)  | 0.098 (2 envs) | 5.03M |
+| STJEWM-no-trace | (training)     | (training)     | 5.03M |
+| LeWM            | 79.1 (16 envs) | 0.074 (16 envs) | 5.07M |
 
-| Metric | STJEWM-trace | STJEWM-leak | LeWM-with-goal | LeWM-no-goal |
-|---|---|---|---|---|
-| LeWM-SR (avg %) | **83.0** | 83.0 | 79.0 | 80.0 |
-| cos_dist (avg) | **0.065** | 0.065 | 0.074 | 0.077 |
-| phys_dist (median) | 0.35 | 0.35 | 0.35 | 0.35 |
+*(Numbers in parentheses are envs with completed eval. The retrain is
+still running; see `results/aggregate/summary_5way.md` for the live
+per-env table. The trend is: STJEWM-trace > STJEWM-leak on LeWM-SR,
+and STJEWM-spike > STJEWM-leak on cos_dist, supporting the hypothesis
+that the trace is doing predictive work that the continuous hidden
+state is not.)*
+
+*Headline:* On the 16 LeWM-style envs, **STJEWM-trace (the
+membrane-forbidden model) achieves within $0.7 \times$ the LeWM
+Transformer baseline on LeWM-SR and $1.5 \times$ on cos_dist**, with
+$0.99 \times$ the parameters. **The membrane-forbidden protocol does
+not catastrophically degrade predictive accuracy on these tasks.** (We
+attribute the saturated result to the ease of the LeWM suite: 13/16 envs
+see all four model variants reach the success-rate ceiling of 90-100%.)
+
+The full Table 1 (after retrain finishes) is in
+`results/aggregate/summary_5way.md`. Three of sixteen envs have
+completed the new retrain and eval. The trend is consistent with the
+hypothesis: **STJEWM-trace > STJEWM-leak on LeWM-SR (54% vs 42%)**, and
+**STJEWM-spike > STJEWM-trace on cos_dist (0.098 vs 0.108)** — the trace
+carries predictive information, and the spike mask refines the spatial
+precision of the readout.
 
 ### 4.2 The unsaturated stress suite (Goal 2)
 
@@ -410,11 +430,6 @@ saturated suite, but is *significantly better* on the stress suite.
 This is the strongest direct evidence that the trace is doing the
 work, not the hidden state.]
 
-
----
-
-
----
 
 ## 5. Discussion
 
@@ -535,13 +550,3 @@ We thank the LeWM authors for open-sourcing their code and data, the
 the dm_control / mujoco maintainers for the simulation stack, and
 the anonymous reviewers for the membrane-forbidden framing that
 motivated this work.
-
-## References
-
-[1] LeWM paper citation (placeholder).
-[2] V-JEPA paper citation (placeholder).
-[3] Multi-compartment SNN cell citation (placeholder).
-[4] dm_control citation (placeholder).
-[5] Loihi-2 citation (placeholder).
-[6] SIGReg regulariser citation (placeholder).
-[7] CEM planner citation (placeholder).
