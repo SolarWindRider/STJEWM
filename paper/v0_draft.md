@@ -379,9 +379,9 @@ per-env breakdown is in `results/aggregate/summary_5way.md`.
 
 | Model | LeWM-SR (avg) | cos_dist (avg) | n_params |
 |---|---|---|---|
-| STJEWM-trace    | **80.0 (6 envs)**  | **0.058 (6 envs)** | 5.03M |
-| STJEWM-leak     | 64.0 (6 envs)  | 0.095 (6 envs) | 5.03M |
-| STJEWM-spike    | 74.3 (7 envs)  | **0.063 (7 envs)** | 5.03M |
+| STJEWM-trace    | **81.3 (7 envs)**  | **0.057 (7 envs)** | 5.03M |
+| STJEWM-leak     | 67.8 (7 envs)  | 0.089 (7 envs) | 5.03M |
+| STJEWM-spike    | 74.3 (7 envs)  | 0.063 (7 envs) | 5.03M |
 | STJEWM-no-trace | (training)     | (training)     | 5.03M |
 | LeWM            | 79.1 (16 envs) | 0.074 (16 envs) | 5.07M |
 
@@ -408,20 +408,19 @@ hypothesis: **STJEWM-trace > STJEWM-leak on LeWM-SR (54% vs 42%)**, and
 carries predictive information, and the spike mask refines the spatial
 precision of the readout.
 
-**Figure 2 — LeWM-SR (avg %) by readout mode** (6-7 envs except LeWM = 16 envs).
+**Figure 2 — LeWM-SR (avg %) by readout mode** (7 envs except LeWM = 16 envs).
 
 ```
-STJEWM-trace   ████████████████████████████████████ 80.0%   (6 envs)
+STJEWM-trace   ████████████████████████████████████ 81.3%   (7 envs)
 STJEWM-spike   ███████████████████████████████████  74.3%   (7 envs)
-STJEWM-leak    ██████████████████████████████     64.0%   (6 envs)
+STJEWM-leak    █████████████████████████████████   67.8%   (7 envs)
 STJEWM-no-trace (training — dropout of trace)
 LeWM           █████████████████████████████████████ 79.1% (16 envs)
 ```
-
-STJEWM-trace is the best, **above LeWM** on LeWM-SR (80% vs 79%) and
-with a tighter cos_dist (0.058 vs 0.074). STJEWM-spike is also above
+STJEWM-trace is the best, **above LeWM** on LeWM-SR (81% vs 79%) and
+with a tighter cos_dist (0.057 vs 0.074). STJEWM-spike is also above
 LeWM. **The hidden state adds little**: trace_only beats hidden_leak
-by 16pp.
+by 13.5pp.
 
 
 
