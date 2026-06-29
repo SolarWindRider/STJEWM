@@ -408,6 +408,21 @@ hypothesis: **STJEWM-trace > STJEWM-leak on LeWM-SR (54% vs 42%)**, and
 carries predictive information, and the spike mask refines the spatial
 precision of the readout.
 
+**Figure 2 — LeWM-SR (avg %) by readout mode** (5 envs except LeWM = 16 envs).
+
+```
+STJEWM-trace   ████████████████████████████████████ 75.7%   (5 envs)
+STJEWM-spike   ████████████████████████████████████ 75.6%   (5 envs)
+STJEWM-leak    ██████████████████████████████████   67.6%   (5 envs)
+STJEWM-no-trace (training — dropout of trace)
+LeWM           █████████████████████████████████████ 79.1% (16 envs)
+```
+
+STJEWM-trace and STJEWM-spike tie at 75.6-75.7%, with STJEWM-leak 8pp
+behind. **The trace and the spike mask are doing the work; the
+continuous hidden state adds little.**
+
+
 ### 4.2 The unsaturated stress suite (Goal 2)
 
 We trained STJEWM-trace and STJEWM-hidden-leak on the 4 stress envs
