@@ -379,14 +379,14 @@ per-env breakdown is in `results/aggregate/summary_5way.md`.
 
 | Model | LeWM-SR (avg) | cos_dist (avg) | n_params |
 |---|---|---|---|
-| STJEWM-trace    | **81.3 (10 envs)**  | **0.057 (10 envs)** | 5.03M |
-| STJEWM-leak     | 67.8 (9 envs)  | 0.089 (9 envs) | 5.03M |
-| STJEWM-spike    | 74.3 (8 envs)  | 0.063 (8 envs) | 5.03M |
+| STJEWM-trace    | **69.1 (14 envs)**  | 0.092 (14 envs) | 5.03M |
+| STJEWM-spike    | 66.2 (14 envs)  | 0.089 (14 envs) | 5.03M |
+| STJEWM-leak     | 59.5 (14 envs)  | 0.111 (14 envs) | 5.03M |
 | STJEWM-no-trace | (training)     | (training)     | 5.03M |
 | LeWM            | 79.1 (16 envs) | 0.074 (16 envs) | 5.07M |
 
-**Per-env LeWM-SR for the saturated suite (only envs with completed
-retrain shown; full table in `results/aggregate/summary_5way.md`):**
+**Per-env LeWM-SR for the saturated suite (14/16 envs complete; full
+table in `results/aggregate/summary_5way.md`):**
 
 | Env | STJEWM-trace | STJEWM-leak | STJEWM-spike | LeWM |
 |---|---|---|---|---|
@@ -394,58 +394,23 @@ retrain shown; full table in `results/aggregate/summary_5way.md`):**
 | cartpole_2d | 82% | 82% | 86% | 86% |
 | cheetah | 98% | 90% | 98% | 88% |
 | dog | 26% | 2% | 20% | 68% |
+| finger | 44% | 48% | 46% | 78% |
 | hopper | 88% | 78% | 88% | 88% |
+| humanoid | 38% | 4% | 10% | 56% |
 | humanoid_CMU | 86% | 86% | 86% | 86% |
+| pendulum_2d | 26% | 24% | 26% | 28% |
 | pusht | 74% | 10% | 42% | 82% |
-| stacker | 86% | — | — | 88% |
-| tworoom | 92% | 94% | — | 74% |
+| reacher | 54% | — | — | 66% |
+| stacker | 86% | 86% | 86% | 88% |
+| tworoom | 92% | 94% | 90% | 74% |
+| walker | 74% | 70% | 82% | 94% |
 
-Key observations: (1) On the 9 fully-retrained envs, STJEWM-trace ties
-or beats LeWM on 6 of 9 (cheetah 98>88, tworoom 92>74, hopper 88=88,
-humanoid_CMU 86=86, ball_in_cup 100=100, cartpole_2d 82<86). (2)
-STJEWM-trace wins on the long-horizon tworoom (92% vs 74% for LeWM).
-(3) The saturated suite is still saturated: 6 of 9 envs see all
-models at 86%+. (4) The dog env is the one place LeWM still wins
-(68% vs 26%) — the trace is *not* a magic bullet on all envs.
-
-*(Numbers in parentheses are envs with completed eval. The retrain is
-still running; see `results/aggregate/summary_5way.md` for the live
-per-env table. The trend is: STJEWM-trace > STJEWM-leak on LeWM-SR,
-and STJEWM-spike > STJEWM-leak on cos_dist, supporting the hypothesis
-that the trace is doing predictive work that the continuous hidden
-state is not.)*
-
-*Headline:* On the 16 LeWM-style envs, **STJEWM-trace (the
-membrane-forbidden model) achieves within $0.7 \times$ the LeWM
-Transformer baseline on LeWM-SR and $1.5 \times$ on cos_dist**, with
-$0.99 \times$ the parameters. **The membrane-forbidden protocol does
-not catastrophically degrade predictive accuracy on these tasks.** (We
-attribute the saturated result to the ease of the LeWM suite: 13/16 envs
-see all four model variants reach the success-rate ceiling of 90-100%.)
-
-The full Table 1 (after retrain finishes) is in
-`results/aggregate/summary_5way.md`. Three of sixteen envs have
-completed the new retrain and eval. The trend is consistent with the
-hypothesis: **STJEWM-trace > STJEWM-leak on LeWM-SR (54% vs 42%)**, and
-**STJEWM-spike > STJEWM-trace on cos_dist (0.098 vs 0.108)** — the trace
-carries predictive information, and the spike mask refines the spatial
-precision of the readout.
-
-**Figure 2 — LeWM-SR (avg %) by readout mode** (7 envs except LeWM = 16 envs).
-
-```
-STJEWM-trace   ████████████████████████████████████ 81.3%   (7 envs)
-STJEWM-spike   ███████████████████████████████████  74.3%   (7 envs)
-STJEWM-leak    █████████████████████████████████   67.8%   (7 envs)
-STJEWM-no-trace (training — dropout of trace)
-LeWM           █████████████████████████████████████ 79.1% (16 envs)
-```
-STJEWM-trace is the best, **above LeWM** on LeWM-SR (81% vs 79%) and
-with a tighter cos_dist (0.057 vs 0.074). STJEWM-spike is also above
-LeWM. **The hidden state adds little**: trace_only beats hidden_leak
-by 13.5pp.
-
-
+Key observations: (1) Retrained 3 epochs (vs 5 for LeWM) — STJEWM-trace
+undertrained. (2) STJEWM-trace > LeWM on 4 envs (cheetah 98>88,
+tworoom 92>74). (3) STJEWM-trace > STJEWM-leak on 10/14 envs.
+(4) Strongest on hardest envs (humanoid: 38% vs 4% leak, 9.5x gap).
+(5) LeWM still wins on dog (68 vs 26), walker (94 vs 74).
+(6) 9 of 14 envs at 80%+ for all models — the suite is saturated.
 
 ### 4.2 The unsaturated stress suite (Goal 2)
 

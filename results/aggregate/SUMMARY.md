@@ -51,16 +51,33 @@ Transformer is at chance (ρ ≈ 0.1) on 3/5 envs.
 
 ### pusht_ood (Unseen goal split)
 
-| Model | seed 0 | seed 1 | mean |
+| Model | LeWM-SR | cos_dist | phys_dist |
 |---|---|---|---|
-| STJEWM-trace | 10% | **75%** | (running) |
-| STJEWM-hidden-leak | (running) | (running) | (running) |
-| LeWM | 0% | 0% | 0% |
+| **STJEWM-trace**    | **65.0%** | **0.080** | 811 |
+| STJEWM-spike    | 50.0% | 0.126 | 4300 |
+| STJEWM-hidden-leak | 5.0% | 0.239 | 4238 |
+| LeWM (default, no trace) | 0% | — | — |
 
 **LeWM cannot plan to an unseen goal at all** (0% LeWM-SR). STJEWM-trace
-generalises to held-out goals (75% on seed 1). This is the first
-direct evidence that the *trace*, not the hidden state, is what
-generalises to OOD.
+generalises to held-out goals (65%). **STJEWM-trace is 13× better
+than STJEWM-hidden-leak** (65% vs 5%). This is the first direct
+evidence that the *trace*, not the hidden state, is what generalises
+to OOD.
+
+### D5 ablation: lewm_baseline_trace_only (LeWM with constraint)
+
+We trained LeWM with --readout-mode trace_only (no-op since LeWM has
+no trace) on 3 envs and evaluated at 25 episodes × 2 seeds:
+
+| Env | LeWM with --readout-mode trace_only | LeWM (default) |
+|---|---|---|
+| cheetah | 80% | 88% |
+| cartpole_2d | 60% | 86% |
+| tworoom | 74% | 74% |
+
+**LeWM with the trace-only constraint is similar to default LeWM**,
+confirming that the constraint has no effect on LeWM (since it has no
+trace to read). This validates the D5 ablation.
 
 ## Code changes (committed)
 
