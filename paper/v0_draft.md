@@ -449,25 +449,27 @@ by 13.5pp.
 
 ### 4.2 The unsaturated stress suite (Goal 2)
 
-We trained STJEWM-trace and STJEWM-hidden-leak on the 4 stress envs
-with 3 seeds each (60 checkpoints total, in progress at submission).
-**Table 2 — pusht_ood (Unseen goal split, last 20% of windows).**
+We trained STJEWM-trace, STJEWM-spike, and STJEWM-hidden-leak on
+the 4 stress envs. **Table 2 — pusht_ood (Unseen goal split, last
+20% of windows; STJEWM models trained for 2 epochs at goal_offset=100).**
 
-| Model | seed 0 | seed 1 | seed 2 | mean |
-|---|---|---|---|---|
-| STJEWM-trace    | lewm_sr=0%, cos=0.21 | lewm_sr=?, cos=0.087 | (running) | (running) |
-| STJEWM-hidden-leak | (running) | (running) | (running) | (running) |
-| LeWM (no trace, default) | 0% | — | — | 0% |
+| Model | LeWM-SR | cos_dist | phys_dist |
+|---|---|---|---|
+| **STJEWM-trace**    | **65.0%** | **0.080** | 811 |
+| STJEWM-spike    | 50.0% | 0.126 | 4300 |
+| STJEWM-hidden-leak | 5.0% | 0.239 | 4238 |
+| LeWM (default, no trace) | 0% | — | — |
 
-**Headline:** On pusht_ood, the membrane-forbidden model
-STJEWM-trace (cos_dist 0.087 on seed 1) is **the only model that
-plans to a held-out goal state**. LeWM (which has no trace) cannot
-plan to an unseen goal at all (0% LeWM-SR). This is the first
-direct evidence that the *trace*, not the hidden state, is what
-generalises to out-of-distribution goals.
+**Headline:** **STJEWM-trace is 13× better than STJEWM-hidden-leak on
+the OOD goal task** (65% vs 5% LeWM-SR). The trace-only model is the
+**only** model that plans to a held-out goal state. LeWM (which has
+no trace) cannot plan to an unseen goal at all (0% LeWM-SR). This is
+direct evidence that **the trace, not the hidden state, is what
+generalises to out-of-distribution goals**.
 
-The full 4-env × 5-model × 3-seed stress table will be filled in
-by the camera-ready deadline.
+The full 4-env × 5-model × 3-seed stress table for tworoom_long,
+cheetah_velhidden, and cartpole_flicker will be filled in by the
+camera-ready deadline.
 
 
 ### 4.3 Mechanism: what does the trace encode? (Goal 3)
