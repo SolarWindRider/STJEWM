@@ -419,11 +419,15 @@ the 4 stress envs. **Table 2 — pusht_ood (Unseen goal split, last
 20% of windows; STJEWM models trained for 2 epochs at goal_offset=100).**
 
 | Model | LeWM-SR | cos_dist | phys_dist |
-|---|---|---|---|
+|---|---|---|---|---|
+| (a) **pusht_ood** (unseen goals) | | | |
 | **STJEWM-trace**    | **65.0%** | **0.080** | 811 |
 | STJEWM-spike    | 50.0% | 0.126 | 4300 |
 | STJEWM-hidden-leak | 5.0% | 0.239 | 4238 |
-| LeWM (default, no trace) | 0% | — | — |
+| LeWM (default) | 0% | — | — |
+| (b) **tworoom_long** (goal=200) | | | |
+| **STJEWM-trace**    | **98.3% ± 2.4%** | **0.047 ± 0.010** | 91 |
+| LeWM (default) | 74% | 0.078 | 101 |
 
 **Headline:** **STJEWM-trace is 13× better than STJEWM-hidden-leak on
 the OOD goal task** (65% vs 5% LeWM-SR). The trace-only model is the
