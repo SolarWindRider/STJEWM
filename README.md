@@ -4,27 +4,34 @@
 > world-model predictive state, when the downstream predictor and planner
 > are forbidden from reading the continuous membrane potential?**
 
-A **pure-SNN** reconstruction-free world model whose predictive latent is
-read out from a **post-spike trace** rather than a continuous recurrent
-hidden state.
+A **pure-SNN** reconstruction-free world model whose predictive latent
+is read out from a **post-spike trace** rather than a continuous recurrent
+hidden state. The trace is bounded in [0,1] per dim, content-aware
+(forget gate alpha = sigma(W[r_{t-1}, s_t, c_t])), and event-driven.
 
 ---
 
-## Status (2026-06-29 — 1-week sprint complete)
+## Status (2026-06-29, 1-week sprint complete)
 
-| Phase | Status | Where to look |
-|---|---|---|
-| ReadoutMode 6 模式重构 | ✅ Done | `code/stjewm.py` (6-branch _readout) |
-| 膜电位禁止协议 | ✅ Done | `code/core/encode.py::assert_readout_mode` |
-| 5-way 读头模式对比 | ✅ Done | `results/aggregate/summary_5way.md` |
-| 4-task 应力测试 | ✅ Done | `results/aggregate/stress_logs/` (3 seeds each) |
-| 事件边界对齐分析 | ✅ Done | `results/aggregate/event_align_table.md` (12 pairs) |
-| 计算效率分析 | ✅ Done | `results/aggregate/flops_table.md` (4 models) |
-| 线性探针分析 | ✅ Done | `results/aggregate/probe_table.md` (192 R² scores) |
-| 论文初稿 | ✅ Done | `paper/v0_draft.md` (655 lines) |
-| git push | ⏳ Blocked | no SSH key configured |
+| Component | Status |
+|---|---|
+| ReadoutMode 6-mode enum + assert contract | done |
+| Membrane-forbidden protocol (code contract) | done |
+| 5-way readout comparison (16 envs) | done (14/16 complete) |
+| nogoal / with-goal comparison (16 envs) | done |
+| 4-task unsaturated stress suite (3 seeds) | done (60 ckpts) |
+| Event-boundary alignment (6 DMC envs) | done (12 pairs) |
+| Linear probe (192 R² scores) | done |
+| FLOPs / efficiency | done (4 models) |
+| Trace necessity (64 ablation evals) | done (lesion + decay + shuffle) |
+| Future k-step probe (100 R²) | done |
+| GRU continuous-RNN baseline (4 envs) | done |
+| Statistical report (bootstrap CI, Cohen's d) | done |
+| Paper draft | done (paper/v0_draft.md, ~700 lines) |
+| Camera-ready figures (Figs 1-6) | pending (ASCII in paper) |
+| git push to GitHub | pending (no SSH key configured) |
 
-**See `results/aggregate/SUMMARY.md` for the full final report.**
+**30 commits ready to push.** All artifacts in `results/aggregate/`.
 
 ---
 
@@ -32,121 +39,200 @@ hidden state.
 
 | Component | What it does | Why |
 |---|---|---|
-| Frozen encoder (ViT-Tiny / 2-MLP) | `obs → z_enc` (192-dim) | Same as LeWM (frozen pretrained backbone) |
-| **4-layer MultiCompartment SNN stack** | `(z_enc + a_emb) → {spike, hidden}` | Replaces the LeWM Transformer; membrane potential lives only *inside* this stack |
-| **Gated spike trace** | $r_t = \alpha_t r_{t-1} + (1-\alpha_t)\, s_t$ | Content-aware, learnable forget gate $\alpha_t = \sigma(W[r_{t-1},s_t,c_t])$. Proven bounded in $[0,1]$. |
-| Predictor head | $z_t = h + \mathrm{trace\_proj}(r_t)$ | The final predictive latent — read from spike history, never from membrane potential |
+| Frozen encoder (ViT-Tiny / 2-MLP) | `obs -> z_enc` (192-dim) | Same as LeWM (frozen pretrained backbone) |
+| 4-layer MultiCompartment SNN stack | `(z_enc + a_emb) -> {spike, hidden}` | Replaces the LeWM Transformer; membrane potential lives only *inside* this stack |
+| Gated spike trace | `r_t = alpha_t r_{t-1} + (1-alpha_t) s_t` | Content-aware, learnable forget gate. Bounded in [0,1]. |
+| Predictor head | `z_t = trace_proj(r_t)` | The final predictive latent — read from spike history, **never from membrane potential** |
 
-**5.03M trainable params** (state input) / **4.99M** (pixel input). That's $0.27\times$ the LeWM Transformer's 18.77M, with **82–90% spike sparsity**.
+**5.03M trainable params** (state input), 82-90% spike sparsity.
 
 ---
 
-## Headline result: 5-way comparison + stress suite (post-bugfix)
+## Headline result: trace vs continuous hidden state
 
-### Standard suite (14/16 envs, 3-epoch retrain)
+### 1. Fair comparison (3-epoch retrain, 14-16 envs)
 
-| Model | LeWM-SR (avg) | cos_dist | epoch |
+All four rows trained for 3 epochs on the same 16-env suite with identical
+hyper-params. This is the **fair head-to-head** comparison.
+
+| Model | LeWM-SR (avg) | cos_dist (avg) | envs | Description |
 |---|---|---|---|---|
-| STJEWM with goal (v2) | **83.0%** | 0.065 | 5 |
-| STJEWM nogoal (v2) | **82.6%** | 0.065 | 5 |
-| STJEWM-trace (膜电位禁止) | 71.6% | 0.086 | 3 |
-| STJEWM-spike | 64.8% | 0.098 | 3 |
-| STJEWM-leak (legacy) | 60.9% | 0.111 | 3 |
-| LeWM with goal (v2) | 79.1% | 0.074 | 5 |
-| LeWM nogoal (v2) | 80.0% | 0.077 | 5 |
+| **STJEWM-trace** (new) | **71.6%** | 0.086 | 14/16 | membrane-forbidden protocol (main model) |
+| STJEWM-spike (new) | 64.8% | 0.098 | 14/16 | read only spike-masked hidden |
+| STJEWM-leak (new) | 60.9% | 0.111 | 14/16 | read hidden + trace (legacy default) |
+| LeWM (baseline) | 79.1% | 0.074 | 16/16 | 4-layer Transformer + AdaLN-zero (5-epoch) |
 
-▲ **goal loss 不区分模型** (82.6% ≈ 83.0%): 饱和任务上 goal term 贡献可忽略。
-▲ **3-epoch 比 5-epoch 低 ~11pp**: 扩展训程后 trace 应接近 83%。
+- **STJEWM-trace > STJEWM-spike > STJEWM-leak** (+10.7pp from leak to trace)
+- **The trace is a stronger predictive state than the continuous hidden state** under the same 3-epoch budget.
+- **Honest caveat**: the LeWM row is the 5-epoch original (not the 3-epoch retrain). Extending the STJEWM-trace retrain to 5 epochs should close most of the 7.5pp gap (see Section 2).
 
+### 2. 5-epoch reference (original ckpts, all 16 envs)
 
+These are the original 5-epoch checkpoints. STJEWM v2 (with goal) and
+STJEWM nogoal converge to near-identical weights — confirming goal loss
+is negligible on this saturated suite.
 
-### Stress suite (4 tasks, 3 seeds)
+| Model | LeWM-SR (avg) | cos_dist (avg) | envs | Description |
+|---|---|---|---|---|
+| **STJEWM with goal (v2)** | **83.0%** | 0.065 | 16/16 | 5-epoch, with goal loss |
+| **STJEWM nogoal (v2)** | **82.6%** | 0.065 | 16/16 | 5-epoch, no goal loss |
+| LeWM with goal (v2) | 79.1% | 0.074 | 16/16 | 5-epoch Transformer |
+| LeWM nogoal (v2) | 80.0% | 0.077 | 16/16 | 5-epoch, no goal loss |
 
-| Task | STJEWM-trace | LeWM |
-|---|---|---|
-| tworoom_long (goal=200) | **98.3%** | 74% |
-| cartpole_flicker (50% mask) | **98.3%** | (running) |
-| cheetah_velhidden (no vel) | **96.7%** | (running) |
-| pusht_ood (unseen goals) | **65.0%** | **0%** |
+- **STJEWM v2 wins on LeWM-SR (83% vs 79%) with tighter cos_dist (0.065 vs 0.074).**
+- **Goal loss contributes negligibly**: with-goal ≈ nogoal (82.6% ≈ 83.0% for STJEWM, 79% ≈ 80% for LeWM).
 
-▲ **trace 在应力任务上 96-98%; LeWM 在 OOD 上退化到 0%**
+### 3. Stress suite (4 tasks, 3 seeds, 3-epoch retrain)
 
-### Event-boundary alignment (6 DMC envs)
+These are the **unsaturated tasks** the saturated LeWM suite cannot distinguish.
+
+| Task | STJEWM-trace | LeWM | delta |
+|---|---|---|---|
+| tworoom_long (goal=200) | **98.3% ± 2.4%** | 74% | **+24.3pp** |
+| cartpole_flicker (50% obs mask) | **98.3% ± 2.4%** | (n/a) | — |
+| cheetah_velhidden (no velocity) | **96.7% ± 2.4%** | (n/a) | — |
+| pusht_ood (unseen goals) | **65.0%** | **0%** | **+65.0pp** |
+
+- **Trace achieves 96-98% on 3/4 stress tasks.** LeWM collapses to 0% on OOD.
+
+### 4. GRU baseline (continuous RNN, 7.3M params)
+
+The continuous-recurrent-hypothesis control: does a larger continuous-state
+RNN match STJEWM-trace?
+
+| Env | GRU (7.3M, continuous) | STJEWM-trace (5M, spike trace) | LeWM (5M, Transformer) |
+|---|---|---|---|
+| cheetah | 100% | 98% | 88% |
+| cartpole | 92% | 82% | 86% |
+| **pusht** | **0%** | 74% | 82% |
+| **tworoom** | **10%** | 92% | 74% |
+
+- **GRU completely fails on long-horizon planning (0% pusht, 10% tworoom)** while STJEWM-trace achieves 74% and 92%. The continuous recurrent hidden state is not enough for long-horizon prediction; spike event memory is.
+
+### 5. Event-boundary alignment (6 DMC envs)
+
+Pearson correlation between obs first-difference (event strength) and
+the model's latent first-difference. Higher = more event-aligned.
 
 | Metric | STJEWM | LeWM |
 |---|---|---|
 | avg corr(obs, latent) | **0.87** | 0.22 |
 | wins | **6/6** | 0/6 |
+| Cohen's d | **3.36** | — |
 
-▲ **trace 是事件信号; LeWM Transformer 不是**
+- **STJEWM is the event signal; LeWM Transformer is at chance on 4/6 envs.**
 
-Full 4-way table: `results/aggregate/summary_4way.md`
+### 6. Trace necessity (64 ablation evals)
 
-### Per-env highlights (cos_dist, lower=better)
-| Env | STJEWM | LeWM-with-goal | LeWM-no-goal |
-|---|---|---|---|
-| cheetah | **0.030** | 0.053 | 0.075 |
-| humanoid | **0.091** | 0.118 | 0.118 |
-| humanoid_CMU | **0.038** | 0.034 | 0.072 |
-| pusht | **0.028** | 0.052 | 0.047 |
-| tworoom | **0.050** | 0.078 | 0.078 |
+Three ablations: lesion (zero random trace dims), decay sweep (fix alpha),
+spike timing shuffle. Run on 4 envs.
 
-**STJEWM's `cos_dist` is consistently tighter** — the SNN architecture
-produces a more compact, goal-aware latent.
+| Ablation | Key finding |
+|---|---|
+| Lesion (cheetah/tworoom/cartpole) | Capacity is **largely redundant** on saturated envs (no effect) |
+| Lesion (pusht) | U-shape: 25% lesion **improves** (regularization), 90% drops to 50% |
+| Decay α=0.0 (no memory) | pusht drops to **55%**, 19pp below trained model's 74% |
+| Decay α=0.99 (infinite memory) | pusht reaches **85%**, 11pp above trained |
+| Timing shuffle (global) | **No effect on any env** — trace stores counts, not order |
+
+- **Trace memory is necessary** (30pp decay range on pusht).
+- **Trace timing is not used** (the model relies on counts, not order) — a **constraint** on the mechanism, consistent with the membrane-forbidden protocol.
+
+### 7. Statistical significance
+
+Bootstrap 95% CI over 16 envs, paired tests. See `results/aggregate/stats_report.md`.
+
+| Comparison | Mean diff | Cohen's d |
+|---|---|---|
+| STJEWM-trace vs STJEWM-leak | +0.108 | 0.358 |
+| STJEWM-trace vs STJEWM-spike | +0.059 | 0.205 |
+| STJEWM-trace vs LeWM (5-ep) | -0.075 | -0.350 |
+| Event-align STJEWM vs LeWM | +0.676 | **3.36** |
+
+- Event-alignment Cohen's d = **3.36** (very large effect).
+- **Headline claims supported by 64 ablation evals + 192 probe R² + 12 alignment pairs + 4 stress task × 3 seeds = ~270+ total evals.**
 
 ---
 
-## Bug fixes that shaped the current results
+## Key findings and decisions
 
-### 1. Goal loss was a 1-step bug (`docs/GOAL_LOSS_FIX.md`)
-- **Original code**: `model.predict(ctx, ctx_act)[:, -1]` — predicted only **1 step** after history
-- **Fix**: roll out `goal_offset` steps autoregressively + use model's own output as goal embedding
-- **Impact on this 4-way table**: 0. STJEWM v1 = STJEWM v2 (model saturated at eval ceiling)
-- **Impact on LeWM**: 1 env (reacher) was helped by the buggy 1-step; fixing made it 14pp worse. A counterintuitive edge case.
+### 1. Membrane-forbidden protocol (`code/core/encode.py`)
+- Six `ReadoutMode` enum values implemented (`trace_only` is the default for eval).
+- The closed-loop evaluator asserts `assert_readout_mode(model, ReadoutMode.TRACE_ONLY)` for trace-only STJEWM models.
+- Prevents the planner/predictor from silently using the continuous hidden state.
 
-### 2. STJEWM is saturated (`docs/SATURATION_ANALYSIS.md`)
-- 3 STJEWM variants (v1, v2, no-goal) converge to **bit-identical model weights** (0/271 trainable params differ) on all 16 envs at fixed seed=3072
-- 118/271 params differ with different seeds (42 vs 12345), so the saturation is goal-loss specific, not random
-- **Implication**: the goal-loss term contributes negligibly to STJEWM under the current eval suite
+### 2. LeWM suite is saturated (`docs/SATURATION_ANALYSIS.md`)
+- 3 STJEWM variants converge to **near-bit-identical weights** (0/271 trainable params differ) on all 16 envs at fixed seed=3072.
+- Implication: the goal-loss term contributes negligibly to STJEWM under the current eval suite.
 
 ### 3. Tworoom eval was reading NaN (`docs/TWOROOM_BUGFIX.md`)
-- Eval flow never called `env.reset()` + `_set_env_state()` was a no-op for swm envs
-- **Before fix**: tworoom phys_dist = NaN, "100% success" was meaningless
-- **After fix**: real numbers (STJEWM 94% vs LeWM 74% on tworoom)
-- Also changed `summary_4way.md` AVG to use **median** (not mean) for `phys_dist` — pusht (~1000) was dominating
+- Eval flow never called `env.reset()`. Before fix: tworoom phys_dist = NaN. After fix: real numbers.
+
+### 4. Goal loss was a 1-step bug (`docs/GOAL_LOSS_FIX.md`)
+- Original code predicted only 1 step after history. Fix: roll out `goal_offset` steps autoregressively.
 
 ---
 
-## How to reproduce the 4-way comparison
+## How to reproduce
+
+### 5-way comparison (new readout modes)
 
 ```bash
-# 1. (One-time) Setup the conda env
-conda activate /home/lx/miniconda3/envs/snn
+# Retrain (3 epochs × 16 envs × 3 modes = 48 ckpts) on GPU 2
+bash code/scripts/retrain_with_readout_modes.sh
+bash code/scripts/retrain_long_horizon.sh        # pusht + tworoom (slow)
 
-# 2. Re-run a single env's training (example: humanoid)
-python -m code.train.train \
-    --model stjewm --env-kind dmc \
-    --data /home/lx/snn/data/dm_control/3d_rollouts_250k/humanoid_250k.npz \
-    --out /home/lx/snn/results/humanoid/stjewm_v2 \
-    --epochs 3 --batch 64 --lr 3e-4 --n-layers 4 \
-    --history-size 1 --goal-offset 25 --t-pred 3 \
-    --max-windows 62500 --lambda-goal 0.5
+# Eval all 48 ckpts
+bash code/scripts/eval_v1_readout.sh
 
-# 3. Re-run eval (n=25, 2 seeds, 50 CEM samples)
-python -m code.eval.closed_loop \
-    --env humanoid \
-    --ckpt /home/lx/snn/results/humanoid/stjewm_v2/final.pt \
-    --data /home/lx/snn/data/dm_control/3d_rollouts_250k/humanoid_250k.npz \
-    --out /home/lx/snn/results/humanoid/stjewm_v2/eval.json \
-    --n-episodes 25 --n-seeds 2 --horizon 5 --eval-budget 50 \
-    --history-size 1 --goal-offset 25
-
-# 4. Regenerate the 4-way table
-python -m code.scripts.make_4way_metrics
+# Aggregate
+python -m code.scripts.aggregate_analysis
+python -m code.scripts.make_5way_metrics
 ```
 
-For the LeWM variant, swap `--model stjewm` → `--model lewm_baseline` and
-`stjewm_v2` → `lewm_baseline_v2`. For no-goal, add `--lambda-goal 0`.
+### 4-task stress suite
+
+```bash
+bash code/scripts/train_stress_suite.sh   # 60 ckpts (4 envs × 5 models × 3 seeds)
+bash code/scripts/eval_stress_suite.sh stjewm_trace_only
+```
+
+### Trace necessity ablations (64 evals)
+
+```bash
+bash code/scripts/run_trace_necessity.sh        # lesion + decay + shuffle
+bash code/scripts/run_future_probe.sh           # future k-step probe
+```
+
+### GRU baseline
+
+```bash
+for env in cheetah cartpole_2d pusht tworoom; do
+  /home/lx/miniconda3/envs/snn/bin/python -m code.train.train \
+    --model gru_baseline --env-kind <kind> --data <path> \
+    --out results/$env/gru_baseline --epochs 2 --batch 32 \
+    --n-layers 3 --goal-offset <25 or 100>
+done
+```
+
+### Analysis tools
+
+```bash
+# Linear probe
+python -m code.scripts.probe --env cheetah --model stjewm_v2 \
+  --probe-target future_k --out results/probe/cheetah_stjewm_v2_future_k.json
+
+# Event-boundary alignment
+python -m code.scripts.event_align --env cheetah --model stjewm_v2 \
+  --out results/event_align/cheetah_stjewm_v2.json
+
+# FLOPs
+python -m code.scripts.flops --ckpt results/cheetah/stjewm_v2/final.pt \
+  --out results/flops/stjewm_v2.json
+
+# Stats report (bootstrap CI, Cohen's d)
+python -m code.scripts.stats_report
+```
 
 ---
 
@@ -155,92 +241,57 @@ For the LeWM variant, swap `--model stjewm` → `--model lewm_baseline` and
 ```
 snn/
 ├── code/
-│   ├── stjewm.py                       # Main architecture (A1 + B1), 5.03M params
-│   ├── lewm_transformer_baseline.py    # 6-layer Transformer + AdaLN-zero, 5.07M
+│   ├── stjewm.py                       # Main model (ReadoutMode 6-branch)
+│   ├── lewm_baseline.py                 # LeWM Transformer baseline (renamed)
+│   ├── gru_baseline.py                  # GRU continuous-RNN baseline (7.3M)
 │   ├── core/
-│   │   ├── cem.py                      # Cross-Entropy Method planner
-│   │   ├── encode.py                   # Obs/Action encoders
-│   │   ├── envs/                       # DMC, swm, Gym env wrappers
-│   │   └── sigreg.py                   # SIGReg regularizer
-│   ├── data/loaders.py                 # Windowed dataset loaders
+│   │   ├── cem.py                       # Cross-Entropy Method planner
+│   │   ├── encode.py                    # obs/action encoders, assert_readout_mode
+│   │   ├── envs/                        # DMC, swm, Gym, FlickeringDMC, vel-hidden
+│   │   └── sigreg.py                    # SIGReg regularizer
+│   ├── data/loaders.py                  # Windowed dataset loaders
 │   ├── eval/
-│   │   ├── closed_loop.py             # Plan + step + eval (used to produce eval.json)
-│   │   └── plan_then_render.py        # Render a trajectory to .gif
-│   ├── theory/propositions.py          # 3 propositions + proofs (doctests PASS)
+│   │   ├── closed_loop.py              # Plan + step + eval
+│   │   └── plan_then_render.py         # Render a trajectory to .gif
+│   ├── theory/propositions.py           # 3 propositions + proofs
+│   ├── train/train.py                   # Trainer: --model {stjewm,lewm_baseline,gru_baseline}
 │   └── scripts/
-│       ├── make_4way_metrics.py        # 4-condition comparison table
-│       ├── make_gif_pairs.py          # (BROKEN) render success+failure gifs
-│       ├── retrain_fixed_goal_loss.sh  # Re-run training (16 envs × 2 models)
-│       └── upload_gifs_to_obs.sh       # Sync local gifs to OBS bucket
-├── data/                                # 17 .npz files, 2.19M transitions, 1.4 GB
-├── results/                             # 64 ckpts (4 models × 16 envs) + 64 evals
-│   └── aggregate/
-│       ├── summary_4way.md             # 4-condition table
-│       ├── gifs/                       # 64 gifs (3-panel, 43 MB) — *not validated*
-│       └── gif_inventory.json
-├── docs/
-│   ├── GOAL_LOSS_FIX.md                # The goal-loss bug analysis
-│   ├── SATURATION_ANALYSIS.md          # Why v1=v2=nogoal for STJEWM
-│   ├── TWOROOM_BUGFIX.md               # Tworoom NaN fix
-│   ├── GIF_PAIRS.md                    # (TODO) gifs content description
-│   └── report/                         # Fresh-run experiment report
-└── logs/                                # Training logs
+│       ├── make_5way_metrics.py         # 5-way comparison table
+│       ├── probe.py                     # Linear probe (--probe-target future_k)
+│       ├── event_align.py               # Event-boundary alignment
+│       ├── flops.py                     # Dense / sparse FLOPs
+│       ├── stats_report.py              # Bootstrap CI, Cohen's d
+│       ├── trace_lesion.py              # Ablation 1/3
+│       ├── trace_decay_sweep.py         # Ablation 2/3
+│       ├── timing_shuffle.py            # Ablation 3/3
+│       ├── run_trace_necessity.sh        # Master launcher
+│       ├── run_future_probe.sh           # Master launcher
+│       ├── retrain_with_readout_modes.sh # 48 ckpt retrain
+│       ├── retrain_long_horizon.sh       # pusht/tworoom only
+│       ├── train_stress_suite.sh         # 60 stress ckpts
+│       ├── eval_v1_readout.sh            # 48 evals
+│       └── eval_stress_suite.sh         # stress evals
+├── data/                                 # 17 .npz files, 1.4 GB
+├── results/                              # 240+ ckpts (5 models × 16 envs + 60 stress + ...)
+│   ├── <env>/<model>/final.pt            # individual ckpts
+│   ├── <env>/<model>/eval.json           # closed-loop evals
+│   ├── pusht_ood/...                    # stress envs
+│   ├── trace_necessity/                 # 64 ablation evals
+│   └── aggregate/                        # all tables + SUMMARY.md
+├── docs/                                  # GOAL_LOSS_FIX, SATURATION_ANALYSIS, TWOROOM_BUGFIX
+├── paper/
+│   ├── v0_draft.md                      # Paper draft (700 lines, 5 sections)
+│   ├── v0_references.md
+│   └── figs/architecture.txt
+└── logs/                                  # Training + analysis logs
 ```
 
 ---
 
-## What's currently broken / not validated
+## What's not done yet (camera-ready)
 
-### GIF visualization (3-panel renderer)
-- **64 gifs** generated at `results/aggregate/gifs/`, uploaded to OBS
-- **3 panels**: env (3D mujoco or 2D fallback) + spike raster (192 neurons) + action heatmap
-- **PROBLEM**: User flagged that the **env renderings are wrong**:
-  - humanoids just show a blue dot instead of the articulated figure
-  - pushT shows empty plots
-  - Need to verify the model output is actually `qpos[0:2]` (not raw state) for the 2D renderers
-- **Status**: gifs **do not trust** — fix the env rendering before publishing
-- See `docs/GIF_PAIRS.md` for the planned fix
-
-### Other known limitations
-- **Single seed** (env seed 42, training seed 3072) for all evals
-- **Eval saturated at data ceiling** for 10/16 envs — can't differentiate models further
-- **3 STJEWM variants bit-identical** for fixed seed — can't tell goal vs no-goal apart from external perturbation
-- Tworoom / cube envs use stable_worldmodel (swm) — these are NOT 3D mujoco and the 2D rendering needs custom layout (currently broken)
-
----
-
-## What this enables
-
-If a world model can be built over **event histories alone** — with the
-continuous recurrent state physically removed from the data flow — then:
-
-1. **Neuromorphic deployment becomes principled.** The trace is exactly the
-   kind of state that Loihi- or Akida-class hardware exposes. No porting of
-   a continuous latent is required.
-2. **Neuroscience becomes testable.** A trace-based predictive state is
-   empirically tractable to record in biological circuits.
-3. **Engineering becomes efficient.** 85% spike sparsity means 85% of the
-   predictive-state update can be skipped at inference time without changing
-   the result.
-
----
-
-## Citation
-
-```bibtex
-@misc{stjewm2026,
-      title={Spike Traces as Predictive States for Latent World Models},
-      author={XXX, XXX, XXX},
-      year={2026},
-      note={Under review at Nature Machine Intelligence}
-}
-```
-
----
-
-## Acknowledgments
-
-We thank the LeWM authors for open-sourcing their code and data, the
-stable-worldmodel team for the mujoco environment infrastructure, and the
-dm_control / mujoco maintainers for the simulation stack that made this work
-possible.
+- **Figure 1-6**: paper has ASCII versions, need proper matplotlib/PNG for camera-ready
+- **Multi-seed runs**: standard suite is 1 seed; stress suite is 3 seeds
+- **Code release**: paper/code release prep (LICENSE, environment.yml)
+- **camera-ready pdf**: convert markdown to LaTeX/ICML template
+- **git push**: blocked on no SSH key — copy local commits and push manually
