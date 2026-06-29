@@ -480,7 +480,7 @@ spike rate.**
 
 | Env | STJEWM corr(obs,lat) | STJEWM corr(obs,rate) | LeWM corr(obs,lat) | LeWM corr(obs,rate) |
 |---|---|---|---|---|
-| ball_in_cup | **0.976** | -0.122 | (running) | — |
+| ball_in_cup | **0.976** | -0.122 | 0.111 | 0.251 |
 | cartpole_2d | **0.997** | -0.039 | 0.135 | 0.345 |
 | cheetah | **0.885** | 0.090 | 0.680 | -0.101 |
 | finger | **0.473** | 0.098 | 0.037 | 0.029 |
