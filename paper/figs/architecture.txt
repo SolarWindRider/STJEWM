@@ -1,0 +1,43 @@
+ST-JEWM Architecture (text-based for v0 draft)
+
+                    +-----------+       +------------+
+   obs x_t  ---->  |  Encoder  |  ->   |  z_t^enc   | --+
+   (B,T,3,H,W)    | (ViT-T,   |       | (B,T,192)  |   |
+                  |  frozen)   |       +------------+   |
+                  +-----------+                         v
+                                              +-----+-----+
+                                              |  + a_emb  |
+                                              |  (1-MLP)  |
+                                              +-----+-----+
+                                                    v
+                                              +-----+-----+
+                                              | z_t^enc   |
+                                              |  + a_emb  |  ->  h_t
+                                              +-----+-----+     (B,T,192)
+                                                    v
+                                              +-----+-----+
+                                              |  SNN cell |  ->  s_t
+                                              |  stack x4 |     (B,T,192)
+                                              +-----+-----+     binary
+                                                    v
+                                              +-----+-----+
+                                              |   Trace   |
+                                              |  r_t = α r_{t-1} + (1-α) s_t
+                                              |  α = σ(W[r_{t-1},s_t,c_t])
+                                              +-----+-----+
+                                                    v
+                                              +-----+-----+
+                                              |  trace_proj |  ->  z_t  ---> next-state latent
+                                              +-----+-----+     (B,T,192)
+
+
+The membrane potential v_t lives ONLY inside the SNN cell. The trace
+r_t is the only stateful quantity that crosses the cell boundary. The
+membrane-forbidden protocol forbids any external code from reading v_t.
+
+Components:
+  - Encoder: frozen ViT-Tiny (or low-dim StateProjector)
+  - Action encoder: 1-MLP
+  - MultiCompStack: 4 multi-compartment SNN cells, each with 3 dendrites
+  - Gated spike trace: content-aware exponential decay (Bounded ∈ [0,1])
+  - trace_proj: 192 -> 192 linear (skip-style add to h_t)
