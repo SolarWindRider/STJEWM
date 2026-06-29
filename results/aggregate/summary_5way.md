@@ -23,10 +23,10 @@ Their avg LeWM-SR is the membrane-forbidden protocol headline (Sec. 4.1, Table 1
 | pusht |   74.0% |   10.0% |   42.0% |    — |   82.0% |
 | quadruped |    — |    — |    — |    — |   86.0% |
 | reacher |    — |    — |    — |    — |   66.0% |
-| stacker |   86.0% |    — |    — |    — |   88.0% |
+| stacker |   86.0% |   86.0% |    — |    — |   88.0% |
 | tworoom |   92.0% |   94.0% |    — |    — |   74.0% |
 | walker |    — |    — |    — |    — |   94.0% |
-| **AVG** | **  81.3%** | **  67.8%** | **  74.3%** | **   —** | **  79.1%** |
+| **AVG** | **  81.3%** | **  69.8%** | **  74.3%** | **   —** | **  79.1%** |
 
 ## Env-SR (%)
 
@@ -45,10 +45,10 @@ Their avg LeWM-SR is the membrane-forbidden protocol headline (Sec. 4.1, Table 1
 | pusht |    0.0% |    0.0% |    0.0% |    — |    0.0% |
 | quadruped |    — |    — |    — |    — |   96.0% |
 | reacher |    — |    — |    — |    — |  100.0% |
-| stacker |   94.0% |    — |    — |    — |   94.0% |
+| stacker |   94.0% |   94.0% |    — |    — |   94.0% |
 | tworoom |    0.0% |    0.0% |    — |    — |    0.0% |
 | walker |    — |    — |    — |    — |   98.0% |
-| **AVG** | **  72.2%** | **  66.8%** | **  79.7%** | **   —** | **  74.8%** |
+| **AVG** | **  72.2%** | **  69.8%** | **  79.7%** | **   —** | **  74.8%** |
 
 ## cos_dist
 
@@ -67,10 +67,10 @@ Their avg LeWM-SR is the membrane-forbidden protocol headline (Sec. 4.1, Table 1
 | pusht |  0.083 |  0.230 |  0.121 |    — |  0.052 |
 | quadruped |    — |    — |    — |    — |  0.053 |
 | reacher |    — |    — |    — |    — |  0.159 |
-| stacker |  0.043 |    — |    — |    — |  0.042 |
+| stacker |  0.043 |  0.044 |    — |    — |  0.042 |
 | tworoom |  0.047 |  0.050 |    — |    — |  0.078 |
 | walker |    — |    — |    — |    — |  0.026 |
-| **AVG** | ** 0.057** | ** 0.089** | ** 0.063** | **   —** | ** 0.074** |
+| **AVG** | ** 0.057** | ** 0.084** | ** 0.063** | **   —** | ** 0.074** |
 
 ## phys_dist
 
@@ -89,10 +89,10 @@ Their avg LeWM-SR is the membrane-forbidden protocol headline (Sec. 4.1, Table 1
 | pusht |  983.37 | 4572.33 | 4600.72 |    — | 1053.87 |
 | quadruped |    — |    — |    — |    — |    0.35 |
 | reacher |    — |    — |    — |    — |    0.00 |
-| stacker |    0.15 |    — |    — |    — |    0.15 |
+| stacker |    0.15 |    0.17 |    — |    — |    0.15 |
 | tworoom |   94.74 |  100.69 |    — |    — |  101.01 |
 | walker |    — |    — |    — |    — |    0.29 |
-| **AVG** | **   0.38 (med)** | **   0.49 (med)** | **   0.39 (med)** | **   —** | **   0.35 (med)** |
+| **AVG** | **   0.38 (med)** | **   0.48 (med)** | **   0.39 (med)** | **   —** | **   0.35 (med)** |
 
 ## Metric definitions
 - **LeWM-SR (%)**: Fraction of CEM plans whose final latent is within cos_dist < 0.1 of goal latent (LeWM paper primary metric).
