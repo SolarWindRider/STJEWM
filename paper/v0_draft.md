@@ -489,7 +489,8 @@ spike rate.**
 |---|---|---|---|---|
 | cheetah | **0.885** | 0.090 | 0.680 | -0.101 |
 | walker | **0.920** | 0.169 | 0.111 | 0.173 |
-| (cartpole_2d, pendulum_2d, finger, ball_in_cup) | (running) | — | — | — |
+| cartpole_2d | **0.997** | -0.039 | (running) | — |
+| (pendulum_2d, finger, ball_in_cup) | (running) | — | — | — |
 
 *Headline:* On cheetah and walker, **the STJEWM latent first-difference
 correlates with obs event strength at $\rho = 0.9$** — i.e. the model's
