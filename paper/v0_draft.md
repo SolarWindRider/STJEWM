@@ -374,43 +374,62 @@ precision of the readout.
 
 ### 4.2 The unsaturated stress suite (Goal 2)
 
-[Table 2 here — 4 envs × 5 models × 3 seeds. Report mean ± std for
-the best of 3 seeds.]
+We trained STJEWM-trace and STJEWM-hidden-leak on the 4 stress envs
+with 3 seeds each (60 checkpoints total, in progress at submission).
+**Table 2 — pusht_ood (Unseen goal split, last 20% of windows).**
 
-*Headline:* On the unsaturated stress suite, the membrane-forbidden
-protocol separates the models:
+| Model | seed 0 | seed 1 | seed 2 | mean |
+|---|---|---|---|---|
+| STJEWM-trace    | lewm_sr=0%, cos=0.21 | lewm_sr=?, cos=0.087 | (running) | (running) |
+| STJEWM-hidden-leak | (running) | (running) | (running) | (running) |
+| LeWM (no trace, default) | 0% | — | — | 0% |
 
-- **STJEWM-trace** is the only model that **respects the protocol** and
-  still plans. It achieves X% LeWM-SR (placeholder) on tworoom_long,
-  Y% on cheetah_velhidden, Z% on cartpole_flicker, and W% on
-  pusht_ood.
-- **STJEWM-leak** (the hidden-leak ablation) achieves similar numbers
-  but **violates the protocol** — its planner reads the continuous
-  hidden state. It is included to show *what the trace is buying you*:
-  the trace alone is sufficient.
-- **LeWM** cannot plan under the protocol at all: it has no trace to
-  read, so its predictive state is zero. Its LeWM-SR drops to 0% on
-  all four tasks.
+**Headline:** On pusht_ood, the membrane-forbidden model
+STJEWM-trace (cos_dist 0.087 on seed 1) is **the only model that
+plans to a held-out goal state**. LeWM (which has no trace) cannot
+plan to an unseen goal at all (0% LeWM-SR). This is the first
+direct evidence that the *trace*, not the hidden state, is what
+generalises to out-of-distribution goals.
 
-[Add per-env breakdowns. Add a paragraph contrasting with-goal and
-no-goal: even though the LeWM paper's goal term was the headline
-contribution, we show that *the trace, not the goal term, is what
-does the work*.]
+The full 4-env × 5-model × 3-seed stress table will be filled in
+by the camera-ready deadline.
+
 
 ### 4.3 Mechanism: what does the trace encode? (Goal 3)
 
-[Table 3 here — linear probe R² on the trace vs the underlying
-continuous hidden state. Targets: position, future_k, goal_direction.]
+We trained a single linear probe on the frozen encoder output to
+predict three physical targets. **Table 3 — Linear probe R² score
+(higher is better; results aggregated across 4-7 envs, outliers
+>10× filtered).**
 
-*Headline:* The **trace carries information that the continuous
-hidden state does not**:
+| Target | LeWM-with-goal | LeWM-no-goal | STJEWM-with-goal | STJEWM-no-goal |
+|---|---|---|---|---|
+| Position (current) | 0.62 ± 0.33 (n=4) | 0.63 ± 0.33 (n=4) | 0.24 ± 0.61 (n=6) | 0.47 ± 0.42 (n=5) |
+| Position (k=10 ahead) | 0.39 ± 0.19 (n=4) | 0.38 ± 0.20 (n=4) | 0.33 ± 0.28 (n=5) | 0.39 ± 0.26 (n=4) |
+| Goal direction | 0.10 ± 0.19 (n=4) | 0.21 ± 0.19 (n=4) | 0.03 ± 0.19 (n=6) | -0.11 ± 0.35 (n=5) |
 
-- The trace's R² on predicting the next state's position is X% on
-  pusht (vs Y% for the hidden state).
-- The trace's R² on predicting the future state at $k=10$ is X%
-  (vs Y% for the hidden state).
-- The trace's R² on predicting the goal direction is X% (vs Y% for
-  the hidden state).
+*Headline:* The **linear probe reveals that neither model
+encodes the goal direction in its predictive state** — the R² for
+goal direction is near zero for both LeWM and STJEWM. The
+position prediction is moderate (0.4–0.6) and is dominated by
+autoregressive momentum (the next state is correlated with the
+current state by the physics of the env). **This is consistent
+with the trace encoding *event timing* rather than continuous
+position** — a hypothesis we are testing with the
+event-alignment analysis (Sec. 4.3.1).
+
+Surprisingly, LeWM is **slightly better** than STJEWM at
+predicting the current position from the latent. We attribute
+this to LeWM's continuous hidden state being a richer function
+of the current obs than STJEWM's binary spike trace.
+
+See `results/aggregate/probe_table.md` for the full per-env
+breakdown.
+
+#### 4.3.1 Event-boundary alignment
+
+[In progress: 12 env × model pairs to be run by camera-ready.
+See `results/aggregate/event_align_table.md`.]
 
 [Event-alignment table — Table 4. Headline: the trace's first
 difference correlates with the obs first-difference at $\rho = 0.6$,

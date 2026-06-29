@@ -39,27 +39,26 @@ def aggregate_probe() -> None:
     envs_set: set = set()
     for p in sorted(PROBE_DIR.glob("*.json")):
         # filename: <env>_<model>_<target>.json
-        # envs and model names have well-known forms; targets are
-        # {position, velocity, contact, future_k, goal_direction}
-        known_targets = {"position", "velocity", "contact", "future_k", "goal_direction"}
+        # where target ∈ {position, future_k, goal_direction} (and possibly
+        # velocity / contact, never instantiated in this run).
+        known_targets = ("future_k", "goal_direction", "position", "velocity", "contact")
         stem = p.stem
+        env_model = None
+        target = None
         for tgt in known_targets:
-            if stem.endswith("_" + tgt):
-                env_model = stem[: -len(tgt) - 1]
+            suffix = "_" + tgt
+            if stem.endswith(suffix):
+                env_model = stem[: -len(suffix)]
                 target = tgt
                 break
-        else:
+        if env_model is None:
             continue
         data = load_json(p)
         if data is None:
             continue
-        if data.get("skipped"):
-            r2 = float("nan")
-        else:
-            r2 = data.get("r2", float("nan"))
+        r2 = float("nan") if data.get("skipped") else data.get("r2", float("nan"))
         rows[(env_model)][target] = r2
         targets_set.add(target)
-        # split env_model -> env / model by the known model names
         for m in ("stjewm_v2", "stjewm_nogoal", "lewm_baseline_v2", "lewm_baseline_no_goal"):
             if env_model.endswith("_" + m):
                 envs_set.add(env_model[: -len(m) - 1])
