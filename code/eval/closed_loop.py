@@ -452,11 +452,13 @@ def main():
     action_dim = env.spec.action_dim
     if ck_args.get("model", "stjewm") == "lewm_baseline":
         from code.lewm_transformer_baseline import LeWMTransformerBaseline
-        embed_dim = ck_args.get("embed_dim", 256)  # default matches the 5.07M LeWM-style we trained
+        embed_dim = ck_args.get("embed_dim", 256)
         model = LeWMTransformerBaseline(state_dim=state_dim, action_dim=action_dim, embed_dim=embed_dim,
                                          num_layers=ck_args.get("n_layers", 4))
+    elif ck_args.get("model", "stjewm") == "gru_baseline":
+        from code.gru_baseline import GRUBaseline
+        model = GRUBaseline(state_dim=state_dim, action_dim=action_dim)
     else:
-        from code.stjewm import STJEWM
         n_layers = ck_args.get("n_layers", 4)
         # ReadoutMode: read from ckpt args (added by Workstream A)
         ck_readout_mode = ck_args.get("readout_mode", "hidden_leak")
