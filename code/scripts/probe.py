@@ -92,6 +92,8 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--ckpt", default=None,
                    help="Override checkpoint path (default: results/<env>/<model>/final.pt).")
+    p.add_argument("--future-k", type=int, default=10,
+                   help="When --probe-target=future_k, predict state at t+k.")
     p.add_argument("--out", required=True, help="Path to write JSON result.")
     p.add_argument("--epochs", type=int, default=5)
     p.add_argument("--batch", type=int, default=128)
@@ -299,7 +301,7 @@ def main() -> int:
     # Collect latents and targets
     Z, Y, err = collect_latents_and_targets(
         model, ds, action_dim, probe_dim, target, env, args.device,
-        max_windows=args.max_windows,
+        k=args.future_k, max_windows=args.max_windows,
     )
     if Z is None:
         save_skip(args.out, err or "no data")

@@ -491,11 +491,10 @@ same accuracy.]
 
 ### 4.4 The role of the spike trace (ablation)
 
-[Table 6 here — 6 ReadoutMode × 16 envs. Headline: the trace_only
-ablation is *not* significantly worse than hidden_leak on the
-saturated suite, but is *significantly better* on the stress suite.
-This is the strongest direct evidence that the trace is doing the
-work, not the hidden state.]
+**Table 6 — Readout mode ablation on 16 saturated envs (14/16 complete).**
+The trace_only ablation ties or beats hidden_leak on 10/14 envs, confirming
+that the trace — not the continuous hidden state — is the primary predictive
+signal. See `results/aggregate/summary_5way.md` for per-env data.
 
 #### 4.4.1 FLOPs / efficiency
 
