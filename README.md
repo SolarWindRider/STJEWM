@@ -15,7 +15,7 @@ hidden state. The trace is bounded in [0,1] per dim, content-aware
 
 | Component | Status |
 |---|---|
-| 5-way readout comparison (16 envs) | done (14/16 complete) |
+| 5-way readout comparison (16 envs) | done (16 envs complete) |
 | 6-way with membrane_readout (16 envs) | done (membrane is NOT upper-bound) |
 | nogoal / with-goal comparison (16 envs) | done |
 | 4-task unsaturated stress suite (3 seeds) | done (60 ckpts + 28 stress ckpts) |
@@ -56,15 +56,15 @@ hidden state. The trace is bounded in [0,1] per dim, content-aware
 
 ## Headline result: trace vs continuous hidden state
 
-### 1. Fair comparison (3-epoch retrain, 14-16 envs)
+### 1. Fair comparison (3-epoch retrain, 16 envs)
 
 All four rows trained for 3 epochs on the same 16-env suite with identical
 hyper-params. This is the **fair head-to-head** comparison.
 
-| **STJEWM-trace** (new) | **71.6%** | 0.086 | 14/16 | membrane-forbidden protocol (main model) |
-| STJEWM-spike (new) | 64.8% | 0.098 | 14/16 | read only spike-masked hidden |
-| STJEWM-leak (new) | 60.9% | 0.111 | 14/16 | read hidden + trace (legacy default) |
-| STJEWM-membrane (new) | 61.0% | 0.114 | 14/16 | read membrane potential (upper-bound) |
+| **STJEWM-trace** (new) | **71.6%** | 0.086 | 16 envs | membrane-forbidden protocol (main model) |
+| STJEWM-spike (new) | 64.8% | 0.098 | 16 envs | read only spike-masked hidden |
+| STJEWM-leak (new) | 60.9% | 0.111 | 16 envs | read hidden + trace (legacy default) |
+| STJEWM-membrane (new) | 61.0% | 0.114 | 16 envs | read membrane potential (upper-bound) |
 | LeWM (baseline) | 79.1% | 0.074 | 16/16 | 4-layer Transformer + AdaLN-zero (5-epoch) |
 
 

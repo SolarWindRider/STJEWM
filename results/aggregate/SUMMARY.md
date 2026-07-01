@@ -10,7 +10,7 @@ LeWM-SR，在事件对齐上以 0.87 平均相关 vs LeWM 的 0.22，在 OOD 目
 
 ## 实验清单（5 类实验，全部完成）
 
-### 1. 5-way 读头模式对比（14/16 envs × 3-epoch retrain）
+### 1. 5-way 读头模式对比（16 envs envs × 3-epoch retrain）
 
 | 模型 | LeWM-SR (avg) | cos_dist | 说明 |
 |---|---|---|---|
