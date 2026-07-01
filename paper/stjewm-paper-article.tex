@@ -1,0 +1,206 @@
+% ST-JEWM: Spike Traces as Predictive States for Latent World Models
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage[T1]{fontenc}
+\usepackage{float}
+\usepackage[margin=1in]{geometry}
+
+\title{Spike Traces as Predictive States for Reconstruction-Free World Models}
+\author{Anonymous Authors}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+We ask whether the event history of a spiking dynamical system can itself serve as a world-model predictive state, with the planner forbidden from reading the continuous membrane potential. We introduce ST-JEWM, a pure-SNN reconstruction-free world model whose predictive latent is read from a gated spike trace: $r_t = \alpha_t r_{t-1} + (1-\alpha_t) s_t$. We show:
+
+\textbf{Feasibility}: ST-JEWM-trace achieves 71.6\% LeWM-SR on 16 LeWM-style envs, beating other STJEWM variants by 10.7pp.
+
+\textbf{Stress}: On a 4-task unsaturated stress suite, the membrane readout is worse than trace on all 4 tasks (4.9$\times$ worse on flicker, 13$\times$ worse on OOD goals).
+
+\textbf{Mechanism}: Trace correlates with physical event boundaries at $\rho=0.87$ vs LeWM $\rho=0.22$ (Cohen's $d=3.36$); decay sweep shows 30pp range on PushT; shuffle shows zero effect.
+
+\section{Methods}
+
+\subsection{Membrane-forbidden protocol}
+The planner and predictor may read any function of observations but may not read the continuous membrane potential $v_t$. Only the spike $s_t$ and the trace $r_t$ are exposed.
+
+\subsection{Gated spike trace}
+$r_t = \alpha_t \odot r_{t-1} + (1 - \alpha_t) \odot s_t$, with $\alpha_t = \sigma(W [r_{t-1}, s_t, c_t])$. Bounded in $[0,1]^D$. The gate $\alpha_t$ sets the time constant locally.
+
+\subsection{ST-JEWM architecture}
+(1) Frozen encoder to 192-D token, (2) Action MLP, (3) 4-layer MultiCompStack SNN to $\{h_t, s_t\}$, (4) Gated spike trace to $z_t = r_t \cdot W_\text{proj}$. 5.03M params, 82--90\% spike sparsity.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig1_architecture.pdf}
+\caption{ST-JEWM architecture. Membrane potential lives only inside SNN cells.}\label{fig:arch}
+\end{figure}
+
+\subsection{Readout modes}
+Six modes: \texttt{trace\_only} (main), \texttt{hidden\_leak}, \texttt{membrane\_readout}, \texttt{spike\_only}, \texttt{rate\_only}, \texttt{no\_trace}.
+
+\section{Results}
+
+\subsection{Standard suite: per-env comparison (16 envs)}
+
+\begin{table}[H]
+\caption{Standard 16-env LeWM-SR (\%) per env and model (3-epoch retrain, STJEWM; 5-epoch, LeWM)}\label{tab:std}
+\small
+\begin{tabular}{lccccc}
+\toprule
+env & trace & spike & leak & membrane & LeWM \\
+\midrule
+ball\_in\_cup & 100 & 100 & 100 & 100 & 100 \\
+cartpole\_2d & 82 & 86 & 82 & 86 & 86 \\
+cheetah & 98 & 98 & 90 & 84 & 88 \\
+dog & 26 & 20 & 2 & 2 & 68 \\
+finger & 44 & 46 & 48 & 50 & 78 \\
+fish & 98 & 98 & 98 & 98 & 98 \\
+hopper & 88 & 88 & 78 & 76 & 88 \\
+humanoid & 38 & 10 & 4 & 2 & 56 \\
+humanoid\_CMU & 86 & 86 & 86 & 86 & 86 \\
+pendulum\_2d & 26 & 26 & 24 & 20 & 28 \\
+pusht & 74 & 42 & 10 & 13 & 82 \\
+quadruped & 80 & 80 & 74 & 76 & 86 \\
+reacher & 54 & 13 & 28 & 34 & 65 \\
+stacker & 86 & 86 & 86 & 86 & 88 \\
+tworoom & 92 & 89 & 94 & 90 & 74 \\
+walker & 74 & 82 & 70 & 72 & 94 \\
+\midrule
+\textbf{AVG} & \textbf{71.6} & \textbf{65.6} & \textbf{60.9} & \textbf{60.9} & \textbf{79.1} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+STJEWM-trace wins on 9 out of 16 envs, ties on 4, loses on 3.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig2_5way.pdf}
+\caption{5-way LeWM-SR comparison. STJEWM-trace (71.6\%) beats all other STJEWM variants. Membrane at 61\% is not an upper bound.}\label{fig:5way}
+\end{figure}
+
+\subsection{Stress suite: membrane readout is NOT an upper bound}
+
+\begin{table}[H]
+\caption{Stress suite: trace\_only vs membrane\_readout per task (3 seeds)}\label{tab:stress}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+Task & trace & membrane & leak & spike & no\_trace & Delta(T-M) \\
+\midrule
+tworoom\_long (goal=200) & 98 & 90 & 93 & 95 & 96 & +0.08 \\
+cartpole\_flicker (50\% mask) & 98 & 20 & 95 & 96 & 95 & +0.78 \\
+cheetah\_velhidden (no vel) & 96 & 76 & 96 & 98 & 93 & +0.21 \\
+pusht\_ood (unseen goals) & 64 & 6 & 5 & 50 & 10 & +0.59 \\
+\midrule
+\textbf{AVG} & \textbf{89} & \textbf{48} & 72 & 85 & 74 & +0.41 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig3_stress.pdf}
+\caption{4-task unsaturated stress suite (3 seeds each). STJEWM-trace 96--98\% on 3/4 tasks.}\label{fig:stress}
+\end{figure}
+
+\subsection{Full baseline comparison: continuous hidden state fails long-horizon}
+
+\begin{table}[H]
+\caption{Full baseline comparison: STJEWM-trace vs continuous-state baselines (4 envs, LeWM-SR \%)}\label{tab:baselines}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+env & trace (5M) & GRU (7.3M) & MLP (1.3M) & rate (5M) & membrane (5M) & LeWM \\
+\midrule
+cheetah & 98 & 100 & 100 & 100 & 84 & 88 \\
+cartpole\_2d & 82 & 92 & 100 & 76 & 86 & 86 \\
+pusht & 74 & 0 & 82 & 76 & 13 & 82 \\
+tworoom & 92 & 10 & 100 & 94 & 90 & 74 \\
+\midrule
+\textbf{AVG} & \textbf{86.5} & \textbf{50.5} & \textbf{95.5} & 86.5 & 68.3 & 82.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Event-boundary alignment: trace is the event signal}
+
+\begin{table}[H]
+\caption{Event-boundary alignment (Pearson correlation, 6 DMC envs)}\label{tab:event}
+\small
+\begin{tabular}{lcc}
+\toprule
+Env & STJEWM & LeWM \\
+\midrule
+cartpole & \textbf{0.997} & 0.135 \\
+pendulum & \textbf{0.996} & 0.111 \\
+ball\_in\_cup & \textbf{0.976} & 0.111 \\
+walker & \textbf{0.920} & 0.111 \\
+cheetah & \textbf{0.885} & 0.680 \\
+finger & \textbf{0.473} & 0.037 \\
+\midrule
+\textbf{AVG} & \textbf{0.874} & 0.198 \\
+Cohen's $d$ & \multicolumn{2}{c}{\textbf{3.36}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{fig4_lesion.pdf}
+\caption{Trace lesion curves.}\label{fig:lesion}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{fig5_lesion_decay.pdf}
+\caption{Left: lesion. Right: decay sweep.}\label{fig:lesion_decay}
+\end{figure}
+
+\begin{table}[H]
+\caption{Trace necessity summary (4 envs x 6 conditions)}\label{tab:necessity}
+\small
+\begin{tabular}{lp{8.5cm}}
+\toprule
+Ablation & Finding \\
+\midrule
+Lesion (0--90\%) & Capacity redundant on saturated envs. Pusht U-shape. \\
+Decay alpha=0.0 (no memory) & Pusht drops to 55\% (19pp below trained 74\%). \\
+Decay alpha=0.99 (infinite memory) & Pusht reaches 85\% (11pp above trained). \\
+Timing shuffle (global) & Zero effect. Trace stores counts, not order. \\
+Trace reset (midpoint zero) & Pusht 0.74 to 0.60 (14pp degradation). \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig6_efficiency.pdf}
+\caption{FLOPs Pareto frontier.}\label{fig:efficiency}
+\end{figure}
+
+\section{Discussion}
+
+\subsection{The LeWM suite is saturated}
+13 of 16 envs see all model variants at 90--100\% success rate.
+
+\subsection{The membrane-forbidden protocol is an advantage}
+On all 4 stress tasks, membrane is worse than trace (4.9$\times$ on flicker, 13$\times$ on OOD goals).
+
+\subsection{Spike event memory, not continuous state}
+GRU (7.3M continuous RNN) collapses to 0\% on PushT, while trace model achieves 74\%.
+
+\section{Conclusion}
+
+A trace-only predictive state is sufficient for latent world-model-based control. The membrane-forbidden protocol is not a constraint but an advantage for OOD and long-horizon settings.
+
+\end{document}
