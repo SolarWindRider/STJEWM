@@ -1,6 +1,6 @@
 """ST-JEWM env wrappers (replaces 17 old stage* env files).
 
-Available envs (22 total):
+Available envs (23 total):
     LeWM 4-official:
         pushT:    swm/PushT-v1           (7D, 2D)
         twoRoom:  swm/TwoRoom-v1         (10D, 2D)
@@ -15,6 +15,9 @@ Available envs (22 total):
 
     Gym classic-control (live data):
         cartpole, acrobot, pendulum, mountaincar, mountaincar_cont
+
+    Custom working-memory probe:
+        delayed_t_maze: synthetic Delayed-T-Maze (6D obs, 2D action)
 """
 from .base import BaseEnv, EnvSpec
 from .swm_envs import (
@@ -28,6 +31,10 @@ from .dmc_env import (
     make_dmc_env, make_ogb_scene_env,
     FlickeringDMCEnv, VEL_INDICES, make_vel_hidden_env,
 )
+from .delayed_t_maze import (
+    DelayedTMazeEnv, DelayedTMazeConfig, make_delayed_t_maze,
+    generate_delayed_t_maze_dataset,
+)
 
 __all__ = [
     "BaseEnv", "EnvSpec",
@@ -37,4 +44,6 @@ __all__ = [
     "DMCStateEnv", "OGBenchSceneEnv", "DMC_ENVS",
     "make_dmc_env", "make_ogb_scene_env",
     "FlickeringDMCEnv", "VEL_INDICES", "make_vel_hidden_env",
+    "DelayedTMazeEnv", "DelayedTMazeConfig", "make_delayed_t_maze",
+    "generate_delayed_t_maze_dataset",
 ]

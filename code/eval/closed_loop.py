@@ -87,6 +87,9 @@ def make_env(env_kind: str, data_path: str = None) -> BaseEnv:
             "mountaincar_cont": "swm/MountainCarContinuousControl-v0",
         }[env_kind]
         return make_gym_env(eid)
+    if env_kind == "delayed_t_maze":
+        from code.core.envs.delayed_t_maze import make_delayed_t_maze
+        return make_delayed_t_maze()
     raise ValueError(f"Unknown env_kind: {env_kind}")
 
 # ============================================================
@@ -378,9 +381,10 @@ def _make_unseen_goal_subset(ds) -> "torch.utils.data.Subset":
     indices = list(range(cut, n))
     return torch.utils.data.Subset(ds, indices)
 
-
 def _infer_env_kind(env: BaseEnv) -> str:
     eid = env.spec.env_id
+    if "delayed" in eid.lower() or "t_maze" in eid.lower() or "t-maze" in eid.lower():
+        return "delayed_t_maze"
     if "PushT" in eid: return "pusht"
     if "TwoRoom" in eid: return "tworoom"
     if "OGBCube" in eid: return "ogb_cube"
