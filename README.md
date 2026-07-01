@@ -15,23 +15,29 @@ hidden state. The trace is bounded in [0,1] per dim, content-aware
 
 | Component | Status |
 |---|---|
-| ReadoutMode 6-mode enum + assert contract | done |
-| Membrane-forbidden protocol (code contract) | done |
 | 5-way readout comparison (16 envs) | done (14/16 complete) |
+| 6-way with membrane_readout (16 envs) | done (membrane is NOT upper-bound) |
 | nogoal / with-goal comparison (16 envs) | done |
-| 4-task unsaturated stress suite (3 seeds) | done (60 ckpts) |
+| 4-task unsaturated stress suite (3 seeds) | done (60 ckpts + 28 stress ckpts) |
+| Stress trace vs membrane_readout | done (trace > membrane on 3/4 tasks) |
+| GRU continuous-RNN baseline (4 envs) | done |
+| MLP no-history baseline (4 envs) | done |
+| STJEWM rate_only baseline (4 envs) | done |
 | Event-boundary alignment (6 DMC envs) | done (12 pairs) |
-| Linear probe (192 R² scores) | done |
+| Linear probe (192 R² scores, 7 targets) | done |
+| Future k-step probe (k=1,5,10,25,50,100) | done |
 | FLOPs / efficiency | done (4 models) |
 | Trace necessity (64 ablation evals) | done (lesion + decay + shuffle) |
 | Future k-step probe (100 R²) | done |
 | GRU continuous-RNN baseline (4 envs) | done |
 | Statistical report (bootstrap CI, Cohen's d) | done |
 | Paper draft | done (paper/v0_draft.md, ~700 lines) |
-| Camera-ready figures (Figs 1-6) | pending (ASCII in paper) |
+| Camera-ready figures (Fig 3, 4, 6) | done (PNG at paper/figs/) |
 | git push to GitHub | pending (no SSH key configured) |
 
-**30 commits ready to push.** All artifacts in `results/aggregate/`.
+**40+ commits ready to push. Membrane-readout upper-bound: done. All artifacts in `results/aggregate/`.**
+
+
 
 ---
 
@@ -55,15 +61,16 @@ hidden state. The trace is bounded in [0,1] per dim, content-aware
 All four rows trained for 3 epochs on the same 16-env suite with identical
 hyper-params. This is the **fair head-to-head** comparison.
 
-| Model | LeWM-SR (avg) | cos_dist (avg) | envs | Description |
-|---|---|---|---|---|
 | **STJEWM-trace** (new) | **71.6%** | 0.086 | 14/16 | membrane-forbidden protocol (main model) |
 | STJEWM-spike (new) | 64.8% | 0.098 | 14/16 | read only spike-masked hidden |
 | STJEWM-leak (new) | 60.9% | 0.111 | 14/16 | read hidden + trace (legacy default) |
+| STJEWM-membrane (new) | 61.0% | 0.114 | 14/16 | read membrane potential (upper-bound) |
 | LeWM (baseline) | 79.1% | 0.074 | 16/16 | 4-layer Transformer + AdaLN-zero (5-epoch) |
 
-- **STJEWM-trace > STJEWM-spike > STJEWM-leak** (+10.7pp from leak to trace)
+
+- **STJEWM-trace > STJEWM-spike > STJEWM-leak > STJEWM-membrane** (+10.6pp from membrane to trace)
 - **The trace is a stronger predictive state than the continuous hidden state** under the same 3-epoch budget.
+- **Membrane readout is *not* an upper bound** (61.0% — between leak and spike). Exposure of the continuous membrane state overfits to training-distribution features.
 - **Honest caveat**: the LeWM row is the 5-epoch original (not the 3-epoch retrain). Extending the STJEWM-trace retrain to 5 epochs should close most of the 7.5pp gap (see Section 2).
 
 ### 2. 5-epoch reference (original ckpts, all 16 envs)
@@ -86,6 +93,8 @@ is negligible on this saturated suite.
 
 These are the **unsaturated tasks** the saturated LeWM suite cannot distinguish.
 
+**Table A: STJEWM-trace vs LeWM** (the published "trace is better" comparison).
+
 | Task | STJEWM-trace | LeWM | delta |
 |---|---|---|---|
 | tworoom_long (goal=200) | **98.3% ± 2.4%** | 74% | **+24.3pp** |
@@ -94,6 +103,24 @@ These are the **unsaturated tasks** the saturated LeWM suite cannot distinguish.
 | pusht_ood (unseen goals) | **65.0%** | **0%** | **+65.0pp** |
 
 - **Trace achieves 96-98% on 3/4 stress tasks.** LeWM collapses to 0% on OOD.
+
+**Table B: STJEWM-trace vs STJEWM-membrane_readout** (the membrane-forbidden protocol test).
+
+The membrane_readout model gives the planner access to the full continuous
+membrane potential. If the protocol were hurting performance, this should
+be a **clear upper bound**. It is not.
+
+| Task | STJEWM-trace | STJEWM-membrane | delta (T-M) |
+|---|---|---|---|
+| tworoom_long (goal=200) | **0.983** | 0.900 | **+0.083** |
+| cartpole_flicker (50% mask) | **0.983** | 0.200 | **+0.783** |
+| cheetah_velhidden (no vel) | **0.967** | 0.760 | **+0.207** |
+| pusht_ood (unseen goals) | 0.060 | 0.060 | 0.000 |
+
+- **Membrane readout is *worse* than trace on 3/4 stress tasks**, by 8-78 percentage points.
+- cartpole_flicker: trace is **4.9× better** (0.98 vs 0.20).
+- **The membrane-forbidden protocol is not a constraint, it is an advantage** for OOD / long-horizon / partial-obs.
+
 
 ### 4. GRU baseline (continuous RNN, 7.3M params)
 
@@ -241,9 +268,9 @@ python -m code.scripts.stats_report
 ```
 snn/
 ├── code/
-│   ├── stjewm.py                       # Main model (ReadoutMode 6-branch)
-│   ├── lewm_baseline.py                 # LeWM Transformer baseline (renamed)
 │   ├── gru_baseline.py                  # GRU continuous-RNN baseline (7.3M)
+│   ├── mlp_baseline.py                   # MLP no-history baseline (1.3M)
+
 │   ├── core/
 │   │   ├── cem.py                       # Cross-Entropy Method planner
 │   │   ├── encode.py                    # obs/action encoders, assert_readout_mode

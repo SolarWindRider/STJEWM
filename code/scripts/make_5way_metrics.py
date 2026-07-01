@@ -26,6 +26,7 @@ models = [
     ("STJEWM-leak",    "stjewm_hidden_leak", "eval_v1_readout"),
     ("STJEWM-spike",   "stjewm_spike_only",  "eval_v1_readout"),
     ("STJEWM-no-trace","stjewm_no_trace",    "eval_v1_readout"),
+    ("STJEWM-membrane","stjewm_membrane_readout","eval_v1_readout"),
     ("LeWM",           "lewm_baseline_v2",   "regular"),
 ]
 

@@ -1,13 +1,13 @@
 #!/bin/bash
-# Retrain STJEWM under 3 readout modes (trace_only / hidden_leak / spike_only)
-# across all 16 LeWM-style envs.
+# Retrain STJEWM under 4 readout modes (trace_only / hidden_leak / spike_only /
+# membrane_readout) across all 16 LeWM-style envs.
 #
 # Layout (mirrors train_all.sh):
 #   /home/lx/snn/results/<env>/stjewm_<mode>/final.pt
 #   /home/lx/snn/results/<env>/stjewm_<mode>/loss_log.json
 #   /home/lx/snn/results/<env>/stjewm_<mode>/train.log
 #
-# Total: 16 envs x 3 modes = 48 checkpoints.
+# Total: 16 envs x 4 modes = 64 checkpoints.
 #
 # Usage:
 #   ./retrain_with_readout_modes.sh                       # all 48 combos
@@ -25,7 +25,7 @@ PYTHON=/home/lx/miniconda3/envs/snn/bin/python
 EPOCHS=${EPOCHS:-3}
 BATCH=${BATCH:-64}
 LR=${LR:-3e-4}
-MODES=${MODES:-"trace_only hidden_leak spike_only"}
+MODES=${MODES:-"trace_only hidden_leak spike_only membrane_readout"}
 RESULTS_DIR=${RESULTS_DIR:-/home/lx/snn/results}
 LOG_ROOT=${LOG_ROOT:-/home/lx/snn/logs/retrain_readout}
 mkdir -p "$RESULTS_DIR" "$LOG_ROOT"

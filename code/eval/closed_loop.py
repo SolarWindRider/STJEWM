@@ -458,10 +458,14 @@ def main():
     elif ck_args.get("model", "stjewm") == "gru_baseline":
         from code.gru_baseline import GRUBaseline
         model = GRUBaseline(state_dim=state_dim, action_dim=action_dim)
+    elif ck_args.get("model", "stjewm") == "mlp_baseline":
+        from code.mlp_baseline import make_mlp_baseline
+        model = make_mlp_baseline(state_dim=state_dim, action_dim=action_dim)
     else:
         n_layers = ck_args.get("n_layers", 4)
         # ReadoutMode: read from ckpt args (added by Workstream A)
         ck_readout_mode = ck_args.get("readout_mode", "hidden_leak")
+        from code.stjewm import STJEWM
         model = STJEWM(
             d_hid=192, embed_dim=192, action_dim=action_dim, action_emb_dim=192,
             state_dim=state_dim, cell_n_layers=n_layers, n_d=3,

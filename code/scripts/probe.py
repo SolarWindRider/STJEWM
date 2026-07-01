@@ -61,20 +61,23 @@ ENV_REGISTRY: dict[str, tuple[str, str, int, int]] = {
 ENV_PROBE: dict[str, dict] = {
     "pusht":        {"pos": (0, 5),  "vel": (5, 7),  "obs_dim": 7},   # [block(3)+target(2)] + [vel(2)]
     "tworoom":      {"pos": (0, 4),  "vel": (4, 6),  "obs_dim": 10},  # agent(2) + goal(2) + vel(2)+...
-    "reacher":      {"pos": (0, 2),  "vel": None,    "obs_dim": 4},   # qpos(2), no qvel stored
-    "cartpole_2d":  {"pos": (0, 2),  "vel": None,    "obs_dim": 2},   # [cart, pole_angle]
-    "pendulum_2d":  {"pos": (0, 2),  "vel": None,    "obs_dim": 2},   # [cos, sin]
-    "finger":       {"pos": (0, 3),  "vel": None,    "obs_dim": 3},   # [finger_pos]
-    "ball_in_cup":  {"pos": (0, 4),  "vel": None,    "obs_dim": 4},   # [ball_pos]
-    "cheetah":      {"pos": (0, 9),  "vel": None,    "obs_dim": 9},   # qpos only in 9D
-    "walker":       {"pos": (0, 9),  "vel": None,    "obs_dim": 9},
-    "hopper":       {"pos": (0, 7),  "vel": None,    "obs_dim": 7},
-    "quadruped":    {"pos": (0, 12), "vel": None,    "obs_dim": 30},  # first half
-    "humanoid":     {"pos": (0, 14), "vel": None,    "obs_dim": 28},  # first half
-    "humanoid_CMU": {"pos": (0, 27), "vel": None,    "obs_dim": 63},  # first half
-    "dog":          {"pos": (0, 19), "vel": None,    "obs_dim": 87},  # first half
-    "fish":         {"pos": (0, 7),  "vel": None,    "obs_dim": 14},  # first half
-    "stacker":      {"pos": (0, 10), "vel": None,    "obs_dim": 20},  # first half
+    # For DMC envs the .npz state is qpos-only (or sin/cos-encoded), NOT qvel.
+    # "velocity" target is the discrete 1-step Δstate over a subset of dims
+    # (a velocity proxy that works regardless of whether qvel is stored).
+    "reacher":      {"pos": (0, 2),  "vel": None,    "obs_dim": 4},   # 4-D state, no qvel stored
+    "cartpole_2d":  {"pos": (0, 2),  "vel": None,    "obs_dim": 2},   # 2-D state
+    "pendulum_2d":  {"pos": (0, 2),  "vel": None,    "obs_dim": 2},   # 2-D state
+    "finger":       {"pos": (0, 3),  "vel": None,    "obs_dim": 3},   # 3-D state
+    "ball_in_cup":  {"pos": (0, 4),  "vel": None,    "obs_dim": 4},   # 4-D state
+    "cheetah":      {"pos": (0, 9),  "vel": (0, 3),  "obs_dim": 9},   # 9-D state, Δ over first 3
+    "walker":       {"pos": (0, 9),  "vel": (0, 3),  "obs_dim": 9},
+    "hopper":       {"pos": (0, 7),  "vel": (0, 3),  "obs_dim": 7},
+    "quadruped":    {"pos": (0, 12), "vel": (0, 6),  "obs_dim": 30},  # 30-D state, Δ over first 6
+    "humanoid":     {"pos": (0, 14), "vel": (0, 6),  "obs_dim": 28},  # 28-D, Δ over first 6
+    "humanoid_CMU": {"pos": (0, 27), "vel": (0, 6),  "obs_dim": 63},  # 63-D, Δ over first 6
+    "dog":          {"pos": (0, 19), "vel": (0, 6),  "obs_dim": 87},  # 87-D, Δ over first 6
+    "fish":         {"pos": (0, 7),  "vel": (0, 3),  "obs_dim": 14},  # 14-D, Δ over first 3
+    "stacker":      {"pos": (0, 10), "vel": (0, 3),  "obs_dim": 20},  # 20-D, Δ over first 3
 }
 
 
@@ -160,9 +163,14 @@ def collect_latents_and_targets(
             if target_kind == "position":
                 tgt = init_state[pos_slice[0]: pos_slice[1]]
             elif target_kind == "velocity":
+                # Predict Δstate over the vel slice: state[t+1] - state[t]
+                # (1-step discrete velocity proxy; works whether or not the env
+                #  has a true qvel channel — we always have the full state vector.)
                 if vel_slice is None:
-                    return None, None, "no velocity slice"
-                tgt = init_state[vel_slice[0]: vel_slice[1]]
+                    return None, None, f"no velocity slice for env={env}"
+                v0 = s_full[0, vel_slice[0]: vel_slice[1]]
+                v1 = s_full[1, vel_slice[0]: vel_slice[1]]
+                tgt = v1 - v0
             elif target_kind == "future_k":
                 t_idx = min(k, s_full.shape[0] - 1)
                 tgt = s_full[t_idx, pos_slice[0]: pos_slice[1]]
@@ -171,9 +179,12 @@ def collect_latents_and_targets(
                 norm = diff.norm() + 1e-8
                 tgt = diff / norm
             elif target_kind == "contact":
+                # Predict whether ||state[t+1] - state[t]||_∞ > std(state)
+                # (a contact-like event: state changes more than its typical
+                #  within-trajectory variation.) Binary {0,1} target.
+                diff = (s_full[1] - s_full[0]).abs().max()
                 state_std = s_full.std(dim=0).mean()
-                state_mean = s_full.mean()
-                tgt = torch.tensor([float((init_state - state_mean).abs().max() > state_std)])
+                tgt = torch.tensor([float(diff > state_std)])
             else:
                 return None, None, f"unknown target {target_kind}"
             target_list.append(tgt)
