@@ -23,11 +23,14 @@ envs = [
 # (display name, subdir or eval_v1_readout prefix, env_id)
 models = [
     ("STJEWM-trace",   "stjewm_trace_only",  "eval_v1_readout"),
-    ("STJEWM-leak",    "stjewm_hidden_leak", "eval_v1_readout"),
+    ("STJEWM-rate",    "stjewm_rate_only",   "eval_v2_5way"),
     ("STJEWM-spike",   "stjewm_spike_only",  "eval_v1_readout"),
-    ("STJEWM-no-trace","stjewm_no_trace",    "eval_v1_readout"),
+    ("STJEWM-leak",    "stjewm_hidden_leak", "eval_v1_readout"),
+    ("STJEWM-no-trace","stjewm_no_trace",    "eval_v2_5way"),
     ("STJEWM-membrane","stjewm_membrane_readout","eval_v1_readout"),
     ("LeWM",           "lewm_baseline_v2",   "regular"),
+    ("GRU",            "gru_baseline",       "eval_v2_5way"),
+    ("MLP",            "mlp_baseline",       "eval_v2_5way"),
 ]
 
 # (display name, json key, format, scale_to_pct)
@@ -51,6 +54,21 @@ def fmt_avg(vals, fmt, scale, jkey):
     return fmt.format(sum(valid) / len(valid) * scale)
 
 
+# Map model_dir_name to (filename, subdir)
+# eval_v1_readout uses short names (no stjewm_ prefix); eval_v2_5way uses full names
+model_to_filename = {
+    "stjewm_trace_only":          ("trace_only",         "eval_v1_readout"),
+    "stjewm_hidden_leak":         ("hidden_leak",        "eval_v1_readout"),
+    "stjewm_spike_only":          ("spike_only",         "eval_v1_readout"),
+    "stjewm_no_trace":            ("stjewm_no_trace",    "eval_v2_5way"),
+    "stjewm_membrane_readout":    ("membrane_readout",   "eval_v1_readout"),
+    "stjewm_rate_only":           ("stjewm_rate_only",   "eval_v2_5way"),
+    "lewm_baseline_v2":           ("lewm_baseline",      "regular"),
+    "gru_baseline":               ("gru_baseline",       "eval_v2_5way"),
+    "mlp_baseline":               ("mlp_baseline",       "eval_v2_5way"),
+}
+
+
 def collect_data():
     """data[metric_key][model][env] = value"""
     data = {}
@@ -59,12 +77,11 @@ def collect_data():
     for env in envs:
         for mname, dir_name, src in models:
             for _mn, jkey, _fmt, _scale in metrics:
-                if src == "regular":
+                fname, subdir = model_to_filename.get(dir_name, (dir_name, src))
+                if subdir == "regular":
                     p = base / env / dir_name / "eval.json"
-                elif src == "eval_v1_readout":
-                    p = agg / "eval_v1_readout" / f"{env}_{dir_name.replace('stjewm_','')}.json"
                 else:
-                    p = None
+                    p = agg / subdir / f"{env}_{fname}.json"
                 if p and p.exists():
                     try:
                         d = json.loads(p.read_text())
