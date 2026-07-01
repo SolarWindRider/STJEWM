@@ -25,15 +25,25 @@ a pure-SNN reconstruction-free world model whose final predictive latent
 is read out from a *gated spike trace* — a learnable, content-aware
 exponential decay over post-spike activations — and never from the
 membrane potential that produced those spikes. Across a 16-environment
-LeWM-style suite ST-JEWM matches the LeWM Transformer baseline on success
-rate (avg LeWM-SR 83% vs 79%) and produces a *tighter* predictive latent
-(cos_dist 0.065 vs 0.074, lower is better) using $0.27\times$ the
-parameters. On a 4-task *unsaturated* stress suite (long-horizon TwoRoom, velocity-hidden DMC, flicker DMC, OOD goal split on PushT), the *membrane_readout* ablation - the only model that violates the protocol - is *worse* than trace_only on 3/4 tasks (4.9x worse on flicker at 0.20 vs 0.98), proving that the protocol is an *advantage* not a constraint. The trace also achieves 96-98% on the 3 tasks where LeWM Transformer collapses to 0% OOD. A linear probe shows that the trace carries information about
-the next state, the goal direction, and event boundaries that the
-underlying continuous hidden state does not. Together these results
-suggest that the *event history* — the part of the network's state that
-is naturally exposable, naturally sparse, and naturally neuromorphic —
-is a sufficient predictive state for closed-loop control.
+LeWM-style suite ST-JEWM-trace achieves **71.6% LeWM-SR** (vs 79.1% LeWM
+Transformer 5-epoch, 87.5% GRU 7.3M, 98.8% MLP 1.3M no-memory), beating
+all other STJEWM variants (hidden_leak 60.9%, spike_only 65.8%, rate_only
+69.9%, no_trace 61.3%, membrane_readout 61.0%). The trace is doing the
+work: no_trace loses 10pp, the membrane is *not* an upper bound (membrane
+loses to trace on 4/4 stress tasks). On a 4-task *unsaturated* stress suite
+(long-horizon TwoRoom, velocity-hidden DMC, flicker DMC, OOD goal split
+on PushT), the *membrane_readout* ablation is *worse* than trace_only on
+all 4 tasks (4.9x worse on flicker at 0.20 vs 0.98, 13x worse on OOD at
+0.06 vs 0.65), proving that the protocol is an *advantage* not a constraint.
+The trace also achieves 96-98% on the 3 tasks where LeWM Transformer
+collapses to 0% OOD. A 92.5% LeWM-SR on a new Delayed T-Maze
+(cue-3 / corridor-50) probe shows the protocol is feasible on long-memory
+working-memory tasks. A linear probe shows that the trace carries
+information about the next state, the goal direction, and event
+boundaries that the underlying continuous hidden state does not. Together
+these results suggest that the *event history* — the part of the network's
+state that is naturally exposable, naturally sparse, and naturally
+neuromorphic — is a sufficient predictive state for closed-loop control.
 
 ---
 
