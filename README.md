@@ -10,31 +10,59 @@ hidden state. The trace is bounded in [0,1] per dim, content-aware
 (forget gate `alpha = sigma(W[r_{t-1}, s_t, c_t])`), and event-driven.
 
 This repository contains the code, evaluations, and paper for ST-JEWM.
-The full PDF is at `paper/paper.pdf` (v0.4, 2026-07-02). Source:
-`paper/paper.md` and `paper/paper.tex`.
+The full PDF is at `paper/paper.pdf`. Source: `paper/paper.md` and
+`paper/paper.tex`. Current version: v0.5 (2026-07-02).
 
-## Headline result (v0.4, honest)
+## Headline results (v0.5, post-NMI-refactor)
 
-The membrane-forbidden protocol is **necessary**, not arbitrary: the
-`membrane_readout` ablation collapses to **0% env-SR** on the 4-task
-unsaturated stress suite, while all other STJEWM readouts stay at
-~40%. See `docs/HONEST_RESULTS.md` for the full re-analysis and
-`docs/LEWM_SR_ARTIFACT.md` for why the LeWM-SR metric is gaming-able.
+We ran 3 new experiments after the v0.4 paper, expecting to strengthen
+the trace-vs-membrane story. The results are *more nuanced* than
+expected: two of the three are **negative** and one is **positive**.
 
-| Model | env-SR (16 env) | env-SR (stress) |
+1. **Stress-difficulty sweep (3 levels per env, 50 cells)**: the
+   v0.4 claim "membrane_readout collapses to 0% AVG on stress" was
+   driven by pusht_ood + tworoom_long hitting 0% env-native at every
+   difficulty for *every* model. On the LeWM-SR metric, the membrane
+   variant is within 0-10pp of trace at every difficulty. **The
+   protocol is not motivated by a measurable stress disadvantage of
+   membrane readout**; it is motivated by the abstraction and the
+   event-alignment correlation.
+2. **Event-window causal ablation (6 cells)**: zeroing the trace at
+   event-aligned env steps does *not* reduce env-SR more than zeroing
+   at matched non-event or random steps. **The strong causal claim
+   "the trace specifically carries event info the planner uses" is not
+   supported.** The weak event-correlation claim (Sec 4.3.1) is.
+3. **Event-type linear probes (144 cells, 7 envs x 8 models x 3
+   targets)**: the cleanest new positive result. **STJEWM readouts
+   and a 7.3M continuous-RNN GRU both reach mean AUROC ~0.68 on
+   event-type targets; the LeWM Transformer reaches 0.58 and the
+   stateless MLP 0.61.** The event-alignment property is shared by
+   SN training and continuous-RNN training, not trace-specific. The
+   Transformer and stateless MLP are the two that lack it.
+
+The **revised claim**: the membrane-forbidden protocol is a
+*constructive* constraint that forces the planner to read an
+event-correlated state without requiring the planner to *use* the
+event-window component specifically. The post-spike trace is a
+competitive, bounded, event-correlated predictive state under that
+protocol. The relevant design choice for event-aligned predictive
+state is the **recurrent dynamics** (SN or continuous RNN), not
+the trace specifically.
+
+| Model | env-SR (16 env) | event-probe AUROC (144 cells) |
 |---|---|---|
-| STJEWM-rate        | 85.7% | 40.4% |
-| LeWM Transformer   | 85.4% (5-ep) | n/a |
-| **STJEWM-trace**   | **83.9%** | **40.4%** |
-| GRU (7.3M)         | 83.7% | 42.0% |
-| STJEWM-spike       | 82.3% | 40.0% |
-| STJEWM-no-trace    | 81.7% | 40.0% |
-| MLP (1.3M)         | 80.9% | 32.5% |
-| STJEWM-membrane   | 80.4% | **0.0%** |
-| STJEWM-leak        | 79.7% | 40.8% |
+| STJEWM-rate        | 85.7% | n/a (rate-only ablation) |
+| LeWM Transformer   | 85.4% (5-ep) | 0.582 |
+| GRU 7.3M (continuous RNN) | 83.7% | 0.670 |
+| STJEWM-trace       | 83.9% | **0.690** |
+| STJEWM-spike       | 82.3% | 0.654 |
+| STJEWM-no-trace    | 81.7% | 0.644 |
+| STJEWM-leak        | 79.7% | 0.690 |
+| MLP 1.3M (stateless) | 80.9% | 0.612 |
+| STJEWM-membrane   | 80.4% | 0.647 |
 
-The standard suite is **saturated** (all models within 6pp). The stress
-suite is where the membrane-forbidden protocol shows its value.
+The standard suite is **saturated**; the event-probe suite is the
+new benchmark.
 
 ## Repository layout
 
@@ -55,52 +83,47 @@ suite is where the membrane-forbidden protocol shows its value.
 │   ├── core/
 │   │   ├── cem.py                  # CEM planner (LeWM App. B + F.1)
 │   │   ├── encode.py                # encode_obs / encode_history
-│   │   ├── envs/                   # env class registry
-│   │   │   ├── base.py              # BaseEnv, EnvSpec
-│   │   │   ├── dmc_env.py           # DMCStateEnv (mujoco)
-│   │   │   ├── gym_envs.py           # CartPole, Pendulum
-│   │   │   ├── reacher_env.py
-│   │   │   ├── swm_envs.py          # PushT, TwoRoom
-│   │   │   └── delayed_t_maze.py    # working-memory probe
-│   │   └── viz/                     # trajectory GIFs
-│   ├── data/loaders.py              # dataset loaders (h5 / npz)
-│   ├── train/train.py               # single trainer (all 9 models)
+│   │   ├── envs/                   # env class registry (22 envs)
+│   │   └── data/loaders.py          # dataset loaders (h5 / npz)
+│   ├── train/train.py               # single trainer (all 9 model dirs)
 │   ├── eval/closed_loop.py          # CEM planner + env-native SR
-│   └── scripts/                     # 50+ pipeline scripts
+│   ├── scripts/
+│   │   ├── probe.py                # linear probe on frozen encoder (event-type + position)
+│   │   ├── event_window_ablation.py  # causal ablation (Sec 4.5.1)
+│   │   ├── aggregate_event_probes.py # event-probe aggregation
+│   │   ├── aggregate_stress_sweep.py # stress-sweep aggregation
+│   │   ├── aggregate_event_window_ablation.py
+│   │   ├── run_event_probes.sh      # full 144-cell event-probe sweep
+│   │   ├── run_stress_sweep.sh      # 50-cell stress-sweep
+│   │   ├── run_event_window_ablation.sh
+│   │   ├── eval_stress_baselines.sh, eval_stress_suite.sh, ...
+│   │   └── ~30 more analysis scripts
 ├── data/
-│   └── delayed_t_maze_30k.npz       # working-memory dataset (synthetic)
+│   └── delayed_t_maze_30k.npz       # working-memory dataset
 ├── results/                         # per-env ckpts + aggregate tables
-│   ├── ball_in_cup/...              # 16 standard env dirs (gitignored)
-│   ├── cartpole_flicker/...         # 4 stress env dirs (gitignored)
-│   └── aggregate/                   # final summary tables
-│       ├── summary_5way.md          # 5-condition LeWM-SR
+│   └── aggregate/                   # final summary tables (HEADLINE FILES)
+│       ├── summary_5way.md           # 5-condition LeWM-SR (16 envs)
 │       ├── env_sr_table.md           # env-SR (the honest metric)
 │       ├── stress_full_table.md      # 4-task stress
-│       ├── probe_table.md           # linear probe R²
-│       ├── event_align_table.md      # event boundary alignment
-│       ├── flops_table.md           # efficiency
-│       ├── dt_summary.md            # delayed T-Maze
-│       ├── lewm_sr_vs_env_sr.md      # the MLP artifact analysis
-│       ├── summary_4way.md          # 4-condition legacy
-│       ├── dt_modes/                # 5 DT eval JSONs
-│       ├── eval_v1_readout/         # 71 STJEWM-v1 evals
-│       ├── eval_v2_5way/            # 64 9-way evals
-│       ├── stress_logs/              # STJEWM stress evals
-│       ├── stress_baselines/         # 8 GRU/MLP stress evals
-│       ├── lewm_no_trace_eval/       # 4 legacy lewm evals
-│       ├── eval_logs/                # 17 .log files (gitignored)
-│       ├── gifs/                    # 43 MB trajectory gifs (gitignored)
-│       └── gif_inventory.json       # GIF manifest
+│       ├── stress_sweep_table.md     # 3-level difficulty sweep (Sec 4.5.2)
+│       ├── event_window_ablation_table.md  # causal ablation (Sec 4.5.1)
+│       ├── event_probes_table.md     # 144-cell event-probe (Sec 4.6)
+│       ├── event_probes_summary.md   # event-probe win summary
+│       ├── probe_table.md            # legacy position probe
+│       ├── event_align_table.md      # Pearson corr with event boundaries
+│       ├── flops_table.md            # efficiency
+│       ├── lewm_sr_vs_env_sr.md      # MLP latent-collapse analysis
+│       └── dt_modes/, eval_*/        # per-cell JSONs (gitignored)
 ├── paper/
-│   ├── paper.pdf                    # v0.4 compiled PDF (510KB)
-│   ├── paper.md                     # v0.4 markdown source
-│   ├── paper.tex                    # v0.4 LaTeX source
+│   ├── paper.pdf                    # v0.5 compiled PDF
+│   ├── paper.md                     # v0.5 markdown source
+│   ├── paper.tex                    # v0.5 LaTeX source
 │   ├── v0_references.md             # bibliography
 │   └── figs/                        # 8 figures (architecture, 5-way, stress, ...)
 ├── docs/
 │   ├── ARCHITECTURE.md              # model architecture writeup
-│   ├── HONEST_RESULTS.md            # v0.4 reframing
-│   ├── LEWM_SR_ARTIFACT.md         # the MLP latent-collapse analysis
+│   ├── HONEST_RESULTS.md            # v0.4 reframe
+│   ├── LEWM_SR_ARTIFACT.md         # MLP latent-collapse analysis
 │   ├── SATURATION_ANALYSIS.md       # why standard suite is saturated
 │   ├── GOAL_LOSS_FIX.md             # with-goal vs no-goal fix
 │   ├── TWOROOM_BUGFIX.md            # env reset bug fix
@@ -114,51 +137,51 @@ suite is where the membrane-forbidden protocol shows its value.
 
 ## Reproducing
 
-The repo is designed to be reproducible end-to-end. Each model ckpt is
-trained with the same trainer (`code/train/train.py`) on the same
-hyper-parameters. The eval pipeline is `code/scripts/eval_v1_readout.sh`
-(standard 5-way) + `code/scripts/eval_v2_5way.sh` (9-way) +
-`code/scripts/eval_stress_baselines.sh` (4-task stress).
-
 ```bash
-# Train (all 9 model ckpts over 16 envs)
-bash code/scripts/retrain_with_readout_modes.sh   # 5 STJEWM modes
-bash code/scripts/baseline_train_seq.sh          # GRU + MLP
+# Probe sweep (144 cells, ~1.5h on CPU; AUROC per env x target x model)
+bash code/scripts/run_event_probes.sh
+python -m code.scripts.aggregate_event_probes  # writes event_probes_table.md
 
-# Eval
-bash code/scripts/eval_v1_readout.sh trace_only   # one mode, all envs
-bash code/scripts/eval_v2_5way.sh                 # all models, all envs
-bash code/scripts/eval_stress_baselines.sh        # stress suite
+# Stress-difficulty sweep (50 cells, ~1h on CPU; per-difficulty env-SR + LeWM-SR)
+bash code/scripts/run_stress_sweep.sh
+python -m code.scripts.aggregate_stress_sweep
 
-# Aggregate
-python -m code.scripts.make_5way_metrics         # builds summary_5way.md
-python -m code.scripts.aggregate_analysis         # event/probe/flops
+# Event-window causal ablation (6 cells, ~10min)
+bash code/scripts/run_event_window_ablation.sh
+python -m code.scripts.aggregate_event_window_ablation
+
+# Standard 5-way + 9-way + stress (already done; rerun only if needed)
+bash code/scripts/eval_v1_readout.sh trace_only
+bash code/scripts/eval_v2_5way.sh
+bash code/scripts/eval_stress_suite.sh
+python -m code.scripts.make_5way_metrics
 ```
 
-## Status (2026-07-02, 1-week sprint complete + honest v0.4 reframe)
+## Status (v0.5, 2026-07-02)
 
 | Component | Status | Output |
 |---|---|---|
 | 9-condition standard suite (16 envs, env-SR) | done | `results/aggregate/env_sr_table.md` |
 | 4-task unsaturated stress suite (env-SR) | done | `results/aggregate/stress_full_table.md` |
-| Membrane ablation (stress 0% env-SR) | done | `results/aggregate/env_sr_table.md` |
-| GRU/MLP continuous-state baselines | done | `results/aggregate/env_sr_table.md` |
-| Delayed T-Maze env + dataset + 5 ckpts | done | `code/core/envs/delayed_t_maze.py` |
+| **Stress-difficulty sweep (3 levels, 50 cells)** | done | `results/aggregate/stress_sweep_table.md` |
+| **Event-window causal ablation (6 cells)** | done | `results/aggregate/event_window_ablation_table.md` |
+| **Event-type linear probes (144 cells, 7 envs x 8 models x 3 targets)** | done | `results/aggregate/event_probes_table.md` |
 | Event-boundary alignment (6 DMC, d=3.36) | done | `results/aggregate/event_align_table.md` |
-| Linear probe (192 R²) | done | `results/aggregate/probe_table.md` |
+| Position / velocity / goal probe (legacy) | done | `results/aggregate/probe_table.md` |
 | FLOPs / efficiency (4 models) | done | `results/aggregate/flops_table.md` |
 | Trace necessity (64 ablation evals) | done | `results/trace_necessity/SUMMARY.md` |
 | LeWM-SR artifact analysis | done | `results/aggregate/lewm_sr_vs_env_sr.md` |
-| Paper v0.4 (510KB PDF) | done | `paper/paper.pdf` |
+| Paper v0.5 PDF | done | `paper/paper.pdf` |
 
 ## Pre-push checklist (GitHub)
 
-- [ ] Add `LICENSE` (CC-BY-4.0 for paper, MIT for code) — **DONE: MIT for code**
-- [ ] Add `CONTRIBUTING.md` and `CITATION.cff` — **DONE**
-- [ ] Make `paper/paper.md` the canonical source (PDF is built from it) — **DONE**
-- [ ] Add GitHub Actions for `make_5way_metrics.py` + `tectonic` rebuild
-- [ ] Push to GitHub via SSH key (current `git push` was blocked) — **NEEDS SSH KEY**
-- [ ] Tag v0.4 release
+- [x] Add `LICENSE` (MIT for code) — done
+- [x] Add `CONTRIBUTING.md` and `CITATION.cff` — done
+- [x] Make `paper/paper.md` the canonical source — done
+- [ ] GitHub Actions: `tectonic` rebuild PDF on push
+- [ ] GitHub Actions: `make_5way_metrics.py` regression check
+- [x] Push to GitHub via PAT (SSH key not configured) — done
+- [x] Tag v0.5 release — done
 
 ## License
 
