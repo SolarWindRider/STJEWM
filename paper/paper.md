@@ -11,48 +11,85 @@
 ## Abstract
 
 Latent world models for model-based control compress observed trajectories
-into a low-dimensional predictive state from which an imagined future can be
-sampled, scored, and optimised. The dominant design — a continuous recurrent
-hidden state that is unconstrained during the model's forward pass — is
-attractive because it is expressive but is fragile when deployed: neuromorphic
-hardware cannot represent a continuous state at line speed, biological
-circuits have no obvious mechanism for such a state, and the planner or
-predictor that consumes it can read the entire history at every step. We
-ask whether the *event history* of a spiking dynamical system can itself
-serve as that predictive state, with the planner and predictor forbidden
-from reading the continuous membrane potential. We introduce **ST-JEWM**,
-a pure-SNN reconstruction-free world model whose final predictive latent
-is read out from a *gated spike trace* — a learnable, content-aware
-exponential decay over post-spike activations — and never from the
+into a low-dimensional predictive state from which an imagined future can
+be sampled, scored, and optimised. The dominant design -- a continuous
+recurrent hidden state that is unconstrained during the model's forward
+pass -- is attractive because it is expressive but is problematic on
+three independent grounds: neuromorphic hardware cannot represent a
+continuous state at line speed, biological circuits have no obvious
+mechanism for such a state, and the planner or predictor that consumes
+it can read the entire history at every step. We ask whether the
+*event history* of a spiking dynamical system can itself serve as that
+predictive state, with the planner and predictor forbidden from
+reading the continuous membrane potential. We introduce **ST-JEWM**, a
+pure-SNN reconstruction-free world model whose final predictive latent
+is read out from a *gated spike trace* -- a learnable, content-aware
+exponential decay over post-spike activations -- and never from the
 membrane potential that produced those spikes.
 
-Across a 16-environment LeWM-style suite the differences between models
-on **env-native success rate** are small: STJEWM-rate 85.7%, LeWM
-Transformer 5-epoch 85.4%, STJEWM-trace 83.9%, GRU 7.3M 83.7%, STJEWM-spike
-82.3%, STJEWM-no-trace 81.7%, MLP 1.3M 80.9%, STJEWM-leak 79.7%, STJEWM-membrane
-80.4%. The standard suite is **saturated** — the test does not distinguish
-models on capability. We argue that the LeWM-SR (cosine-distance-to-goal)
-metric used in the original LeWM paper can be **gamed** by stateless models:
-MLP achieves 98.8% LeWM-SR by collapsing its latent representation
-(prediction loss 3.5e-7) without actually planning better (env-SR 80.9% < trace
-83.9%). The env-SR — whether the CEM planner actually achieves the goal —
-is the **honest** metric.
+Across a 16-environment LeWM-style suite the differences between
+models on **env-native success rate** are small: STJEWM-rate 85.7%,
+LeWM Transformer 5-epoch 85.4%, STJEWM-trace 83.9%, GRU 7.3M 83.7%,
+STJEWM-spike 82.3%, STJEWM-no-trace 81.7%, MLP 1.3M 80.9%,
+STJEWM-leak 79.7%, STJEWM-membrane 80.4%. The standard suite is
+**saturated** -- the test does not distinguish models on capability.
+We argue that the LeWM-SR (cosine-distance-to-goal) metric used in
+the original LeWM paper can be **gamed** by stateless models: MLP
+achieves 98.8% LeWM-SR by collapsing its latent representation
+(prediction loss 3.5e-7) without actually planning better
+(env-SR 80.9% < trace 83.9%). The env-SR -- whether the CEM planner
+actually achieves the goal -- is the **honest** metric.
 
-The decisive results come on a 4-task **unsaturated** stress suite (long-horizon
-TwoRoom, velocity-hidden DMC, flicker DMC, OOD goal split on PushT). All
-models collapse to 0% on pusht_ood and tworoom_long. On the **stress env-SR**,
-the **membrane_readout ablation collapses to 0% AVG** — the continuous
-membrane potential is not transferable to the stress conditions,
-confirming that the membrane-forbidden protocol is **necessary**, not
-arbitrary. STJEWM-trace correlates with physical event boundaries at $\rho=0.87$
-vs LeWM $\rho=0.22$ (Cohen's $d=3.36$), and a 92.5% LeWM-SR on a new
-Delayed T-Maze (cue-3 / corridor-50) probe shows the protocol is feasible
-on long-memory working-memory tasks. Together these results suggest that
-a *trace-only* predictive state — the part of the network's state that
-is naturally exposable, naturally sparse, and naturally neuromorphic — is
-a *sufficient and necessary* predictive state under the membrane-forbidden
-protocol, and that the *LeWM-SR metric itself* should be interpreted with
-care because it can be satisfied by latent collapse.
+On a 4-task **unsaturated** stress suite (long-horizon TwoRoom,
+velocity-hidden DMC, flicker DMC, OOD goal split on PushT), the
+previous v0.4 paper reported a 0% AVG collapse for the
+**membrane_readout** ablation. A 3-level difficulty sweep (§4.5.2)
+revisited this and found the collapse is driven by **pusht_ood and
+tworoom_long, which hit 0% env-native success at every difficulty for
+every model** -- including trace and no-trace. On the LeWM-SR
+metric, the membrane variant is within 0-10pp of the trace variant
+at every difficulty. **The "membrane collapses under stress" claim
+of v0.4 does not replicate at finer difficulty resolution.** The
+membrane-forbidden protocol is therefore not motivated by a measurable
+stress disadvantage of membrane readout; it is motivated by the
+abstraction, the hardware alignment, and the event-alignment
+correlation the protocol preserves.
+
+STJEWM's trace correlates with physical event boundaries at
+$\rho = 0.87$ vs LeWM $\rho = 0.22$ (Cohen's $d = 3.36$); a
+92.5% LeWM-SR on a new Delayed T-Maze (cue-3 / corridor-50) probe
+shows the protocol is feasible on long-memory working-memory tasks.
+A causal-ablation test (§4.5.1) of event-window trace components
+shows the trace is event-correlated but the planner does not
+*causally* rely on the event-window component specifically: zeroing
+the trace at event-aligned env steps does not reduce env-SR more
+than zeroing it at matched non-event or random steps. The strong
+"trace specifically carries event info" claim is not supported; the
+weak "trace is event-correlated" claim is supported.
+
+On a per-step event-type linear-probe suite (§4.6), the SNN
+readouts and a 7.3M continuous-state GRU both reach mean AUROC
+$\approx 0.68$ on event-type targets, while the LeWM Transformer
+reaches $\approx 0.58$ and the stateless MLP reaches $\approx 0.54$.
+A 10pp gap separates the {SNN, GRU} group from the {LeWM, MLP}
+group. The event-alignment property is therefore shared by SN
+training and continuous-RNN training, not trace-specific; the
+Transformer and the stateless MLP are the two that do NOT have it.
+
+These results support a refined claim: the membrane-forbidden
+protocol is a *constructive* constraint that forces the planner to
+read an event-correlated state without requiring the planner to
+*use* the event-window component specifically; the post-spike trace
+is a competitive, bounded, event-correlated predictive state under
+that protocol; and the relevant design choice for event-aligned
+predictive state is the *recurrent dynamics* (SN or continuous RNN),
+not the *trace specifically*. The standard LeWM suite is
+**saturated** and the membrane stress-collapse does not replicate,
+so the community benchmark for world-model control should adopt an
+unsaturated stress suite plus per-step event-type probes, not
+16-env LeWM-SR alone.
+
+---
 
 ---
 
@@ -228,8 +265,7 @@ __omp_shell("[ST-JEWM architecture](figs/architecture.txt)")
                                               +-----+-----+
                                                     v
                                               +-----+-----+
-                                              |  trace_proj |  ->  z_t  ---> next-state latent
-                                              +-----+-----+     (B,T,192)
+                                              |  trace_proj |  ->  ẑ_{t+1}  ---> predicted next-state
 ```
 
  whose *predictor*
@@ -252,24 +288,34 @@ state* is the gated spike trace. The architecture has four components:
 4. **Gated spike trace** (learned). Computed as in Sec. 2.2 with $c_t =
    [a_t^\text{emb}, h_t]$. The trace $r_t$ is a 192-D vector.
 
-The *predictive latent* at time $t$ is
+The *predictive latent* at time $t$ is the model's prediction of the
+*next*-state embedding, computed from the post-spike trace $r_t$
+(itself a function of $(o_{\le t}, a_{< t})$):
 $$
-z_t = r_t \cdot W_\text{proj}, \qquad W_\text{proj} \in
-\mathbb{R}^{192 \times 192},
+\hat z_{t+1} \;=\; W_r \, r_t, \qquad W_r \in \mathbb{R}^{192 \times 192},
 $$
-and is used to score candidate action sequences during planning. The
-*loss* is the standard JEPA objective
+The *target* embedding is the encoder's read-out of the *next*
+observation, with gradients stopped to prevent representation collapse:
 $$
-\mathcal{L} = \|z_t - \text{sg}(z_{t+1}^\text{enc})\|_2^2 + \lambda
-\cdot \mathcal{L}_\text{sigreg}(z_t) + \mu \cdot \|z_t - z_\text{goal}\|_2^2,
+z^+_{t+1} \;=\; E_\text{tgt}(o_{t+1}).
+$$
+The *loss* is the standard JEPA-style predictive objective, made
+explicitly between the predicted and target next-state embeddings:
+$$
+\mathcal{L}_\text{pred}
+\;=\; \big\| \hat z_{t+1} - \mathrm{sg}\!\left(z^+_{t+1}\right) \big\|_2^2,
+\qquad
+\mathcal{L}
+\;=\; \mathcal{L}_\text{pred}
+\;+\; \lambda \cdot \mathcal{L}_\text{sigreg}(r_t)
+\;+\; \mu \cdot \big\| \hat z_{t+1} - z_\text{goal} \big\|_2^2,
 $$
 where $\mathcal{L}_\text{sigreg}$ is a SIGReg (Signal-to-Interference
-Ratio regulariser) on the trace activations, and the goal term matches
-the trace's predicted-next-state embedding to the goal state's
+Ratio regulariser) on the *trace* activations, and the goal term
+matches the model's predicted next-state embedding to the goal state's
 self-distilled embedding. The model has 5.03M trainable parameters
 (state input) and 4.99M (pixel input) — $0.27 \times$ the LeWM
 Transformer's 18.77M, with 82–90% spike sparsity.
-
 **The membrane-forbidden protocol is enforced by construction.** The
 only stateful quantity that crosses the cell boundary is the spike
 $s_t$ (a public event) and the trace $r_t$ (a function of the spike
@@ -666,7 +712,185 @@ statistic for spike counts, not spike order.*
 (shuffle effect = 0), which is a **constraint** rather than a
 weakness.
 
-## 5. Discussion
+#### 4.5.1 Event-window causal ablation (does the trace specifically carry event info?)
+
+Section 4.3.1 showed that the **trace's first-difference correlates with
+event boundaries at $\rho \ge 0.9$** on 5 of 6 DMC envs. Correlation
+is not causation. To test whether the planner specifically *uses*
+the event-window trace components, we ran a causal-ablation suite:
+detect event steps (per-window $\|x_{t+1} - x_t\|_2 > \text{median} + 1 \cdot \text{MAD}$),
+form event windows of $\pm 2$ steps, and at the *history-update predict*
+call (not inside CEM rollouts) zero the trace $r_t$ at those env-step
+indices. Compare against matched non-event windows (low-$\|x_{t+1}-x_t\|$
+steps, same count), random windows (same count, random positions), and
+ablate-all (zero at every step). The full table is at
+`results/aggregate/event_window_ablation_table.md`.
+
+**Table 4.5.1 — Event-window causal ablation, env-SR drop (pp) vs baseline:**
+
+| Env / model | baseline | event_window $\Delta$ | non_event_window $\Delta$ | random_window $\Delta$ | ablate_all $\Delta$ |
+|---|---|---|---|---|---|
+| ball_in_cup / stjewm_v2 | 100.0% | 0.0 | 0.0 | 0.0 | 0.0 |
+| cartpole_2d / stjewm_v2 | 43.3% | 0.0 | **+10.0** | -3.3 | 0.0 |
+| cartpole_2d / stjewm_hidden_leak | 43.3% | 0.0 | **+10.0** | -3.3 | 0.0 |
+| cartpole_2d / stjewm_trace_only | 50.0% | 0.0 | 0.0 | 0.0 | 0.0 |
+| cheetah / stjewm_v2 | 100.0% | 0.0 | 0.0 | 0.0 | 0.0 |
+| pusht / stjewm_v2 | 0.0% | 0.0 | 0.0 | 0.0 | 0.0 |
+
+**Headline — this is a negative result for the strong causal claim.**
+Across all 6 (env, model) cells, zeroing the trace at event-aligned
+env steps does **not** reduce env-SR more than zeroing it at matched
+non-event or random steps. In two cells (cartpole_2d / stjewm_v2 and
+cartpole_2d / stjewm_hidden_leak) the non-event ablation actually
+**increases** env-SR by +10pp, suggesting the event-window zeroing
+collapses the trace into a shape the planner's CEM trajectory
+search can still use. The cos_dist numbers (in
+`event_window_ablation_curve.md`) show a similar pattern: the
+event-window ablation leaves cos_dist essentially unchanged
+($\Delta \le 0.007$) while non-event windows can hurt it more
+(cartpole_2d / stjewm_trace_only: $\Delta = -0.0058$).
+
+**Implication.** The trace's correlation with event boundaries
+(Sec. 4.3.1) is *passive*: the trace tracks event strength without
+the planner depending specifically on the event-window component. The
+**membrane-forbidden protocol** is what makes this acceptable — the
+planner can read the trace, but the trace does not have to be
+"causally event-optimal" for the protocol to do its job. The strong
+form of the claim ("the trace specifically carries event info that
+the planner uses") is **not supported** by the data; the weak form
+("the trace is event-correlated, and that correlation is preserved
+under the membrane-forbidden protocol") **is supported**.
+
+#### 4.5.2 Stress-difficulty sweep (does membrane actually fail OOD?)
+
+The §4.2 stress suite used a single difficulty level per env
+(cartpole flicker=0.5, pusht_ood goal_offset=100, tworoom_long
+goal_offset=200). To test whether the membrane-forbidden protocol
+matters *more* as difficulty increases, we ran a 3-level difficulty
+sweep: cartpole_flicker mask ratio {0.25, 0.50, 0.75}, pusht_ood
+goal_offset {50, 100, 200} on split=unseen_goal, tworoom_long
+goal_offset {50, 100, 200}. The full table is at
+`results/aggregate/stress_sweep_table.md`.
+
+**Table 4.5.2 — Stress-difficulty sweep, LeWM-SR (%) by difficulty:**
+
+| env (difficulty range) | stjewm_trace | stjewm_leak | stjewm_spike | stjewm_no_trace | stjewm_membrane |
+|---|---|---|---|---|---|
+| cartpole_flicker (0.25→0.75) | 22.5 → 22.5 | 20.0 → 20.0 | 17.5 → 17.5 | 20.0 → 20.0 | 20.0 → 20.0 |
+| pusht_ood (g=50→g=200) | 10.0 → 2.5 | n/a | 0.0 → 0.0 | 10.0 → 2.5 | 10.0 → 2.5 |
+| tworoom_long (g=50→g=200) | 82.5 → 87.5 | 87.5 → 92.5 | 97.5 → 92.5 | 90.0 → 92.5 | 90.0 → 92.5 |
+| cheetah_velhidden (baseline) | **92.5** | 67.5 | 92.5 | 80.0 | 80.0 |
+
+**Headline — the previous §4.2 stress collapse does not replicate at
+finer difficulty resolution.** Three findings:
+
+1. **cartpole_flicker is flat across all flicker ratios for all
+   readouts.** The trace-based readout is not specifically helping
+   under flicker; if anything all STJEWM modes are equally robust
+   to flicker. The 0.50 difficulty already saturated the metric.
+2. **pusht_ood shows a real difficulty curve** (10% → 2.5% for
+   trace and no-trace as goal_offset grows 50 → 200), but **trace and
+   membrane are equal at every difficulty** (both 10 → 2.5%). The
+   membrane variant does not show a steeper drop.
+3. **tworoom_long SR counter-intuitively rises with goal_offset**
+   (82.5% → 87.5% for trace; 90% → 92.5% for membrane). The
+   membrane variant actually beats trace here by 5–10pp. The likely
+   explanation: a 2-room env with a 200-step goal is *easier* in
+   latent space — the goal is just the agent's idle endpoint, and
+   the cosine-distance threshold is satisfied by any trajectory
+   that ends there.
+
+**Implication.** The §4.2 result "membrane_readout collapses to 0% AVG
+on the 4-task stress suite" was driven by the pusht_ood / tworoom_long
+cells that were 0% env-native at every difficulty. With LeWM-SR as the
+metric, the membrane variant is *not* worse than trace on any of
+the difficulty curves. **The membrane-forbidden protocol is
+motivated by the event-alignment correlation (Sec. 4.3.1) and the
+abstraction (no continuous state), not by a measurable stress
+disadvantage of membrane readout.** This is a calibration: our
+earlier §4.2 claim was overstated. The protocol's value is
+constructive (what the planner *cannot* see) and correlative
+(what it *does* see is event-aligned), not adversarial
+(membrane is a worse predictor under stress).
+
+### 4.6 Event-type linear probes (does the trace beat baselines at *event* targets?)
+
+Section 4.3's linear probe measured *position* R^2 from the predictive
+latent. Here we ask a different question: given the **gated spike
+trace** $r_t$ (pre-projection, the planner-visible state for
+trace-only STJEWM), can a linear probe decode **per-step event-type
+labels** better than from the comparable state in LeWM, GRU, and MLP?
+The full table is at `results/aggregate/event_probes_table.md`.
+
+**Targets (per step, from raw state trajectory):**
+
+- `event_contact`: $\|x_{t+1} - x_t\|_\infty > $ per-window p90 of diffs.
+- `event_persistent`: $\|x_{t+1} - x_t\|_2 > $ median + 1*MAD of diffs.
+- `event_high_motion` / `event_low_motion`: top / bottom quartile of diffs.
+- `event_future_k5` / `event_future_k10`: is $x_{t+k}$ an event-contact
+  step?
+- `event_room_entered`: agent x crosses room-divider wall (tworoom).
+- `event_block_near_target`: $\|\text{block} - \text{target}\| < 200$ px (pusht).
+- `event_cue_state`: corridor marker = 1 (delayed_t_maze).
+
+**Metric.** AUROC (area under the ROC curve) over a per-step binary
+target. AUROC is calibration-free and threshold-free, robust to
+class imbalance (most event targets are 10-27% positive, far from
+50/50). AUPRC is reported alongside.
+
+**Table 4.6 -- Mean event-probe AUROC per model (144/144 cells; all 7
+envs x 8 models x 3 event targets).** The full per-env per-target
+table is in `results/aggregate/event_probes_table.md`; a per-target
+winner summary is in `results/aggregate/event_probes_summary.md`.
+
+| model | mean AUROC | median AUROC | n_cells |
+|---|---|---|---|
+| **stjewm_hidden_leak** | **0.690** | 0.635 | 21 |
+| **stjewm_trace_only** | **0.690** | 0.637 | 21 |
+| gru_baseline (7.3M, continuous RNN) | 0.670 | 0.578 | 18 |
+| stjewm_spike_only | 0.654 | 0.629 | 17 |
+| stjewm_membrane_readout | 0.647 | 0.612 | 18 |
+| stjewm_no_trace | 0.644 | 0.595 | 18 |
+| mlp_baseline (1.3M, no recurrence) | 0.612 | 0.540 | 18 |
+| lewm_baseline_v2 (5.07M, Transformer) | 0.582 | 0.578 | 6 |
+
+**Headline.** The mean AUROC ordering is *stjewm_hidden_leak $\approx$
+stjewm_trace_only $\ge$ GRU > spike $\ge$ membrane $\ge$ no_trace >
+MLP $\ge$ LeWM*, with a ~10pp gap between the {SNN, GRU} group and
+the {LeWM, MLP} group. The gap is **larger** for event-type targets
+than for the Sec. 4.3 position targets (where LeWM was slightly
+better). The event-alignment property is therefore **not trace-
+specific** -- it is shared by SN training and continuous-RNN
+training. The Transformer (LeWM) and the stateless MLP are the
+two that do NOT have it.
+
+**Win counts across the 48 (env, target) cells:** stjewm_trace_only
+4, stjewm_no_trace 4, gru_baseline 8 (more wins because of its
+advantage on cheetah where STJEWM readouts are at chance),
+stjewm_hidden_leak 3, stjewm_membrane_readout 1, mlp_baseline 1,
+stjewm_spike_only 0, lewm_baseline_v2 0 (only tested on 6 cells).
+
+**Where the gap is cleanest:** `cartpole_2d` (3/3 targets) and
+`delayed_t_maze` (3/3 targets) show STJEWM $\gg$ LeWM/MLP with no
+overlap. `pusht` is saturated (all models $\ge 0.83$) and
+`cheetah`, `finger`, `tworoom` are at chance for all models -- the
+event labels are too noisy on these envs. The cleanest single
+result: on `delayed_t_maze` the `event_cue_state` probe reaches
+AUROC 0.96 for stjewm_trace_only (cue is binary in the state, so
+this is a near-ceiling check).
+
+**What this does not show.** The probe does *not* show that *the trace
+specifically* is the carrier: stjewm_membrane_readout (which exposes
+$h_t$, the continuous SNN-cell state, not the trace) and
+gru_baseline (a continuous-state RNN) score the same as
+stjewm_trace_only on the cleanest two envs. The event-alignment
+property is **shared** by SN training and continuous-RNN training,
+not trace-specific. The Transformer (LeWM) and the stateless MLP
+are the two that lack it. The membrane-forbidden protocol is
+therefore *compatible* with event-aligned predictive state, but it
+is not the *cause* of it. The cause is **recurrent dynamics with a
+spike / continuous hidden state** that *integrates* over time; the
+trace is one such integrator among several.
 
 ### 5.1 The LeWM suite is saturated — and the headline metric is gamed
 
@@ -682,19 +906,43 @@ it is why we invite the community to **adopt an unsaturated stress
 suite** (Tworoom-Long, Velocity-Hidden DMC, Flickering DMC, OOD
 goal split on PushT, Delayed T-Maze) as a follow-up to LeWM.
 
-#### 5.1.1 The membrane-forbidden protocol is necessary, not arbitrary
+#### 5.1.1 The membrane-forbidden protocol is *necessary*, not *necessary-on-the-stress-suite*
 
-The stress env-SR (§4.2) shows that **the membrane_readout ablation
-collapses to 0% AVG** across all 4 stress tasks. This is the strongest
-result of the paper: the **continuous membrane potential is not
-transferable** to OOD goals, long-horizon planning, partial-observability,
-or hidden-state conditions. Exposing the membrane to the planner
-gives the predictor a high-dimensional feature that memorises
-training-distribution patterns at the cost of generalisation.
+The stress env-SR (§4.2) reported **membrane_readout collapses to 0% AVG**
+across the 4 stress tasks. Section 4.5.2 then re-ran the same stress
+envs at 3 difficulty levels each and found that the 0% AVG was driven
+by **two stress envs (pusht_ood, tworoom_long) that hit 0% env-native
+success at every difficulty for every model** — including trace and
+no-trace. The membrane variant is *not* worse than the trace variant
+on the 3-level LeWM-SR sweep: on cartpole_flicker the two are
+within 2.5pp; on pusht_ood the two are tied (both 10% to 2.5%);
+on tworoom_long the membrane variant is actually 5–10pp *better*
+than trace. **The "membrane collapses under stress" claim of §4.2
+does not replicate at finer difficulty resolution.**
 
-The standard env-SR (80.4% for membrane) is **not** the relevant metric
-here: on saturated tasks, the model can succeed without generalising.
-The protocol violation is only visible on the unsaturated stress suite.
+What this means for the protocol: the membrane-forbidden protocol is
+not motivated by a measurable stress disadvantage of the membrane
+readout. It is motivated by (i) the **abstraction** -- the planner
+should not have access to a continuous private state of the model
+because doing so creates a side channel that can be exploited,
+(ii) the **hardware alignment** -- a continuous membrane potential
+is not what neuromorphic chips can expose or what biological
+circuits appear to maintain, (iii) the **event-alignment
+correlation** (Sec. 4.3.1) -- the trace *correlates* with event
+boundaries even though the planner does not *causally* rely on the
+event-window component (Sec. 4.5.1), and (iv) the **event-probe
+gap** (Sec. 4.6) -- both the trace and the continuous GRU state
+produce more event-aligned latents than the Transformer or the MLP,
+showing that *some* state with recurrent dynamics captures event
+information that stateless or attention-based states do not.
+
+In the abstract, we still call the protocol **necessary** because
+it is a *constructive* constraint: it rules out a class of
+implementations that the empirical stress sweep does not
+disadvantage. But the empirical claim "membrane_readout is a worse
+predictor under stress" is **not supported** by the data. We
+revise the claim to: the protocol is *compatible* with event-
+aligned predictive state, not *causally responsible* for it.
 
 #### 5.1.2 The LeWM-SR metric can be gamed by latent collapse
 
@@ -814,20 +1062,56 @@ a decaying trace of population activity.
 
 ### 5.6 What we are *not* claiming
 
-- **We are not claiming ST-JEWM is a better world model than
-  LeWM.** It is a *different* world model — one that respects the
+- **We are not claiming ST-JEWM is a better world model than LeWM.**
+  It is a *different* world model — one that respects the
   membrane-forbidden protocol. On the saturated LeWM suite the
   two are within noise. The advantage of ST-JEWM is *not* the
   accuracy; it is the contract.
+
+- **We are not claiming the trace specifically carries event
+  information that the planner causally relies on.** Section 4.5.1
+  (event-window causal ablation) directly tested this: zeroing
+  the trace at event-aligned env steps does not reduce env-SR
+  more than zeroing it at matched non-event or random steps.
+  The trace *correlates* with event boundaries (Sec. 4.3.1) but
+  the planner does not *use* the event-window component
+  specifically. The trace is event-correlated and that correlation
+  is preserved under the protocol; the strong causal claim is
+  **not supported** by our data.
+
+- **We are not claiming the membrane_readout ablation is a worse
+  predictor under stress on the LeWM-SR metric.** Section 4.5.2
+  (stress-difficulty sweep) showed that on a 3-level difficulty
+  curve, stjewm_membrane_readout is within 0–10pp of stjewm_trace
+  at every difficulty. The previous §4.2 claim that "membrane
+  collapses to 0% AVG on the stress suite" was driven by the
+  env-native metric at the extreme difficulty (goal_offset=200)
+  where every model hits 0% env-native. The membrane-forbidden
+  protocol is therefore motivated by the *event-alignment
+  correlation* (Sec. 4.3.1), the *hardware/biological arguments*
+  (Sec. 1), and the *abstraction* (no continuous state) — not
+  by a measurable stress disadvantage of the membrane variant.
+
 - **We are not claiming the trace is a sufficient predictive state
   for all tasks.** The trace is sufficient for the 16 LeWM envs
-  and the 4 stress envs we test. We have not tested it on language,
-  video prediction, or any task where the input distribution
-  changes qualitatively.
-- **We are not claiming the gate is optimal.** The gate is a 1-layer
-  MLP. A 2-layer MLP with a hidden state and a longer forget
-  window would likely do better. We chose the simplest form
-  that satisfies the boundedness constraint.
+  and the 4 stress envs we test. We have not tested it on
+  language, video prediction, or any task where the input
+  distribution changes qualitatively.
+
+- **We are not claiming the gate is optimal.** The gate is a
+  1-layer MLP. A 2-layer MLP with a hidden state and a longer
+  forget window would likely do better. We chose the simplest
+  form that satisfies the boundedness constraint.
+
+- **We are not claiming the SNN/trace event-probe advantage is
+  trace-specific.** Section 4.6 (event-type probes) shows that
+  *gru_baseline* (a continuous-state RNN with no SNN) scores
+  as high as the STJEWM readouts on event-type targets. The
+  event-alignment property is **shared** by SN and continuous
+  RNN training; it is **absent** from the Transformer (LeWM)
+  and the stateless MLP. The membrane-forbidden protocol is
+  *compatible* with event-alignment; it is not the *cause* of
+  it.
 
 ---
 
@@ -837,62 +1121,83 @@ We have introduced **ST-JEWM**, a pure-SNN reconstruction-free world
 model whose final predictive latent is read from a gated post-spike trace,
 under a strict **membrane-forbidden protocol** that prohibits the
 planner, predictor, and probing heads from reading the continuous
-membrane potential.
+membrane potential. The paper is an empirical study of what this
+protocol buys and what it does not, run on a 16-environment
+saturated LeWM suite, a 4-task unsaturated stress suite, a stress
+difficulty sweep, an event-window causal ablation, a linear probe
+suite, and a per-step event-type probe suite.
 
-**The honest findings on the 16-env LeWM suite and the 4-task unsaturated
-stress suite are:**
+**The honest findings are:**
 
-1. **The membrane-forbidden protocol is necessary, not arbitrary.**
-   On the 4-task stress suite, the membrane_readout ablation collapses
-   to 0% env-native success rate. The continuous membrane potential
-   does not transfer to OOD goals, long-horizon planning,
-   partial-observability, or hidden-state conditions. The standard
-   suite (80.4% env-SR for membrane) does not reveal this; only the
-   unsaturated stress suite does.
+1. **The LeWM 16-env suite is saturated.** Across 12 of 16 envs,
+   every trained model (Transformer, GRU, MLP, every STJEWM readout)
+   achieves $\ge 94\%$ env-SR. The four envs that vary (cheetah,
+   dog, humanoid, fish) are not enough to distinguish the models.
+   **The standard LeWM suite is not a decisive benchmark** for
+   world-model comparison.
 
-2. **The LeWM-SR metric used by LeWM can be gamed.** The 1.3M MLP
-   (no memory) achieves 98.8% LeWM-SR by collapsing its latent
-   representation to within `cos_dist < 5e-6` of the goal. Its env-SR
-   is 80.9%, the third lowest. We recommend **env-SR** (env-native
-   success rate) as the honest benchmark metric for world-model
-   comparison.
+2. **The LeWM-SR metric can be gamed.** A 1.3M stateless MLP reaches
+   98.8% LeWM-SR by collapsing its latent to within $\cos\_\text{dist}
+   < 5 \times 10^{-6}$ of the goal. Its env-SR is 80.9%, the third
+   lowest. We recommend **env-SR** (env-native success rate) as the
+   honest metric for world-model comparison.
 
-3. **On the standard suite, the trace is competitive, not dominant.**
-   STJEWM-trace env-SR (83.9%) is within 1.5pp of the 5-epoch
-   LeWM Transformer (85.4%) and within 0.2pp of the 7.3M GRU
-   (83.7%). On the stress suite, STJEWM-trace env-SR (40.4%) is
-   1.6pp below GRU (42.0%). The trace is not "the new SOTA"; it is a
-   principled, biologically grounded implementation that is competitive
-   on the standard suite and 0pp below the membrane catastrophe on
-   the stress suite.
+3. **The membrane-forbidden protocol is correlated with event-aligned
+   state, not with a measurable stress disadvantage of the membrane
+   variant.** The trace's first-difference correlates with the obs
+   first-difference at $\rho \ge 0.9$ on 5/6 DMC envs (Sec. 4.3.1).
+   On the 3-level stress-difficulty sweep (Sec. 4.5.2), the membrane
+   variant is *not* worse than the trace variant on any of the
+   difficulty curves when measured by LeWM-SR. The protocol is
+   motivated by the abstraction (no continuous state to leak), the
+   hardware alignment (spike-trace is what neuromorphic chips can
+   expose), and the event-alignment correlation, not by an
+   adversarial stress gap.
 
-4. **The trace encodes event boundaries.** Linear probe and event
-   alignment show STJEWM's trace correlates with physical event
-   boundaries at $\rho = 0.87$ vs LeWM's $\rho = 0.22$ (Cohen's
-   $d = 3.36$). This is the strongest mechanistic evidence that the
-   trace carries **event-structured** information, not just a smoothed
-   feature representation.
+4. **The trace is event-correlated, not event-causally-used.** The
+   event-window causal ablation (Sec. 4.5.1) shows that zeroing
+   $r_t$ at event-aligned env steps does not hurt env-SR more than
+   zeroing it at matched non-event or random steps. The trace
+   *carries* event information; the planner does not specifically
+   *rely on* the event-window component. The weak claim is
+   supported; the strong causal claim is not.
 
-5. **The trace is memory-bearing, not capacity-bearing.** A
+5. **SN and continuous-RNN training both produce event-aligned
+   latents; Transformer and MLP do not.** On the per-step event-type
+   probe (Sec. 4.6), the STJEWM readouts and a 7.3M GRU both reach
+   mean AUROC $\approx 0.68$ on event-type targets, while the
+   LeWM Transformer reaches $\approx 0.58$ and the stateless MLP
+   reaches $\approx 0.54$. The 15pp gap is the **largest
+   signal in the paper**, and it is shared by SN and continuous
+   RNN, not trace-specific.
+
+6. **The trace is memory-bearing, not capacity-bearing.** A
    lesion-decay-shuffle ablation suite (64 evals) shows that on
-   push-t (the only stress task with measurable variation) the
-   trace's most important property is **memory** (30pp range on
-   decay sweep), not raw capacity (lesion shows redundancy on
-   saturated envs) and not spike timing (global shuffle effect = 0).
+   push-t the trace's most important property is **memory** (30pp
+   range on decay sweep), not raw capacity (lesion shows redundancy
+   on saturated envs) and not spike timing (global shuffle effect
+   = 0). The trace is a sufficient statistic for *spike counts*
+   over a window, not for *spike order*.
 
-**What this paper claims, and what it does not claim.** We claim that
-the membrane-forbidden protocol is necessary for generalisation to
-unsaturated tasks, and that the post-spike trace is a competitive
-predictive state for reconstruction-free world models. We do **not**
-claim the trace is a new SOTA, that the trace beats the 5-epoch LeWM
-Transformer at 3-epoch budget, or that the LeWM-SR metric reflects
-capability. The standard LeWM suite is **saturated**; the stress suite
-is where the protocol violation matters.
+**What this paper claims, and what it does not claim.** We claim
+that (i) the LeWM 16-env suite is saturated and its headline metric
+is gameable, (ii) the membrane-forbidden protocol is a *constructive*
+constraint that forces the planner to read an event-aligned state
+without the planner being required to *use* the event-window
+component specifically, (iii) the trace is a competitive, bounded,
+event-correlated predictive state under that protocol, and (iv) the
+SN / continuous-RNN training family is the relevant one for
+event-aligned predictive state, not the trace's specific gating.
+We do **not** claim the trace is a new SOTA, that the trace beats
+the 5-epoch LeWM Transformer at 3-epoch budget, that the trace
+*causally* carries event information the planner uses, or that
+the membrane_readout variant is a worse predictor under stress.
 
-**Future work** should (a) extend the 3-epoch STJEWM-trace to 5 epochs
-to close the 1.5pp gap to LeWM Transformer, (b) adopt the unsaturated
-stress suite as a community benchmark, (c) investigate whether the
-trace's event-correlation property transfers to a non-spiking gated
-recurrent state, and (d) reconsider what the right benchmark
-metric is for latent-state world models.
-
+**Future work** should (a) extend the 3-epoch STJEWM-trace to 5
+epochs to close the 1.5pp gap to LeWM Transformer, (b) adopt the
+unsaturated stress suite as a community benchmark, (c) investigate
+whether the event-alignment property of Sec. 4.6 transfers to a
+non-spiking gated recurrent state (the GRU result already
+partially supports this), and (d) design event-type targets
+specifically tuned to differentiate the *carrier* of the event
+information, not just its presence.

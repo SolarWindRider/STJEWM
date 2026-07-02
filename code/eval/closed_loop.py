@@ -43,12 +43,12 @@ from code.data import load_dataset
 # ============================================================
 # Env factory (string -> BaseEnv instance)
 # ============================================================
-def make_env(env_kind: str, data_path: str = None) -> BaseEnv:
+def make_env(env_kind: str, data_path: str = None, *, flicker_mask_ratio: float = None) -> BaseEnv:
     if env_kind == "pusht":
         return PushTEnv()
     if env_kind == "tworoom" or env_kind == "tworoom_long":
-        # tworoom_long uses the same env, but eval_closed_loop forces
-        # goal_offset=200 to make the planning horizon much harder.
+        # tworoom_long uses the same env; eval_closed_loop honors --goal-offset
+        # for the long variant so the caller can sweep difficulty.
         return TwoRoomEnv()
     if env_kind == "pusht_ood":
         # Same env as pusht; OOD split is applied in _load_ood_split
@@ -66,10 +66,12 @@ def make_env(env_kind: str, data_path: str = None) -> BaseEnv:
     ):
         return make_dmc_env(env_kind)
     if env_kind == "cartpole_flicker" or env_kind == "flickering_dmc":
-        # FlickeringDMCEnv: obs randomly masked to zero with prob 0.5
+        # FlickeringDMCEnv: obs randomly masked to zero with prob mask_ratio.
+        # mask_ratio is a per-eval knob so the caller can sweep difficulty.
         from code.core.envs.dmc_env import FlickeringDMCEnv
-        base_kind = "cartpole" if env_kind == "cartpole_flicker" else "cartpole"
-        return FlickeringDMCEnv(base_kind, mask_ratio=0.5)
+        base_kind = "cartpole"
+        ratio = 0.5 if flicker_mask_ratio is None else float(flicker_mask_ratio)
+        return FlickeringDMCEnv(base_kind, mask_ratio=ratio)
     if env_kind.startswith("vel_hidden_") or env_kind.endswith("_velhidden"):
         # e.g. "vel_hidden_cheetah" or "cheetah_velhidden" -> make_vel_hidden_env("cheetah")
         from code.core.envs.dmc_env import make_vel_hidden_env
@@ -435,9 +437,16 @@ def parse_args():
     p.add_argument("--eval-budget", type=int, default=50)
     p.add_argument("--history-size", type=int, default=3)
     p.add_argument("--goal-offset", type=int, default=25,
-                   help="Default goal_offset (overridden by stress env like tworoom_long)")
+                   help="Default goal_offset. For tworoom_long, you can override "
+                        "this per-call (the legacy hard-coded 200 override was removed).")
     p.add_argument("--split", choices=["in_dist", "unseen_goal"], default="in_dist",
                    help="Dataset split: 'in_dist' (default) or 'unseen_goal' (B4: held-out)")
+    p.add_argument("--flicker-mask-ratio", type=float, default=None,
+                   help="FlickeringDMCEnv mask probability (cartpole_flicker). "
+                        "Default 0.5 if not provided.")
+    p.add_argument("--vel-hidden-mask-obs-ratio", type=float, default=None,
+                   help="If >0, additionally drop this fraction of NON-velocity "
+                        "obs dims on top of velocity-hidden (cheetah_velhidden hard).")
     return p.parse_args()
 
 
@@ -446,8 +455,8 @@ def main():
     print(f"[closed_loop/{args.env}] ckpt={args.ckpt}, data={args.data}", flush=True)
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    # Build env
-    env = make_env(args.env, args.data)
+    # Build env (supports per-eval flicker mask_ratio)
+    env = make_env(args.env, args.data, flicker_mask_ratio=args.flicker_mask_ratio)
 
     # Build model
     ck = torch.load(args.ckpt, map_location="cpu", weights_only=False)
@@ -478,11 +487,55 @@ def main():
         )
     model.load_state_dict(ck["model"])
 
-    # B2: stress env goal_offset override (tworoom_long -> 200)
-    goal_offset_override = None
-    if args.env == "tworoom_long":
-        goal_offset_override = 200
+    # Optional extra difficulty: for cheetah_velhidden, drop additional non-velocity
+    # dims on top of velocity-hidden. Implemented as a small wrapper.
+    if args.vel_hidden_mask_obs_ratio is not None and args.vel_hidden_mask_obs_ratio > 0:
+        from code.core.envs.dmc_env import VEL_INDICES
+        import numpy as _np
+        base_kind = "cheetah" if "cheetah" in args.env else "cartpole"
+        vel_slice = VEL_INDICES.get(base_kind, slice(0, 0))
+        full_dim = env.spec.obs_dim
+        non_vel_idx = [i for i in range(full_dim) if not (vel_slice.start <= i < vel_slice.stop)]
+        n_extra = int(round(args.vel_hidden_mask_obs_ratio * len(non_vel_idx)))
+        rng = _np.random.default_rng(12345)
+        drop_idx = (sorted(rng.choice(non_vel_idx, size=min(n_extra, len(non_vel_idx)),
+                                       replace=False).tolist())
+                    if n_extra > 0 and len(non_vel_idx) > 0 else [])
 
+        class _ExtraDropWrapper:
+            def __init__(self, base):
+                self._base = base
+                self._drop = list(drop_idx)
+                self.spec = base.spec
+                self._step_count = 0
+            def reset(self, seed=None, **kw):
+                obs = self._base.reset(seed=seed, **kw)
+                self._step_count = 0
+                return self._mask(obs)
+            def step(self, action):
+                obs, r, d, info = self._base.step(action)
+                self._step_count += 1
+                return self._mask(obs), r, d, info
+            def get_state(self):
+                return self._mask_arr(self._base.get_state())
+            def check_success(self, s, g):
+                return self._base.check_success(self._mask_arr(s), self._mask_arr(g))
+            def _mask(self, obs):
+                if isinstance(obs, dict) and "state" in obs:
+                    obs = dict(obs); obs["state"] = self._mask_arr(obs["state"]); return obs
+                return self._mask_arr(obs)
+            def _mask_arr(self, arr):
+                a = _np.array(arr, dtype=_np.float32, copy=True)
+                for i in self._drop:
+                    a[i] = 0.0
+                return a
+        env = _ExtraDropWrapper(env)
+        print(f"[closed_loop] extra-drop {len(drop_idx)}/{len(non_vel_idx)} non-vel dims "
+              f"(ratio={args.vel_hidden_mask_obs_ratio})", flush=True)
+
+    # The previous hard-coded tworoom_long -> goal_offset=200 override was removed.
+    # tworoom_long now honors --goal-offset so the sweep can vary difficulty.
+    goal_offset_override = None
     # Run eval
     result = eval_closed_loop(
         model, env, args.data,

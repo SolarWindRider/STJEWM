@@ -1,18 +1,31 @@
 """Linear probe on frozen encoder outputs.
 
 Train a single Linear layer (frozen encoder + single Linear head, 5 epochs
-of Adam/MSE) to predict physical variables from a model's latent embedding.
+of Adam) to predict physical / event variables from a model's latent embedding.
 
 Usage:
-    python -m code.scripts.probe --env <env> --model <model> \\
+    python -m code.scripts.probe --env <env> --model <model \\
             --probe-target <target> --out <json>
 
-Targets:
+Targets (window-level, one (z, y) per window; MSE loss, R^2 metric):
     position         predict state[:nq]  (configurable per-env slice, see ENV_PROBE)
     velocity         predict state[nq:nq+nv]   (skipped for pixel-input)
-    contact          predict a binary contact flag
+    contact          predict a binary contact flag (window-level, from state[1]-state[0])
     future_k         predict state[t + k=10]
     goal_direction   predict (goal - state) / ||...||
+
+Event-type targets (per-step, one (z_t, y_t) per timestep in each window;
+BCE loss + accuracy metric for binary, MSE + R^2 for continuous):
+    event_contact            ||state[t+1]-state[t]||_inf > per-window state-std
+    event_persistent         ||state[t+1]-state[t]||_2 > median(diffs) + 1*MAD(diffs)
+    event_high_motion        ||state[t+1]-state[t]||_2 in top quartile of window diffs
+    event_low_motion         ||state[t+1]-state[t]||_2 in bottom quartile
+    event_future_k5          state[t+5] is an event_contact step (look-ahead)
+    event_future_k10         state[t+10] is an event_contact step
+    event_vel_above_median   ||state[t]-state[t-1]||_2 above window median diff
+    event_room_entered       x crosses room-divider wall (tworoom)
+    event_block_near_target  ||block-target|| < 0.3 (pusht, normalized)
+    event_cue_state          corridor_marker (idx 4) = 1 (delayed_t_maze)
 """
 from __future__ import annotations
 
@@ -38,6 +51,7 @@ ENV_REGISTRY: dict[str, tuple[str, str, int, int]] = {
     "pusht":           ("pusht",       "/home/lx/LeWM/data/pusht_expert_train.h5",                              1, 100),
     "tworoom":         ("tworoom",     "/home/lx/LeWM/data/tworoom_extract/tworoom.h5",                          1, 100),
     "reacher":         ("reacher_4d",  "/home/lx/snn/data/dm_control/3d_rollouts_250k/reacher_250k.npz",         1,  25),
+    "delayed_t_maze":  ("delayed_t_maze", "/home/lx/snn/data/delayed_t_maze_30k.npz",                          1,  25),
     "cartpole_2d":     ("dmc",         "/home/lx/snn/data/dm_control/cartpole_250k.npz",                        1,  25),
     "pendulum_2d":     ("dmc",         "/home/lx/snn/data/dm_control/pendulum_250k.npz",                        1,  25),
     "finger":          ("dmc",         "/home/lx/snn/data/dm_control/3d_rollouts_250k/finger_250k.npz",         1,  25),
@@ -78,9 +92,65 @@ ENV_PROBE: dict[str, dict] = {
     "dog":          {"pos": (0, 19), "vel": (0, 6),  "obs_dim": 87},  # 87-D, Δ over first 6
     "fish":         {"pos": (0, 7),  "vel": (0, 3),  "obs_dim": 14},  # 14-D, Δ over first 3
     "stacker":      {"pos": (0, 10), "vel": (0, 3),  "obs_dim": 20},  # 20-D, Δ over first 3
+    "delayed_t_maze": {"pos": (0, 2), "vel": None,   "obs_dim": 6},   # agent(2) + cue(2) + corridor/goal
 }
 
 
+# ============================================================
+# Event-type probe registry
+# ============================================================
+# Per-env list of event-type targets. Each is binary unless noted.
+#
+# Conventions:
+#   * event_contact            : ||state[t+1] - state[t]||_inf > window-state-std
+#   * event_persistent         : ||state[t+1] - state[t]||_2 > median(diffs) + 1*MAD(diffs)
+#   * event_high_motion        : ||state[t+1] - state[t]||_2 in top quartile of window diffs
+#   * event_low_motion         : ||state[t+1] - state[t]||_2 in bottom quartile
+#   * event_future_k5/k10      : is state[t+k] an event_contact step?
+#   * event_vel_above_median   : ||state[t] - state[t-1]||_2 above window median
+#   * event_room_entered       : x crosses room-divider wall (tworoom)
+#   * event_block_near_target  : ||block-target|| < 0.3 normalized (pusht)
+#   * event_cue_state          : corridor_marker (idx 4) = 1 (delayed_t_maze)
+EVENT_PROBES_PER_ENV: dict[str, list[str]] = {
+    # DMC contact-rich envs
+    "ball_in_cup":     ["event_contact", "event_high_motion", "event_future_k5"],
+    "cartpole_2d":     ["event_contact", "event_high_motion", "event_future_k5"],
+    "cheetah":         ["event_high_motion", "event_low_motion", "event_future_k10"],
+    "finger":          ["event_contact", "event_high_motion", "event_future_k5"],
+    "pendulum_2d":     ["event_high_motion", "event_future_k10", "event_persistent"],
+    "walker":          ["event_contact", "event_high_motion", "event_future_k10"],
+    "hopper":          ["event_contact", "event_high_motion", "event_future_k10"],
+    "quadruped":       ["event_high_motion", "event_low_motion", "event_future_k10"],
+    "humanoid":        ["event_high_motion", "event_low_motion", "event_future_k10"],
+    "humanoid_CMU":    ["event_high_motion", "event_low_motion", "event_future_k10"],
+    "dog":             ["event_high_motion", "event_future_k10", "event_persistent"],
+    "fish":            ["event_high_motion", "event_low_motion", "event_future_k10"],
+    "stacker":         ["event_contact", "event_high_motion", "event_future_k10"],
+    "reacher":         ["event_high_motion", "event_low_motion", "event_future_k5"],
+    # Non-DMC event envs
+    "pusht":           ["event_contact", "event_block_near_target", "event_future_k10"],
+    "tworoom":         ["event_room_entered", "event_high_motion", "event_future_k5"],
+    "delayed_t_maze":  ["event_cue_state", "event_future_k5", "event_high_motion"],
+}
+
+
+# Targets that produce a binary {0,1} label (BCE loss + accuracy metric).
+EVENT_BINARY_TARGETS: set[str] = {
+    "event_contact", "event_persistent", "event_high_motion", "event_low_motion",
+    "event_future_k5", "event_future_k10", "event_vel_above_median",
+    "event_room_entered", "event_block_near_target", "event_cue_state",
+}
+
+
+# All targets that the probe can produce.
+ALL_PROBE_TARGETS: list[str] = [
+    # window-level (legacy)
+    "position", "velocity", "contact", "future_k", "goal_direction",
+    # per-step event-type
+    "event_contact", "event_persistent", "event_high_motion", "event_low_motion",
+    "event_future_k5", "event_future_k10", "event_vel_above_median",
+    "event_room_entered", "event_block_near_target", "event_cue_state",
+]
 # ============================================================
 # Helpers
 # ============================================================
@@ -91,7 +161,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--probe-target",
         required=True,
-        choices=["position", "velocity", "contact", "future_k", "goal_direction"],
+        choices=ALL_PROBE_TARGETS,
     )
     p.add_argument("--ckpt", default=None,
                    help="Override checkpoint path (default: results/<env>/<model>/final.pt).")
@@ -109,16 +179,53 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
-def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict):
-    """Build the model exactly as code/train/train.py and code/eval/closed_loop.py do."""
-    if ck_args.get("model", model_name) == "lewm_baseline" or model_name.startswith("lewm"):
-        from code.lewm_transformer_baseline import LeWMTransformerBaseline
+def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
+                ck_state_dict: dict | None = None):
+    """Build the model exactly as code/train/train.py and code/eval/closed_loop.py do.
+
+    For GRU / MLP, the n_layers stored in ck_args can be wrong (training
+    bookkeeping drift). We prefer the actual layer count from the state_dict
+    when available.
+    """
+    def _state_dict_n_layers(prefix: str) -> int | None:
+        if ck_state_dict is None:
+            return None
+        indices = []
+        for k in ck_state_dict:
+            if k.startswith(prefix + "."):
+                rest = k[len(prefix) + 1:]
+                if rest.startswith("weight_ih_l") or rest.startswith("weight_hh_l"):
+                    try:
+                        indices.append(int(rest.split("_l")[-1]))
+                    except ValueError:
+                        pass
+        return max(indices) + 1 if indices else None
+
+    if model_name.startswith("lewm"):
         embed_dim = ck_args.get("embed_dim", 256)
         num_layers = ck_args.get("n_layers", 4)
         return LeWMTransformerBaseline(
             state_dim=state_dim, action_dim=action_dim,
             embed_dim=embed_dim, num_layers=num_layers, num_heads=8,
         )
+    if model_name.startswith("gru"):
+        from code.gru_baseline import GRUBaseline
+        hidden_dim = ck_args.get("hidden_dim", 576)
+        num_layers = _state_dict_n_layers("gru") or ck_args.get("n_layers", 3)
+        return GRUBaseline(
+            state_dim=state_dim, action_dim=action_dim,
+            hidden_dim=hidden_dim, num_layers=num_layers,
+        )
+    if model_name.startswith("mlp"):
+        from code.mlp_baseline import MLPBaseline
+        hidden_dim = ck_args.get("hidden_dim", 576)
+        num_layers = _state_dict_n_layers("mlp_cells") or _state_dict_n_layers("mlp") or ck_args.get("n_layers", 4)
+        emb_dim = ck_args.get("emb_dim", 192)
+        return MLPBaseline(
+            state_dim=state_dim, action_dim=action_dim,
+            hidden_dim=hidden_dim, num_layers=num_layers, emb_dim=emb_dim,
+        )
+    # Default: STJEWM (any stjewm_* model)
     from code.stjewm import STJEWM
     n_layers = ck_args.get("n_layers", 4)
     return STJEWM(
@@ -213,6 +320,183 @@ def collect_latents_and_targets(
     Y = torch.stack(Ys, dim=0)        # (N, probe_dim)
     return Z, Y, None
 
+# ============================================================
+# Per-step event-type target extractors
+# ============================================================
+def _per_step_diffs(state_window: torch.Tensor) -> torch.Tensor:
+    """Per-step L2 diff ||state[t+1] - state[t]||_2 over the window.
+
+    Returns a (T-1,) tensor. state_window shape: (T, obs_dim).
+    """
+    diff = state_window[1:] - state_window[:-1]
+    return diff.norm(dim=-1)
+
+
+def _per_step_event_target(state_window: torch.Tensor, target_kind: str, env: str,
+                            goal_state: torch.Tensor) -> torch.Tensor | None:
+    """Compute a per-step (T,) binary target tensor for one window.
+
+    Returns None if the target is not applicable to this env.
+    """
+    if target_kind == "event_contact":
+        # Per-step: ||state[t+1]-state[t]||_inf above per-window p90 of diffs.
+        # (state_std-based threshold is too strict for the smooth DMC rollouts
+        # we use; a per-window percentile keeps ~10% positive in every window.)
+        diffs = _per_step_diffs(state_window)  # (T-1,)
+        if diffs.numel() < 4:
+            return None
+        thr = torch.quantile(diffs, 0.90)
+        return (diffs >= thr).float()
+    if target_kind == "event_persistent":
+        diffs = _per_step_diffs(state_window)
+        if diffs.numel() < 2:
+            return None
+        med = diffs.median()
+        mad = (diffs - med).abs().median()
+        thr = med + 1.0 * mad
+        return (diffs > thr).float()
+    if target_kind == "event_high_motion":
+        diffs = _per_step_diffs(state_window)
+        if diffs.numel() < 4:
+            return None
+        q75 = torch.quantile(diffs, 0.75)
+        return (diffs >= q75).float()
+    if target_kind == "event_low_motion":
+        diffs = _per_step_diffs(state_window)
+        if diffs.numel() < 4:
+            return None
+        q25 = torch.quantile(diffs, 0.25)
+        return (diffs <= q25).float()
+    if target_kind == "event_vel_above_median":
+        diffs = _per_step_diffs(state_window)
+        if diffs.numel() == 0:
+            return None
+        med = diffs.median()
+        return (diffs > med).float()
+    if target_kind in ("event_future_k5", "event_future_k10"):
+        k = 5 if target_kind == "event_future_k5" else 10
+        # At step t, predict whether state[t+k] is an event_contact step.
+        diffs = _per_step_diffs(state_window)
+        if diffs.numel() < k + 4:
+            return None
+        # event-contact label at each step (T-1,) — p90 threshold for fairness
+        # with the rest of the event targets.
+        thr = torch.quantile(diffs, 0.90)
+        evt = (diffs >= thr).float()             # (T-1,)
+        # For step t in [0, T-1-k], target = evt[t+k] (if t+k < T-1)
+        # Length of output = T-1-k (the last k steps have no t+k label).
+        out_len = evt.numel() - k
+        if out_len <= 0:
+            return None
+        out = evt[k: k + out_len]
+        return out
+    if target_kind == "event_room_entered":
+        # tworoom: agent x is dim 0. Wall at ~112. Transition = x crosses the wall.
+        if env != "tworoom":
+            return None
+        x = state_window[:, 0]
+        prev_room = (x[:-1] < 112).float()
+        next_room = (x[1:] < 112).float()
+        crossed = (prev_room != next_room).float()
+        return crossed
+    if target_kind == "event_block_near_target":
+        # pusht: state = [block(3)+target(2)+vel(2)]. block-target dist < 0.3.
+        if env != "pusht":
+            return None
+        block = state_window[:, 0:3]      # x,y,angle
+        target = state_window[:, 3:5]     # x,y
+        # PushT state is in pixel coordinates (block x,y in [0,224]); the
+        # block is "near the target" when within 200 px (~25% of typical
+        # block-to-target distance; base rate ~11%).
+        diff = block[:, :2] - target
+        dist = diff.norm(dim=-1)
+        near = (dist < 200.0).float()
+        return near[:-1]
+    if target_kind == "event_cue_state":
+        # delayed_t_maze: corridor_marker is at index 4. 1 = corridor visible.
+        if env != "delayed_t_maze":
+            return None
+        corridor = state_window[:, 4]
+        cue = (corridor > 0.5).float()
+        return cue[:-1]
+    return None
+
+def collect_event_targets(
+    model, dataset, target_kind: str, env: str, device: str,
+    max_windows: int = 5000,
+):
+    """Walk the dataset, run model.encode() per window, return per-step (Z, Y).
+
+    For each window we feed the FULL trajectory to model.encode() (padded to
+    the longest window in the batch) and get (B, T, D) embeddings. We then
+    compute a per-step binary target of length T-1 (inter-step diff axis)
+    and align them with z[:, :T-1, :].
+
+    Returns (Z, Y, binary_flag, err) where:
+        Z:            (sum_windows x (T-1), D)
+        Y:            (sum_windows x (T-1), 1)
+        binary_flag:  True if target is binary (use BCE + accuracy)
+    """
+    n = min(len(dataset), max_windows)
+    Zs, Ys = [], []
+    BATCH = 32  # smaller because we expand to per-step T
+    for batch_start in range(0, n, BATCH):
+        batch_end = min(batch_start + BATCH, n)
+        s_list, a_list, target_list = [], [], []
+        T_real_list = []
+        for i in range(batch_start, batch_end):
+            item = dataset[i]
+            s_full = item["state"]            # (T_full, obs_dim)
+            a_full = item["action"]           # (T_full, action_dim)
+            goal_state = item["goal_state"]
+            T_real_list.append(s_full.shape[0])
+            s_list.append(s_full)
+            a_list.append(a_full)
+            tgt = _per_step_event_target(s_full, target_kind, env, goal_state)
+            if tgt is None:
+                # Append a placeholder so encode() still gets the right shapes.
+                tgt = torch.zeros(s_full.shape[0] - 1, dtype=torch.float32)
+            target_list.append(tgt)
+
+        # Pad to T_max (the longest window in this batch).
+        T_max = max(T_real_list)
+        obs_dim = s_list[0].shape[-1]
+        action_dim_ = a_list[0].shape[-1]
+        s_pad = torch.zeros(len(s_list), T_max, obs_dim, dtype=torch.float32)
+        a_pad = torch.zeros(len(s_list), T_max, action_dim_, dtype=torch.float32)
+        for j, (s, a) in enumerate(zip(s_list, a_list)):
+            s_pad[j, : s.shape[0]] = s
+        s_dev = s_pad.to(device)
+        a_dev = a_pad.to(device)
+        with torch.no_grad():
+            out = model.forward(s_dev, a_dev)
+        # We probe the GATED SPIKE TRACE (pre-projection), not the post-readout
+        # latent. The trace is the model-visible state for trace-only STJEWM and
+        # the membrane-forbidden protocol is most clearly tested on it. For
+        # baselines (LeWM, GRU, MLP) forward() does not return a 'trace' key;
+        # fall back to 'emb' in that case.
+        if isinstance(out, dict) and "trace" in out:
+            z = out["trace"]                            # (B, T_max, D)
+        else:
+            z = out["emb"] if isinstance(out, dict) else out
+        # Per-step z for the real window length. Targets are aligned to T-1
+        # steps (the inter-step diff axis). We index z[:, :T-1, :].
+        for j, T_real in enumerate(T_real_list):
+            z_win = z[j, : T_real - 1, :]            # (T_real-1, D)
+            tgt_win = target_list[j]                  # (T_real-1,) or subset
+            n_match = min(z_win.shape[0], tgt_win.shape[0])
+            if n_match <= 0:
+                continue
+            Zs.append(z_win[:n_match].cpu())
+            Ys.append(tgt_win[:n_match].cpu())
+    if not Zs:
+        return None, None, True, "empty dataset"
+    Z = torch.cat(Zs, dim=0)         # (N_total_steps, D)
+    Y = torch.cat(Ys, dim=0)         # (N_total_steps,)
+    Y = Y.unsqueeze(-1)              # (N, 1)
+    binary = target_kind in EVENT_BINARY_TARGETS
+    return Z, Y, binary, None
+
 
 def r2_score(y_pred: torch.Tensor, y_true: torch.Tensor) -> float:
     """Per-output R² averaged over output dims."""
@@ -286,7 +570,8 @@ def main() -> int:
 
     # Build model + load weights
     try:
-        model = build_model(model_name, state_dim, action_dim, ck_args)
+        model = build_model(model_name, state_dim, action_dim, ck_args,
+                            ck_state_dict=ck.get("model"))
         model.load_state_dict(ck["model"])
     except Exception as e:
         save_skip(args.out, f"model build/load failed: {e}")
@@ -295,25 +580,32 @@ def main() -> int:
     for p in model.parameters():
         p.requires_grad = False
 
-    # Determine probe target dim
-    probe_dim = ENV_PROBE[env]["pos"][1] - ENV_PROBE[env]["pos"][0]
-    if target == "velocity":
-        if ENV_PROBE[env].get("vel") is None:
-            save_skip(args.out, f"no velocity slice for env={env}")
-            return 0
-        probe_dim = ENV_PROBE[env]["vel"][1] - ENV_PROBE[env]["vel"][0]
-    elif target == "contact":
-        probe_dim = 1
-    elif target == "future_k":
+    # Determine probe target dim + dispatch event-type vs window-level
+    is_event = target.startswith("event_")
+    binary = target in EVENT_BINARY_TARGETS
+    if is_event:
+        probe_dim = 1   # per-step binary or scalar
+        Z, Y, binary, err = collect_event_targets(
+            model, ds, target, env, args.device,
+            max_windows=args.max_windows,
+        )
+    else:
         probe_dim = ENV_PROBE[env]["pos"][1] - ENV_PROBE[env]["pos"][0]
-    elif target == "goal_direction":
-        probe_dim = ENV_PROBE[env]["pos"][1] - ENV_PROBE[env]["pos"][0]
-
-    # Collect latents and targets
-    Z, Y, err = collect_latents_and_targets(
-        model, ds, action_dim, probe_dim, target, env, args.device,
-        k=args.future_k, max_windows=args.max_windows,
-    )
+        if target == "velocity":
+            if ENV_PROBE[env].get("vel") is None:
+                save_skip(args.out, f"no velocity slice for env={env}")
+                return 0
+            probe_dim = ENV_PROBE[env]["vel"][1] - ENV_PROBE[env]["vel"][0]
+        elif target == "contact":
+            probe_dim = 1
+        elif target == "future_k":
+            probe_dim = ENV_PROBE[env]["pos"][1] - ENV_PROBE[env]["pos"][0]
+        elif target == "goal_direction":
+            probe_dim = ENV_PROBE[env]["pos"][1] - ENV_PROBE[env]["pos"][0]
+        Z, Y, err = collect_latents_and_targets(
+            model, ds, action_dim, probe_dim, target, env, args.device,
+            k=args.future_k, max_windows=args.max_windows,
+        )
     if Z is None:
         save_skip(args.out, err or "no data")
         return 0
@@ -336,54 +628,106 @@ def main() -> int:
     Y_train = Y_train.to(args.device)
     Y_val = Y_val.to(args.device)
 
-    # Standardize targets
-    y_mean = Y_train.mean(dim=0, keepdim=True)
-    y_std = Y_train.std(dim=0, keepdim=True) + 1e-6
-    Y_train_n = (Y_train - y_mean) / y_std
-    Y_val_n = (Y_val - y_mean) / y_std
-
     # Linear probe
     embed_dim = Z_train.shape[-1]
     head = nn.Linear(embed_dim, probe_dim).to(args.device)
     opt = torch.optim.Adam(head.parameters(), lr=args.lr)
-    loss_fn = nn.MSELoss()
+
+    if binary:
+        # Per-step classification. The probe output is a single logit; we
+        # apply BCEWithLogitsLoss on (pred, target) and report balanced acc.
+        # We weight the positive class inversely to its base rate to prevent
+        # the probe from collapsing to all-zeros for rare-event targets
+        # (e.g., room_entered at 4% base rate).
+        y_for_weight = Y_train.float()
+        base = float(y_for_weight.mean().clamp(min=1e-3))
+        pos_weight = torch.tensor([max((1 - base) / base, 1.0)],
+                                  device=args.device).clamp(max=50.0)
+        loss_fn = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+    else:
+        # Standardize targets and use MSE -> R^2 on raw scale.
+        y_mean = Y_train.mean(dim=0, keepdim=True)
+        y_std = Y_train.std(dim=0, keepdim=True) + 1e-6
+        Y_train_n = (Y_train - y_mean) / y_std
+        Y_val_n = (Y_val - y_mean) / y_std
+        loss_fn = nn.MSELoss()
 
     t0 = time.time()
     for ep in range(args.epochs):
-        # Mini-batch over train
         perm = torch.randperm(n_train)
         for s in range(0, n_train, args.batch):
             idx = perm[s: s + args.batch]
             pred = head(Z_train[idx])
-            loss = loss_fn(pred, Y_train_n[idx])
+            if binary:
+                loss = loss_fn(pred, Y_train[idx])
+            else:
+                loss = loss_fn(pred, Y_train_n[idx])
             opt.zero_grad()
             loss.backward()
             opt.step()
     dt = time.time() - t0
 
-    # Eval (denormalize predictions for R² on raw scale)
+    # Eval
     with torch.no_grad():
-        pred_val = head(Z_val) * y_std + y_mean
-    r2 = r2_score(pred_val.cpu(), Y_val.cpu())
-
+        pred_val = head(Z_val)
+    if binary:
+        # For imbalanced binary targets (e.g. room_entered ~6%, block_near_target
+        # ~10%) bal_acc on argmax can be misleading. We report AUROC as the
+        # headline number (calibration-free, threshold-free, handles imbalance
+        # naturally), keep bal_acc + raw_acc for context, and additionally report
+        # a threshold-free AUPRC which is more sensitive to the rare-class signal.
+        prob = torch.sigmoid(pred_val).cpu().numpy().reshape(-1)
+        y = Y_val.float().cpu().numpy().reshape(-1)
+        # Per-class recall at argmax (kept for sanity)
+        pred_class = (prob > 0.5).astype(np.float32)
+        tp = float(((pred_class == 1) & (y == 1)).sum())
+        fn = float(((pred_class == 0) & (y == 1)).sum())
+        tn = float(((pred_class == 0) & (y == 0)).sum())
+        fp = float(((pred_class == 1) & (y == 0)).sum())
+        pos_recall = tp / max(tp + fn, 1.0)
+        neg_recall = tn / max(tn + fp, 1.0)
+        raw_acc = float((pred_class == y).mean())
+        bal_acc = 0.5 * (pos_recall + neg_recall)
+        # AUROC + AUPRC
+        try:
+            from sklearn.metrics import roc_auc_score, average_precision_score
+            auroc = float(roc_auc_score(y, prob)) if len(np.unique(y)) > 1 else 0.5
+            auprc = float(average_precision_score(y, prob)) if len(np.unique(y)) > 1 else float(y.mean())
+        except Exception:
+            auroc = 0.5
+            auprc = float(y.mean())
+        r2 = auroc
+        metric_name = "auroc"
+        extra = {"raw_acc": raw_acc, "pos_recall": pos_recall,
+                 "neg_recall": neg_recall, "base_rate": float(y.mean()),
+                 "bal_acc": bal_acc, "auprc": auprc}
+    else:
+        pred_val_dn = pred_val * y_std + y_mean
+        r2 = r2_score(pred_val_dn.cpu(), Y_val.cpu())
+        metric_name = "r2"
+        extra = {}
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "skipped": False,
+        "reason": None,
+        "r2": float(r2),
+        "metric": metric_name,
+        "binary": bool(binary),
+        "n_train": int(n_train),
+        "n_val": int(n_val),
+        "probe_target": target,
+        "env": env,
+        "model": model_name,
+        "probe_dim": int(probe_dim),
+        "wall_time_sec": round(dt, 2),
+    }
+    payload.update(extra)
     with open(args.out, "w") as f:
-        json.dump(
-            {
-                "skipped": False,
-                "reason": None,
-                "r2": float(r2),
-                "n_train": int(n_train),
-                "n_val": int(n_val),
-                "probe_target": target,
-                "env": env,
-                "model": model_name,
-                "probe_dim": int(probe_dim),
-                "wall_time_sec": round(dt, 2),
-            },
-            f, indent=2,
-        )
-    print(f"[probe] {env}/{model_name}/{target}: R²={r2:.4f}  (n_train={n_train}, n_val={n_val}, {dt:.1f}s)")
+        json.dump(payload, f, indent=2)
+    if binary:
+        print(f"[probe] {env}/{model_name}/{target}: AUROC={r2:.4f} bal_acc={bal_acc:.4f} raw_acc={raw_acc:.4f} base={float(y.mean()):.3f}  ({dt:.1f}s)")
+    else:
+        print(f"[probe] {env}/{model_name}/{target}: R^2={r2:.4f}  (n_train={n_train}, n_val={n_val}, {dt:.1f}s)")
     return 0
 
 

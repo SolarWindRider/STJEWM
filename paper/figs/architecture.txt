@@ -27,8 +27,15 @@ ST-JEWM Architecture (text-based for v0 draft)
                                               +-----+-----+
                                                     v
                                               +-----+-----+
-                                              |  trace_proj |  ->  z_t  ---> next-state latent
-                                              +-----+-----+     (B,T,192)
+                                              | trace_proj|  ->  ẑ_{t+1}   ---> predicted next-state
+                                              | (= W_r)   |     (B,T,192)
+                                              +-----+-----+
+
+Notation (Methods §2.3):
+  r_t        : gated spike trace at time t (Bounded ∈ [0,1])
+  ŷ_{t+1}    =  W_r r_t  : model's prediction of the next-state latent
+  z^+_{t+1}  =  E_tgt(o_{t+1})  : target encoder's read-out of next obs
+  L_pred     =  || ŷ_{t+1} - sg(z^+_{t+1}) ||_2^2
 
 
 The membrane potential v_t lives ONLY inside the SNN cell. The trace
