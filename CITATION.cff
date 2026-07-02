@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: |
+  If you use this code, please cite the v0.4 paper (see paper/paper.pdf)
+  and the corresponding arXiv release.
+title: "ST-JEWM: Spike Traces as Predictive States for Reconstruction-Free World Models"
+authors:
+  - name: "ST-JEWM Authors"
+    affiliation: "Anonymous (under review at Nature Machine Intelligence)"
+type: software
+version: "0.4"
+date-released: 2026-07-02
+license: MIT
+keywords:
+  - world-models
+  - spiking-neural-networks
+  - joint-embedding-predictive-architecture
+  - event-driven-computation
+  - neuromorphic
+repository-code: "https://github.com/Anonymous/ST-JEWM"
+references:
+  - type: article
+    title: "Spike Traces as Predictive States for Reconstruction-Free World Models"
+    authors: [ {name: "ST-JEWM Authors"} ]
+    year: 2026
+    journal: "Under review"
