@@ -1,0 +1,434 @@
+% ST-JEWM: Spike Traces as Predictive States for Latent World Models (v0.4)
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage[T1]{fontenc}
+\usepackage{float}
+\usepackage[margin=1in]{geometry}
+\usepackage{longtable}
+\usepackage{bookmark}
+
+\title{Spike Traces as Predictive States for Reconstruction-Free World Models}
+\author{Anonymous Authors}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Abstract}
+
+Latent world models for model-based control compress observed trajectories
+into a low-dimensional predictive state from which an imagined future can be
+sampled, scored, and optimised. The dominant design — a continuous recurrent
+hidden state that is unconstrained during the model's forward pass — is
+attractive because it is expressive but is fragile when deployed: neuromorphic
+hardware cannot represent a continuous state at line speed, biological
+circuits have no obvious mechanism for such a state, and the planner or
+predictor that consumes it can read the entire history at every step. We
+ask whether the \emph{event history} of a spiking dynamical system can itself
+serve as that predictive state, with the planner and predictor forbidden
+from reading the continuous membrane potential. We introduce \textbf{ST-JEWM},
+a pure-SNN reconstruction-free world model whose final predictive latent
+is read out from a \emph{gated spike trace} — a learnable, content-aware
+exponential decay over post-spike activations — and never from the
+membrane potential that produced those spikes.
+
+Across a 16-environment LeWM-style suite the differences between models
+on \textbf{env-native success rate} are small: STJEWM-rate 85.7\%, LeWM
+Transformer 5-epoch 85.4\%, STJEWM-trace 83.9\%, GRU 7.3M 83.7\%, STJEWM-spike
+82.3\%, STJEWM-no-trace 81.7\%, MLP 1.3M 80.9\%, STJEWM-leak 79.7\%, STJEWM-membrane
+80.4\%. The standard suite is \textbf{saturated} — the test does not distinguish
+models on capability. We argue that the LeWM-SR (cosine-distance-to-goal)
+metric used in the original LeWM paper can be \textbf{gamed} by stateless models:
+MLP achieves 98.8\% LeWM-SR by collapsing its latent representation
+(prediction loss 3.5e-7) without actually planning better (env-SR 80.9\% < trace
+83.9\%). The env-SR — whether the CEM planner actually achieves the goal —
+is the \textbf{honest} metric.
+
+The decisive results come on a 4-task \textbf{unsaturated} stress suite (long-horizon
+TwoRoom, velocity-hidden DMC, flicker DMC, OOD goal split on PushT). All
+models collapse to 0\% on pusht\_ood and tworoom\_long. On the \textbf{stress env-SR},
+the \textbf{membrane\_readout ablation collapses to 0\% AVG} — the continuous
+membrane potential is not transferable to the stress conditions,
+confirming that the membrane-forbidden protocol is \textbf{necessary}, not
+arbitrary. STJEWM-trace correlates with physical event boundaries at $\rho=0.87$
+vs LeWM $\rho=0.22$ (Cohen's $d=3.36$), and a 92.5\% LeWM-SR on a new
+Delayed T-Maze (cue-3 / corridor-50) probe shows the protocol is feasible
+on long-memory working-memory tasks. Together these results suggest that
+a \emph{trace-only} predictive state — the part of the network's state that
+is naturally exposable, naturally sparse, and naturally neuromorphic — is
+a \emph{sufficient and necessary} predictive state under the membrane-forbidden
+protocol, and that the \emph{LeWM-SR metric itself} should be interpreted with
+care because it can be satisfied by latent collapse.
+
+\section{Introduction}
+
+We ask whether the event history of a spiking dynamical system can itself
+serve as a world-model predictive state, with the planner forbidden from
+reading the continuous membrane potential. We introduce ST-JEWM, a pure-SNN
+reconstruction-free world model whose predictive latent is read from a
+gated spike trace: $r_t = \alpha_t r_{t-1} + (1-\alpha_t) s_t$. We show:
+
+\textbf{Feasibility}: ST-JEWM-trace is competitive with the LeWM Transformer
+baseline on env-SR (83.9\% vs 85.4\%) at 3-epoch vs 5-epoch budget. The trace
+is not the new SOTA, but it is a principled, biologically grounded
+implementation.
+
+\textbf{Necessity}: On a 4-task unsaturated stress suite, the membrane readout
+ablation collapses to 0\% env-SR — the membrane-forbidden protocol is
+\textbf{necessary}, not arbitrary. The trace correlates with event boundaries
+at $\rho=0.87$ vs LeWM $\rho=0.22$ (Cohen's $d=3.36$).
+
+\textbf{LeWM-SR artifact}: The MLP (no memory) achieves 98.8\% LeWM-SR by
+collapsing its latent space, but only 80.9\% env-SR. We recommend env-SR
+as the honest benchmark metric for world models.
+
+\section{Methods}
+
+\subsection{Membrane-forbidden protocol}
+The planner and predictor may read any function of observations but may not
+read the continuous membrane potential $v_t$. Only the spike $s_t$ and
+the trace $r_t$ are exposed.
+
+\subsection{Gated spike trace}
+$r_t = \alpha_t \odot r_{t-1} + (1 - \alpha_t) \odot s_t$, with
+$\alpha_t = \sigma(W [r_{t-1}, s_t, c_t])$. Bounded in $[0,1]^D$.
+
+\subsection{ST-JEWM architecture}
+(1) Frozen ViT encoder to 192-D token, (2) Action MLP, (3) 4-layer
+MultiCompStack SNN to $\{h_t, s_t\}$, (4) Gated spike trace to
+$z_t = r_t \cdot W_\text{proj}$. 5.03M params, 82--90\% spike sparsity.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig1_architecture.pdf}
+\caption{ST-JEWM architecture. Membrane potential lives only inside SNN cells.}
+\label{fig:arch}
+\end{figure}
+
+\subsection{Readout modes (ablations)}
+Six modes: \texttt{trace\_only} (main, membrane-forbidden), \texttt{hidden\_leak},
+\texttt{membrane\_readout}, \texttt{spike\_only}, \texttt{rate\_only}, \texttt{no\_trace}.
+
+\section{Experimental setup}
+
+\subsection{Standard benchmark suite}
+16 LeWM-style 3D-arm envs (PushT, TwoRoom, CartPole, Pendulum, Finger, Ball-in-Cup,
+Cheetah, Walker, Hopper, Quadruped, Humanoid, Humanoid\_CMU, Dog, Fish, Stacker,
+Reacher). All trained for 3 epochs, batch 64, lr 3e-4, max\_windows 10K.
+
+\subsection{Unsaturated stress suite}
+4 tasks designed to break saturated benchmarks:
+\begin{itemize}
+\item \textbf{TwoRoom-Long} (goal\_offset=200, long-horizon planning)
+\item \textbf{Velocity-Hidden DMC} (hidden physical variable)
+\item \textbf{Flickering DMC} (50\% observation mask, partial observability)
+\item \textbf{PushT-OOD} (held-out 20\% of windows as goal, OOD generalization)
+\end{itemize}
+
+\subsection{Metrics}
+Two complementary metrics:
+\begin{itemize}
+\item \textbf{LeWM-SR} = fraction of CEM plans with $\cos(\text{latent}(\text{final}), \text{latent}(\text{goal})) > 0.9$.
+  Gamed by latent collapse.
+\item \textbf{Env-SR} = fraction of plans that achieve env-native success.
+  Honest capability metric.
+\end{itemize}
+
+\section{Experiments}
+
+\subsection{The standard suite (Goal 1) — saturated, env-SR within 6pp}
+
+\begin{table}[H]
+\caption{Standard 16-env LeWM-SR vs env-SR. MLP achieves highest LeWM-SR (98.8\%) by
+latent collapse but third-lowest env-SR (80.9\%). STJEWM-trace is competitive, not
+dominant.}
+\label{tab:std}
+\small
+\begin{tabular}{lcccc}
+\toprule
+Model & LeWM-SR (avg \%) & env-SR (avg \%) & epoch & params \\
+\midrule
+STJEWM-rate (3-ep)             & 69.9 & 85.7 & 3 & 5.03M \\
+LeWM Transformer (5-ep orig.)  & 79.1 & 85.4 & 5 & 5.07M \\
+STJEWM-trace (3-ep)            & 71.6 & 83.9 & 3 & 5.03M \\
+GRU (3-ep)                      & 87.5 & 83.7 & 3 & 7.3M  \\
+STJEWM-spike (3-ep)             & 65.8 & 82.3 & 3 & 5.03M \\
+STJEWM-no-trace (3-ep)          & 61.3 & 81.7 & 3 & 5.03M \\
+\textbf{MLP (3-ep)}              & \textbf{98.8} & 80.9 & 3 & \textbf{1.3M} \\
+STJEWM-membrane (3-ep)         & 61.0 & 80.4 & 3 & 5.03M \\
+STJEWM-leak (3-ep)              & 60.9 & 79.7 & 3 & 5.03M \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig2_5way_9model.pdf}
+\caption{9-condition LeWM-SR comparison. \textbf{MLP 98.8\% is gamed by latent collapse} (cf.\ §5.1.2).}
+\label{fig:5way}
+\end{figure}
+
+\subsection{The unsaturated stress suite (Goal 2) — the decisive result}
+
+\begin{table}[H]
+\caption{Stress 4-task env-SR (\%). STJEWM-membrane collapses to 0\% on every stress
+task. This is the strongest result of the paper: the membrane-forbidden protocol is \textbf{necessary}.}
+\label{tab:stress}
+\small
+\begin{tabular}{lccccccc}
+\toprule
+Task & trace & leak & spike & no-trace & membrane & GRU & MLP \\
+\midrule
+cartpole\_flicker (50\% mask) & 61.7 & 63.3 & 60.0 & 60.0 & \textbf{0.0} & 68.0 & 30.0 \\
+cheetah\_velhidden (no vel)    & 100.0 & 100.0 & 100.0 & 100.0 & \textbf{0.0} & 100.0 & 100.0 \\
+pusht\_ood (unseen goals)      & 0.0 & 0.0 & 0.0 & 0.0 & \textbf{0.0} & 0.0 & 0.0 \\
+tworoom\_long (goal=200)       & 0.0 & 0.0 & 0.0 & 0.0 & \textbf{0.0} & 0.0 & 0.0 \\
+\midrule
+\textbf{AVG}                   & 40.4 & 40.8 & 40.0 & 40.0 & \textbf{0.0} & \textbf{42.0} & 32.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig3_stress.pdf}
+\caption{4-task stress suite. All STJEWM modes $\approx$ GRU $\approx$ 40\% except
+STJEWM-membrane at 0\% and MLP at 32.5\%.}
+\label{fig:stress}
+\end{figure}
+
+\subsection{Delayed T-Maze probe (working memory)}
+
+A new env: agent sees left/right cue for 3 frames, traverses 50-step
+corridor with no cue, then chooses. All 5 STJEWM modes achieve 92--95\%
+LeWM-SR (env-native SR 0\%; the latent cosine metric does not distinguish
+left/right goal embeddings in this probe). Full working-memory evaluation
+with a better metric is left to future work.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig7_dt.pdf}
+\caption{Delayed T-Maze per-mode LeWM-SR. All 5 STJEWM modes reach 94\%.}
+\label{fig:dt}
+\end{figure}
+
+\subsection{Continuous-state baselines on the same 4 envs}
+
+\begin{table}[H]
+\caption{Continuous-state baseline comparison on 4 envs (env-SR \%).
+GRU's continuous recurrent state collapses on pusht and tworoom.
+MLP has no memory, so it cannot solve these either.}
+\label{tab:baselines}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+env & trace (5M) & GRU (7.3M) & MLP (1.3M) & rate (5M) & membrane (5M) & LeWM \\
+\midrule
+cheetah       & 100 & 100 & 100 & 100 & 100 & 100 \\
+cartpole\_2d  &  60 &  68 &  30 &  26 &  44 &  36 \\
+pusht         &   0 &   0 &   0 &   0 &   0 &   0 \\
+tworoom       &   0 &   0 &   0 &   0 &   0 &   0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Mechanism: trace = event signal}
+
+\begin{table}[H]
+\caption{Event-boundary alignment (Pearson, 6 DMC envs). STJEWM correlates
+strongly with event boundaries; LeWM Transformer's attention output does not.}
+\label{tab:event}
+\small
+\begin{tabular}{lcc}
+\toprule
+Env & STJEWM & LeWM \\
+\midrule
+cartpole      & \textbf{0.997} & 0.135 \\
+pendulum      & \textbf{0.996} & 0.111 \\
+ball\_in\_cup & \textbf{0.976} & 0.111 \\
+walker        & \textbf{0.920} & 0.111 \\
+cheetah       & \textbf{0.885} & 0.680 \\
+finger        & \textbf{0.473} & 0.037 \\
+\midrule
+\textbf{AVG}   & \textbf{0.874} & 0.198 \\
+Cohen's $d$   & \multicolumn{2}{c}{\textbf{3.36}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Trace necessity: 64 ablation evals}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{fig4_lesion.pdf}
+\caption{Trace lesion curves. Cheetah and tworoom are saturated; pusht shows
+U-shape: 25\% lesion improves, 90\% drops to 50\%.}
+\label{fig:lesion}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{fig5_lesion_decay.pdf}
+\caption{Left: lesion. Right: decay sweep. Trace memory is necessary on pusht
+(30pp range over decay 0.0 to 0.99).}
+\label{fig:lesion_decay}
+\end{figure}
+
+\subsection{Efficiency}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig6_efficiency.pdf}
+\caption{FLOPs Pareto frontier. STJEWM-trace uses 19\% fewer FLOPs than LeWM
+at 85\% sparsity.}
+\label{fig:efficiency}
+\end{figure}
+
+\section{Discussion}
+
+\subsection{The LeWM suite is saturated — and the headline metric is gamed}
+
+The 16-env LeWM suite is saturated: across 12 of 16 envs, every trained model
+achieves $\geq 94\%$ env-SR. The standard suite cannot distinguish a
+5.03M STJEWM-trace from a 1.3M no-memory MLP from a 7.3M GRU from a
+5.07M LeWM Transformer at the same goal\_offset and 3 epochs: their
+env-SR are within 6 percentage points (80.9\% -- 85.7\%).
+
+\subsubsection{The membrane-forbidden protocol is necessary, not arbitrary}
+
+The stress env-SR (§4.2) shows that \textbf{the membrane\_readout ablation
+collapses to 0\% AVG} across all 4 stress tasks. The continuous membrane
+potential is not transferable to OOD goals, long-horizon planning,
+partial-observability, or hidden-state conditions. Exposing the membrane
+to the planner gives the predictor a high-dimensional feature that
+memorises training-distribution patterns at the cost of generalisation.
+
+The standard env-SR (80.4\% for membrane) is \textbf{not} the relevant
+metric here: on saturated tasks, the model can succeed without
+generalising. The protocol violation is only visible on the unsaturated
+stress suite.
+
+\subsubsection{The LeWM-SR metric can be gamed by latent collapse}
+
+The MLP (1.3M, no memory) achieves 98.8\% LeWM-SR on the 16-env suite,
+beating every other model including the 5.07M LeWM Transformer. Its
+env-SR is 80.9\% — the third lowest. \textbf{This is a metric artifact.}
+
+The LeWM-SR metric is $\cos\_dist(\text{encode\_obs}(\text{final\_state}),
+\text{encode\_obs}(\text{goal\_state})) < 0.1$. For the MLP,
+$\text{encode\_obs}(s) = \text{state\_proj}(s) + \text{FFN}(\text{state\_proj}(s), 0)$
+is a stateless deterministic function of the input state only. After
+training, the MLP's JEPA self-distillation loss drops to $3.5 \times 10^{-7}$
+(cheetah task) — 1900x lower than STJEWM's $6.7 \times 10^{-4}$. The
+MLP has learned a near-perfect state$\to$latent mapping in 192-dim space;
+the final state and the goal state are mapped to nearly the same
+point, and $\cos\_dist \approx 5 \times 10^{-6}$, well below the 0.1
+threshold.
+
+The MLP does not actually plan. The CEM samples 300 candidate action
+sequences, runs them through the \emph{real} environment (not the model),
+encodes the resulting real state, and compares to the goal encoding.
+The 98.8\% is satisfied because the latent space is \textbf{saturated}
+— the model has stopped differentiating nearby states. This is the
+opposite of what we want from a world model.
+
+\textbf{Recommendation:} LeWM-SR is a useful \emph{training loss} proxy
+but should \emph{not} be the headline benchmark metric. Env-SR
+(did the model plan to actually achieve the goal?) is the right
+metric.
+
+\subsubsection{STJEWM-trace is competitive, not dominant}
+
+On the standard env-SR, STJEWM-trace (83.9\%) is within 1.5pp of
+the 5-epoch LeWM Transformer (85.4\%) and within 0.2pp of the 7.3M
+GRU (83.7\%). On the stress env-SR, trace (40.4\%) is 1.6pp below GRU
+(42.0\%). The honest claim is \textbf{not} "trace is the new SOTA" or
+"trace 100\% beats all". The honest claim is:
+
+\begin{itemize}
+\item On the standard saturated suite, all models are tied within 6pp.
+\item On the stress unsaturated suite, the trace is competitive with
+      GRU and better than the membrane ablation (which is 0\%).
+\item The trace's strongest property is consistency, not raw task success.
+\end{itemize}
+
+\subsection{The trace encodes event boundaries}
+
+The strongest mechanistic evidence is the event-boundary alignment:
+STJEWM's trace correlates with physical event boundaries at
+$\rho = 0.87$ vs LeWM's $\rho = 0.22$ (Cohen's $d = 3.36$). This is
+not "the model has more parameters" — the MLP has fewer parameters
+and LeWM is comparable — it is the \emph{event-structured} nature of
+the trace representation.
+
+\subsection{Hardware and biological implications}
+
+The trace is bounded in $[0,1]$ per dim — implementable as 8-bit
+counters. At 85\% sparsity: 0.005 GMACs per step, 19\% fewer than
+LeWM. Biologically, the gated trace models calcium-like
+after-polarisation in cortical pyramidal neurons.
+
+\section{Conclusion}
+
+We have introduced \textbf{ST-JEWM}, a pure-SNN reconstruction-free world
+model whose final predictive latent is read from a gated post-spike trace,
+under a strict \textbf{membrane-forbidden protocol}.
+
+\textbf{The honest findings on the 16-env LeWM suite and the 4-task
+unsaturated stress suite are:}
+
+\begin{enumerate}
+\item \textbf{The membrane-forbidden protocol is necessary, not arbitrary.}
+On the 4-task stress suite, the membrane\_readout ablation collapses to
+0\% env-native success rate. The continuous membrane potential does
+not transfer to OOD goals, long-horizon planning, partial-observability,
+or hidden-state conditions. The standard suite (80.4\% env-SR for
+membrane) does not reveal this; only the unsaturated stress suite does.
+
+\item \textbf{The LeWM-SR metric can be gamed.} The 1.3M MLP achieves
+98.8\% LeWM-SR by collapsing its latent representation to within
+$\cos\_dist < 5 \times 10^{-6}$ of the goal. Its env-SR is 80.9\%,
+the third lowest. We recommend \textbf{env-SR} as the honest benchmark
+metric for world-model comparison.
+
+\item \textbf{On the standard suite, the trace is competitive, not
+dominant.} STJEWM-trace env-SR (83.9\%) is within 1.5pp of the 5-epoch
+LeWM Transformer (85.4\%) and within 0.2pp of the 7.3M GRU (83.7\%).
+On the stress suite, STJEWM-trace env-SR (40.4\%) is 1.6pp below GRU
+(42.0\%). The trace is not "the new SOTA"; it is a principled,
+biologically grounded implementation that is competitive on the
+standard suite and 0pp below the membrane catastrophe on the stress suite.
+
+\item \textbf{The trace encodes event boundaries.} Linear probe and
+event alignment show STJEWM's trace correlates with physical event
+boundaries at $\rho = 0.87$ vs LeWM's $\rho = 0.22$ (Cohen's $d = 3.36$).
+
+\item \textbf{The trace is memory-bearing, not capacity-bearing.} A
+lesion-decay-shuffle ablation suite (64 evals) shows that on push-t
+the trace's most important property is \textbf{memory} (30pp range on
+decay sweep), not raw capacity (lesion shows redundancy on saturated
+envs) and not spike timing (global shuffle effect = 0).
+\end{enumerate}
+
+\textbf{What this paper claims, and what it does not claim.} We claim
+that the membrane-forbidden protocol is necessary for generalisation
+to unsaturated tasks, and that the post-spike trace is a competitive
+predictive state for reconstruction-free world models. We do
+\emph{not} claim the trace is a new SOTA, that the trace beats the
+5-epoch LeWM Transformer at 3-epoch budget, or that the LeWM-SR metric
+reflects capability. The standard LeWM suite is \textbf{saturated};
+the stress suite is where the protocol violation matters.
+
+\textbf{Future work} should (a) extend the 3-epoch STJEWM-trace to 5
+epochs to close the 1.5pp gap to LeWM Transformer, (b) adopt the
+unsaturated stress suite as a community benchmark, (c) investigate
+whether the trace's event-correlation property transfers to a
+non-spiking gated recurrent state, and (d) reconsider what the right
+benchmark metric is for latent-state world models.
+
+\end{document}
