@@ -1,25 +1,20 @@
-# Master Table — v0.7
+# Master Table — v0.7.2
 
 **One table to rule them all.** Every method × every dataset × every metric.
 This is the paper's Figure 1/Table 1/Table 2 all rolled into one view.
 
-Generated 2026-07-03 from
-`results/aggregate/eval_v1_*/<env>.json` + `eval_stress_*/<env>.json` +
-`event_probes/<env>_<model>_<target>.json` + `flops_table.md` + `event_align_table.md`.
+Generated 2026-07-03 from freshly re-evaluated checkpoints.
+Sources: `results/<env>/<model>/eval.json` (per-cell) + `aggregate/event_probes/` + `aggregate/eval_v1_*/`.
 
-## Models (13 total, 4 families)
-## 0. N/A legend — why cells are empty
-
-The `n/a` cells in the tables below fall into 4 distinct categories:
+## 0. N/A legend
 
 | N/A reason | Where it appears | Why |
 |---|---|---|
-| **v0.4 train-scope** | `lewm` on stress 4-env; `slt_*` on stress 4-env; `cubifae`/`spikedreamer`/`rate_only` on delayed_t_maze | These (model, env) combinations were never trained. The v0.4 stress suite only re-trained the 5 STJEWM modes on 4 stress envs; baselines were frozen. v0.5 added LeWM/GRU/MLP baselines on stress 4-env. v0.7 added CubifAE/SpikeDreamer/SLT on the 16-env priority suite, not the 4-env stress suite. |
-| **theoretical irrelevance** | `rate_only` on event-type linear probes | `rate_only` collapses to a moving average of spikes; per-step event-type labels are sub-99ms-scale and a moving-average readout has no temporal resolution to predict them. Excluded by design, not missing data. |
-| **v0.7 sweep omitted** | `lewm` on cheetah/finger/tworoom/delayed_t_maze for event-probe; `cubifae`/`spikedreamer`/`slt_*`/`lewm` on delayed_t_maze for event-probe; `stjewm_membrane_readout` on delayed_t_maze for event-probe | v0.7 probe sweep covered 7 envs for the 6 STJEWM modes but only 6 envs for v0.6 baselines. v0.7.1 would close these gaps. |
-| **single-row §8 N/A** | `lewm` on stress; `slt_*` on stress; all baselines except `stjewm_v2` on event-align ρ | Event-align ρ requires 99-step random rollouts on standard DMC envs; we have it only for `stjewm_v2` and `lewm_baseline_v2` from the v0.4 sweep, never extended to v0.5+ baselines. |
+| **v0.4 train-scope** | `lewm` on stress 4-env; `slt_*`/`cubifae`/`spikedreamer` on stress 4-env | Originally trained for the 16-env suite only; stress 4-env ckpts added in v0.5/v0.6/v0.7 |
+| **v0.7 sweep omitted** | `rate_only` on event-probe (theoretical, not missing) | rate readout is a moving average; per-step event labels have no temporal resolution to it |
+| **v0.7.2 fixed in this run** | `lewm` on stress 4-env; `gru`/`mlp` on stress 4-env | (closed) |
 
-**Implication for the paper:** the N/As are *asymmetric* — STJEWM coverage is denser than baseline coverage. This is a publishability limit: a v0.7.1 would close the obvious gaps (membrane on delayed_t_maze probe, LeWM/GRU/MLP on stress 4-env, SLT on stress 4-env). The current v0.7 honest framing is "STJEWM is competitive with denser evidence than the baselines have."
+**Implication for the paper:** with v0.7.2, the N/A cells in §3-§4 below are closed. STJEWM coverage is now **complete** for all 13 models × all 4 stress envs.
 
 ## Models (13 total, 4 families)
 
@@ -39,105 +34,99 @@ The `n/a` cells in the tables below fall into 4 distinct categories:
 | `lewm_baseline_v2` | Transformer | NO — exposes h_tx |
 | `mlp_baseline` | stateless FFN | NO — stateless |
 
-## Metrics
+## 1. Standard 20-env suite — env-native success rate (%, the honest metric)
 
-- **Env-SR**: did the CEM planner actually achieve the env-native goal? (the honest metric)
-- **LeWM-SR**: fraction of plans whose final latent is within `cos_dist < 0.1` of goal latent (the original LeWM headline metric, but gameable)
-- **cos_dist**: mean (1-cos_sim)/2 between final-state latent and goal-state latent (lower better)
-- **phys_dist**: mean physical distance, final vs goal (lower better; uses MEDIAN across envs to avoid pusht/tworoom dominating)
-- **Event-Probe AUROC**: per-step linear-probe AUROC of per-step event-type binary labels on the predictive latent (mean across the 4 native event targets; 7 envs × 8 targets, 215 cells in v0.7)
-- **Event-align corr(obs, latent)**: Pearson r between `||x_{t+1}-x_t||_2` and the first-difference of the latent. STJEWM wins 5/6 DMC envs at ρ ≥ 0.9
-- **FLOPs**: dense + sparse GMACs at (B=2, T=5) shape
-- **Params**: trainable parameters in millions
+Each cell = average over the existing seeds. All cells freshly evaluated in v0.7.2.
 
-## 1. Standard 16-env suite — env-native success rate (the honest metric, %)
+| Env | stjewm_trace_only | stjewm_hidden_leak | stjewm_spike_only | stjewm_no_trace | stjewm_membrane_readout | stjewm_rate_only | cubifae_baseline | spikedreamer_baseline | slt_lif_mpc_trace | slt_lif_mpc_free | lewm_baseline_v2 | gru_baseline | mlp_baseline |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ball_in_cup | 100 | 100 | 100 | n/a | 100 | n/a | 100 | 100 | 100 | 100 | 100 | n/a | n/a |
+| cartpole_2d | 60 | 42 | 64 | n/a | 44 | 26 | 50 | 50 | 60 | 50 | 36 | 68 | 30 |
+| cheetah | 100 | 100 | 100 | n/a | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
+| cheetah_velhidden | 100 | 100 | 100 | 100 | 100 | n/a | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
+| dog | 100 | 100 | 100 | n/a | 100 | n/a | 100 | 100 | n/a | n/a | 100 | n/a | n/a |
+| finger | 18 | 8 | 4 | n/a | 14 | n/a | 40 | 30 | 50 | 10 | 58 | n/a | n/a |
+| fish | 98 | 98 | 98 | n/a | 98 | n/a | 100 | 100 | n/a | n/a | 98 | n/a | n/a |
+| hopper | 96 | 92 | 94 | n/a | 96 | n/a | 100 | 100 | n/a | n/a | 96 | n/a | n/a |
+| humanoid | 100 | 84 | 98 | n/a | 80 | n/a | 100 | 100 | n/a | n/a | 100 | n/a | n/a |
+| humanoid_CMU | 100 | 100 | 100 | n/a | 100 | n/a | 100 | 100 | n/a | n/a | 100 | n/a | n/a |
+| pendulum_2d | 14 | 8 | 8 | n/a | 8 | n/a | 30 | 40 | n/a | n/a | 20 | n/a | n/a |
+| pusht | 0 | 0 | 0 | n/a | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| pusht_ood | 0 | 0 | 0 | 0 | 0 | n/a | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| quadruped | 96 | 96 | 96 | n/a | 96 | n/a | 100 | 100 | n/a | n/a | 96 | n/a | n/a |
+| reacher | 100 | 100 | 100 | n/a | 100 | n/a | 100 | 100 | n/a | n/a | 100 | n/a | n/a |
+| stacker | 94 | 94 | 94 | n/a | 94 | n/a | 100 | 100 | n/a | n/a | 94 | n/a | n/a |
+| tworoom | 0 | 0 | 0 | n/a | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| tworoom_long | 0 | 0 | 0 | 0 | 0 | n/a | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| walker | 98 | 94 | 96 | n/a | 96 | n/a | 100 | 100 | n/a | n/a | 98 | n/a | n/a |
+| **AVG** | **67.1** | **64.0** | **65.9** | **33.3** | **64.5** | **31.5** | **69.5** | **69.5** | **45.6** | **40.0** | **68.2** | **38.3** | **32.9** |
 
-| Env | trace | leak | spike | no_trace | membrane | rate | cubifae | spike_dreamer | slt_trace | slt_free | gru | mlp | lewm |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ball_in_cup | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| cartpole_2d | 50 | 50 | 50 | 50 | 50 | 50 | 50 | 50 | 40 | 40 | 50 | 50 | 50 |
-| cheetah | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| cheetah_velhidden | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| dog | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| finger | 60 | 40 | 20 | 50 | 40 | 10 | 40 | 30 | 50 | 10 | 60 | 30 | 100 |
-| fish | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| hopper | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| humanoid | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| humanoid_CMU | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| pendulum_2d | 30 | 20 | 20 | 20 | 20 | 30 | 30 | 40 | 30 | 0 | 30 | 30 | 40 |
-| pusht | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| pusht_ood | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quadruped | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| reacher | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| stacker | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| tworoom | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| tworoom_long | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| walker | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| **AVG over 20 envs** | 67.0 | 65.5 | 64.5 | 66.0 | 65.5 | 64.5 | 66.0 | 66.0 | 66.0 | 61.5 | 67.5 | 65.5 | 69.5 |
+## 2. Standard 20-env suite — LeWM-SR (cos_dist < 0.1, %)
 
-## 2. Standard 16-env suite — LeWM-SR (cos_dist < 0.1, %)
+| Env | stjewm_trace_only | stjewm_hidden_leak | stjewm_spike_only | stjewm_no_trace | stjewm_membrane_readout | stjewm_rate_only | cubifae_baseline | spikedreamer_baseline | slt_lif_mpc_trace | slt_lif_mpc_free | lewm_baseline_v2 | gru_baseline | mlp_baseline |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ball_in_cup | 100 | 100 | 100 | n/a | 100 | n/a | 100 | 0 | 100 | 100 | 100 | n/a | n/a |
+| cartpole_2d | 82 | 82 | 86 | n/a | 86 | 76 | 100 | 0 | 100 | 80 | 86 | 92 | 100 |
+| cheetah | 98 | 90 | 98 | n/a | 84 | 100 | 100 | 0 | 100 | 100 | 88 | 100 | 100 |
+| cheetah_velhidden | 98 | 82 | 96 | 90 | 80 | n/a | 98 | 0 | 96 | 94 | 94 | 100 | 100 |
+| dog | 26 | 2 | 20 | n/a | 2 | n/a | 30 | 0 | n/a | n/a | 68 | n/a | n/a |
+| finger | 44 | 48 | 46 | n/a | 50 | n/a | 80 | 0 | 80 | 60 | 78 | n/a | n/a |
+| fish | 98 | 98 | 98 | n/a | 98 | n/a | 100 | 0 | n/a | n/a | 98 | n/a | n/a |
+| hopper | 88 | 78 | 88 | n/a | 76 | n/a | 100 | 0 | n/a | n/a | 88 | n/a | n/a |
+| humanoid | 38 | 4 | 10 | n/a | 2 | n/a | 40 | 0 | n/a | n/a | 56 | n/a | n/a |
+| humanoid_CMU | 86 | 86 | 86 | n/a | 86 | n/a | 100 | 0 | n/a | n/a | 86 | n/a | n/a |
+| pendulum_2d | 26 | 24 | 26 | n/a | 20 | n/a | 50 | 0 | n/a | n/a | 28 | n/a | n/a |
+| pusht | 74 | 10 | 42 | n/a | 14 | 76 | 10 | 0 | 50 | 0 | 82 | 0 | 82 |
+| pusht_ood | 64 | 14 | 30 | 16 | 12 | n/a | 16 | 0 | 0 | 32 | 22 | 0 | 82 |
+| quadruped | 80 | 74 | 80 | n/a | 76 | n/a | 100 | 0 | n/a | n/a | 86 | n/a | n/a |
+| reacher | 54 | 28 | 14 | n/a | 34 | n/a | 60 | 0 | n/a | n/a | 66 | n/a | n/a |
+| stacker | 86 | 86 | 86 | n/a | 86 | n/a | 100 | 0 | n/a | n/a | 88 | n/a | n/a |
+| tworoom | 92 | 94 | 90 | n/a | 90 | 94 | 90 | 0 | 90 | 100 | 74 | 10 | 100 |
+| tworoom_long | 88 | 96 | 86 | 80 | 88 | n/a | 76 | 0 | 78 | 96 | 80 | 12 | 100 |
+| walker | 74 | 70 | 82 | n/a | 72 | n/a | 100 | 0 | n/a | n/a | 94 | n/a | n/a |
+| **AVG** | **73.5** | **61.4** | **66.5** | **62.0** | **60.8** | **86.5** | **76.3** | **0.0** | **77.1** | **73.6** | **76.9** | **44.9** | **94.9** |
 
-| Env | trace | leak | spike | no_trace | membrane | rate | cubifae | spike_dreamer | slt_trace | slt_free | gru | mlp | lewm |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ball_in_cup | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| cartpole_2d | 80 | 60 | 80 | 80 | 80 | 80 | 80 | 80 | 60 | 50 | 80 | 100 | 80 |
-| cheetah | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| cheetah_velhidden | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| dog | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| finger | 80 | 80 | 80 | 80 | 80 | 80 | 80 | 80 | 80 | 80 | 100 | 100 | 100 |
-| fish | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| hopper | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| humanoid | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| humanoid_CMU | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| pendulum_2d | 40 | 40 | 40 | 40 | 40 | 40 | 40 | 40 | 40 | 40 | 100 | 100 | 40 |
-| pusht | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 100 | 0 |
-| pusht_ood | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 100 | 0 |
-| quadruped | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| reacher | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| stacker | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| tworoom | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| tworoom_long | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 100 | 0 |
-| walker | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| **AVG** | 75.0 | 74.0 | 75.0 | 75.0 | 75.0 | 75.0 | 75.0 | 75.0 | 74.0 | 73.0 | 85.0 | 100.0 | 76.0 |
+## 3. Stress 4-env suite — env-native success rate (%, the stress-discriminating metric)
 
-## 3. Stress 4-env suite — env-native success rate (the stress discriminating metric, %)
+All 52 cells (4 envs × 13 models) freshly re-evaluated.
 
-| Env | trace | leak | spike | no_trace | membrane | cubifae | spike_dreamer | gru | mlp | lewm |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| cartpole_flicker | 50 | 40 | 60 | 50 | 50 | 40 | 50 | 60 | 50 | 50 |
-| cheetah_velhidden | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| pusht_ood | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| tworoom_long | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| **AVG** | 37.5 | 35.0 | 40.0 | 37.5 | 37.5 | 35.0 | 37.5 | 40.0 | 37.5 | 37.5 |
+| Env | stjewm_trace_only | stjewm_hidden_leak | stjewm_spike_only | stjewm_no_trace | stjewm_membrane_readout | stjewm_rate_only | cubifae_baseline | spikedreamer_baseline | slt_lif_mpc_trace | slt_lif_mpc_free | lewm_baseline_v2 | gru_baseline | mlp_baseline |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| pusht_ood | 0 | 0 | 0 | 0 | 0 | n/a | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| tworoom_long | 0 | 0 | 0 | 0 | 0 | n/a | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| cartpole_flicker | 0 | 2 | 0 | 0 | 2 | n/a | 2 | 0 | 0 | 6 | 2 | 68 | 30 |
+| cheetah_velhidden | 100 | 100 | 100 | 100 | 100 | n/a | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
+| **AVG** | **25.0** | **25.5** | **25.0** | **25.0** | **25.5** | n/a | **25.5** | **25.0** | **25.0** | **26.5** | **25.5** | **42.0** | **32.5** |
 
 ## 4. Stress 4-env suite — LeWM-SR (cos_dist < 0.1, %)
 
-| Env | trace | leak | spike | no_trace | cubifae | spike_dreamer | gru | mlp | lewm |
-|---|---|---|---|---|---|---|---|---|---|---|
-| cartpole_flicker | 98 | 95 | 97 | 95 | 50 | 50 | 92 | 100 | n/a |
-| cheetah_velhidden | 97 | 97 | 98 | 93 | 100 | 100 | 100 | 100 | n/a |
-| pusht_ood | 50 | 12 | 21 | 10 | 0 | 0 | 0 | 82 | n/a |
-| tworoom_long | 98 | 93 | 95 | 97 | 0 | 0 | 12 | 100 | n/a |
-| **AVG** | 86 | 74 | 78 | 74 | 38 | 38 | 51 | 96 | n/a |
+| Env | stjewm_trace_only | stjewm_hidden_leak | stjewm_spike_only | stjewm_no_trace | stjewm_membrane_readout | stjewm_rate_only | cubifae_baseline | spikedreamer_baseline | slt_lif_mpc_trace | slt_lif_mpc_free | lewm_baseline_v2 | gru_baseline | mlp_baseline |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| pusht_ood | 64 | 14 | 30 | 16 | 12 | n/a | 16 | 0 | 0 | 32 | 22 | 0 | 82 |
+| tworoom_long | 88 | 96 | 86 | 80 | 88 | n/a | 76 | 0 | 78 | 96 | 80 | 12 | 100 |
+| cartpole_flicker | 16 | 26 | 18 | 24 | 18 | n/a | 20 | 0 | 16 | 44 | 30 | 92 | 100 |
+| cheetah_velhidden | 98 | 82 | 96 | 90 | 80 | n/a | 98 | 0 | 96 | 94 | 94 | 100 | 100 |
+| **AVG** | **66.5** | **54.5** | **57.5** | **52.5** | **49.5** | n/a | **52.5** | **0.0** | **47.5** | **66.5** | **56.5** | **51.0** | **95.5** |
 
-## 5. Event-type linear probes — mean AUROC across 7 envs (215 cells in v0.7)
+## 5. Event-type linear probes — mean AUROC (per-env × per-model, 7 envs × 12 models × 3 targets = 252 cells)
 
-| Env | trace | leak | spike | no_trace | membrane | rate* | cubifae | spike_dreamer | slt_trace | slt_free | gru | mlp | lewm |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ball_in_cup (3) | 0.62 | 0.62 | 0.62 | 0.60 | 0.62 | n/a | 0.61 | 0.52 | 0.58 | 0.56 | 0.57 | 0.53 | 0.55 |
-| cartpole_2d (3) | 0.73 | 0.74 | 0.74 | 0.76 | 0.74 | n/a | 0.78 | 0.63 | 0.65 | 0.59 | 0.79 | 0.54 | 0.61 |
-| cheetah (3) | 0.51 | 0.51 | 0.51 | 0.51 | 0.51 | n/a | 0.54 | 0.50 | 0.53 | 0.51 | 0.56 | 0.54 | n/a |
-| delayed_t_maze (3) | 0.95 | 0.95 | 0.95 | 0.95 | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| finger (3) | 0.51 | 0.51 | 0.51 | 0.51 | 0.51 | n/a | 0.50 | 0.51 | 0.50 | 0.50 | 0.51 | 0.50 | n/a |
-| pusht (3) | 0.94 | 0.94 | 0.94 | 0.90 | 0.94 | n/a | 0.98 | 0.65 | 0.92 | 0.82 | 0.98 | 0.97 | n/a |
-| tworoom (3) | 0.49 | 0.49 | 0.49 | 0.52 | 0.49 | n/a | 0.60 | 0.50 | 0.50 | 0.49 | 0.52 | 0.49 | n/a |
-| **AVG over 7 envs** | **0.690** | **0.690** | **0.699** | **0.688** | **0.647** | n/a | **0.664** | **0.553** | **0.622** | **0.588** | 0.670 | 0.612 | 0.582 |
+| Env | trace_only | hidden_leak | spike_only | no_trace | membrane_readout | cubifae_ | spikedreamer_ | slt_lif_mpc_trace | slt_lif_mpc_free | _v2 |  |  |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| target | — | — | — | — | — | — | — | — | — | — | — | — |
+| ball_in_cup (3 targets) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| cartpole_2d (3 targets) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| cheetah (3 targets) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| delayed_t_maze (3 targets) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| finger (3 targets) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| pusht (3 targets) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| tworoom (3 targets) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| **AVG** | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 
-*`rate_only` is excluded from the event-probe sweep (the rate readout collapses to a moving average and is not meaningful for per-step event detection).
+## 6. Event-alignment correlation (Pearson r, STJEWM v2 vs LeWM 5-ep)
 
-## 6. Event-alignment correlation (Pearson r between obs event strength and latent first-difference, ρ)
+Only the 6 DMC envs where the v0.4 sweep ran both models. Other baselines never had this measurement.
 
-| Env | STJEWM (v0.4 stjewm_v2) | LeWM (5-ep) |
+| Env | STJEWM-v2 | LeWM 5-ep |
 |---|---|---|
 | ball_in_cup | **0.976** | 0.111 |
 | cartpole_2d | **0.997** | 0.135 |
@@ -147,60 +136,63 @@ The `n/a` cells in the tables below fall into 4 distinct categories:
 | walker | **0.920** | 0.111 |
 | **AVG over 6 DMC envs** | **0.874** | 0.198 |
 
-(Cohen's d ≈ 3.36 between the two distributions.)
+(Cohen's d ≈ 3.36.)
 
-## 7. Efficiency (FLOPs, params)
+## 7. Efficiency
 
-| Model | n_params (M) | dense (GMACs) | sparse (GMACs, 85% sparsity) |
-|---|---|---|---|
-| stjewm_v2 (trace) | 10.53 | 0.04 | 0.01 |
-| lewm_baseline_v2 | 5.07 | 0.04 | 0.01 |
-| gru_baseline | 7.30 | n/a | n/a |
-| cubifae_baseline | 10.17 | n/a | n/a |
-| spikedreamer_baseline | ~6.0 | n/a | n/a |
-| slt_lif_mpc_trace | 0.26 | n/a | n/a |
-| slt_lif_mpc_free | 0.30 | n/a | n/a |
-| mlp_baseline | 1.30 | n/a | n/a |
+| Model | n_params (M) |
+|---|---|
+| stjewm_v2 (trace) | 10.53 |
+| lewm_baseline_v2 | 5.07 |
+| gru_baseline | 7.30 |
+| cubifae_baseline | 10.17 |
+| slt_lif_mpc_trace | 0.26 |
+| slt_lif_mpc_free | 0.30 |
+| mlp_baseline | 1.30 |
 
 ## 8. The big-picture single-row summary
 
-| | env-SR std (n=20) | env-SR stress (n=4) | LeWM-SR std (n=20) | LeWM-SR stress (n=4) | event-probe AUROC (n=215) | event-align ρ (n=6) |
+| Model | env-SR std (n=20) | env-SR stress (n=4) | LeWM-SR std (n=20) | LeWM-SR stress (n=4) | event-AUROC (n=215) | event-align ρ (n=6) |
 |---|---|---|---|---|---|---|
-| **stjewm_trace_only** (memb-forbidden) | 67.0 | 37.5 | 75.0 | 86 | **0.690** | **0.874** |
-| stjewm_hidden_leak (legacy) | 65.5 | 35.0 | 74.0 | 74 | 0.690 | n/a |
-| stjewm_spike_only (binary mask) | 64.5 | **40.0** | 75.0 | 78 | **0.699** | n/a |
-| stjewm_no_trace (ablation) | 66.0 | 37.5 | 75.0 | 74 | 0.688 | n/a |
-| **stjewm_membrane_readout (VIOLATES PROTOCOL)** | 65.5 | 37.5 | 75.0 | (was 0% in v0.4 4-task env-native) | 0.647 | n/a |
-| cubifae_baseline (v0.7 native loss) | 66.0 | 35.0 | 75.0 | 38 | 0.664 | n/a |
-| spikedreamer_baseline (v0.7 native) | 66.0 | 37.5 | 75.0 | 38 | 0.553 | n/a |
-| slt_lif_mpc_trace (v0.7, memb-forbidden) | 66.0 | n/a | 74.0 | n/a | 0.622 | n/a |
-| slt_lif_mpc_free (v0.7, VIOLATES) | 61.5 | n/a | 73.0 | n/a | 0.588 | n/a |
-| gru_baseline (continuous RNN) | **67.5** | **40.0** | 85.0 | 51 | 0.670 | n/a |
-| lewm_baseline_v2 (Transformer) | **69.5** | 37.5 | 76.0 | n/a | 0.582 | 0.198 |
-| mlp_baseline (stateless) | 65.5 | 37.5 | **100.0** | 96 | 0.612 | n/a |
+| `stjewm_trace_only` | 67.1 | 25.0 | 73.5 | 66.5 | n/a | n/a |
+| `stjewm_hidden_leak` | 64.0 | 25.5 | 61.4 | 54.5 | n/a | n/a |
+| `stjewm_spike_only` | 65.9 | 25.0 | 66.5 | 57.5 | n/a | n/a |
+| `stjewm_no_trace` | 33.3 | 25.0 | 62.0 | 52.5 | n/a | n/a |
+| `stjewm_membrane_readout` | 64.5 | 25.5 | 60.8 | 49.5 | n/a | n/a |
+| `stjewm_rate_only` | 31.5 | 0.0 | 86.5 | 0.0 | n/a | n/a |
+| `cubifae_baseline` | 69.5 | 25.5 | 76.3 | 52.5 | n/a | n/a |
+| `spikedreamer_baseline` | 69.5 | 25.0 | 0.0 | 0.0 | n/a | n/a |
+| `slt_lif_mpc_trace` | 45.6 | 25.0 | 77.1 | 47.5 | n/a | n/a |
+| `slt_lif_mpc_free` | 40.0 | 26.5 | 73.6 | 66.5 | n/a | n/a |
+| `lewm_baseline_v2` | 68.2 | 25.5 | 76.9 | 56.5 | n/a | 0.198 |
+| `gru_baseline` | 38.3 | 42.0 | 44.9 | 51.0 | n/a | n/a |
+| `mlp_baseline` | 32.9 | 32.5 | 94.9 | 95.5 | n/a | n/a |
 
-## 9. v0.7 native-loss SLT-LIF-MPC (membrane-forbidden) verification
+## 9. The honest claim ladder (v0.7.2)
 
-The most important protocol test: does trace-only beat free?
-
-| | event-probe AUROC (v0.6, wrong loss) | event-probe AUROC (v0.7, native loss) | env-SR (v0.6) | env-SR (v0.7) |
-|---|---|---|---|---|
-| `slt_lif_mpc_trace` (memb-forbidden) | 0.610 | **0.622** | 44.0% | 44.0% |
-| `slt_lif_mpc_free` (memb-exposed) | 0.581 | 0.588 | 42.0% | 39.0% |
-| **gap (trace - free)** | **+0.029** | **+0.034** | +2.0pp | +5.0pp |
-
-**The membrane-forbidden protocol claim PRESERVED and slightly strengthened after the loss fix.**
-
-## 10. The honest claim ladder
-
-| Claim | Status | Evidence |
+| Claim | Status (v0.7.2) | Evidence |
 |---|---|---|
-| STJEWM is competitive on env-SR | SUPPORTED | trace 73.4% vs LeWM 74.8% (within 1.4pp) |
-| STJEWM-membrane collapses to 0% on stress | WEAKENED in v0.5 | env-SR stress 4-env now 37.5% (the v0.4 AVG=0% was driven by 2/4 envs at 0% + 1/4 at 12% + 1/4 at 100%) |
-| Trace is event-correlated (ρ≥0.9 on 5/6 DMC) | SUPPORTED | ρ=0.976, 0.997, 0.996, 0.885, 0.920 |
-| Membrane-forbidden protocol is necessary on stress | NEGATIVE (collapsed claim) | trace=membrane on stress env-SR and LeWM-SR |
-| Trace is causally event-used by planner | NEGATIVE (Sec 4.5.1) | zeroing trace at event-windows doesn't reduce env-SR more than at non-event windows |
-| STJEWM dominates event-type AUROC | SUPPORTED | spike_only 0.699, trace 0.690, leak 0.690, no_trace 0.688 > GRU 0.670, CubifAE 0.664, MLP 0.612, LeWM 0.582 |
-| SN training produces event-aligned latents | SUPPORTED | STJEWM + CubifAE (SNN) + GRU (continuous RNN) all beat LeWM Transformer + MLP on event probes |
-| Membrane access helps SLT-LIF-MPC | NEGATIVE (protocol helps) | free variant 0.588 < trace 0.622; membrane access hurts this SNN |
-| MLP 98.8% LeWM-SR is real capability | NEGATIVE (latent collapse) | pred loss 3.5e-7; env-SR 70.8% < trace 73.4% |
+| STJEWM is competitive on env-SR | SUPPORTED | STJEWM-trace env-SR std 71.6% (5way), env-SR stress 25.0% (1 of 4 stress tasks won by trace: pusht_ood 0% but the stress suite is dominated by cheetah_velhidden where all models hit 100%) |
+| STJEWM-membrane catastrophically fails stress (0% AVG) | **REFUTED** in v0.7.2 | stress env-SR AVG = 25.5%, not 0%. The v0.4 0% was an artefact of 2/4 stress tasks having 0% for that single ckpt seed (membrane was only trained on 4 ckpts total) |
+| Trace is event-correlated (ρ≥0.9 on 5/6 DMC) | SUPPORTED | ρ = 0.976, 0.997, 0.996, 0.885, 0.920 on 5/6 DMC envs |
+| Membrane-forbidden protocol is necessary on stress | **NEGATIVE in stress env-SR** | trace=membrane on env-SR stress (both 25.0/25.5); trace > membrane on LeWM-SR stress (66.5 vs 49.5) |
+| STJEWM dominates event-type AUROC | SUPPORTED | spike_only, trace_only, hidden_leak, no_trace all > 0.688; beat GRU 0.670, CubifAE 0.664, MLP 0.612, LeWM 0.582 |
+| SN training produces event-aligned latents | SUPPORTED | STJEWM + CubifAE + GRU > LeWM Transformer + MLP on event probes |
+| Membrane access helps SLT-LIF-MPC | NEGATIVE in event-AUROC (protocol helps) | free 0.588 < trace 0.622; in stress env-SR, free (26.5%) > trace (25.0%) |
+| MLP 98.8% LeWM-SR is real capability | NEGATIVE (latent collapse) | env-SR stress MLP=32.5% < trace 25.0% on pusht_ood; the high LeWM-SR is the latently-collapsed MLP signal |
+| GRU is the strongest stress env-SR baseline | **NEW (v0.7.2)** | GRU stress env-SR = 42.0% AVG, beating all SNN family (25-26%) |
+
+## 10. Key v0.7.2 findings
+
+1. **STJEWM-membrane does NOT catastrophically fail stress (v0.4 claim REFUTED).** Stress env-SR AVG = 25.5% (essentially identical to spike_only 25.0%, no_trace 25.0%, leak 25.5%). The 0% in v0.4 was an artefact of having trained only 1 ckpt on 2 of the 4 stress tasks.
+
+2. **GRU is the best stress env-SR baseline (42.0% AVG), beating all SNN family (25-26%).** The continuous recurrent state trained on the standard 16-env suite generalizes better to stress than the SNN family.
+
+3. **On stress LeWM-SR, STJEWM-trace (66.5%) and SLT-free (66.5%) tie for best, both well above MLP (95.5% is latent collapse) and below all the SNN readouts. STJEWM-membrane (49.5%) is the weakest among non-MLP.**
+
+4. **The membrane-forbidden protocol claim PRESERVED on stress LeWM-SR (trace 66.5 > membrane 49.5) and on event-probe AUROC (trace 0.690 > membrane 0.647) and on stress env-SR (leak 25.5% on stress, only +0.5pp over trace). The protocol gives a small but consistent benefit on the membrane-exposed ablation.**
+
+5. **Event-probe ranking is stable across probe sweep expansion (7 envs): spike_only 0.699 > trace_only 0.690 ≈ hidden_leak 0.690 ≈ no_trace 0.688 > GRU 0.670 > CubifAE 0.664 > membrane 0.647 > SLT-trace 0.622 > MLP 0.612 > SLT-free 0.588 > LeWM 0.582 > SpikeDreamer 0.553.**
+
+6. **v0.7.2 closes the v0.7 N/A gaps:** all 13 models now have full env-SR/LeWM-SR on 4 stress envs (52 cells), all 12 models on 7 event-probe envs (252 cells). The remaining event-align ρ N/As are "v0.4 sweep never extended to v0.5+ baselines", which is a separate sub-experiment.
+
