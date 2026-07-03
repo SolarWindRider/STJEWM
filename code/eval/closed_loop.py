@@ -474,6 +474,34 @@ def main():
     elif ck_args.get("model", "stjewm") == "mlp_baseline":
         from code.mlp_baseline import make_mlp_baseline
         model = make_mlp_baseline(state_dim=state_dim, action_dim=action_dim)
+    elif ck_args.get("model", "stjewm") == "slt_lif_mpc_trace":
+        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
+        n_layers = ck_args.get("n_layers", 4)
+        model = make_slt_lif_mpc_trace(
+            state_dim=state_dim, action_dim=action_dim,
+            d_in=192, embed_dim=192, n_layers=n_layers, trace_beta=0.9, k_avg=4,
+        )
+    elif ck_args.get("model", "stjewm") == "slt_lif_mpc_free":
+        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
+        n_layers = ck_args.get("n_layers", 4)
+        model = make_slt_lif_mpc_free(
+            state_dim=state_dim, action_dim=action_dim,
+            d_in=192, embed_dim=192, n_layers=n_layers, trace_beta=0.9,
+        )
+    elif ck_args.get("model", "stjewm") == "spikedreamer_baseline":
+        from code.spikedreamer_baseline import make_spikedreamer
+        n_layers = ck_args.get("n_layers", 4)
+        model = make_spikedreamer(
+            state_dim=state_dim, action_dim=action_dim,
+            d_snn=128, d_tx=192, num_layers=n_layers, num_heads=8,
+        )
+    elif ck_args.get("model", "stjewm") == "cubifae_baseline":
+        from code.cubifae_baseline import CubifAEBaseline
+        n_layers = ck_args.get("n_layers", 4)
+        model = CubifAEBaseline(
+            state_dim=state_dim, action_dim=action_dim,
+            d_hid=192, n_layers=n_layers,
+        )
     else:
         n_layers = ck_args.get("n_layers", 4)
         # ReadoutMode: read from ckpt args (added by Workstream A)
@@ -485,7 +513,6 @@ def main():
             trace_beta=0.9, freeze_encoder=True,
             readout_mode=ck_readout_mode,
         )
-    model.load_state_dict(ck["model"])
 
     # Optional extra difficulty: for cheetah_velhidden, drop additional non-velocity
     # dims on top of velocity-hidden. Implemented as a small wrapper.

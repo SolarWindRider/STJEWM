@@ -1,0 +1,38 @@
+{
+  "cartpole_flicker": {
+    "env_id": "mujoco/cartpole",
+    "success_rate_lewm": 1.0,
+    "success_rate_env": 0.5,
+    "mean_cos_dist": 0.008152884244918824,
+    "mean_phys_dist": 0.6821845662575092,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "cheetah_velhidden": {
+    "env_id": "mujoco/cheetah",
+    "success_rate_lewm": 1.0,
+    "success_rate_env": 1.0,
+    "mean_cos_dist": 0.040424251556396486,
+    "mean_phys_dist": 0.1808636099100113,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "pusht_ood": {
+    "env_id": "swm/PushT-v1",
+    "success_rate_lewm": 0.1,
+    "success_rate_env": 0.0,
+    "mean_cos_dist": 0.1802998885512352,
+    "mean_phys_dist": 5614.28231375558,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "tworoom_long": {
+    "env_id": "swm/TwoRoom-v1",
+    "success_rate_lewm": 0.9,
+    "success_rate_env": 0.0,
+    "mean_cos_dist": 0.03892129957675934,
+    "mean_phys_dist": 66.06831226348876,
+    "n_episodes": 10,
+    "n_seeds": 1
+  }
+}

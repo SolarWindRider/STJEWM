@@ -35,7 +35,10 @@ from code.sigreg import SIGReg
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--model", choices=["stjewm", "lewm_baseline", "gru_baseline", "mlp_baseline"], required=True,
+    p.add_argument("--model", choices=["stjewm", "lewm_baseline", "gru_baseline", "mlp_baseline",
+                                       "slt_lif_mpc_trace", "slt_lif_mpc_free",
+                                       "spikedreamer_baseline",
+                                       "cubifae_baseline"], required=True,
                    help="Which model architecture to train")
     p.add_argument("--env-kind", required=True,
                    help="Loader kind: pusht, tworoom, reacher_4d, reacher_lewm, "
@@ -97,8 +100,30 @@ def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int,
     if model_kind == "mlp_baseline":
         from code.mlp_baseline import make_mlp_baseline
         return make_mlp_baseline(state_dim=obs_dim, action_dim=action_dim)
-    raise ValueError(f"Unknown model: {model_kind}")
-
+    if model_kind == "slt_lif_mpc_trace":
+        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
+        return make_slt_lif_mpc_trace(
+            state_dim=obs_dim, action_dim=action_dim,
+            d_in=192, embed_dim=192, n_layers=n_layers, trace_beta=0.9, k_avg=4,
+        )
+    if model_kind == "slt_lif_mpc_free":
+        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
+        return make_slt_lif_mpc_free(
+            state_dim=obs_dim, action_dim=action_dim,
+            d_in=192, embed_dim=192, n_layers=n_layers, trace_beta=0.9,
+        )
+    if model_kind == "spikedreamer_baseline":
+        from code.spikedreamer_baseline import make_spikedreamer
+        return make_spikedreamer(
+            state_dim=obs_dim, action_dim=action_dim,
+            d_snn=128, d_tx=192, num_layers=n_layers, num_heads=8,
+        )
+    if model_kind == "cubifae_baseline":
+        from code.cubifae_baseline import CubifAEBaseline
+        return CubifAEBaseline(
+            state_dim=obs_dim, action_dim=action_dim,
+            d_hid=192, n_layers=n_layers,
+        )
 
 # ============================================================
 # Training loop (single canonical)

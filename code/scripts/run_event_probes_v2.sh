@@ -1,32 +1,20 @@
 #!/bin/bash
-# Event-type probe sweep across STJEWM modes.
-#
-# For each (env, model, target) cell:
-#   python -m code.scripts.probe --env <env> --model <model> \\
-#           --probe-target <target> --out results/aggregate/event_probes/<...>.json \\
-#           --max-windows 2000 --epochs 5 --device cpu
-#
-# Cells: 6 envs * 5 STJEWM modes * 3 event targets = 90 cells.
-# With max_windows=2000 + cpu, each cell runs in ~5-20 s; total ~20 min.
+# Run event probes for cubifae_baseline, spikedreamer_baseline, slt_lif_mpc_trace, slt_lif_mpc_free.
+# Same as run_event_probes.sh but limited to the 3 baseline models (and runs on CPU).
 set -e
 cd /home/lx/snn
 
 PY=/home/lx/miniconda3/envs/snn/bin/python
 OUT_DIR=/home/lx/snn/results/aggregate/event_probes
 mkdir -p "$OUT_DIR"
+LOG_DIR=/home/lx/snn/logs/event_probes_v2
+mkdir -p "$LOG_DIR"
+
 MODELS=(
-    stjewm_trace_only
-    stjewm_hidden_leak
-    stjewm_spike_only
-    stjewm_no_trace
-    stjewm_membrane_readout
-    lewm_baseline_v2
-    gru_baseline
-    mlp_baseline
+    cubifae_baseline
+    spikedreamer_baseline
     slt_lif_mpc_trace
     slt_lif_mpc_free
-    spikedreamer_baseline
-    cubifae_baseline
 )
 
 ENVS=(
@@ -39,7 +27,6 @@ ENVS=(
     delayed_t_maze
 )
 
-# Per-env event targets (matches EVENT_PROBES_PER_ENV in probe.py).
 declare -A TARGETS
 TARGETS[ball_in_cup]="event_contact event_high_motion event_future_k5"
 TARGETS[cartpole_2d]="event_contact event_high_motion event_future_k5"
@@ -64,11 +51,12 @@ for env in "${ENVS[@]}"; do
                 echo "[skip] $env $model (no ckpt)"
                 continue
             fi
+            log="$LOG_DIR/${env}_${model}_${tgt}.log"
             echo "=== [$count] $env / $model / $tgt ==="
             $PY -m code.scripts.probe \
                 --env "$env" --model "$model" --probe-target "$tgt" \
                 --out "$out" --max-windows 2000 --epochs 5 --device cpu \
-                2>&1 | tail -1
+                > "$log" 2>&1 && echo "ok: $env $model $tgt" || echo "FAIL: $env $model $tgt (see $log)"
             count=$((count+1))
         done
     done

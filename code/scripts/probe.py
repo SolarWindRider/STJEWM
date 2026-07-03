@@ -225,7 +225,34 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
             state_dim=state_dim, action_dim=action_dim,
             hidden_dim=hidden_dim, num_layers=num_layers, emb_dim=emb_dim,
         )
-    # Default: STJEWM (any stjewm_* model)
+    if model_name.startswith("slt_lif_mpc_trace"):
+        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
+        n_layers = ck_args.get("n_layers", 4)
+        return make_slt_lif_mpc_trace(
+            state_dim=state_dim, action_dim=action_dim,
+            d_in=192, embed_dim=192, n_layers=n_layers, trace_beta=0.9, k_avg=4,
+        )
+    if model_name.startswith("slt_lif_mpc_free"):
+        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
+        n_layers = ck_args.get("n_layers", 4)
+        return make_slt_lif_mpc_free(
+            state_dim=state_dim, action_dim=action_dim,
+            d_in=192, embed_dim=192, n_layers=n_layers, trace_beta=0.9,
+        )
+    if model_name.startswith("spikedreamer"):
+        from code.spikedreamer_baseline import make_spikedreamer
+        n_layers = ck_args.get("n_layers", 4)
+        return make_spikedreamer(
+            state_dim=state_dim, action_dim=action_dim,
+            d_snn=128, d_tx=192, num_layers=n_layers, num_heads=8,
+        )
+    if model_name.startswith("cubifae"):
+        from code.cubifae_baseline import CubifAEBaseline
+        n_layers = ck_args.get("n_layers", 4)
+        return CubifAEBaseline(
+            state_dim=state_dim, action_dim=action_dim,
+            d_hid=192, n_layers=n_layers,
+        )
     from code.stjewm import STJEWM
     n_layers = ck_args.get("n_layers", 4)
     return STJEWM(

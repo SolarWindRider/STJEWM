@@ -1,0 +1,182 @@
+{
+  "ball_in_cup": {
+    "env_id": "mujoco/ball_in_cup",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 1.0,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 0.014564988517668099,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "cartpole_2d": {
+    "env_id": "mujoco/cartpole",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 0.5,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 0.6539442205609325,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "cartpole_flicker": {
+    "env_id": "mujoco/cartpole",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 0.5,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 0.6539442205609325,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "cheetah": {
+    "env_id": "mujoco/cheetah",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 1.0,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 0.1511057580510775,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "cheetah_velhidden": {
+    "env_id": "mujoco/cheetah",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 1.0,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 0.14541752835114796,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "dog": {
+    "env_id": "mujoco/dog",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 1.0,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 0.2710174187337139,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "finger": {
+    "env_id": "mujoco/finger",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 0.3,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 0.5482657140371331,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "fish": {
+    "env_id": "mujoco/fish",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 1.0,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 0.040937307659832056,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "hopper": {
+    "env_id": "mujoco/hopper",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 1.0,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 0.21986678945417965,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "humanoid": {
+    "env_id": "mujoco/humanoid",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 1.0,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 0.4156754046117709,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "humanoid_CMU": {
+    "env_id": "mujoco/humanoid_cmu",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 1.0,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 0.0959366344597512,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "pendulum_2d": {
+    "env_id": "mujoco/pendulum",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 0.4,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 1.091142663359642,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "pusht": {
+    "env_id": "swm/PushT-v1",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 0.0,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 4111.806351797921,
+    "n_episodes": 8,
+    "n_seeds": 1
+  },
+  "pusht_ood": {
+    "env_id": "swm/PushT-v1",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 0.0,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 4111.806351797921,
+    "n_episodes": 8,
+    "n_seeds": 1
+  },
+  "quadruped": {
+    "env_id": "mujoco/quadruped",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 1.0,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 0.2514934463363305,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "reacher": {
+    "env_id": "mujoco/reacher",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 1.0,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 0.0,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "stacker": {
+    "env_id": "mujoco/stacker",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 1.0,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 0.03920848569719019,
+    "n_episodes": 10,
+    "n_seeds": 1
+  },
+  "tworoom": {
+    "env_id": "swm/TwoRoom-v1",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 0.0,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 81.18585348129272,
+    "n_episodes": 8,
+    "n_seeds": 1
+  },
+  "tworoom_long": {
+    "env_id": "swm/TwoRoom-v1",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 0.0,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 81.18585348129272,
+    "n_episodes": 8,
+    "n_seeds": 1
+  },
+  "walker": {
+    "env_id": "mujoco/walker",
+    "success_rate_lewm": 0.0,
+    "success_rate_env": 1.0,
+    "mean_cos_dist": NaN,
+    "mean_phys_dist": 0.23872437278429665,
+    "n_episodes": 10,
+    "n_seeds": 1
+  }
+}

@@ -29,6 +29,8 @@ MODELS_OF_INTEREST = [
     "lewm_baseline_v2",
     "gru_baseline",
     "mlp_baseline",
+    "slt_lif_mpc_trace",
+    "slt_lif_mpc_free",
 ]
 
 
