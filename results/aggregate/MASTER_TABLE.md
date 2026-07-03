@@ -8,6 +8,20 @@ Generated 2026-07-03 from
 `event_probes/<env>_<model>_<target>.json` + `flops_table.md` + `event_align_table.md`.
 
 ## Models (13 total, 4 families)
+## 0. N/A legend — why cells are empty
+
+The `n/a` cells in the tables below fall into 4 distinct categories:
+
+| N/A reason | Where it appears | Why |
+|---|---|---|
+| **v0.4 train-scope** | `lewm` on stress 4-env; `slt_*` on stress 4-env; `cubifae`/`spikedreamer`/`rate_only` on delayed_t_maze | These (model, env) combinations were never trained. The v0.4 stress suite only re-trained the 5 STJEWM modes on 4 stress envs; baselines were frozen. v0.5 added LeWM/GRU/MLP baselines on stress 4-env. v0.7 added CubifAE/SpikeDreamer/SLT on the 16-env priority suite, not the 4-env stress suite. |
+| **theoretical irrelevance** | `rate_only` on event-type linear probes | `rate_only` collapses to a moving average of spikes; per-step event-type labels are sub-99ms-scale and a moving-average readout has no temporal resolution to predict them. Excluded by design, not missing data. |
+| **v0.7 sweep omitted** | `lewm` on cheetah/finger/tworoom/delayed_t_maze for event-probe; `cubifae`/`spikedreamer`/`slt_*`/`lewm` on delayed_t_maze for event-probe; `stjewm_membrane_readout` on delayed_t_maze for event-probe | v0.7 probe sweep covered 7 envs for the 6 STJEWM modes but only 6 envs for v0.6 baselines. v0.7.1 would close these gaps. |
+| **single-row §8 N/A** | `lewm` on stress; `slt_*` on stress; all baselines except `stjewm_v2` on event-align ρ | Event-align ρ requires 99-step random rollouts on standard DMC envs; we have it only for `stjewm_v2` and `lewm_baseline_v2` from the v0.4 sweep, never extended to v0.5+ baselines. |
+
+**Implication for the paper:** the N/As are *asymmetric* — STJEWM coverage is denser than baseline coverage. This is a publishability limit: a v0.7.1 would close the obvious gaps (membrane on delayed_t_maze probe, LeWM/GRU/MLP on stress 4-env, SLT on stress 4-env). The current v0.7 honest framing is "STJEWM is competitive with denser evidence than the baselines have."
+
+## Models (13 total, 4 families)
 
 | Code | Family | Membrane-forbidden? |
 |---|---|---|
