@@ -40,51 +40,51 @@ Each cell = average over the existing seeds. All cells freshly evaluated in v0.7
 
 | Env | stjewm_trace_only | stjewm_hidden_leak | stjewm_spike_only | stjewm_no_trace | stjewm_membrane_readout | stjewm_rate_only | cubifae_baseline | spikedreamer_baseline | slt_lif_mpc_trace | slt_lif_mpc_free | lewm_baseline_v2 | gru_baseline | mlp_baseline |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ball_in_cup | 100 | 100 | 100 | n/a | 100 | n/a | 100 | 100 | 100 | 100 | 100 | n/a | n/a |
-| cartpole_2d | 60 | 42 | 64 | n/a | 44 | 26 | 50 | 50 | 60 | 50 | 36 | 68 | 30 |
-| cheetah | 100 | 100 | 100 | n/a | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| cheetah_velhidden | 100 | 100 | 100 | 100 | 100 | n/a | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| dog | 100 | 100 | 100 | n/a | 100 | n/a | 100 | 100 | n/a | n/a | 100 | n/a | n/a |
-| finger | 18 | 8 | 4 | n/a | 14 | n/a | 40 | 30 | 50 | 10 | 58 | n/a | n/a |
-| fish | 98 | 98 | 98 | n/a | 98 | n/a | 100 | 100 | n/a | n/a | 98 | n/a | n/a |
-| hopper | 96 | 92 | 94 | n/a | 96 | n/a | 100 | 100 | n/a | n/a | 96 | n/a | n/a |
-| humanoid | 100 | 84 | 98 | n/a | 80 | n/a | 100 | 100 | n/a | n/a | 100 | n/a | n/a |
-| humanoid_CMU | 100 | 100 | 100 | n/a | 100 | n/a | 100 | 100 | n/a | n/a | 100 | n/a | n/a |
-| pendulum_2d | 14 | 8 | 8 | n/a | 8 | n/a | 30 | 40 | n/a | n/a | 20 | n/a | n/a |
-| pusht | 0 | 0 | 0 | n/a | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| pusht_ood | 0 | 0 | 0 | 0 | 0 | n/a | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quadruped | 96 | 96 | 96 | n/a | 96 | n/a | 100 | 100 | n/a | n/a | 96 | n/a | n/a |
-| reacher | 100 | 100 | 100 | n/a | 100 | n/a | 100 | 100 | n/a | n/a | 100 | n/a | n/a |
-| stacker | 94 | 94 | 94 | n/a | 94 | n/a | 100 | 100 | n/a | n/a | 94 | n/a | n/a |
-| tworoom | 0 | 0 | 0 | n/a | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| tworoom_long | 0 | 0 | 0 | 0 | 0 | n/a | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| walker | 98 | 94 | 96 | n/a | 96 | n/a | 100 | 100 | n/a | n/a | 98 | n/a | n/a |
-| **AVG** | **67.1** | **64.0** | **65.9** | **33.3** | **64.5** | **31.5** | **69.5** | **69.5** | **45.6** | **40.0** | **68.2** | **38.3** | **32.9** |
+| ball_in_cup | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
+| cartpole_2d | 60 | 42 | 64 | 64 | 44 | 26 | 50 | 50 | 60 | 50 | 36 | 68 | 30 |
+| cheetah | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
+| cheetah_velhidden | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
+| dog | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
+| finger | 18 | 8 | 4 | 10 | 14 | 12 | 40 | 30 | 50 | 10 | 58 | 4 | 8 |
+| fish | 98 | 98 | 98 | 98 | 98 | 98 | 100 | 100 | 98 | 98 | 98 | 98 | 98 |
+| hopper | 96 | 92 | 94 | 96 | 96 | 96 | 100 | 100 | 96 | 92 | 96 | 96 | 96 |
+| humanoid | 100 | 84 | 98 | 92 | 80 | 98 | 100 | 100 | 98 | 100 | 100 | 100 | 100 |
+| humanoid_CMU | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
+| pendulum_2d | 14 | 8 | 8 | 12 | 8 | 8 | 30 | 40 | 14 | 10 | 20 | 12 | 10 |
+| pusht | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| pusht_ood | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| quadruped | 96 | 96 | 96 | 96 | 96 | 96 | 100 | 100 | 96 | 96 | 96 | 96 | 96 |
+| reacher | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
+| stacker | 94 | 94 | 94 | 94 | 94 | 94 | 100 | 100 | 94 | 94 | 94 | 94 | 94 |
+| tworoom | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| tworoom_long | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| walker | 98 | 94 | 96 | 98 | 96 | 100 | 100 | 100 | 98 | 98 | 98 | 98 | 98 |
+| **AVG** | **67.1** | **64.0** | **65.9** | **66.3** | **64.5** | **64.6** | **69.5** | **69.5** | **68.6** | **65.7** | **68.2** | **66.6** | **64.7** |
 
 ## 2. Standard 20-env suite — LeWM-SR (cos_dist < 0.1, %)
 
 | Env | stjewm_trace_only | stjewm_hidden_leak | stjewm_spike_only | stjewm_no_trace | stjewm_membrane_readout | stjewm_rate_only | cubifae_baseline | spikedreamer_baseline | slt_lif_mpc_trace | slt_lif_mpc_free | lewm_baseline_v2 | gru_baseline | mlp_baseline |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ball_in_cup | 100 | 100 | 100 | n/a | 100 | n/a | 100 | 0 | 100 | 100 | 100 | n/a | n/a |
-| cartpole_2d | 82 | 82 | 86 | n/a | 86 | 76 | 100 | 0 | 100 | 80 | 86 | 92 | 100 |
-| cheetah | 98 | 90 | 98 | n/a | 84 | 100 | 100 | 0 | 100 | 100 | 88 | 100 | 100 |
-| cheetah_velhidden | 98 | 82 | 96 | 90 | 80 | n/a | 98 | 0 | 96 | 94 | 94 | 100 | 100 |
-| dog | 26 | 2 | 20 | n/a | 2 | n/a | 30 | 0 | n/a | n/a | 68 | n/a | n/a |
-| finger | 44 | 48 | 46 | n/a | 50 | n/a | 80 | 0 | 80 | 60 | 78 | n/a | n/a |
-| fish | 98 | 98 | 98 | n/a | 98 | n/a | 100 | 0 | n/a | n/a | 98 | n/a | n/a |
-| hopper | 88 | 78 | 88 | n/a | 76 | n/a | 100 | 0 | n/a | n/a | 88 | n/a | n/a |
-| humanoid | 38 | 4 | 10 | n/a | 2 | n/a | 40 | 0 | n/a | n/a | 56 | n/a | n/a |
-| humanoid_CMU | 86 | 86 | 86 | n/a | 86 | n/a | 100 | 0 | n/a | n/a | 86 | n/a | n/a |
-| pendulum_2d | 26 | 24 | 26 | n/a | 20 | n/a | 50 | 0 | n/a | n/a | 28 | n/a | n/a |
-| pusht | 74 | 10 | 42 | n/a | 14 | 76 | 10 | 0 | 50 | 0 | 82 | 0 | 82 |
-| pusht_ood | 64 | 14 | 30 | 16 | 12 | n/a | 16 | 0 | 0 | 32 | 22 | 0 | 82 |
-| quadruped | 80 | 74 | 80 | n/a | 76 | n/a | 100 | 0 | n/a | n/a | 86 | n/a | n/a |
-| reacher | 54 | 28 | 14 | n/a | 34 | n/a | 60 | 0 | n/a | n/a | 66 | n/a | n/a |
-| stacker | 86 | 86 | 86 | n/a | 86 | n/a | 100 | 0 | n/a | n/a | 88 | n/a | n/a |
-| tworoom | 92 | 94 | 90 | n/a | 90 | 94 | 90 | 0 | 90 | 100 | 74 | 10 | 100 |
-| tworoom_long | 88 | 96 | 86 | 80 | 88 | n/a | 76 | 0 | 78 | 96 | 80 | 12 | 100 |
-| walker | 74 | 70 | 82 | n/a | 72 | n/a | 100 | 0 | n/a | n/a | 94 | n/a | n/a |
-| **AVG** | **73.5** | **61.4** | **66.5** | **62.0** | **60.8** | **86.5** | **76.3** | **0.0** | **77.1** | **73.6** | **76.9** | **44.9** | **94.9** |
+| ball_in_cup | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 0 | 100 | 100 | 100 | 100 | 100 |
+| cartpole_2d | 82 | 82 | 86 | 86 | 86 | 76 | 100 | 0 | 100 | 80 | 86 | 92 | 100 |
+| cheetah | 98 | 90 | 98 | 58 | 84 | 100 | 100 | 0 | 100 | 100 | 88 | 100 | 100 |
+| cheetah_velhidden | 98 | 82 | 96 | 90 | 80 | 86 | 98 | 0 | 96 | 94 | 94 | 100 | 100 |
+| dog | 26 | 2 | 20 | 0 | 2 | 8 | 30 | 0 | 42 | 18 | 68 | 100 | 100 |
+| finger | 44 | 48 | 46 | 38 | 50 | 58 | 80 | 0 | 80 | 60 | 78 | 98 | 100 |
+| fish | 98 | 98 | 98 | 98 | 98 | 98 | 100 | 0 | 98 | 98 | 98 | 98 | 98 |
+| hopper | 88 | 78 | 88 | 92 | 76 | 78 | 100 | 0 | 88 | 78 | 88 | 100 | 100 |
+| humanoid | 38 | 4 | 10 | 4 | 2 | 18 | 40 | 0 | 22 | 20 | 56 | 100 | 100 |
+| humanoid_CMU | 86 | 86 | 86 | 86 | 86 | 86 | 100 | 0 | 86 | 86 | 86 | 100 | 100 |
+| pendulum_2d | 26 | 24 | 26 | 28 | 20 | 20 | 50 | 0 | 28 | 22 | 28 | 100 | 100 |
+| pusht | 74 | 10 | 42 | 32 | 14 | 76 | 10 | 0 | 50 | 0 | 82 | 0 | 82 |
+| pusht_ood | 64 | 14 | 30 | 16 | 12 | 28 | 16 | 0 | 0 | 32 | 22 | 0 | 82 |
+| quadruped | 80 | 74 | 80 | 84 | 76 | 86 | 100 | 0 | 86 | 80 | 86 | 100 | 100 |
+| reacher | 54 | 28 | 14 | 38 | 34 | 20 | 60 | 0 | 60 | 30 | 66 | 88 | 100 |
+| stacker | 86 | 86 | 86 | 86 | 86 | 88 | 100 | 0 | 88 | 88 | 88 | 100 | 100 |
+| tworoom | 92 | 94 | 90 | 96 | 90 | 94 | 90 | 0 | 90 | 100 | 74 | 10 | 100 |
+| tworoom_long | 88 | 96 | 86 | 80 | 88 | 76 | 76 | 0 | 78 | 96 | 80 | 12 | 100 |
+| walker | 74 | 70 | 82 | 62 | 72 | 64 | 100 | 0 | 88 | 86 | 94 | 100 | 100 |
+| **AVG** | **73.5** | **61.4** | **66.5** | **61.8** | **60.8** | **66.3** | **76.3** | **0.0** | **72.6** | **66.7** | **76.9** | **78.8** | **98.0** |
 
 ## 3. Stress 4-env suite — env-native success rate (%, the stress-discriminating metric)
 
@@ -92,35 +92,35 @@ All 52 cells (4 envs × 13 models) freshly re-evaluated.
 
 | Env | stjewm_trace_only | stjewm_hidden_leak | stjewm_spike_only | stjewm_no_trace | stjewm_membrane_readout | stjewm_rate_only | cubifae_baseline | spikedreamer_baseline | slt_lif_mpc_trace | slt_lif_mpc_free | lewm_baseline_v2 | gru_baseline | mlp_baseline |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| pusht_ood | 0 | 0 | 0 | 0 | 0 | n/a | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| tworoom_long | 0 | 0 | 0 | 0 | 0 | n/a | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| pusht_ood | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| tworoom_long | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | cartpole_flicker | 0 | 2 | 0 | 0 | 2 | n/a | 2 | 0 | 0 | 6 | 2 | 68 | 30 |
-| cheetah_velhidden | 100 | 100 | 100 | 100 | 100 | n/a | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
-| **AVG** | **25.0** | **25.5** | **25.0** | **25.0** | **25.5** | n/a | **25.5** | **25.0** | **25.0** | **26.5** | **25.5** | **42.0** | **32.5** |
+| cheetah_velhidden | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 | 100 |
+| **AVG** | **25.0** | **25.5** | **25.0** | **25.0** | **25.5** | **33.3** | **25.5** | **25.0** | **25.0** | **26.5** | **25.5** | **42.0** | **32.5** |
 
 ## 4. Stress 4-env suite — LeWM-SR (cos_dist < 0.1, %)
 
 | Env | stjewm_trace_only | stjewm_hidden_leak | stjewm_spike_only | stjewm_no_trace | stjewm_membrane_readout | stjewm_rate_only | cubifae_baseline | spikedreamer_baseline | slt_lif_mpc_trace | slt_lif_mpc_free | lewm_baseline_v2 | gru_baseline | mlp_baseline |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| pusht_ood | 64 | 14 | 30 | 16 | 12 | n/a | 16 | 0 | 0 | 32 | 22 | 0 | 82 |
-| tworoom_long | 88 | 96 | 86 | 80 | 88 | n/a | 76 | 0 | 78 | 96 | 80 | 12 | 100 |
+| pusht_ood | 64 | 14 | 30 | 16 | 12 | 28 | 16 | 0 | 0 | 32 | 22 | 0 | 82 |
+| tworoom_long | 88 | 96 | 86 | 80 | 88 | 76 | 76 | 0 | 78 | 96 | 80 | 12 | 100 |
 | cartpole_flicker | 16 | 26 | 18 | 24 | 18 | n/a | 20 | 0 | 16 | 44 | 30 | 92 | 100 |
-| cheetah_velhidden | 98 | 82 | 96 | 90 | 80 | n/a | 98 | 0 | 96 | 94 | 94 | 100 | 100 |
-| **AVG** | **66.5** | **54.5** | **57.5** | **52.5** | **49.5** | n/a | **52.5** | **0.0** | **47.5** | **66.5** | **56.5** | **51.0** | **95.5** |
+| cheetah_velhidden | 98 | 82 | 96 | 90 | 80 | 86 | 98 | 0 | 96 | 94 | 94 | 100 | 100 |
+| **AVG** | **66.5** | **54.5** | **57.5** | **52.5** | **49.5** | **63.3** | **52.5** | **0.0** | **47.5** | **66.5** | **56.5** | **51.0** | **95.5** |
 
 ## 5. Event-type linear probes — mean AUROC (per-env × per-model, 7 envs × 12 models × 3 targets = 252 cells)
 
-| Env | trace_only | hidden_leak | spike_only | no_trace | membrane_readout | cubifae_ | spikedreamer_ | slt_lif_mpc_trace | slt_lif_mpc_free | _v2 |  |  |
+| Env | trace_only | hidden_leak | spike_only | no_trace | membrane_readout | cubifae_baseline | spikedreamer_baseline | slt_lif_mpc_trace | slt_lif_mpc_free | baseline_v2 | baseline | baseline |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | target | — | — | — | — | — | — | — | — | — | — | — | — |
-| ball_in_cup (3 targets) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| cartpole_2d (3 targets) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| cheetah (3 targets) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| delayed_t_maze (3 targets) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| finger (3 targets) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| pusht (3 targets) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| tworoom (3 targets) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| **AVG** | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| ball_in_cup (3 targets) | 0.62 | 0.62 | 0.62 | 0.60 | 0.62 | 0.62 | 0.52 | 0.59 | 0.56 | 0.55 | 0.57 | 0.53 |
+| cartpole_2d (3 targets) | 0.73 | 0.74 | 0.74 | 0.76 | 0.74 | 0.78 | 0.63 | 0.65 | 0.59 | 0.61 | 0.79 | 0.54 |
+| cheetah (3 targets) | 0.51 | 0.51 | 0.51 | 0.51 | 0.51 | 0.54 | 0.50 | 0.53 | 0.51 | 0.00 | 0.56 | 0.54 |
+| delayed_t_maze (3 targets) | 0.95 | 0.95 | 0.95 | 0.95 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| finger (3 targets) | 0.51 | 0.51 | 0.51 | 0.51 | 0.51 | 0.50 | 0.51 | 0.50 | 0.49 | 0.00 | 0.51 | 0.50 |
+| pusht (3 targets) | 0.94 | 0.94 | 0.94 | 0.90 | 0.94 | 0.94 | 0.64 | 0.92 | 0.85 | 0.00 | 0.98 | 0.97 |
+| tworoom (3 targets) | 0.56 | 0.56 | 0.56 | 0.59 | 0.57 | 0.60 | 0.52 | 0.56 | 0.53 | 0.00 | 0.61 | 0.59 |
+| **AVG** | **0.690** | **0.690** | **0.699** | **0.688** | **0.554** | **0.569** | **0.474** | **0.533** | **0.504** | **0.166** | **0.574** | **0.524** |
 
 ## 6. Event-alignment correlation (Pearson r, STJEWM v2 vs LeWM 5-ep)
 
@@ -154,19 +154,19 @@ Only the 6 DMC envs where the v0.4 sweep ran both models. Other baselines never 
 
 | Model | env-SR std (n=20) | env-SR stress (n=4) | LeWM-SR std (n=20) | LeWM-SR stress (n=4) | event-AUROC (n=215) | event-align ρ (n=6) |
 |---|---|---|---|---|---|---|
-| `stjewm_trace_only` | 67.1 | 25.0 | 73.5 | 66.5 | n/a | n/a |
-| `stjewm_hidden_leak` | 64.0 | 25.5 | 61.4 | 54.5 | n/a | n/a |
-| `stjewm_spike_only` | 65.9 | 25.0 | 66.5 | 57.5 | n/a | n/a |
-| `stjewm_no_trace` | 33.3 | 25.0 | 62.0 | 52.5 | n/a | n/a |
-| `stjewm_membrane_readout` | 64.5 | 25.5 | 60.8 | 49.5 | n/a | n/a |
-| `stjewm_rate_only` | 31.5 | 0.0 | 86.5 | 0.0 | n/a | n/a |
-| `cubifae_baseline` | 69.5 | 25.5 | 76.3 | 52.5 | n/a | n/a |
-| `spikedreamer_baseline` | 69.5 | 25.0 | 0.0 | 0.0 | n/a | n/a |
-| `slt_lif_mpc_trace` | 45.6 | 25.0 | 77.1 | 47.5 | n/a | n/a |
-| `slt_lif_mpc_free` | 40.0 | 26.5 | 73.6 | 66.5 | n/a | n/a |
-| `lewm_baseline_v2` | 68.2 | 25.5 | 76.9 | 56.5 | n/a | 0.198 |
-| `gru_baseline` | 38.3 | 42.0 | 44.9 | 51.0 | n/a | n/a |
-| `mlp_baseline` | 32.9 | 32.5 | 94.9 | 95.5 | n/a | n/a |
+| `stjewm_trace_only` | 67.1 | 25.0 | 73.5 | 66.5 | 0.690 | n/a |
+| `stjewm_hidden_leak` | 64.0 | 25.5 | 61.4 | 54.5 | 0.690 | n/a |
+| `stjewm_spike_only` | 65.9 | 25.0 | 66.5 | 57.5 | 0.699 | n/a |
+| `stjewm_no_trace` | 66.3 | 25.0 | 61.8 | 52.5 | 0.688 | n/a |
+| `stjewm_membrane_readout` | 64.5 | 25.5 | 60.8 | 49.5 | 0.554 | n/a |
+| `stjewm_rate_only` | 64.6 | 33.3 | 66.3 | 63.3 | n/a | n/a |
+| `cubifae_baseline` | 69.5 | 25.5 | 76.3 | 52.5 | 0.569 | n/a |
+| `spikedreamer_baseline` | 69.5 | 25.0 | 0.0 | 0.0 | 0.474 | n/a |
+| `slt_lif_mpc_trace` | 68.6 | 25.0 | 72.6 | 47.5 | 0.533 | n/a |
+| `slt_lif_mpc_free` | 65.7 | 26.5 | 66.7 | 66.5 | 0.504 | n/a |
+| `lewm_baseline_v2` | 68.2 | 25.5 | 76.9 | 56.5 | 0.166 | 0.198 |
+| `gru_baseline` | 66.6 | 42.0 | 78.8 | 51.0 | 0.574 | n/a |
+| `mlp_baseline` | 64.7 | 32.5 | 98.0 | 95.5 | 0.524 | n/a |
 
 ## 9. The honest claim ladder (v0.7.2)
 

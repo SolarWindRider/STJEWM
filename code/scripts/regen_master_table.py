@@ -231,7 +231,7 @@ W('')
 # ----- Section 5: Event-probe AUROC -----
 W('## 5. Event-type linear probes — mean AUROC (per-env × per-model, 7 envs × 12 models × 3 targets = 252 cells)')
 W('')
-W('| Env | ' + ' | '.join(m.replace('stjewm_','').replace('baseline','').replace('lewm_','').replace('gru_','').replace('mlp_','') for m in EVENT_PROBE_MODELS) + ' |')
+W('| Env | ' + ' | '.join(m.replace('stjewm_','').replace('lewm_','').replace('gru_','').replace('mlp_','').rstrip('_') for m in EVENT_PROBE_MODELS) + ' |')
 W('|---' * (len(EVENT_PROBE_MODELS)+1) + '|')
 W('| target | ' + ' | '.join(['—'] * len(EVENT_PROBE_MODELS)) + ' |')
 all_probe = {}
@@ -240,7 +240,7 @@ for env in EVENT_PROBE_ENVS:
         for tgt in TARGETS[env]:
             d = find_probe(env, model, tgt)
             if d:
-                all_probe.setdefault((env, model), []).append(d.get('auroc', None))
+                all_probe.setdefault((env, model), []).append(d.get('auroc', d.get('r2', None)))
 for env in EVENT_PROBE_ENVS:
     row = [f'{env} (3 targets)']
     for model in EVENT_PROBE_MODELS:
