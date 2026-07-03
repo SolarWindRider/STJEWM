@@ -1,0 +1,123 @@
+{
+  "env_id": "mujoco/finger",
+  "n_episodes": 10,
+  "n_seeds": 1,
+  "cem_samples": 300,
+  "cem_elites": 30,
+  "cem_iters": 10,
+  "horizon": 5,
+  "eval_budget": 30,
+  "goal_offset": 25,
+  "history_size": 1,
+  "success_rate_lewm": 0.6,
+  "success_rate_lewm_std": 0.0,
+  "success_rate_env": 0.1,
+  "success_rate_env_std": 0.0,
+  "mean_cos_dist": 0.15259535945951938,
+  "mean_cos_dist_std": 0.0,
+  "mean_phys_dist": 0.7428452042745988,
+  "mean_phys_dist_std": 0.0,
+  "per_seed": [
+    {
+      "seed": 0,
+      "n": 10,
+      "success_rate_lewm": 0.6,
+      "success_rate_env": 0.1,
+      "mean_cos_dist": 0.15259535945951938,
+      "mean_phys_dist": 0.7428452042745988
+    }
+  ],
+  "per_episode": [
+    {
+      "seed": 0,
+      "episode_idx": 10740,
+      "cos_dist": 0.0076142847537994385,
+      "lewm_success": true,
+      "env_success": true,
+      "phys_dist": 0.16764562060013688,
+      "plan_time_sec": 1.0273442268371582
+    },
+    {
+      "seed": 0,
+      "episode_idx": 96717,
+      "cos_dist": 0.025043129920959473,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 0.5408646934359373,
+      "plan_time_sec": 0.86478590965271
+    },
+    {
+      "seed": 0,
+      "episode_idx": 11153,
+      "cos_dist": 0.025566935539245605,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 0.4052818349372165,
+      "plan_time_sec": 0.7449450492858887
+    },
+    {
+      "seed": 0,
+      "episode_idx": 81799,
+      "cos_dist": 0.5566665455698967,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 1.5231437570814736,
+      "plan_time_sec": 0.7610511779785156
+    },
+    {
+      "seed": 0,
+      "episode_idx": 54845,
+      "cos_dist": 0.08230894804000854,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 0.8356454771539839,
+      "plan_time_sec": 0.7600550651550293
+    },
+    {
+      "seed": 0,
+      "episode_idx": 54113,
+      "cos_dist": 0.019251227378845215,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 0.4756852785283584,
+      "plan_time_sec": 0.7513375282287598
+    },
+    {
+      "seed": 0,
+      "episode_idx": 87150,
+      "cos_dist": 0.06676697731018066,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 0.5778498047804864,
+      "plan_time_sec": 0.749976634979248
+    },
+    {
+      "seed": 0,
+      "episode_idx": 11769,
+      "cos_dist": 0.15543019771575928,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 0.7812275510107172,
+      "plan_time_sec": 0.7440309524536133
+    },
+    {
+      "seed": 0,
+      "episode_idx": 25178,
+      "cos_dist": 0.4381447248160839,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 1.1971702862214713,
+      "plan_time_sec": 0.746206521987915
+    },
+    {
+      "seed": 0,
+      "episode_idx": 107298,
+      "cos_dist": 0.14916062355041504,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 0.9239377389962058,
+      "plan_time_sec": 0.7391119003295898
+    }
+  ],
+  "wall_time_sec": 8.04392695426941
+}

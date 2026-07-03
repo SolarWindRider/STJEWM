@@ -1,0 +1,123 @@
+{
+  "env_id": "mujoco/walker",
+  "n_episodes": 10,
+  "n_seeds": 1,
+  "cem_samples": 300,
+  "cem_elites": 30,
+  "cem_iters": 10,
+  "horizon": 5,
+  "eval_budget": 30,
+  "goal_offset": 25,
+  "history_size": 1,
+  "success_rate_lewm": 0.0,
+  "success_rate_lewm_std": 0.0,
+  "success_rate_env": 1.0,
+  "success_rate_env_std": 0.0,
+  "mean_cos_dist": NaN,
+  "mean_cos_dist_std": NaN,
+  "mean_phys_dist": 0.23872437278429665,
+  "mean_phys_dist_std": 0.0,
+  "per_seed": [
+    {
+      "seed": 0,
+      "n": 10,
+      "success_rate_lewm": 0.0,
+      "success_rate_env": 1.0,
+      "mean_cos_dist": NaN,
+      "mean_phys_dist": 0.23872437278429665
+    }
+  ],
+  "per_episode": [
+    {
+      "seed": 0,
+      "episode_idx": 21483,
+      "cos_dist": NaN,
+      "lewm_success": false,
+      "env_success": true,
+      "phys_dist": 0.17447264989217123,
+      "plan_time_sec": 1.0180015563964844
+    },
+    {
+      "seed": 0,
+      "episode_idx": 193461,
+      "cos_dist": NaN,
+      "lewm_success": false,
+      "env_success": true,
+      "phys_dist": 0.2797857125600179,
+      "plan_time_sec": 0.9049780368804932
+    },
+    {
+      "seed": 0,
+      "episode_idx": 22309,
+      "cos_dist": NaN,
+      "lewm_success": false,
+      "env_success": true,
+      "phys_dist": 0.3096952637036641,
+      "plan_time_sec": 0.8871273994445801
+    },
+    {
+      "seed": 0,
+      "episode_idx": 163620,
+      "cos_dist": NaN,
+      "lewm_success": false,
+      "env_success": true,
+      "phys_dist": 0.21321465571721396,
+      "plan_time_sec": 0.8603734970092773
+    },
+    {
+      "seed": 0,
+      "episode_idx": 109705,
+      "cos_dist": NaN,
+      "lewm_success": false,
+      "env_success": true,
+      "phys_dist": 0.3502261241277059,
+      "plan_time_sec": 0.9284627437591553
+    },
+    {
+      "seed": 0,
+      "episode_idx": 108239,
+      "cos_dist": NaN,
+      "lewm_success": false,
+      "env_success": true,
+      "phys_dist": 0.2461492419242859,
+      "plan_time_sec": 0.9208564758300781
+    },
+    {
+      "seed": 0,
+      "episode_idx": 174321,
+      "cos_dist": NaN,
+      "lewm_success": false,
+      "env_success": true,
+      "phys_dist": 0.26042993863423664,
+      "plan_time_sec": 0.8982045650482178
+    },
+    {
+      "seed": 0,
+      "episode_idx": 23541,
+      "cos_dist": NaN,
+      "lewm_success": false,
+      "env_success": true,
+      "phys_dist": 0.1489434540271759,
+      "plan_time_sec": 0.8876516819000244
+    },
+    {
+      "seed": 0,
+      "episode_idx": 50361,
+      "cos_dist": NaN,
+      "lewm_success": false,
+      "env_success": true,
+      "phys_dist": 0.27848656972249347,
+      "plan_time_sec": 0.8806078433990479
+    },
+    {
+      "seed": 0,
+      "episode_idx": 214622,
+      "cos_dist": NaN,
+      "lewm_success": false,
+      "env_success": true,
+      "phys_dist": 0.12584011753400168,
+      "plan_time_sec": 0.8576598167419434
+    }
+  ],
+  "wall_time_sec": 9.440675020217896
+}

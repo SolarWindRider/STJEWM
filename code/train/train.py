@@ -31,7 +31,13 @@ sys.path.insert(0, "/home/lx/snn")
 from code.core.encode import assert_model_compatible
 from code.data import load_dataset
 from code.sigreg import SIGReg
-
+from code.native_losses import (
+    NATIVE_LOSS_DISPATCH,
+    stjewm_loss,
+    cubifae_loss,
+    spikedreamer_loss,
+    slt_lif_mpc_loss,
+)
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -137,8 +143,12 @@ def train(
     n_windows_per_epoch: int,
 ):
     """Canonical training loop.
-    Loss (LeWM App. A + goal-conditioned term):
-        L_total = L_pred + lambda_sigreg * L_sigreg + lambda_goal * L_goal
+    Loss dispatch (v0.7+): each SNN baseline uses its native loss via
+    code.native_losses.NATIVE_LOSS_DISPATCH.
+        - stjewm / lewm_baseline / gru / mlp: 3-term pred + sigreg + goal
+        - cubifae_baseline: 2-term pred + L1 spike sparsity
+        - spikedreamer_baseline: 4-term pred + KL + recon + sparse
+        - slt_lif_mpc_{trace,free}: 3-term pred + sparse + action (action=0 in CEM-eval)
     """
     from code.sigreg import SIGReg
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-3)
@@ -175,50 +185,72 @@ def train(
                 pred_emb = model.predict(ctx_emb, ctx_act)
                 tgt_emb = emb[:, H:H + T_pred]
                 pred_loss = F.mse_loss(pred_emb, tgt_emb)
-                # SIGReg on the pre-cell embedding (LeWM App. A)
-                sigreg_loss = sigreg(emb_pre.transpose(0, 1))
-                # Goal loss: predict the goal state embedding from the current history.
-                # (LeWM App. F.1)
-                #
-                # Critical fix: the original code used `model.predict(ctx, ctx_act)[:, -1]`
-                # which is a 1-step prediction (H+1 ahead), not a goal_offset-step prediction.
-                # The goal loss should compare the model's predicted latent for the goal state
-                # to the actual goal state latent.
-                #
-                # The model's `emb[:, t]` is its predicted next-state latent for step t+1.
-                # So if we forward on a window of (H + goal_offset) states, the model's
-                # predicted latent for the goal state (at position H+goal_offset) is
-                # `emb[:, H+goal_offset-1]`. The target is the model's own latent
-                # for the goal state, which is `out_goal["emb"][:, 0]` (forwarding on the
-                # goal state alone gives its predicted next-state latent — but for the
-                # goal state, this is the closest "self-distillation" target).
-                # Both are in the same "post-stack predicted latent" space (matches
-                # the pred_loss formulation above).
-                #
-                # Implementation: single forward on (H + goal_offset) states. No rollout
-                # needed because the model is already doing next-step prediction at each
-                # position — the last position is the goal_offset-th step prediction.
-                with torch.no_grad():
-                    goal_state = state[:, H + args.goal_offset:H + args.goal_offset + 1]
-                    zero_act_g = torch.zeros(
-                        goal_state.shape[0], 1, action.shape[-1],
-                        device=device, dtype=action.dtype,
+
+                # ============== Native-loss dispatch ==============
+                # v0.7: Each SNN baseline has its own native loss; the
+                # trainer dispatches on args.model and uses the appropriate
+                # function from code/native_losses. STJEWM and the
+                # Transformer/RNN/MLP baselines still use the 3-term loss
+                # (pred + sigreg + goal). CubifAE, SpikeDreamer, SLT-LIF-MPC
+                # use their paper-native losses.
+                model_kind = args.model
+                loss_fn = NATIVE_LOSS_DISPATCH.get(model_kind, stjewm_loss)
+
+                if loss_fn is stjewm_loss:
+                    # 3-term JEPA loss: pred + lambda_sigreg*sigreg + lambda_goal*goal
+                    sigreg_loss = sigreg(emb_pre.transpose(0, 1))
+                    with torch.no_grad():
+                        goal_state = state[:, H + args.goal_offset:H + args.goal_offset + 1]
+                        zero_act_g = torch.zeros(
+                            goal_state.shape[0], 1, action.shape[-1],
+                            device=device, dtype=action.dtype,
+                        )
+                        out_goal = model(goal_state, zero_act_g)
+                        goal_emb_target = out_goal["emb"][:, 0]
+                    full_state = state[:, :H + args.goal_offset]
+                    full_action = action[:, :H + args.goal_offset]
+                    out_full = model(full_state, full_action)
+                    goal_pred = out_full["emb"][:, -1]
+                    loss, parts = loss_fn(
+                        pred_emb, tgt_emb, emb_pre, sigreg,
+                        goal_pred, goal_emb_target,
+                        args.lambda_sigreg, args.lambda_goal,
                     )
-                    out_goal = model(goal_state, zero_act_g)
-                    # Use the post-stack predicted latent of the goal state as target.
-                    # Note: this is what the model itself produces as the next-state
-                    # prediction for the goal state. This is the standard JEPA-style
-                    # "self-distillation" target.
-                    goal_emb_target = out_goal["emb"][:, 0]  # (B, D)
-                # Prediction: forward on (H + goal_offset) states. The model's predicted
-                # next-state latent at the last position is its goal prediction.
-                full_state = state[:, :H + args.goal_offset]
-                full_action = action[:, :H + args.goal_offset]
-                out_full = model(full_state, full_action)
-                full_emb = out_full["emb"]  # (B, H+goal_offset, D)
-                goal_pred = full_emb[:, -1]  # (B, D) — prediction for the goal state
-                goal_loss = F.mse_loss(goal_pred, goal_emb_target)
-                loss = pred_loss + args.lambda_sigreg * sigreg_loss + args.lambda_goal * goal_loss
+                elif loss_fn is cubifae_loss:
+                    # 2-term: pred + L1 spike sparsity. No sigreg / no goal.
+                    loss, parts = loss_fn(
+                        pred_emb, tgt_emb,
+                        spike_layers=out.get("spike_layers", []),
+                        goal_pred=None, goal_emb=None,
+                        lambda_pred=1.0, lambda_sparse=1e-3, lambda_goal=0.0,
+                    )
+                elif loss_fn is spikedreamer_loss:
+                    # 4-term: pred + KL + recon + sparse. State-based obs
+                    # means no recon. LIF encoder is deterministic (no VAE),
+                    # so mu=logvar=None and lambda_kl * 0 is fine.
+                    spike_count = out.get("spike_count", out.get("spike"))
+                    loss, parts = loss_fn(
+                        pred_emb, tgt_emb,
+                        obs_recon=None, obs_target=None,
+                        mu=out.get("mu"), logvar=out.get("logvar"),
+                        spike_count=spike_count,
+                        lambda_recon=0.0, lambda_kl=1e-3,
+                        lambda_pred=1.0, lambda_sparse=1e-3,
+                    )
+                elif loss_fn is slt_lif_mpc_loss:
+                    # 3-term: pred + sparse + action. No action supervision
+                    # in CEM-eval, so action term is 0. Reduces to pred + sparse.
+                    loss, parts = loss_fn(
+                        pred_emb, tgt_emb,
+                        spike_count=out.get("spike"),
+                        action_pred=None, action_target=None,
+                        lambda_pred=1.0, lambda_sparse=1e-4, lambda_action=0.0,
+                    )
+                else:
+                    # Fallback: plain MSE.
+                    loss = pred_loss
+                    parts = {"pred": pred_loss.item(), "total": pred_loss.item()}
+
                 sparsity = 1.0 - out["spike"].float().mean().item() if "spike" in out else None
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
@@ -229,20 +261,23 @@ def train(
                 eta = (args.epochs * n_windows_per_epoch / args.batch - step) / speed if speed > 0 else 0
                 sparsity = 1.0 - out["spike"].float().mean().item() if "spike" in out else None
                 sparsity_str = f" sparsity={sparsity:.3f}" if sparsity is not None else ""
+                # Build a flat string from whatever loss terms are in `parts`.
+                # STJEWM/JePA: pred/sigreg/goal. CubifAE: pred/sparse.
+                # SpikeDreamer: pred/kl/recon/sparse. SLT-LIF-MPC: pred/sparse/action.
+                def _fmt(p: dict) -> str:
+                    keys = ("pred", "sigreg", "goal", "sparse", "kl", "recon", "action")
+                    return " ".join(
+                        f"{k}={p[k]:.4f}" for k in keys if k in p and p[k] is not None
+                    )
                 print(
                     f"[train/{args.model}] ep {epoch+1}/{args.epochs} step {step} "
-                    f"pred={pred_loss.item():.4f} sigreg={sigreg_loss.item():.4f} "
-                    f"goal={goal_loss.item():.4f} total={loss.item():.4f} "
+                    f"{_fmt(parts)} total={loss.item():.4f} "
                     f"speed={speed:.2f}/s ETA={eta/3600:.1f}h{sparsity_str}",
                     flush=True,
                 )
-                losses_log.append({
-                    "step": step,
-                    "pred": float(pred_loss.item()),
-                    "sigreg": float(sigreg_loss.item()),
-                    "goal": float(goal_loss.item()),
-                    "total": float(loss.item()),
-                })
+                log_entry = {"step": step, "total": float(loss.item())}
+                log_entry.update({k: float(v) for k, v in parts.items()})
+                losses_log.append(log_entry)
             if args.save_every > 0 and step % args.save_every == 0:
                 ck_path = save_dir / f"step{step}.pt"
                 torch.save({
