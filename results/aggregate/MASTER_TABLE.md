@@ -10,11 +10,11 @@ Sources: `results/<env>/<model>/eval.json` (per-cell) + `aggregate/event_probes/
 
 | N/A reason | Where it appears | Why |
 |---|---|---|
-| **v0.4 train-scope** | `lewm` on stress 4-env; `slt_*`/`cubifae`/`spikedreamer` on stress 4-env | Originally trained for the 16-env suite only; stress 4-env ckpts added in v0.5/v0.6/v0.7 |
-| **v0.7 sweep omitted** | `rate_only` on event-probe (theoretical, not missing) | rate readout is a moving average; per-step event labels have no temporal resolution to it |
-| **v0.7.2 fixed in this run** | `lewm` on stress 4-env; `gru`/`mlp` on stress 4-env | (closed) |
+| **theoretical** | `stjewm_rate_only` on event-probe (§5, §8) | rate readout is a moving average; per-step event labels have no temporal resolution to it. Excluded by design, not missing data. |
 
-**Implication for the paper:** with v0.7.2, the N/A cells in §3-§4 below are closed. STJEWM coverage is now **complete** for all 13 models × all 4 stress envs.
+**Implication for the paper (v0.7.3):** with this run, all 14 prior N/A cells are now closed. The only remaining N/A in the entire 13-model × 7-section table is the single theoretical exclusion of rate_only on event-probe.
+
+**v0.7.3 status**: all 13 models now have full env-SR + LeWM-SR coverage on 20 envs, 4 stress envs, 7 event-probe envs, 6 event-align envs.
 
 ## Models (13 total, 4 families)
 
