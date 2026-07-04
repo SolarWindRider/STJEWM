@@ -72,6 +72,14 @@ TARGETS = {
 }
 
 EVENT_PROBE_ENVS = list(TARGETS.keys())  # 7 envs
+ALIGN_ENVS = ('cheetah', 'walker', 'cartpole_2d', 'pendulum_2d', 'finger', 'ball_in_cup')
+ALIGN_MODELS_ORDER = [
+    'stjewm_trace_only', 'stjewm_hidden_leak', 'stjewm_spike_only',
+    'stjewm_no_trace', 'stjewm_membrane_readout', 'stjewm_rate_only',
+    'cubifae_baseline', 'spikedreamer_baseline',
+    'slt_lif_mpc_trace', 'slt_lif_mpc_free',
+    'lewm_baseline_v2', 'gru_baseline', 'mlp_baseline',
+]
 EVENT_PROBE_MODELS = [
     'stjewm_trace_only', 'stjewm_hidden_leak', 'stjewm_spike_only',
     'stjewm_no_trace', 'stjewm_membrane_readout',
@@ -261,20 +269,45 @@ W('## 6. Event-alignment correlation (Pearson r, STJEWM v2 vs LeWM 5-ep)')
 W('')
 W('Only the 6 DMC envs where the v0.4 sweep ran both models. Other baselines never had this measurement.')
 W('')
-W('| Env | STJEWM-v2 | LeWM 5-ep |')
-W('|---|---|---|')
-# From event_align_table.md
-align_data = [
-    ('ball_in_cup', 0.976, 0.111),
-    ('cartpole_2d', 0.997, 0.135),
-    ('cheetah',     0.885, 0.680),
-    ('finger',      0.473, 0.037),
-    ('pendulum_2d', 0.996, 0.111),
-    ('walker',      0.920, 0.111),
-]
-for env, st, le in align_data:
-    W(f'| {env} | **{st:.3f}** | {le:.3f} |')
-W('| **AVG over 6 DMC envs** | **0.874** | 0.198 |')
+W('| Env | ' + ' | '.join(m.replace('stjewm_','').replace('baseline','').replace('lewm_','').replace('gru_','').replace('mlp_','').rstrip('_') for m in ALIGN_MODELS_ORDER) + ' |')
+W('|---' * (len(ALIGN_MODELS_ORDER)+1) + '|')
+# Load all event_align v2 data
+import json as _align_json
+_align_data = {}
+for p in (AGG / 'event_align_v2').glob('*.json'):
+    d = _align_json.loads(p.read_text())
+    stem = p.stem
+    # parse env-first (env names may contain underscores like 'cartpole_2d')
+    matched_env = None
+    matched_model = None
+    for _env in sorted(ALIGN_ENVS, key=len, reverse=True):
+        if stem.startswith(_env + '_'):
+            matched_env = _env
+            _rest = stem[len(_env)+1:]
+            for _model in sorted(ALIGN_MODELS_ORDER, key=len, reverse=True):
+                if _rest == _model:
+                    matched_model = _model
+                    break
+            break
+    if matched_env and matched_model:
+        _align_data[(matched_env, matched_model)] = d
+for env in ALIGN_ENVS:
+    row = [env]
+    for model in ALIGN_MODELS_ORDER:
+        d = _align_data.get((env, model))
+        if d is None or d.get('skipped', False):
+            row.append('n/a')
+        else:
+            row.append(f"{d.get('corr_obs_latent', 0):.3f}")
+    W('| ' + ' | '.join(row) + ' |')
+row = ['**AVG**']
+for model in ALIGN_MODELS_ORDER:
+    vals = [_align_data.get((env, model), {}).get('corr_obs_latent') for env in ALIGN_ENVS if (env, model) in _align_data and not _align_data[(env, model)].get('skipped', False)]
+    if vals:
+        row.append(f'**{sum(vals)/len(vals):.3f}**')
+    else:
+        row.append('n/a')
+W('| ' + ' | '.join(row) + ' |')
 W('')
 W('(Cohen\'s d ≈ 3.36.)')
 W('')
@@ -308,13 +341,9 @@ for model, _ in MODELS:
     for env in EVENT_PROBE_ENVS:
         vals.extend([v for v in all_probe.get((env, model), []) if v is not None])
     avg_auroc = sum(vals)/len(vals) if vals else None
-    # event align
-    if model == 'stjewm_v2':
-        align = 0.874
-    elif model == 'lewm_baseline_v2':
-        align = 0.198
-    else:
-        align = None
+    # event align from event_align_v2 (AVG over 6 envs)
+    vals = [_align_data.get((env, model), {}).get('corr_obs_latent') for env in ALIGN_ENVS if (env, model) in _align_data and not _align_data[(env, model)].get('skipped', False)]
+    align = sum(vals) / len(vals) if vals else None
     W(f'| `{model}` | {avg_std:.1f} | {avg_stsr:.1f} | {avg_stl:.1f} | {avg_stlstr:.1f} | {f"{avg_auroc:.3f}" if avg_auroc is not None else "n/a"} | {f"{align:.3f}" if align is not None else "n/a"} |')
 W('')
 

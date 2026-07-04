@@ -59,16 +59,36 @@ def parse_args() -> argparse.Namespace:
 
 
 def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict):
-    if ck_args.get("model", model_name) == "lewm_baseline" or model_name.startswith("lewm"):
+    m = ck_args.get("model", model_name)
+    if m == "lewm_baseline" or model_name.startswith("lewm"):
         from code.lewm_transformer_baseline import LeWMTransformerBaseline
-        embed_dim = ck_args.get("embed_dim", 256)
-        num_layers = ck_args.get("n_layers", 4)
         return LeWMTransformerBaseline(
             state_dim=state_dim, action_dim=action_dim,
-            embed_dim=embed_dim, num_layers=num_layers, num_heads=8,
+            embed_dim=ck_args.get("embed_dim", 256),
+            num_layers=ck_args.get("n_layers", 4),
+            num_heads=8,
         )
-    from code.stjewm import STJEWM
+    if m == "gru_baseline" or model_name.startswith("gru"):
+        from code.gru_baseline import GRUBaseline
+        return GRUBaseline(state_dim=state_dim, action_dim=action_dim)
+    if m == "mlp_baseline" or model_name.startswith("mlp"):
+        from code.mlp_baseline import make_mlp_baseline
+        return make_mlp_baseline(state_dim=state_dim, action_dim=action_dim)
+    if m == "cubifae_baseline" or model_name.startswith("cubifae"):
+        from code.cubifae_baseline import make_cubifae_baseline
+        return make_cubifae_baseline(state_dim=state_dim, action_dim=action_dim)
+    if m == "slt_lif_mpc_trace" or model_name.startswith("slt_lif_mpc_trace"):
+        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
+        return make_slt_lif_mpc_trace(state_dim=state_dim, action_dim=action_dim)
+    if m == "slt_lif_mpc_free" or model_name.startswith("slt_lif_mpc_free"):
+        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
+        return make_slt_lif_mpc_free(state_dim=state_dim, action_dim=action_dim)
+    if m == "spikedreamer_baseline" or model_name.startswith("spikedreamer"):
+        from code.spikedreamer_baseline import make_spikedreamer
+        return make_spikedreamer(state_dim=state_dim, action_dim=action_dim)
+    # default: STJEWM
     n_layers = ck_args.get("n_layers", 4)
+    from code.stjewm import STJEWM
     return STJEWM(
         d_hid=192, embed_dim=192, action_dim=action_dim, action_emb_dim=192,
         state_dim=state_dim, cell_n_layers=n_layers, n_d=3,
