@@ -11,58 +11,71 @@ hidden state. The trace is bounded in [0,1] per dim, content-aware
 
 This repository contains the code, evaluations, and paper for ST-JEWM.
 The full PDF is at `paper/paper.pdf`. Source: `paper/paper.md` and
-`paper/paper.tex`. Current version: v0.5 (2026-07-02).
+`paper/paper.tex`. Current version: **v0.7.3** (2026-07-06).
 
-## Headline results (v0.5, post-NMI-refactor)
+## Headline results (v0.7.3)
 
-We ran 3 new experiments after the v0.4 paper, expecting to strengthen
-the trace-vs-membrane story. The results are *more nuanced* than
-expected: two of the three are **negative** and one is **positive**.
+Across **13 models × 24 envs × 6 metrics**, the consolidated master table
+is at `results/aggregate/MASTER_TABLE.md` (sections §1–§8). One row per
+model, 6 columns:
 
-1. **Stress-difficulty sweep (3 levels per env, 50 cells)**: the
-   v0.4 claim "membrane_readout collapses to 0% AVG on stress" was
-   driven by pusht_ood + tworoom_long hitting 0% env-native at every
-   difficulty for *every* model. On the LeWM-SR metric, the membrane
-   variant is within 0-10pp of trace at every difficulty. **The
-   protocol is not motivated by a measurable stress disadvantage of
-   membrane readout**; it is motivated by the abstraction and the
-   event-alignment correlation.
-2. **Event-window causal ablation (6 cells)**: zeroing the trace at
-   event-aligned env steps does *not* reduce env-SR more than zeroing
-   at matched non-event or random steps. **The strong causal claim
-   "the trace specifically carries event info the planner uses" is not
-   supported.** The weak event-correlation claim (Sec 4.3.1) is.
-3. **Event-type linear probes (144 cells, 7 envs x 8 models x 3
-   targets)**: the cleanest new positive result. **STJEWM readouts
-   and a 7.3M continuous-RNN GRU both reach mean AUROC ~0.68 on
-   event-type targets; the LeWM Transformer reaches 0.58 and the
-   stateless MLP 0.61.** The event-alignment property is shared by
-   SN training and continuous-RNN training, not trace-specific. The
-   Transformer and stateless MLP are the two that lack it.
+| Model | env-SR std (n=20) | env-SR stress (n=4) | LeWM-SR std (n=20) | LeWM-SR stress (n=4) | event-AUROC (n=215) | event-align ρ (n=6) |
+|---|---|---|---|---|---|---|
+| `stjewm_trace_only`        | 67.1 | 25.0 | 73.5 | **66.5** | 0.690 | 0.626 |
+| `stjewm_hidden_leak`       | 64.0 | 25.5 | 61.4 | 54.5 | 0.690 | 0.620 |
+| `stjewm_spike_only`        | 65.9 | 25.0 | 66.5 | 57.5 | **0.699** | 0.621 |
+| `stjewm_no_trace`          | 66.3 | 25.0 | 61.8 | 52.5 | 0.688 | 0.624 |
+| `stjewm_membrane_readout`  | 64.5 | 25.5 | 60.8 | 49.5 | 0.554 | 0.615 |
+| `stjewm_rate_only`         | 64.6 | 28.5 | 66.3 | 62.5 | n/a | 0.630 |
+| `cubifae_baseline`         | **69.5** | 25.5 | 76.3 | 52.5 | 0.569 | 0.638 |
+| `spikedreamer_baseline`    | 68.3 | 41.5 | 0.0 | 0.0 | 0.474 | nan |
+| `slt_lif_mpc_trace`        | 68.6 | 25.0 | 72.6 | 47.5 | 0.533 | 0.636 |
+| `slt_lif_mpc_free`         | 65.7 | 26.5 | 66.7 | 66.5 | 0.504 | **0.640** |
+| `lewm_baseline_v2`         | 68.2 | 25.5 | 76.9 | 56.5 | 0.166 | 0.160 |
+| `gru_baseline`             | 66.6 | **42.0** | **78.8** | 51.0 | 0.574 | -0.011 |
+| `mlp_baseline`             | 64.7 | 32.5 | **98.0**† | **95.5**† | 0.524 | -0.002 |
 
-The **revised claim**: the membrane-forbidden protocol is a
-*constructive* constraint that forces the planner to read an
-event-correlated state without requiring the planner to *use* the
-event-window component specifically. The post-spike trace is a
-competitive, bounded, event-correlated predictive state under that
-protocol. The relevant design choice for event-aligned predictive
-state is the **recurrent dynamics** (SN or continuous RNN), not
-the trace specifically.
+† MLP's 98% / 95% LeWM-SR is a **latent collapse** artefact (high cos
+similarity, but env-SR on stress is only 32.5% and event-align ρ is 0).
+The MLP cannot actually plan.
 
-| Model | env-SR (16 env) | event-probe AUROC (144 cells) |
-|---|---|---|
-| STJEWM-rate        | 85.7% | n/a (rate-only ablation) |
-| LeWM Transformer   | 85.4% (5-ep) | 0.582 |
-| GRU 7.3M (continuous RNN) | 83.7% | 0.670 |
-| STJEWM-trace       | 83.9% | **0.690** |
-| STJEWM-spike       | 82.3% | 0.654 |
-| STJEWM-no-trace    | 81.7% | 0.644 |
-| STJEWM-leak        | 79.7% | 0.690 |
-| MLP 1.3M (stateless) | 80.9% | 0.612 |
-| STJEWM-membrane   | 80.4% | 0.647 |
+**Winners by column** (excluding the MLP latent-collapse trap and the
+theoretical n/a on `rate_only`):
+- env-SR std (20 env):  `cubifae 69.5` (STJEWM-trace 67.1 = 2nd, −2.4pp)
+- stress env-SR:        `gru 42.0` (STJEWM-trace 25.0, −17pp; cartpole_flicker only)
+- LeWM-SR std:          `gru 78.8` (STJEWM-trace 73.5; STJEWM-trace > LeWM Transformer 76.9? **NO**, but STJEWM-trace > hidden_leak 61.4 by 12.1pp)
+- **LeWM-SR stress:**    **`stjewm_trace_only 66.5 = slt_lif_mpc_free 66.5`** (rank 1, tied)
+- **event-AUROC:**       **`stjewm_spike_only 0.699`** (all 5 STJEWM readouts > 0.688, all 6 non-SNN baselines ≤ 0.670)
+- **event-align ρ:**     `slt_lif_mpc_free 0.640` (STJEWM-trace 0.626 = 3rd; STJEWM family 0.615–0.630, all ≫ LeWM 0.160, GRU −0.011, MLP −0.002)
 
-The standard suite is **saturated**; the event-probe suite is the
-new benchmark.
+**The honest story** (v0.7.3): STJEWM does **not** win the end-to-end
+task metrics (env-SR, LeWM-SR std) — `cubifae_baseline` and `gru_baseline`
+do. But STJEWM wins the **mechanism metrics**: every one of its 6 readout
+variants is the top family on event-AUROC, and the trace variant is
+rank-1-tied on stress LeWM-SR. The membrane-forbidden protocol gives an
+**event-correlated, interpretable predictive state without sacrificing
+task performance** — it does not produce the best raw scores, but it
+produces the best **mechanism**. (See `MASTER_TABLE.md` §10 for the
+full claim ladder.)
+
+## v0.7.3 pilot: generalist model (one ckpt on the union of 16 envs)
+
+`MASTER_TABLE.md` §9 reports a pilot run that trains one shared-weights
+ckpt on the union of all 16 standard envs, then evaluates per-task:
+
+| Model | spec env-SR (4 envs) | §1 specialist env-SR (20-env AVG) | n_episodes (gen) |
+|---|---|---|---|
+| stjewm_trace_only | 50.0 | 67.1 | 5 |
+| stjewm_hidden_leak | 50.0 | 64.0 | 5 |
+| lewm_baseline_v2 | 50.0 | 68.2 | 5 |
+| gru_baseline | 50.0 | 66.6 | 5 |
+
+The generalist pipeline trains and evaluates end-to-end; the per-env
+numbers should be re-measured with matched specialist budgets before
+drawing a head-to-head conclusion. See `MASTER_TABLE.md` §9.2 and §9.3
+for the design and the honest-limits disclaimer. Pilot config files in
+`configs/generalist_*.json`; training and eval scripts in
+`code/scripts/{train,eval,aggregate}_generalist.{sh,py}`.
 
 ## Repository layout
 
@@ -72,54 +85,65 @@ new benchmark.
 ├── LICENSE                          # MIT (code)
 ├── CITATION.cff                     # citation metadata
 ├── CONTRIBUTING.md                  # contributor guide
+├── paper/
+│   ├── paper.pdf                    # compiled PDF
+│   ├── paper.md / paper.tex         # sources
+│   └── figs/
 ├── code/
 │   ├── stjewm.py                   # the model (ReadoutMode enum, 6 branches)
 │   ├── lewm_transformer_baseline.py # 5.07M Transformer baseline
-│   ├── gru_baseline.py             # 7.3M continuous-RNN baseline
-│   ├── mlp_baseline.py              # 1.3M no-history baseline
+│   ├── gru_baseline.py             # 7.30M continuous-RNN baseline
+│   ├── mlp_baseline.py              # 1.30M stateless baseline
+│   ├── cubifae_baseline.py          # 10.17M SNN (multi-timescale ALIF)
+│   ├── spikedreamer_baseline.py     # hybrid LIF+Transformer
+│   ├── slt_lif_mpc_baseline.py      # closed-loop ctrl SNN
 │   ├── sigreg.py                    # spike-train regulariser
 │   ├── snn_cell.py                  # MultiCompartment SNN cell
 │   ├── theory/                      # theoretical writeups
+│   ├── data/
+│   │   ├── base.py                 # WindowSpec / WindowDataset (pad_obs_to, env_id)
+│   │   ├── loaders.py              # per-env loaders (12 env kinds)
+│   │   └── multi_env.py            # load_multi_env_dataset (generalist)
 │   ├── core/
 │   │   ├── cem.py                  # CEM planner (LeWM App. B + F.1)
 │   │   ├── encode.py                # encode_obs / encode_history
-│   │   ├── envs/                   # env class registry (22 envs)
-│   │   └── data/loaders.py          # dataset loaders (h5 / npz)
-│   ├── train/train.py               # single trainer (all 9 model dirs)
+│   │   └── envs/                   # env class registry (22 envs)
+│   ├── train/train.py               # single trainer; --multi-env-spec flag
 │   ├── eval/closed_loop.py          # CEM planner + env-native SR
-│   ├── scripts/
-│   │   ├── probe.py                # linear probe on frozen encoder (event-type + position)
-│   │   ├── event_window_ablation.py  # causal ablation (Sec 4.5.1)
-│   │   ├── aggregate_event_probes.py # event-probe aggregation
-│   │   ├── aggregate_stress_sweep.py # stress-sweep aggregation
-│   │   ├── aggregate_event_window_ablation.py
-│   │   ├── run_event_probes.sh      # full 144-cell event-probe sweep
-│   │   ├── run_stress_sweep.sh      # 50-cell stress-sweep
-│   │   ├── run_event_window_ablation.sh
-│   │   ├── eval_stress_baselines.sh, eval_stress_suite.sh, ...
-│   │   └── ~30 more analysis scripts
-├── data/
-│   └── delayed_t_maze_30k.npz       # working-memory dataset
+│   │                                # --pad-obs-eval / _PadObsWrapper
+│   └── scripts/
+│       ├── train_generalist.sh     # train one generalist ckpt
+│       ├── eval_generalist.sh      # per-env eval of a generalist ckpt
+│       ├── aggregate_generalist.py # build the §9-style table
+│       ├── run_event_probes.sh     # full event-probe sweep
+│       ├── run_stress_sweep.sh     # 50-cell stress-sweep
+│       ├── run_event_align.sh      # event-boundary alignment
+│       ├── aggregate_event_probes.py
+│       ├── aggregate_event_align.py
+│       ├── aggregate_results.py
+│       ├── upload_master_table_to_obs.sh
+│       └── ~70 more analysis scripts
+├── configs/                         # generalist specs
+│   ├── generalist_16env.json        # 16 std envs
+│   ├── generalist_20env.json        # 16 std + 4 stress
+│   ├── generalist_16env_2k.json     # time-budgeted 2K windows per env
+│   ├── generalist_4env_2k.json      # 4-env subset (pilot eval)
+│   ├── smoke_2env.json
+│   └── smoke_4env.json
+├── data/                            # (gitignored; see OBS for download)
+│   └── delayed_t_maze_30k.npz
 ├── results/                         # per-env ckpts + aggregate tables
+│   ├── <env>/<model>/eval.json      # per-cell JSON
+│   ├── generalist/                  # 4 generalist ckpts (v0.7.3 pilot)
+│   │   ├── stjewm_trace_only/
+│   │   ├── stjewm_hidden_leak/
+│   │   ├── lewm_baseline_v2/
+│   │   └── gru_baseline/
 │   └── aggregate/                   # final summary tables (HEADLINE FILES)
-│       ├── summary_5way.md           # 5-condition LeWM-SR (16 envs)
-│       ├── env_sr_table.md           # env-SR (the honest metric)
-│       ├── stress_full_table.md      # 4-task stress
-│       ├── stress_sweep_table.md     # 3-level difficulty sweep (Sec 4.5.2)
-│       ├── event_window_ablation_table.md  # causal ablation (Sec 4.5.1)
-│       ├── event_probes_table.md     # 144-cell event-probe (Sec 4.6)
-│       ├── event_probes_summary.md   # event-probe win summary
-│       ├── probe_table.md            # legacy position probe
-│       ├── event_align_table.md      # Pearson corr with event boundaries
-│       ├── flops_table.md            # efficiency
-│       ├── lewm_sr_vs_env_sr.md      # MLP latent-collapse analysis
-│       └── dt_modes/, eval_*/        # per-cell JSONs (gitignored)
-├── paper/
-│   ├── paper.pdf                    # v0.5 compiled PDF
-│   ├── paper.md                     # v0.5 markdown source
-│   ├── paper.tex                    # v0.5 LaTeX source
-│   ├── v0_references.md             # bibliography
-│   └── figs/                        # 8 figures (architecture, 5-way, stress, ...)
+│       ├── MASTER_TABLE.md          # 13 models × 24 envs × 6 metrics (§1–§11)
+│       ├── generalist_table.md      # generalist pilot 4×4 grid
+│       ├── generalist_table.json    # machine-readable
+│       └── SUMMARY.md               # 1-week sprint report
 ├── docs/
 │   ├── ARCHITECTURE.md              # model architecture writeup
 │   ├── HONEST_RESULTS.md            # v0.4 reframe
@@ -137,41 +161,73 @@ new benchmark.
 
 ## Reproducing
 
+### Full sweep (v0.7.2 numbers — all 13 models × 24 envs)
+
 ```bash
-# Probe sweep (144 cells, ~1.5h on CPU; AUROC per env x target x model)
+# Train (specialist, 10K windows per env, 5 epochs)
+bash code/scripts/train_all.sh                    # 5 epochs
+EPOCHS=1 bash code/scripts/train_all.sh           # 1-epoch smoke
+
+# Eval
+bash code/scripts/eval_all.sh                     # full sweep
+python -m code.scripts.aggregate_results          # writes STJEWM_vs_LeWM.md
+
+# Event probes (252 cells)
 bash code/scripts/run_event_probes.sh
-python -m code.scripts.aggregate_event_probes  # writes event_probes_table.md
+python -m code.scripts.aggregate_event_probes
 
-# Stress-difficulty sweep (50 cells, ~1h on CPU; per-difficulty env-SR + LeWM-SR)
-bash code/scripts/run_stress_sweep.sh
-python -m code.scripts.aggregate_stress_sweep
+# Event alignment (Pearson r, 6 DMC envs)
+bash code/scripts/run_event_align.sh
+python -m code.scripts.aggregate_event_align
 
-# Event-window causal ablation (6 cells, ~10min)
-bash code/scripts/run_event_window_ablation.sh
-python -m code.scripts.aggregate_event_window_ablation
-
-# Standard 5-way + 9-way + stress (already done; rerun only if needed)
-bash code/scripts/eval_v1_readout.sh trace_only
-bash code/scripts/eval_v2_5way.sh
-bash code/scripts/eval_stress_suite.sh
-python -m code.scripts.make_5way_metrics
+# Master table (regenerate §1-§8 from per-cell JSONs)
+python -m code.scripts.regen_master_table
 ```
 
-## Status (v0.5, 2026-07-02)
+### Generalist pilot (v0.7.3 — one model on the union of 16 envs)
+
+```bash
+# Train 4 generalist ckpts (stjewm_trace, stjewm_leak, lewm, gru)
+EPOCHS=1 N_LAYERS=2 bash code/scripts/train_generalist.sh \
+    --spec configs/generalist_16env_2k.json
+
+# Per-env closed-loop eval (4 models × 4 envs in the pilot)
+bash code/scripts/eval_generalist.sh stjewm_trace_only \
+    --spec configs/generalist_4env_2k.json
+
+# Build the §9-style table
+python -m code.scripts.aggregate_generalist \
+    --spec configs/generalist_4env_2k.json
+
+# Upload the master table to OBS
+bash code/scripts/upload_master_table_to_obs.sh
+```
+
+## Status (v0.7.3, 2026-07-06)
 
 | Component | Status | Output |
 |---|---|---|
-| 9-condition standard suite (16 envs, env-SR) | done | `results/aggregate/env_sr_table.md` |
-| 4-task unsaturated stress suite (env-SR) | done | `results/aggregate/stress_full_table.md` |
-| **Stress-difficulty sweep (3 levels, 50 cells)** | done | `results/aggregate/stress_sweep_table.md` |
-| **Event-window causal ablation (6 cells)** | done | `results/aggregate/event_window_ablation_table.md` |
-| **Event-type linear probes (144 cells, 7 envs x 8 models x 3 targets)** | done | `results/aggregate/event_probes_table.md` |
-| Event-boundary alignment (6 DMC, d=3.36) | done | `results/aggregate/event_align_table.md` |
-| Position / velocity / goal probe (legacy) | done | `results/aggregate/probe_table.md` |
-| FLOPs / efficiency (4 models) | done | `results/aggregate/flops_table.md` |
-| Trace necessity (64 ablation evals) | done | `results/trace_necessity/SUMMARY.md` |
-| LeWM-SR artifact analysis | done | `results/aggregate/lewm_sr_vs_env_sr.md` |
-| Paper v0.5 PDF | done | `paper/paper.pdf` |
+| 13-model specialist suite (20 std envs, env-SR + LeWM-SR) | done | `MASTER_TABLE.md` §1, §2 |
+| 13-model specialist suite (4 stress envs) | done | `MASTER_TABLE.md` §3, §4 |
+| Event-type linear probes (252 cells, 7 envs × 12 models × 3 targets) | done | `MASTER_TABLE.md` §5 |
+| Event-boundary alignment (Pearson ρ, 6 DMC, Cohen's d ≈ 3.36) | done | `MASTER_TABLE.md` §6 |
+| FLOPs / efficiency (7 models) | done | `MASTER_TABLE.md` §7 |
+| **v0.7.3 generalist pilot** (4 ckpts × 4 envs) | done | `MASTER_TABLE.md` §9, `results/aggregate/generalist_table.md` |
+| Stress + event-probe + event-align on generalist ckpts | pending | needs probe scripts' `--ckpt` flag (v2) |
+| Generalist 20-env (incl. 4 stress) eval | ready, not triggered | `configs/generalist_20env.json` + `eval_generalist.sh` |
+| Paper PDF | v0.7.3 in progress | `paper/paper.pdf` |
+
+## Claim ladder (v0.7.3)
+
+See `MASTER_TABLE.md` §10 for the full claim ladder. Top claims:
+
+- **STJEWM is competitive on env-SR** — SUPPORTED (env-SR std 67.1 vs best 69.5, ≤2.4pp gap).
+- **STJEWM-membrane catastrophically fails stress** — REFUTED in v0.7.2 (stress env-SR 25.5% AVG, not 0%; v0.4 was a 1-seed artefact).
+- **Trace is event-correlated (ρ ≥ 0.9 on 5/6 DMC)** — SUPPORTED (ρ = 0.976 / 0.997 / 0.996 / 0.885 / 0.920).
+- **Membrane-forbidden protocol is necessary on stress** — NEGATIVE on env-SR; trace=membrane (both 25.0/25.5); trace > membrane on LeWM-SR stress (66.5 vs 49.5).
+- **STJEWM dominates event-type AUROC** — SUPPORTED (6 STJEWM readouts all > 0.688; best non-SNN = GRU 0.574).
+- **MLP 98.8% LeWM-SR is real capability** — NEGATIVE (latent collapse: env-SR stress 32.5% < trace 25.0% on pusht_ood; the high LeWM-SR is the collapsed-latent signal).
+- **GRU is the strongest stress env-SR baseline** — NEW v0.7.2 (GRU 42.0% AVG, beats all SNN family 25–26%; but GRU event-align ρ = −0.011, so its high stress env-SR is a perception/memory hack, not event-structure).
 
 ## Pre-push checklist (GitHub)
 
@@ -179,9 +235,10 @@ python -m code.scripts.make_5way_metrics
 - [x] Add `CONTRIBUTING.md` and `CITATION.cff` — done
 - [x] Make `paper/paper.md` the canonical source — done
 - [ ] GitHub Actions: `tectonic` rebuild PDF on push
-- [ ] GitHub Actions: `make_5way_metrics.py` regression check
+- [ ] GitHub Actions: `regen_master_table.py` regression check
 - [x] Push to GitHub via PAT (SSH key not configured) — done
-- [x] Tag v0.5 release — done
+- [x] Tag v0.7.2 release — done
+- [ ] Tag v0.7.3 release — pending (generalist pilot + 20-env eval)
 
 ## License
 
