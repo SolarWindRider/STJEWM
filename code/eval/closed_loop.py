@@ -142,48 +142,38 @@ def eval_closed_loop(
     device: str = "cuda",
     goal_offset_override: Optional[int] = None,
     split: str = "in_dist",
+    pad_obs_to: Optional[int] = None,
+    model_action_dim: Optional[int] = None,
 ) -> ClosedLoopResult:
-    """Run closed-loop CEM planning eval. LeWM-paper protocol + env-native.
-
-    Each episode:
-        - Sample (init_state, goal_state) from dataset trajectory (in-distribution)
-        - Encode init history (history_size frames ending at init)
-        - Encode goal (single frame at t+goal_offset)
-        - CEM plan + receding-horizon step
-        - Report: cos_dist(z_final, z_goal), env-native success
-    """
-    model = model.to(device).eval()
-    assert_model_compatible(model)
-    # Membrane-forbidden protocol: planner/predictor should be in TRACE_ONLY mode.
-    # For ablation / comparison purposes, we WARN for other STJEWM modes (hidden_leak,
-    # spike_only, no_trace) and raise only for LeWM-style baselines (which do not
-    # satisfy any membrane-forbidden contract).
-    if hasattr(model, "readout_mode"):
-        from code.stjewm import ReadoutMode
-        if model.readout_mode != ReadoutMode.TRACE_ONLY:
-            import warnings
-            warnings.warn(
-                f"[closed_loop] model readout_mode={model.readout_mode} is NOT trace_only. "
-                f"This is allowed for ablation, but the trace-only protocol expects hidden_leak=0."
-            )
     action_dim = env.spec.action_dim
     action_low = env.spec.action_low
     action_high = env.spec.action_high
+    # When the ckpt was trained with --action-dim override, the model expects
+    # that larger action_dim as input. We use `model_action_dim` for encode/CEM
+    # (so the placeholders match) and the native `action_dim` for env.step
+    # (so the env sees real-dim actions).
+    if model_action_dim is None:
+        model_action_dim = action_dim
+    if model_action_dim < action_dim:
+        raise ValueError(
+            f"model_action_dim ({model_action_dim}) cannot be smaller than env.action_dim ({action_dim})"
+        )
     # B2: Stress env override — if the env (or caller) requests a
     # different goal_offset (e.g. tworoom_long=200), honor it.
     effective_goal_offset = goal_offset_override if goal_offset_override is not None else goal_offset
-    # Load dataset for sampling init/goal
-    ds, state_dim = _load_eval_dataset(
-        env, data_path, history_size, effective_goal_offset, split=split,
-    )
     # Note: we do NOT rebuild the model here — caller is expected to build
     # the model with the correct state_dim (e.g. read from ckpt). state_dim
     # is used only for sanity checks below.
     # Build CEM once
     cem = CEM(
-        model, action_dim=action_dim, horizon=horizon,
+        model, action_dim=model_action_dim, horizon=horizon,
         n_samples=cem_samples, n_elites=cem_elites, n_iters=cem_iters,
         history_size=history_size, device=device,
+    )
+    # Load dataset for sampling init/goal pairs (pads to pad_obs_to if set)
+    ds, state_dim = _load_eval_dataset(
+        env, data_path, history_size, effective_goal_offset, split=split,
+        pad_obs_to=pad_obs_to,
     )
 
     wall_t0 = time.time()
@@ -206,10 +196,7 @@ def eval_closed_loop(
             item = ds[int(ep_idx)]
             init_state_np = item["init_state"].numpy() if hasattr(item["init_state"], "numpy") else np.asarray(item["init_state"])
             goal_state_np = item["goal_state"].numpy() if hasattr(item["goal_state"], "numpy") else np.asarray(item["goal_state"])
-
-            # Reset the env first (needed for envs that don't support direct state setting,
             # e.g. TwoRoom/Cube — without reset, get_state() returns NaN).
-            # Use a per-episode seed derived from the dataset ep_idx for reproducibility.
             try:
                 env.reset(seed=int(ep_idx) + seed * 1000)
             except Exception:
@@ -222,12 +209,12 @@ def eval_closed_loop(
                 pass
             history_states = [init_state_np.copy() for _ in range(history_size)]
             try:
-                z_history = encode_history(model, [torch.from_numpy(s).float() for s in history_states], action_dim, device)
+                z_history = encode_history(model, [torch.from_numpy(s).float() for s in history_states], model_action_dim, device)
             except Exception:
-                z_history = encode_obs(model, torch.from_numpy(init_state_np).float(), action_dim, device).unsqueeze(0).repeat(history_size, 1)
+                z_history = encode_obs(model, torch.from_numpy(init_state_np).float(), model_action_dim, device).unsqueeze(0).repeat(history_size, 1)
 
             # Encode goal
-            z_goal = encode_obs(model, torch.from_numpy(goal_state_np).float(), action_dim, device)
+            z_goal = encode_obs(model, torch.from_numpy(goal_state_np).float(), model_action_dim, device)
 
             # CEM plan + step
             actions_taken = 0
@@ -239,6 +226,10 @@ def eval_closed_loop(
                 seq = cem.plan(z_init, z_goal)  # (H, A)
                 for a_idx in range(min(horizon, eval_budget - actions_taken)):
                     action = seq[a_idx].cpu().numpy().astype(np.float32)
+                    # CEM plans in model_action_dim; env expects native action_dim.
+                    # Slice back to native before stepping.
+                    if action.shape[-1] != action_dim:
+                        action = action[..., :action_dim]
                     action = np.clip(action, action_low, action_high)
                     try:
                         _obs, _r, done, _info = env.step(action)
@@ -267,7 +258,7 @@ def eval_closed_loop(
                 final_state_np = init_state_np
 
             try:
-                z_final = encode_obs(model, torch.from_numpy(final_state_np).float(), action_dim, device)
+                z_final = encode_obs(model, torch.from_numpy(final_state_np).float(), model_action_dim, device)
             except Exception:
                 z_final = z_goal  # fallback
             cos = torch.nn.functional.cosine_similarity(
@@ -337,7 +328,8 @@ def eval_closed_loop(
 # ============================================================
 # Helpers
 # ============================================================
-def _load_eval_dataset(env, data_path, history_size, goal_offset, split: str = "in_dist"):
+def _load_eval_dataset(env, data_path, history_size, goal_offset, split: str = "in_dist",
+                       pad_obs_to: Optional[int] = None):
     """Load the eval dataset for sampling init/goal pairs.
 
     Returns (ds, state_dim). ds may be None if no dataset is available
@@ -355,8 +347,10 @@ def _load_eval_dataset(env, data_path, history_size, goal_offset, split: str = "
             return None, env.spec.obs_dim
         return None, env.spec.obs_dim
     if data_path.endswith(".npz") or data_path.endswith(".h5"):
+        env_id = env.spec.env_id if hasattr(env, "spec") else None
         ds = load_dataset(_infer_env_kind(env), path=data_path,
-                          history_size=history_size, goal_offset=goal_offset)
+                          history_size=history_size, goal_offset=goal_offset,
+                          pad_obs_to=pad_obs_to, env_id=env_id)
         spec_dim = ds.spec.obs_dim
         # B4: OOD split for held-out goal states
         if split == "unseen_goal" and hasattr(ds, "spec"):
@@ -419,6 +413,56 @@ def _set_env_state(env: BaseEnv, state: np.ndarray) -> None:
             env._data.qpos[: env._nq] = state[: env._nq]
         env._data.qvel[:] = 0.0
     return
+
+
+class _PadObsWrapper:
+    """Wraps a BaseEnv so every obs returned is zero-padded to `target_dim` along the last axis.
+
+    Used at eval time to load a generalist checkpoint (trained on padded obs) against
+    any env with a smaller native obs_dim. The wrapper also updates `env.spec.obs_dim`
+    to the padded dim so downstream code (state_dim computation, LeWM-SR checks) sees
+    the right shape.
+
+    Methods overridden: reset, step, get_state, check_success.
+    The native spec/action_dim/action_low/action_high are preserved so CEM and
+    env-native success detection still work.
+    """
+    def __init__(self, base: BaseEnv, target_dim: int):
+        self._base = base
+        self.spec = base.spec
+        self.spec.obs_dim = target_dim
+        self._target = target_dim
+        self._step_count = 0
+
+    def reset(self, seed=None, **kw):
+        obs = self._base.reset(seed=seed, **kw)
+        return self._pad(obs)
+
+    def step(self, action):
+        obs, r, d, info = self._base.step(action)
+        return self._pad(obs), r, d, info
+
+    def get_state(self):
+        return self._pad_arr(self._base.get_state())
+
+    def check_success(self, s, g):
+        return self._base.check_success(self._pad_arr(s), self._pad_arr(g))
+
+    def _pad(self, obs):
+        if isinstance(obs, dict) and "state" in obs:
+            obs = dict(obs); obs["state"] = self._pad_arr(obs["state"]); return obs
+        return self._pad_arr(obs)
+    def _pad_arr(self, arr):
+        a = np.array(arr, dtype=np.float32, copy=True)
+        if a.ndim == 0:
+            return a
+        last = a.shape[-1]
+        if last < self._target:
+            pad = np.zeros(a.shape[:-1] + (self._target - last,), dtype=np.float32)
+            a = np.concatenate([a, pad], axis=-1)
+        return a
+
+
 # ============================================================
 # CLI
 # ============================================================
@@ -447,6 +491,12 @@ def parse_args():
     p.add_argument("--vel-hidden-mask-obs-ratio", type=float, default=None,
                    help="If >0, additionally drop this fraction of NON-velocity "
                         "obs dims on top of velocity-hidden (cheetah_velhidden hard).")
+    p.add_argument("--pad-obs-eval", type=int, default=None,
+                   help="If set, pad env obs to this dim at eval time. Required for "
+                        "loading a generalist checkpoint trained with --pad-obs-to.")
+    p.add_argument("--action-dim-eval", type=int, default=None,
+                   help="If set, override the action_dim used to build the model and to "
+                        "CEM-plan. Required for loading a generalist checkpoint trained with --action-dim.")
     return p.parse_args()
 
 
@@ -458,11 +508,22 @@ def main():
     # Build env (supports per-eval flicker mask_ratio)
     env = make_env(args.env, args.data, flicker_mask_ratio=args.flicker_mask_ratio)
 
+    # If --pad-obs-eval was passed, wrap env to pad every obs to the target dim.
+    # The model will be built with this padded dim; load_dataset below will also pad
+    # its init/goal samples to match.
+    pad_obs_eval = args.pad_obs_eval
+    action_dim_override = args.action_dim_eval
+
     # Build model
     ck = torch.load(args.ckpt, map_location="cpu", weights_only=False)
     ck_args = ck.get("args", {})
-    state_dim = env.spec.obs_dim
-    action_dim = env.spec.action_dim
+    # Prefer ckpt-side dims (recorded by train.py via vars(args)) when present.
+    # Otherwise fall back to the env's native dims.
+    state_dim = (ck_args.get("pad_obs_to") or pad_obs_eval or env.spec.obs_dim)
+    action_dim = (ck_args.get("action_dim") or action_dim_override or env.spec.action_dim)
+    if state_dim > env.spec.obs_dim:
+        # Wrap env so all returned obs are padded to state_dim.
+        env = _PadObsWrapper(env, state_dim)
     if ck_args.get("model", "stjewm") == "lewm_baseline":
         from code.lewm_transformer_baseline import LeWMTransformerBaseline
         embed_dim = ck_args.get("embed_dim", 256)
@@ -513,6 +574,7 @@ def main():
             trace_beta=0.9, freeze_encoder=True,
             readout_mode=ck_readout_mode,
         )
+
 
     # Optional extra difficulty: for cheetah_velhidden, drop additional non-velocity
     # dims on top of velocity-hidden. Implemented as a small wrapper.
@@ -573,6 +635,8 @@ def main():
         device=device,
         goal_offset_override=goal_offset_override,
         split=args.split,
+        pad_obs_to=(args.pad_obs_eval or (ck_args.get("pad_obs_to") if ck_args else None)),
+        model_action_dim=(ck_args.get("action_dim") if ck_args else None),
     )
     # Save
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,6 @@
+[
+  {"env_kind": "dmc", "path": "data/dm_control/cartpole_250k.npz", "history_size": 1, "goal_offset": 10, "max_windows": 50, "env_id": "cartpole_2d"},
+  {"env_kind": "dmc", "path": "data/dm_control/pendulum_250k.npz", "history_size": 1, "goal_offset": 10, "max_windows": 50, "env_id": "pendulum_2d"},
+  {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/finger_250k.npz", "history_size": 1, "goal_offset": 10, "max_windows": 50, "env_id": "finger"},
+  {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/cheetah_250k.npz", "history_size": 1, "goal_offset": 10, "max_windows": 50, "env_id": "cheetah"}
+]

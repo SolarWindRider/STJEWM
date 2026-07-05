@@ -46,9 +46,24 @@ def parse_args():
                                        "spikedreamer_baseline",
                                        "cubifae_baseline"], required=True,
                    help="Which model architecture to train")
-    p.add_argument("--env-kind", required=True,
+    p.add_argument("--env-kind", required=False, default=None,
                    help="Loader kind: pusht, tworoom, reacher_4d, reacher_lewm, "
-                        "reacher_full, ogb_cube, dmc, mujoco_3d, gym_live")
+                        "reacher_full, ogb_cube, dmc, mujoco_3d, gym_live. "
+                        "Required unless --multi-env-spec is set.")
+    p.add_argument("--multi-env-spec", default=None,
+                   help="Path to a JSON file with shape "
+                        "[{env_kind, path, history_size, goal_offset, max_windows, env_id}, ...]. "
+                        "Mutually exclusive with --env-kind for the dataset layer; "
+                        "when set, --pad-obs-to and --action-dim should be set too.")
+    p.add_argument("--pad-obs-to", type=int, default=None,
+                   help="If set, pad each loaded obs to this dim at the data layer. "
+                        "Required for generalist training.")
+    p.add_argument("--action-dim", type=int, default=None,
+                   help="Override the per-env action_dim used to construct the model. "
+                        "Required for generalist training; sets a fixed action_dim across envs.")
+    p.add_argument("--embed-dim", type=int, default=None,
+                   help="Override the embed_dim used by build_model (e.g. 192 for generalist LeWM). "
+                        "If None, build_model picks per-model defaults.")
     p.add_argument("--data", default=None,
                    help="Path to data file (or env_id for gym_live; not required for env-based loaders like ogb_cube_env)")
     p.add_argument("--out", required=True)
@@ -77,11 +92,18 @@ def parse_args():
                    choices=["trace_only", "hidden_leak", "membrane_readout",
                             "spike_only", "rate_only", "no_trace"],
                    help="STJEWM readout mode (membrane-forbidden protocol)")
-    return p.parse_args()
+    args = p.parse_args()
+    # Validate that exactly one of --env-kind / --multi-env-spec is set
+    if args.env_kind is None and args.multi_env_spec is None:
+        p.error("One of --env-kind or --multi-env-spec is required.")
+    if args.env_kind is not None and args.multi_env_spec is not None:
+        p.error("--env-kind and --multi-env-spec are mutually exclusive.")
+    return args
+
 # Model builders
 # ============================================================
 def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int,
-                readout_mode: str = "hidden_leak"):
+                readout_mode: str = "hidden_leak", embed_dim: Optional[int] = None):
     if model_kind == "stjewm":
         from code.stjewm import STJEWM
         return STJEWM(
@@ -98,7 +120,7 @@ def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int,
         # n_layers is configurable via --n-layers (default 4).
         return LeWMTransformerBaseline(
             state_dim=obs_dim, action_dim=action_dim,
-            embed_dim=256, num_layers=n_layers, num_heads=8,
+            embed_dim=(embed_dim or 256), num_layers=n_layers, num_heads=8,
         )
     if model_kind == "gru_baseline":
         from code.gru_baseline import GRUBaseline
@@ -309,8 +331,21 @@ def main():
     torch.manual_seed(args.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    # Load dataset via unified loader
-    if args.env_kind == "gym_live":
+    # Load dataset via unified loader (specialist OR generalist)
+    if args.multi_env_spec is not None:
+        # Generalist path: union of per-env datasets, padded to common obs_dim and action_dim
+        from code.data import load_multi_env_dataset_from_json
+        if args.pad_obs_to is None:
+            raise ValueError("--pad-obs-to is required when --multi-env-spec is set")
+        if args.action_dim is None:
+            raise ValueError("--action-dim is required when --multi-env-spec is set")
+        ds = load_multi_env_dataset_from_json(
+            args.multi_env_spec,
+            pad_obs_to=args.pad_obs_to,
+            action_dim_target=args.action_dim,
+            seed=args.seed,
+        )
+    elif args.env_kind == "gym_live":
         ds = load_dataset("gym_live", path=args.data, history_size=args.history_size,
                           goal_offset=args.goal_offset, n_episodes=50, seed=args.seed)
     elif args.env_kind in ("ogb_cube_env", "ogb_scene_env"):
@@ -332,7 +367,14 @@ def main():
     # Determine obs_dim / action_dim from first batch
     sample = ds[0]
     obs_dim = sample["state"].shape[-1]
-    action_dim = sample["action"].shape[-1]
+    sample_action_dim = sample["action"].shape[-1]
+    # In generalist mode, --action-dim overrides whatever the data layer produced
+    action_dim = args.action_dim if args.action_dim is not None else sample_action_dim
+    if args.action_dim is not None and args.action_dim != sample_action_dim:
+        raise RuntimeError(
+            f"--action-dim={args.action_dim} but dataset action_dim={sample_action_dim}; "
+            "the multi-env factory should have produced this shape. Check load_multi_env_dataset."
+        )
 
     # Build model — both architectures use 4 layers for ~5M-param match.
     # STJEWM = 4-layer SNN stack. LeWM-style = 4-layer Transformer (4-layer
@@ -340,12 +382,17 @@ def main():
     n_layers = args.n_layers
     # Save the actual n_layers used (not the user-provided default)
     args.n_layers = n_layers
-    # Save embed_dim for eval (LeWM-style uses 256, STJEWM uses 192)
-    if args.model == "lewm_baseline":
+    # Save embed_dim for eval (LeWM-style uses 256, STJEWM uses 192; generalist overrides via --embed-dim)
+    if args.embed_dim is not None:
+        args.embed_dim = args.embed_dim
+    elif args.model == "lewm_baseline":
         args.embed_dim = 256
     else:
         args.embed_dim = 192
-    model = build_model(args.model, obs_dim, action_dim, n_layers, args.readout_mode).to(device)
+    model = build_model(
+        args.model, obs_dim, action_dim, n_layers, args.readout_mode,
+        embed_dim=args.embed_dim,
+    ).to(device)
     assert_model_compatible(model)
 
     save_dir = Path(args.out)

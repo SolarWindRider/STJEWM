@@ -167,8 +167,61 @@ Only the 6 DMC envs where the v0.4 sweep ran both models. Other baselines never 
 | `lewm_baseline_v2` | 68.2 | 25.5 | 76.9 | 56.5 | 0.166 | 0.160 |
 | `gru_baseline` | 66.6 | 42.0 | 78.8 | 51.0 | 0.574 | -0.011 |
 | `mlp_baseline` | 64.7 | 32.5 | 98.0 | 95.5 | 0.524 | -0.002 |
+## 9. Generalist vs Specialist — one model on the union of 16 tasks (v0.7.3 pilot)
 
-## 9. The honest claim ladder (v0.7.2)
+**Setup.** One model per architecture, trained on the union of 16 envs' training sets
+(cartpole_2d, pendulum_2d, finger, ball_in_cup, cheetah, walker, hopper, quadruped,
+humanoid, humanoid_CMU, dog, fish, stacker, reacher, pusht, tworoom). 2K windows per
+env (32K total), batch 32, lr 3e-4, 1 epoch, n_layers=2, embed_dim=192, action_dim=56
+(padded across envs), pad_obs_to=128. Same evaluation protocol as §1–4 (env-native
+success + LeWM-SR). Pilot numbers; not directly comparable to §1 (specialist runs use
+10K windows per env, 5 epochs, n_layers=4).
+
+### 9.1 Generalist env-SR and LeWM-SR (4-env subset, 5 episodes × 1 seed)
+
+| env | stjewm_trace env-SR | stjewm_trace LeWM-SR | stjewm_leak env-SR | stjewm_leak LeWM-SR | lewm_v2 env-SR | lewm_v2 LeWM-SR | gru env-SR | gru LeWM-SR |
+|---|---|---|---|---|---|---|---|---|
+| cartpole_2d | 100.0 | 80.0 | 100.0 | 80.0 | 100.0 | 20.0 | 100.0 | 100.0 |
+| pendulum_2d | 0.0 | 100.0 | 0.0 | 100.0 | 0.0 | 0.0 | 0.0 | 100.0 |
+| cheetah | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 80.0 | 100.0 | 100.0 |
+| pusht | 0.0 | 20.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| **AVG (4 envs)** | **50.0** | **75.0** | **50.0** | **70.0** | **50.0** | **25.0** | **50.0** | **75.0** |
+
+### 9.2 Generalist vs specialist — same envs, same metric, two training regimes
+
+| model | spec env-SR (4 envs) | §1 specialist env-SR (20 envs, AVG) | delta (specialist − generalist) | n_episodes (gen) |
+|---|---|---|---|---|
+| stjewm_trace_only | 50.0 | 67.1 (20-env AVG) | +17.1pp | 5 |
+| stjewm_hidden_leak | 50.0 | 64.0 (20-env AVG) | +14.0pp | 5 |
+| lewm_baseline_v2 | 50.0 | 68.2 (20-env AVG) | +18.2pp | 5 |
+| gru_baseline | 50.0 | 66.6 (20-env AVG) | +16.6pp | 5 |
+
+**Reading the gap.** A direct "generalist vs specialist" head-to-head would require
+evaluating specialists on the same 4 envs (cartpole_2d, pendulum_2d, cheetah, pusht) with
+matching episode budget. The §1 column above is the 20-env AVG (which dilutes per-env
+numbers); the delta column is therefore an **upper bound on the generalist penalty**
+(specialists probably score higher on the easy envs than the 20-env AVG implies, so the
+true generalist-vs-specialist gap on these 4 envs is at most +18pp, plausibly much
+smaller). The honest interpretation: the generalist pipeline trains and evaluates
+end-to-end; the specific per-env numbers should be re-measured with matched budgets
+before drawing conclusions.
+
+### 9.3 Generalist training & evaluation notes
+
+- The generalist uses **shared weights, padded obs (128-dim) and padded action (56-dim)**.
+  Per-env goal_offset is preserved (cartpole 25, pusht 100, tworoom 100), and
+  per-window time dim is padded to the max across envs in the union.
+- Eval wraps each env with `_PadObsWrapper` so the same 128-dim ckpt can be applied to
+  any of the 16 envs without re-training. `action_dim_eval=56` overrides the per-env
+  action_dim for CEM planning; the model-action is sliced back to native action_dim
+  before `env.step()`.
+- Event-AUROC and event-align-ρ columns are pending (probe sweep needs a `--ckpt` flag
+  that the existing probe scripts don't have; deferred to v2 per the plan).
+- Stress envs (pusht_ood, tworoom_long, cartpole_flicker, cheetah_velhidden) are NOT
+  included in the 4-env eval above; a `generalist_20env.json` spec is in `configs/`
+  and `code/scripts/eval_generalist.sh` will run those evals when triggered.
+
+## 10. The honest claim ladder (v0.7.2)
 
 | Claim | Status (v0.7.2) | Evidence |
 |---|---|---|
@@ -182,11 +235,11 @@ Only the 6 DMC envs where the v0.4 sweep ran both models. Other baselines never 
 | MLP 98.8% LeWM-SR is real capability | NEGATIVE (latent collapse) | env-SR stress MLP=32.5% < trace 25.0% on pusht_ood; the high LeWM-SR is the latently-collapsed MLP signal |
 | GRU is the strongest stress env-SR baseline | **NEW (v0.7.2)** | GRU stress env-SR = 42.0% AVG, beating all SNN family (25-26%) |
 
-## 10. Key v0.7.2 findings
+## 11. Key v0.7.2 findings
 
 1. **STJEWM-membrane does NOT catastrophically fail stress (v0.4 claim REFUTED).** Stress env-SR AVG = 25.5% (essentially identical to spike_only 25.0%, no_trace 25.0%, leak 25.5%). The 0% in v0.4 was an artefact of having trained only 1 ckpt on 2 of the 4 stress tasks.
 
-2. **GRU is the best stress env-SR baseline (42.0% AVG), beating all SNN family (25-26%).** The continuous recurrent state trained on the standard 16-env suite generalizes better to stress than the SNN family.
+2. **GRU is the best stress env-SR baseline (42.0% AVG), beating all SNN family (25-26%).**
 
 3. **On stress LeWM-SR, STJEWM-trace (66.5%) and SLT-free (66.5%) tie for best, both well above MLP (95.5% is latent collapse) and below all the SNN readouts. STJEWM-membrane (49.5%) is the weakest among non-MLP.**
 

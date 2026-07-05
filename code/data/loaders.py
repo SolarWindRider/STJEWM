@@ -60,6 +60,8 @@ def load_pusht(
     history_size: int = 3,
     goal_offset: int = 25,
     max_windows: Optional[int] = None,
+    pad_obs_to: Optional[int] = None,
+    env_id: Optional[str] = None,
 ) -> WindowDataset:
     """PushT: use the 7D `state` field (agent pos+vel + block pos+vel+angle+angvel)."""
     state = h5_load_field(h5_path, "state").astype(np.float32)  # (N, 7)
@@ -69,18 +71,20 @@ def load_pusht(
         action_dim=2,
         history_size=history_size,
         goal_offset=goal_offset,
+        pad_obs_to=pad_obs_to,
+        env_id=env_id,
     )
     return WindowDataset(state, actions, spec, max_windows=max_windows)
 
 
-# ============================================================
-# TwoRoom loader
 # ============================================================
 def load_tworoom(
     h5_path: str = "/home/lx/LeWM/data/tworoom_extract/tworoom.h5",
     history_size: int = 1,        # LeWM paper uses history=1 for TwoRoom
     goal_offset: int = 100,        # LeWM App. F.1: goal=100 steps ahead for TwoRoom
     max_windows: Optional[int] = None,
+    pad_obs_to: Optional[int] = None,
+    env_id: Optional[str] = None,
 ) -> WindowDataset:
     """TwoRoom: use the 10D `observation` field."""
     state = h5_load_field(h5_path, "observation").astype(np.float32)
@@ -90,6 +94,8 @@ def load_tworoom(
         action_dim=2,
         history_size=history_size,
         goal_offset=goal_offset,
+        pad_obs_to=pad_obs_to,
+        env_id=env_id,
     )
     return WindowDataset(state, actions, spec, max_windows=max_windows)
 
@@ -103,6 +109,8 @@ def load_reacher(
     goal_offset: int = 25,         # LeWM App. F.1: goal=25 steps ahead
     state_dim: int = 4,            # which sub-dim of obs to use
     max_windows: Optional[int] = None,
+    pad_obs_to: Optional[int] = None,
+    env_id: Optional[str] = None,
 ) -> WindowDataset:
     """Reacher: load dm_control 1M reacher_easy.npz.
 
@@ -154,6 +162,8 @@ def load_reacher(
         action_dim=2,
         history_size=history_size,
         goal_offset=goal_offset,
+        pad_obs_to=pad_obs_to,
+        env_id=env_id,
     )
     return WindowDataset(state, actions, spec, max_windows=max_windows)
 
@@ -243,6 +253,8 @@ def load_dmc(
     history_size: int = 1,
     goal_offset: int = 25,
     max_windows: Optional[int] = None,
+    pad_obs_to: Optional[int] = None,
+    env_id: Optional[str] = None,
 ) -> WindowDataset:
     """Generic DMC npz loader. Used for cartpole, pendulum, finger, cheetah, etc."""
     d = np.load(npz_path)
@@ -253,6 +265,8 @@ def load_dmc(
         action_dim=actions.shape[1],
         history_size=history_size,
         goal_offset=goal_offset,
+        pad_obs_to=pad_obs_to,
+        env_id=env_id,
     )
     return WindowDataset(obs_raw, actions, spec, max_windows=max_windows)
 
@@ -265,6 +279,8 @@ def load_delayed_t_maze(
     history_size: int = 1,
     goal_offset: int = 25,
     max_windows: Optional[int] = None,
+    pad_obs_to: Optional[int] = None,
+    env_id: Optional[str] = None,
 ) -> WindowDataset:
     """Delayed T-Maze loader.
 
@@ -283,6 +299,8 @@ def load_delayed_t_maze(
         action_dim=2,
         history_size=history_size,
         goal_offset=goal_offset,
+        pad_obs_to=pad_obs_to,
+        env_id=env_id,
     )
     return WindowDataset(observations, actions, spec, max_windows=max_windows)
 
@@ -384,6 +402,8 @@ def load_mujoco_3d(
     history_size: int = 3,
     goal_offset: int = 25,
     max_windows: Optional[int] = None,
+    pad_obs_to: Optional[int] = None,
+    env_id: Optional[str] = None,
 ) -> WindowDataset:
     """Load our own 3D rollouts (from stage38_gen_3d_rollouts.py output).
 
@@ -397,6 +417,8 @@ def load_mujoco_3d(
         action_dim=actions.shape[1],
         history_size=history_size,
         goal_offset=goal_offset,
+        pad_obs_to=pad_obs_to,
+        env_id=env_id,
     )
     return WindowDataset(obs_raw, actions, spec, max_windows=max_windows)
 
