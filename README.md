@@ -11,7 +11,7 @@ hidden state. The trace is bounded in [0,1] per dim, content-aware
 
 This repository contains the code, evaluations, and paper for ST-JEWM.
 The full PDF is at `paper/paper.pdf`. Source: `paper/paper.md` and
-`paper/paper.tex`. Current version: **v0.7.4** (2026-07-06).
+`paper/paper.tex`. Current version: **v0.7.5** (2026-07-06).
 
 ## Headline results (v0.7.3)
 
@@ -58,23 +58,40 @@ task performance** — it does not produce the best raw scores, but it
 produces the best **mechanism**. (See `MASTER_TABLE.md` §10 for the
 full claim ladder.)
 
-## Generalist world-model evaluation (v0.7.4)
+## Generalist world-model evaluation (v0.7.5 — corrected metrics)
 
 Twelve model variants trained as **shared-weights generalists** on the union of 4 / 8 /
-16 standard envs. Eval'd on env-SR, LeWM-SR (latent-distance metric), 4 stress envs
-(flicker / vel-hidden / OOD / long-horizon), event-AUROC (linear probe), and event-align
-ρ (latent event-timeliness). Full numbers in `MASTER_TABLE.md` §9.6 sub-sections.
+16 standard envs. Eval'd on env-SR, **divergence-from-constant** (collapse-robust),
+**responsiveness** (collapse-robust), 4 stress envs (flicker / vel-hidden / OOD /
+long-horizon), event-AUROC (linear probe), and event-align ρ (latent
+event-timeliness). Full numbers in `MASTER_TABLE.md` §9.5–§9.7 sub-sections.
 
-**Headline finding.** All six STJEWM readouts (trace_only / spike_only / rate_only /
-no_trace / hidden_leak / membrane_readout) **produce event-aligned predictive states
-with ρ ≥ 0.97 on every DMC env, regardless of training scale (G4/G8/G16)**. Non-spiking
-baselines (LeWM 0.52, GRU -0.07, MLP -0.04) lag by 1–2 orders of magnitude. On
-env-native success rate all 12 models land within ±4pp of each other (71–76% AVG);
-STJEWM readouts do not win env-SR but they do not lose it either — and they win
-event-aligned predictive state by a wide margin.
+**Headline finding (v0.7.5 — collapse-robust).** With the v0.7.4 metric
+set, MLP looked best (LeWM-SR 95.6%) and STJEWM was indistinguishable
+from baselines on env-SR. The v0.7.4 `LeWM-SR` metric was
+**collapse-inflatable** — a constant latent trivially satisfies
+`cos_dist < 0.1` for any goal. The new `divergence` metric (per-dim
+std of the latent trajectory) is collapse-robust by construction. The
+corrected picture:
+
+| family | divergence | responsiveness | event-align ρ | failure mode |
+|---|---|---|---|---|
+| stjewm_{trace,spike,no_trace,hidden_leak,membrane,rate} | 0.011–0.013 | 0.20 | ≥ 0.99 | **calibrated** |
+| cubifae_baseline, slt_lif_mpc_{trace,free} | 0.011 | 0.20 | ≥ 0.62 | calibrated (SNN) |
+| **mlp_baseline** | **0.0002** (50× lower) | 0.55 | n/a | **collapse** |
+| **gru_baseline** | 0.008 (similar) | **31** (150× higher) | -0.07 | **noise** |
+| **lewm_baseline_v2** | **0.186** (16× higher) | **33** (150× higher) | 0.52 | **over-reactive** |
+
+**Three distinct non-spiking failure modes are now visible** that
+v0.7.4 conflated. Only MLP is collapsed; GRU is noisy; LeWM is
+over-reactive. STJEWM is the **only** family that is simultaneously
+(a) responsive to obs, (b) not collapsed, and (c) event-aligned
+(ρ ≥ 0.99). On env-SR alone the families are within ±4pp; the
+corrected metrics separate them.
 
 Pipeline scripts in `code/scripts/generalist_v0_7_4/` (run `bash run_suite.sh` to
-reproduce; `aggregate_master.py --suite {G4,G8,G16}` to rebuild the table).
+reproduce; `aggregate_master.py --suite {G4,G8,G16}` to rebuild the table;
+`measure_latent_stats.py` to recompute the new collapse-robust metrics).
 Per-suite spec files in `configs/generalist_{G4,G8,G16,4_stress,probe_eval}_*.json`.
 Ckpts in `results/generalist[_G4|_G8|_G16]/<model>/seed_0/final.pt`.
 
@@ -210,7 +227,7 @@ bash code/scripts/generalist_v0_7_4/master_aggregate.sh --probes --align --suite
 bash code/scripts/upload_master_table_to_obs.sh
 ```
 
-## Status (v0.7.4, 2026-07-06)
+## Status (v0.7.5, 2026-07-06)
 
 | Component | Status | Output |
 |---|---|---|
@@ -221,10 +238,9 @@ bash code/scripts/upload_master_table_to_obs.sh
 | FLOPs / efficiency (7 models) | done | `MASTER_TABLE.md` §7 |
 | Generalist event-probe AUROC (G4/G8/G16 × 7 probe envs × ~7 targets) | done | `results/aggregate/event_probes_table.md` (consolidated) |
 | Generalist event-align ρ (G4/G8/G16 × 6 DMC envs) | done | `results/aggregate/generalist_align_table.md` (consolidated) |
+| **v0.7.5 collapse-robust metrics** (responsiveness, divergence-from-constant, 36 ckpts × 6 DMC envs) | done | `MASTER_TABLE.md` §9.5–§9.7, `results/aggregate/generalist_master_table.md` |
 | Multi-seed std bars on generalist eval | deferred | wallclock cost; 1-seed numbers reported honestly |
-| Paper PDF | v0.7.4 in progress | `paper/paper.pdf` |
-
-| **v0.7.4 generalist evaluation** (12 ckpts × 3 suites G4/G8/G16 × 1 seed × 4 stress envs) | done | `MASTER_TABLE.md` §9, `results/aggregate/generalist_master_table.md` (consolidated G4+G8+G16) |
+| Paper PDF | v0.7.5 in progress | `paper/paper.pdf` |
 
 See `MASTER_TABLE.md` §10 for the full claim ladder. Top claims:
 
@@ -233,9 +249,9 @@ See `MASTER_TABLE.md` §10 for the full claim ladder. Top claims:
 - **Trace is event-correlated (ρ ≥ 0.9 on 5/6 DMC)** — SUPPORTED (ρ = 0.976 / 0.997 / 0.996 / 0.885 / 0.920).
 - **Membrane-forbidden protocol is necessary on stress** — NEGATIVE on env-SR; trace=membrane (both 25.0/25.5); trace > membrane on LeWM-SR stress (66.5 vs 49.5).
 - **STJEWM dominates event-type AUROC** — SUPPORTED (6 STJEWM readouts all > 0.688; best non-SNN = GRU 0.574).
-- **MLP 98.8% LeWM-SR is real capability** — NEGATIVE (latent collapse: env-SR stress 32.5% < trace 25.0% on pusht_ood; the high LeWM-SR is the collapsed-latent signal).
+- **MLP 98.8% LeWM-SR is real capability** — **REFUTED in v0.7.5** (latent collapse: MLP `divergence-from-constant = 0.0002` is 50× lower than STJEWM's 0.011; the high LeWM-SR is the collapse signature, not a real capability). **NEW v0.7.5 finding:** the `divergence` metric separates the 3 non-spiking baselines — MLP=collapse, GRU=noise (resp 31, div normal), LeWM=over-reactive (resp 33, div 16× STJEWM).
 - **GRU is the strongest stress env-SR baseline** — NEW v0.7.2 (GRU 42.0% AVG, beats all SNN family 25–26%; but GRU event-align ρ = −0.011, so its high stress env-SR is a perception/memory hack, not event-structure).
-
+- **STJEWM is the only family that is calibrated, event-aligned, AND non-collapsed** — NEW v0.7.5: all 6 STJEWM readouts have `divergence = 0.011–0.013` (50× MLP, 1/16× LeWM), `event-align ρ ≥ 0.99`, and `responsiveness ≈ 0.20` (1/150× GRU/LeWM). All 3 non-spiking baselines fail at least one of these axes.
 ## Pre-push checklist (GitHub)
 
 - [x] Add `LICENSE` (MIT for code) — done

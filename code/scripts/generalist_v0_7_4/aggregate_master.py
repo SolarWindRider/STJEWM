@@ -61,10 +61,15 @@ def collect_one(model: str, env: str, results_dir: Path, seed: int) -> Optional[
 
 
 def aggregate_model_env(model: str, env: str, results_dir: Path, seeds: List[int]) -> Dict[str, Any]:
-    """Mean and std of env-SR / LeWM-SR / cos_dist across seeds for one (model, env)."""
+    """Mean and std of env-SR / LeWM-SR / cos_dist across seeds for one (model, env).
+    Also reads the per-(model, env) latent_stats JSONs produced by
+    measure_latent_stats.py and adds responsiveness / divergence.
+    """
     env_srs: List[float] = []
     lewm_srs: List[float] = []
     cos_dists: List[float] = []
+    responsives: List[float] = []
+    divergences: List[float] = []
     for s in seeds:
         ev = collect_one(model, env, results_dir, s)
         if ev is None:
@@ -75,6 +80,15 @@ def aggregate_model_env(model: str, env: str, results_dir: Path, seeds: List[int
             lewm_srs.append(float(ev["success_rate_lewm"]))
         if "mean_cos_dist" in ev:
             cos_dists.append(float(ev["mean_cos_dist"]))
+        # Latent stats (collapse-robust responsiveness / divergence).
+        # One file per (model, env, seed); we average across seeds.
+        lat_fp = results_dir / model / f"seed_{s}" / f"latent_stats_{env}.json"
+        lat = load_json(lat_fp) if lat_fp.exists() else None
+        if lat is not None and not lat.get("skipped"):
+            if "responsiveness" in lat:
+                responsives.append(float(lat["responsiveness"]))
+            if "divergence" in lat:
+                divergences.append(float(lat["divergence"]))
     return {
         "env_sr_mean": statistics.mean(env_srs) if env_srs else None,
         "env_sr_std": statistics.stdev(env_srs) if len(env_srs) > 1 else 0.0,
@@ -82,6 +96,8 @@ def aggregate_model_env(model: str, env: str, results_dir: Path, seeds: List[int
         "lewm_sr_std": statistics.stdev(lewm_srs) if len(lewm_srs) > 1 else 0.0,
         "cos_dist_mean": statistics.mean(cos_dists) if cos_dists else None,
         "n_seeds_with_data": len(env_srs),
+        "responsiveness_mean": statistics.mean(responsives) if responsives else None,
+        "divergence_mean": statistics.mean(divergences) if divergences else None,
     }
 
 
@@ -131,16 +147,21 @@ def write_section(
 
 def write_summary(rows: List[Dict[str, Any]], envs_id: List[str], envs_stress: List[str],
                   models: List[str], out) -> None:
-    """Per-model summary: AVG env-SR, LeWM-SR, worst-25%, collapse-gap."""
+    """Per-model summary: AVG env-SR, LeWM-SR, worst-25%, collapse-gap,
+    responsiveness, divergence (collapse-robust)."""
     out.write("\n### Summary per model\n\n")
     out.write("Columns: `mean` env-SR across ID envs, `lewm` LeWM-SR across ID envs, "
               "`worst25` mean of the bottom-25% envs' env-SR (interference proxy), "
-              "`gap` LeWM-SR − env-SR (collapse signal).\n\n")
-    out.write("| model | mean_id | lewm_id | worst25_id | gap_id | mean_stress | lewm_stress |\n")
-    out.write("|---|---|---|---|---|---|---|\n")
+              "`gap` LeWM-SR − env-SR (collapse-inflatable; large +ve = likely collapse), "
+              "`resp` responsiveness (mean ‖Δlatent‖ / mean ‖Δobs‖, calibrated ~0.2), "
+              "`div` divergence-from-constant (per-dim std, collapse < 0.001).\n\n")
+    out.write("| model | mean_id | lewm_id | worst25_id | gap_id | mean_stress | lewm_stress | resp | div |\n")
+    out.write("|---|---|---|---|---|---|---|---|---|\n")
     for m in models:
         id_env_srs: List[float] = []
         id_lewm_srs: List[float] = []
+        id_responsives: List[float] = []
+        id_divergences: List[float] = []
         stress_env_srs: List[float] = []
         stress_lewm_srs: List[float] = []
         for env in envs_id:
@@ -151,6 +172,10 @@ def write_summary(rows: List[Dict[str, Any]], envs_id: List[str], envs_stress: L
                 id_env_srs.append(row["env_sr_mean"])
             if row["lewm_sr_mean"] is not None:
                 id_lewm_srs.append(row["lewm_sr_mean"])
+            if row.get("responsiveness_mean") is not None:
+                id_responsives.append(row["responsiveness_mean"])
+            if row.get("divergence_mean") is not None:
+                id_divergences.append(row["divergence_mean"])
         for env in envs_stress:
             row = next((r for r in rows if r["env"] == env and r["model"] == m), None)
             if row is None:
@@ -168,14 +193,17 @@ def write_summary(rows: List[Dict[str, Any]], envs_id: List[str], envs_stress: L
         gap = (lewm_id - mean_id) if (mean_id is not None and lewm_id is not None) else None
         mean_stress = (sum(stress_env_srs) / len(stress_env_srs) * 100) if stress_env_srs else None
         lewm_stress = (sum(stress_lewm_srs) / len(stress_lewm_srs) * 100) if stress_lewm_srs else None
+        resp = (sum(id_responsives) / len(id_responsives)) if id_responsives else None
+        div = (sum(id_divergences) / len(id_divergences)) if id_divergences else None
 
-        def fmt(v):
-            return f"{v:.1f}" if v is not None else "-"
+        def fmt(v, dec=1):
+            return f"{v:.{dec}f}" if v is not None else "-"
 
         marker = " (collapse-control)" if m == COLLAPSE_CONTROL else ""
         out.write(
             f"| {m}{marker} | {fmt(mean_id)} | {fmt(lewm_id)} | {fmt(worst25)} | "
-            f"{fmt(gap)} | {fmt(mean_stress)} | {fmt(lewm_stress)} |\n"
+            f"{fmt(gap)} | {fmt(mean_stress)} | {fmt(lewm_stress)} | "
+            f"{fmt(resp, 3)} | {fmt(div, 4)} |\n"
         )
 
 

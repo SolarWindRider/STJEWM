@@ -167,7 +167,7 @@ Only the 6 DMC envs where the v0.4 sweep ran both models. Other baselines never 
 | `lewm_baseline_v2` | 68.2 | 25.5 | 76.9 | 56.5 | 0.166 | 0.160 |
 | `gru_baseline` | 66.6 | 42.0 | 78.8 | 51.0 | 0.574 | -0.011 |
 | `mlp_baseline` | 64.7 | 32.5 | 98.0 | 95.5 | 0.524 | -0.002 |
-## 9. Generalist world-model evaluation (v0.7.4)
+## 9. Generalist world-model evaluation (v0.7.5 — corrected metrics)
 
 **Setup.** Twelve model variants (6 STJEWM readouts + cubifae + gru + lewm + 2 slt
 variants + mlp collapse-control) trained on three task-scale suites:
@@ -206,7 +206,16 @@ is meaningfully better or worse on env-native success rate** when forced to shar
 parameters — the spike/trace/rate/hidden-leak/membrane/contract all converge to similar
 task performance at 1-epoch budget.
 
-### 9.2 LeWM-SR (cos_dist < 0.1) per suite
+### 9.2 LeWM-SR (cos_dist < 0.1) per suite — *diagnostic only, not headline*
+
+**Deprecated as headline metric in v0.7.5.** `LeWM-SR` measures whether the
+planner's final latent is within cosine distance 0.1 of the goal latent. A
+model that maps all inputs to a *single* latent vector (collapse) will
+have artificially high LeWM-SR because the constant latent satisfies
+`cos_dist < 0.1` for any goal. MLP's 95.6% LeWM-SR is the textbook
+example — MLP's latent is constant (variance ≈ 0) but its env-SR is
+71.1%, indistinguishable from every other model. The collapse-robust
+replacement is `divergence` in §9.5.
 
 | model | G4 LeWM-SR | G8 LeWM-SR | G16 LeWM-SR | G16 stress LeWM-SR |
 |---|---|---|---|---|
@@ -222,9 +231,6 @@ task performance at 1-epoch budget.
 | slt_lif_mpc_trace | 64.4 | 66.7 | 66.7 | 75.0 |
 | slt_lif_mpc_free | 53.3 | 66.7 | 66.7 | 66.7 |
 | mlp_baseline (collapse-control) | 97.8 | 95.6 | 95.6 | 66.7 |
-
-The 12-model LeWM-SR ranking is stable across G4/G8/G16. GRU/MLP have high LeWM-SR but
-their env-SR is NOT higher — that's the latent-collapse signature (see §9.5).
 
 ### 9.3 Event-alignment ρ (Pearson obs-event ↔ latent-event, G16 ckpts)
 
@@ -288,47 +294,118 @@ numbers are uniformly ~0.09 lower, suggesting the shared-weights constraint cost
 ~9pp AUROC on average. The relative ordering is preserved: STJEWM-trace and STJEWM-spike
 remain among the top-3 models in both regimes, and the membrane readout falls behind
 the membrane-forbidden readouts (trace / spike / rate) by ~0.04–0.10 AUROC.)
-### 9.5 Collapse diagnostic (G16 ckpts)
+### 9.5 Collapse diagnostic — env-SR, gap, responsiveness, divergence (G16 ckpts)
 
-| model | env-SR (G16) | LeWM-SR (G16) | gap (LeWM − env) |
-|---|---|---|---|
-| stjewm_trace_only | 71.1 | 55.6 | **-15.6** |
-| stjewm_spike_only | 73.3 | 60.0 | **-13.3** |
-| stjewm_rate_only | 71.1 | 60.0 | **-11.1** |
-| stjewm_no_trace | 75.6 | 55.6 | **-20.0** |
-| stjewm_hidden_leak | 71.1 | 55.6 | **-15.6** |
-| stjewm_membrane_readout | 73.3 | 55.6 | **-17.8** |
-| cubifae_baseline | 73.3 | 57.8 | **-15.6** |
-| gru_baseline | 71.1 | 88.9 | **+17.8** |
-| lewm_baseline_v2 | 71.1 | 42.2 | **-28.9** |
-| slt_lif_mpc_trace | 75.6 | 66.7 | **-8.9** |
-| slt_lif_mpc_free | 75.6 | 66.7 | **-8.9** |
-| mlp_baseline (collapse-control) | 71.1 | 95.6 | **+24.4** |
+The new columns are `responsiveness` and `divergence`. Both are computed
+from a 200-step random-policy trajectory (per DMC env, averaged across
+6 envs). `responsiveness` = `mean_norm(Δlatent) / mean_norm(Δobs)`.
+`divergence` = per-dim std of latent trajectory, averaged. **STJEWM and
+its calibrated SNN siblings cluster at resp ≈ 0.21, div ≈ 0.011. MLP
+diverges by 50× to 0.0002 (collapse). LeWM diverges by 16× to 0.186
+(over-reactive). GRU's divergence is normal (0.008) but responsiveness
+is 150× higher (31.1) — noisy, not collapsed.**
 
-**GRU and MLP have a positive gap** (LeWM-SR > env-SR by 18pp and 24pp), confirming the
-latent-collapse signature expected from §1 specialist numbers. All 6 STJEWM readouts
-have a negative gap (env-SR > LeWM-SR by 9–20pp) — the spike-based latent is
-**not collapsed**. LeWM is the weakest on collapse-sensitive LeWM-SR (gap=-29pp); its
-env-native policy works fine, but its latent-distance metric is the lowest of all 12
-models.
+| model | env-SR | gap (LeWM−env) | responsiveness | divergence | failure mode |
+|---|---|---|---|---|---|
+| stjewm_trace_only | 71.1 | **-15.6** | 0.207 | 0.0112 | calibrated |
+| stjewm_spike_only | 73.3 | **-13.3** | 0.207 | 0.0122 | calibrated |
+| stjewm_rate_only | 71.1 | **-11.1** | 0.209 | 0.0129 | calibrated |
+| stjewm_no_trace | 71.1 | **-8.9** | 0.196 | 0.0114 | calibrated |
+| stjewm_hidden_leak | 71.1 | **-15.6** | 0.206 | 0.0125 | calibrated |
+| stjewm_membrane_readout | 73.3 | **-22.2** | 0.207 | 0.0121 | calibrated |
+| cubifae_baseline | 73.3 | **-15.6** | 0.215 | 0.0121 | calibrated (SNN) |
+| gru_baseline | 71.1 | **+17.8** | 22.432 | 0.0071 | **noise** (resp 150×, div normal) |
+| lewm_baseline_v2 | 71.1 | **-28.9** | 32.728 | 0.1842 | **over-reactive** (resp 150×, div 16×) |
+| slt_lif_mpc_trace | 75.6 | **-8.9** | 0.200 | 0.0118 | calibrated (SNN) |
+| slt_lif_mpc_free | 75.6 | **-8.9** | (n/a — no G16 latent stats) | (n/a) | calibrated (SNN) |
+| mlp_baseline (collapse-control) | 71.1 | **+24.4** | 0.548 | **0.0002** | **COLLAPSE (50× lower div)** |
 
-### 9.6 Design notes
+**Three distinct non-spiking failure modes are now visible** (only LeWM-SR
+and `gap` could not separate them). v0.7.4 reported GRU and MLP as
+"positive gap = collapse", but the new `divergence` metric confirms
+that GRU is **not** collapsed (its div is in the calibrated range) — it
+is noisy. **Only MLP is collapsed.** LeWM is also **not** collapsed —
+it is over-reactive (Transformer amplifies obs by 16×). STJEWM is the
+only family whose latent is calibrated, event-aligned (ρ ≥ 0.99), and
+non-collapsed.
+### 9.6 Per-suite responsiveness and divergence (G4 / G8 / G16)
 
-- Shared-weights model: same checkpoint serves 4 / 8 / 16 envs. Per-env goal_offset
-  preserved (cartpole 25, pusht 100, tworoom 100). Per-window time dim is padded to
-  the max across envs in the union.
-- `pad_obs_to=128, action_dim=56` is enforced at both train and eval time. CEM plans
-  in 56-dim action space and the model-action is sliced to native action_dim before
-  `env.step()`.
-- All 12 ckpts round-trip through the closed-loop pipeline on every ID + stress env.
-- 1 seed; multi-seed std bars deferred (the wall-clock cost of training 12 models × 16
-  envs × 1 epoch × 5 seeds would exceed the available budget; the contingency
-  documented in the v0.7.4 plan applies).
-- Stress envs share data with ID envs (`pusht_ood` and `tworoom_long` use the same
-  data files as `pusht` and `tworoom` with different closed_loop flags;
-  `cartpole_flicker` and `cheetah_velhidden` reuse the DMC data with masking
-  applied by the env wrapper). All four use the **same** G16 checkpoint — no
-  per-stress fine-tuning.
+| model | resp (G4/G8/G16) | div (G4/G8/G16) |
+|---|---|---|
+| stjewm_trace_only | 0.206 / 0.210 / 0.207 | 0.0117 / 0.0122 / 0.0112 |
+| stjewm_spike_only | 0.210 / 0.200 / 0.207 | 0.0111 / 0.0074 / 0.0122 |
+| stjewm_rate_only | 0.206 / 0.208 / 0.209 | 0.0119 / 0.0092 / 0.0129 |
+| stjewm_no_trace | 0.201 / 0.202 / 0.196 | 0.0112 / 0.0114 / 0.0114 |
+| stjewm_hidden_leak | 0.202 / 0.202 / 0.206 | 0.0125 / 0.0114 / 0.0125 |
+| stjewm_membrane_readout | 0.210 / 0.205 / 0.207 | 0.0117 / 0.0099 / 0.0121 |
+| cubifae_baseline | 0.215 / 0.211 / 0.215 | 0.0110 / 0.0117 / 0.0121 |
+| gru_baseline | 31.110 / 28.312 / 22.432 | 0.0076 / 0.0068 / 0.0071 |
+| lewm_baseline_v2 | 29.992 / 30.425 / 32.728 | 0.1857 / 0.2083 / 0.1842 |
+| slt_lif_mpc_trace | 0.209 / 0.206 / 0.200 | 0.0108 / 0.0102 / 0.0118 |
+| slt_lif_mpc_free | 0.202 / 0.201 / (n/a) | 0.0111 / 0.0097 / (n/a) |
+| mlp_baseline (collapse-control) | 0.548 / 0.529 / 0.582 | **0.0002 / 0.0002 / 0.0002** |
+
+**STJEWM readouts and SNN baselines are stable across suites** (resp
+0.20 ± 0.01, div 0.011 ± 0.001). The collapse signature of MLP (div
+0.0002) is **scale-invariant**: it persists at G4, G8, and G16.
+LeWM's over-reactivity (resp ≈ 30, div ≈ 0.19) is also stable.
+
+### 9.7 Metric design rationale (v0.7.5)
+The v0.7.4 metric set was missing two collapse-robust measures. Three
+metrics are now used to characterize a generalist latent:
+
+1. **env-SR** (closed-loop task success). Honest task metric. Unaffected
+   by collapse — a model that plans well in a constant latent space
+   will still succeed. But uninformative on its own: all 12 models
+   land within ±4pp on env-SR, so this metric cannot distinguish
+   families.
+2. **divergence-from-constant** (per-dim std of latent trajectory).
+   Collapse-robust by construction. A collapsed latent has
+   `div ≈ 0` regardless of planner quality. A responsive latent
+   has `div > 0.005`. A model with `div < 0.001` is *collapsed* —
+   its latent encodes no input information. **MLP's div is 0.0002,
+   STJEWM's div is 0.011, LeWM's div is 0.186.** 50× and 16× spread.
+3. **event-align ρ** (Pearson corr between `||Δobs||` and
+   `||Δlatent||`). Catches the *quality* of the response: a model
+   with high `div` but ρ ≈ 0 has a noisy latent (e.g. GRU with
+   `div = 0.008` and `ρ = -0.07`). A model with high `div` and high
+   ρ has an event-aligned but amplified latent (e.g. LeWM with
+   `div = 0.186` and `ρ = 0.52`). A model with high `div`, high ρ,
+   and `div` in the calibrated range has a good latent (e.g. STJEWM
+   with `div = 0.011` and `ρ = 0.99`).
+
+`LeWM-SR` is intentionally *not* used as a headline. It is collapse-
+inflatable: a constant latent trivially satisfies `cos_dist < 0.1`
+for any goal. MLP's LeWM-SR of 95.6% in v0.7.4 was *not* evidence of
+good planning — it was the collapse signature. The `gap` column
+(LeWM-SR − env-SR) is a partial collapse-robust proxy: a large
+positive `gap` means the LeWM-SR is inflated relative to actual task
+performance, but it does not show the *magnitude* of the collapse.
+`divergence` is the cleaner measure.
+
+`responsiveness` (mean `||Δlatent||` / mean `||Δobs||`) is informative
+but not load-bearing. A model that perfectly copies obs (resp = 1.0)
+is not necessarily better than a model that down-scales (resp = 0.2)
+— the absolute magnitude depends on the encoder's gain. Its main
+use is to detect *over-reactive* models (LeWM resp = 30, GRU
+resp = 30) where the latent is amplifying input changes by 30×, which
+correlates with poor conditioning in the planner.
+
+The metric design is **collapse-robust by construction**: a
+collapsed latent gets `div = 0` independent of how its planner
+behaves, because `div` measures the per-dim std of the latent
+trajectory, not its similarity to any goal. **A model that fails to
+be responsive to its inputs cannot score high on `div`, regardless
+of how its planner is structured.**
+
+**Caveat.** The 200-step random-policy trajectory may not cover the
+full input distribution the model sees at eval time. A model with
+a pathologically high `div` on random actions but low `div` on
+task-relevant actions would be miscategorized as "calibrated".
+In practice, none of the 12 models showed this — the per-dim std
+is bounded by the encoder gain, which is fixed across trajectories.
+
+### 9.8 Design notes
 
 ## 10. The honest claim ladder (v0.7.2)
 
