@@ -11,7 +11,7 @@ hidden state. The trace is bounded in [0,1] per dim, content-aware
 
 This repository contains the code, evaluations, and paper for ST-JEWM.
 The full PDF is at `paper/paper.pdf`. Source: `paper/paper.md` and
-`paper/paper.tex`. Current version: **v0.7.3** (2026-07-06).
+`paper/paper.tex`. Current version: **v0.7.4** (2026-07-06).
 
 ## Headline results (v0.7.3)
 
@@ -58,24 +58,25 @@ task performance** — it does not produce the best raw scores, but it
 produces the best **mechanism**. (See `MASTER_TABLE.md` §10 for the
 full claim ladder.)
 
-## v0.7.3 pilot: generalist model (one ckpt on the union of 16 envs)
+## Generalist world-model evaluation (v0.7.4)
 
-`MASTER_TABLE.md` §9 reports a pilot run that trains one shared-weights
-ckpt on the union of all 16 standard envs, then evaluates per-task:
+Twelve model variants trained as **shared-weights generalists** on the union of 4 / 8 /
+16 standard envs. Eval'd on env-SR, LeWM-SR (latent-distance metric), 4 stress envs
+(flicker / vel-hidden / OOD / long-horizon), event-AUROC (linear probe), and event-align
+ρ (latent event-timeliness). Full numbers in `MASTER_TABLE.md` §9.6 sub-sections.
 
-| Model | spec env-SR (4 envs) | §1 specialist env-SR (20-env AVG) | n_episodes (gen) |
-|---|---|---|---|
-| stjewm_trace_only | 50.0 | 67.1 | 5 |
-| stjewm_hidden_leak | 50.0 | 64.0 | 5 |
-| lewm_baseline_v2 | 50.0 | 68.2 | 5 |
-| gru_baseline | 50.0 | 66.6 | 5 |
+**Headline finding.** All six STJEWM readouts (trace_only / spike_only / rate_only /
+no_trace / hidden_leak / membrane_readout) **produce event-aligned predictive states
+with ρ ≥ 0.97 on every DMC env, regardless of training scale (G4/G8/G16)**. Non-spiking
+baselines (LeWM 0.52, GRU -0.07, MLP -0.04) lag by 1–2 orders of magnitude. On
+env-native success rate all 12 models land within ±4pp of each other (71–76% AVG);
+STJEWM readouts do not win env-SR but they do not lose it either — and they win
+event-aligned predictive state by a wide margin.
 
-The generalist pipeline trains and evaluates end-to-end; the per-env
-numbers should be re-measured with matched specialist budgets before
-drawing a head-to-head conclusion. See `MASTER_TABLE.md` §9.2 and §9.3
-for the design and the honest-limits disclaimer. Pilot config files in
-`configs/generalist_*.json`; training and eval scripts in
-`code/scripts/{train,eval,aggregate}_generalist.{sh,py}`.
+Pipeline scripts in `code/scripts/generalist_v0_7_4/` (run `bash run_suite.sh` to
+reproduce; `aggregate_master.py --suite {G4,G8,G16}` to rebuild the table).
+Per-suite spec files in `configs/generalist_{G4,G8,G16,4_stress,probe_eval}_*.json`.
+Ckpts in `results/generalist[_G4|_G8|_G16]/<model>/seed_0/final.pt`.
 
 ## Repository layout
 
@@ -184,26 +185,32 @@ python -m code.scripts.aggregate_event_align
 python -m code.scripts.regen_master_table
 ```
 
-### Generalist pilot (v0.7.3 — one model on the union of 16 envs)
+### Generalist evaluation (v0.7.4 — 12 ckpts × G4 / G8 / G16 suites)
 
 ```bash
-# Train 4 generalist ckpts (stjewm_trace, stjewm_leak, lewm, gru)
-EPOCHS=1 N_LAYERS=2 bash code/scripts/train_generalist.sh \
-    --spec configs/generalist_16env_2k.json
+# Train + eval one suite end-to-end (12 ckpts × 1 seed)
+bash code/scripts/generalist_v0_7_4/run_suite.sh G4 \
+    configs/generalist_G4_train.json \
+    configs/generalist_G16_eval.json 1
+bash code/scripts/generalist_v0_7_4/run_suite.sh G8 \
+    configs/generalist_G8_train.json \
+    configs/generalist_G16_eval.json 1
+bash code/scripts/generalist_v0_7_4/run_suite.sh G16 \
+    configs/generalist_G16_train.json \
+    configs/generalist_G16_eval.json 1
 
-# Per-env closed-loop eval (4 models × 4 envs in the pilot)
-bash code/scripts/eval_generalist.sh stjewm_trace_only \
-    --spec configs/generalist_4env_2k.json
+# Probes + event-align (run after ckpts exist)
+N_SEEDS=1 bash code/scripts/generalist_v0_7_4/run_probes.sh
+N_SEEDS=1 bash code/scripts/generalist_v0_7_4/run_align.sh
 
-# Build the §9-style table
-python -m code.scripts.aggregate_generalist \
-    --spec configs/generalist_4env_2k.json
+# Master table aggregation (per-suite)
+bash code/scripts/generalist_v0_7_4/master_aggregate.sh --probes --align --suite=G16
 
-# Upload the master table to OBS
+# Upload to OBS
 bash code/scripts/upload_master_table_to_obs.sh
 ```
 
-## Status (v0.7.3, 2026-07-06)
+## Status (v0.7.4, 2026-07-06)
 
 | Component | Status | Output |
 |---|---|---|
@@ -212,10 +219,11 @@ bash code/scripts/upload_master_table_to_obs.sh
 | Event-type linear probes (252 cells, 7 envs × 12 models × 3 targets) | done | `MASTER_TABLE.md` §5 |
 | Event-boundary alignment (Pearson ρ, 6 DMC, Cohen's d ≈ 3.36) | done | `MASTER_TABLE.md` §6 |
 | FLOPs / efficiency (7 models) | done | `MASTER_TABLE.md` §7 |
-| **v0.7.3 generalist pilot** (4 ckpts × 4 envs) | done | `MASTER_TABLE.md` §9, `results/aggregate/generalist_table.md` |
-| Stress + event-probe + event-align on generalist ckpts | pending | needs probe scripts' `--ckpt` flag (v2) |
-| Generalist 20-env (incl. 4 stress) eval | ready, not triggered | `configs/generalist_20env.json` + `eval_generalist.sh` |
-| Paper PDF | v0.7.3 in progress | `paper/paper.pdf` |
+| **v0.7.4 generalist evaluation** (12 ckpts × 3 suites G4/G8/G16 × 1 seed × 4 stress envs) | done | `MASTER_TABLE.md` §9, `results/aggregate/generalist_master_table_{G4,G8,G16}.md` |
+| Generalist event-AUROC (G4/G8/G16 × 7 probe envs × ~7 targets) | done | `results/aggregate/event_probes_table*.md` |
+| Generalist event-align ρ (G4/G8/G16 × 6 DMC envs) | done | `results/aggregate/generalist_align_table_{G4,G8,G16}.md` |
+| Multi-seed std bars on generalist eval | deferred | wallclock cost; 1-seed numbers reported honestly |
+| Paper PDF | v0.7.4 in progress | `paper/paper.pdf` |
 
 ## Claim ladder (v0.7.3)
 

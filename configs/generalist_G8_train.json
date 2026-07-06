@@ -1,0 +1,10 @@
+[
+  {"env_kind": "dmc", "path": "data/dm_control/cartpole_250k.npz", "history_size": 1, "goal_offset": 25, "max_windows": 2000, "env_id": "cartpole_2d"},
+  {"env_kind": "dmc", "path": "data/dm_control/pendulum_250k.npz", "history_size": 1, "goal_offset": 25, "max_windows": 2000, "env_id": "pendulum_2d"},
+  {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/cheetah_250k.npz", "history_size": 1, "goal_offset": 25, "max_windows": 2000, "env_id": "cheetah"},
+  {"env_kind": "pusht", "path": "/home/lx/LeWM/data/pusht_expert_train.h5", "history_size": 1, "goal_offset": 100, "max_windows": 2000, "env_id": "pusht"},
+  {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/finger_250k.npz", "history_size": 1, "goal_offset": 25, "max_windows": 2000, "env_id": "finger"},
+  {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/walker_250k.npz", "history_size": 1, "goal_offset": 25, "max_windows": 2000, "env_id": "walker"},
+  {"env_kind": "reacher_4d", "path": "data/dm_control/3d_rollouts_250k/reacher_250k.npz", "history_size": 1, "goal_offset": 25, "max_windows": 2000, "env_id": "reacher"},
+  {"env_kind": "tworoom", "path": "/home/lx/LeWM/data/tworoom_extract/tworoom.h5", "history_size": 1, "goal_offset": 100, "max_windows": 2000, "env_id": "tworoom"}
+]

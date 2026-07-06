@@ -24,9 +24,17 @@ import numpy as np
 
 GENERALIST_MODELS = [
     "stjewm_trace_only",
+    "stjewm_spike_only",
+    "stjewm_rate_only",
+    "stjewm_no_trace",
     "stjewm_hidden_leak",
-    "lewm_baseline_v2",
+    "stjewm_membrane_readout",
+    "cubifae_baseline",
     "gru_baseline",
+    "lewm_baseline_v2",
+    "slt_lif_mpc_trace",
+    "slt_lif_mpc_free",
+    "mlp_baseline",
 ]
 
 # Stress envs get a section header in the markdown table.
@@ -43,18 +51,48 @@ def load_eval_json(p: Path) -> Optional[Dict[str, Any]]:
 
 
 def row_for_model_env(eval_path: Path) -> Dict[str, Any]:
-    """Pull env-SR / LeWM-SR / cos_dist from a single eval JSON."""
-    ev = load_eval_json(eval_path)
-    if ev is None:
-        return {"env_sr": None, "lewm_sr": None, "cos_dist": None}
+    """Pull env-SR / LeWM-SR / cos_dist from a single eval JSON.
+
+    Tries both the flat path (`<model>/eval_<env>.json`) and the per-seed
+    path (`<model>/seed_<s>/eval_<env>.json`). For per-seed layout, averages
+    across the discovered seeds and reports std.
+    """
+    def _one(p: Path) -> Optional[Dict[str, Any]]:
+        return load_eval_json(p)
+    seeds: list[int] = []
+    if eval_path.exists():
+        ev = _one(eval_path)
+        seeds_data = [ev] if ev is not None else []
+    else:
+        seeds_data = []
+        # Look for any seed_<s>/eval_<env>.json under the same model dir.
+        model_dir = eval_path.parent
+        for sd in sorted(model_dir.glob("seed_*")):
+            if not sd.is_dir():
+                continue
+            try:
+                seed_n = int(sd.name.split("_", 1)[1])
+            except ValueError:
+                continue
+            seeds.append(seed_n)
+            ev = _one(sd / eval_path.name)
+            if ev is not None:
+                seeds_data.append(ev)
+    if not seeds_data:
+        return {"env_sr": None, "env_sr_std": None, "lewm_sr": None,
+                "lewm_sr_std": None, "cos_dist": None, "n_episodes": None, "n_seeds": 0}
+    import statistics
+    env_srs = [e.get("success_rate_env") for e in seeds_data if e.get("success_rate_env") is not None]
+    lewm_srs = [e.get("success_rate_lewm") for e in seeds_data if e.get("success_rate_lewm") is not None]
+    cos_dists = [e.get("mean_cos_dist") for e in seeds_data if e.get("mean_cos_dist") is not None]
     return {
-        "env_sr": ev.get("success_rate_env"),
-        "env_sr_std": ev.get("success_rate_env_std"),
-        "lewm_sr": ev.get("success_rate_lewm"),
-        "lewm_sr_std": ev.get("success_rate_lewm_std"),
-        "cos_dist": ev.get("mean_cos_dist"),
-        "n_episodes": ev.get("n_episodes"),
-        "n_seeds": ev.get("n_seeds"),
+        "env_sr": statistics.mean(env_srs) if env_srs else None,
+        "env_sr_std": statistics.stdev(env_srs) if len(env_srs) > 1 else 0.0,
+        "lewm_sr": statistics.mean(lewm_srs) if lewm_srs else None,
+        "lewm_sr_std": statistics.stdev(lewm_srs) if len(lewm_srs) > 1 else 0.0,
+        "cos_dist": statistics.mean(cos_dists) if cos_dists else None,
+        "n_episodes": seeds_data[0].get("n_episodes"),
+        "n_seeds": len(seeds_data),
     }
 
 

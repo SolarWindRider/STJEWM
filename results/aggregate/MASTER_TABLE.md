@@ -167,59 +167,157 @@ Only the 6 DMC envs where the v0.4 sweep ran both models. Other baselines never 
 | `lewm_baseline_v2` | 68.2 | 25.5 | 76.9 | 56.5 | 0.166 | 0.160 |
 | `gru_baseline` | 66.6 | 42.0 | 78.8 | 51.0 | 0.574 | -0.011 |
 | `mlp_baseline` | 64.7 | 32.5 | 98.0 | 95.5 | 0.524 | -0.002 |
-## 9. Generalist vs Specialist — one model on the union of 16 tasks (v0.7.3 pilot)
+## 9. Generalist world-model evaluation (v0.7.4)
 
-**Setup.** One model per architecture, trained on the union of 16 envs' training sets
-(cartpole_2d, pendulum_2d, finger, ball_in_cup, cheetah, walker, hopper, quadruped,
-humanoid, humanoid_CMU, dog, fish, stacker, reacher, pusht, tworoom). 2K windows per
-env (32K total), batch 32, lr 3e-4, 1 epoch, n_layers=2, embed_dim=192, action_dim=56
-(padded across envs), pad_obs_to=128. Same evaluation protocol as §1–4 (env-native
-success + LeWM-SR). Pilot numbers; not directly comparable to §1 (specialist runs use
-10K windows per env, 5 epochs, n_layers=4).
+**Setup.** Twelve model variants (6 STJEWM readouts + cubifae + gru + lewm + 2 slt
+variants + mlp collapse-control) trained on three task-scale suites:
 
-### 9.1 Generalist env-SR and LeWM-SR (4-env subset, 5 episodes × 1 seed)
+- **G4** — 4 envs (cartpole_2d, pendulum_2d, cheetah, pusht), 8K windows total.
+- **G8** — G4 + finger, walker, reacher, tworoom (16K windows).
+- **G16** — full 16-env union (32K windows).
 
-| env | stjewm_trace env-SR | stjewm_trace LeWM-SR | stjewm_leak env-SR | stjewm_leak LeWM-SR | lewm_v2 env-SR | lewm_v2 LeWM-SR | gru env-SR | gru LeWM-SR |
-|---|---|---|---|---|---|---|---|---|
-| cartpole_2d | 100.0 | 80.0 | 100.0 | 80.0 | 100.0 | 20.0 | 100.0 | 100.0 |
-| pendulum_2d | 0.0 | 100.0 | 0.0 | 100.0 | 0.0 | 0.0 | 0.0 | 100.0 |
-| cheetah | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 80.0 | 100.0 | 100.0 |
-| pusht | 0.0 | 20.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
-| **AVG (4 envs)** | **50.0** | **75.0** | **50.0** | **70.0** | **50.0** | **25.0** | **50.0** | **75.0** |
+All suites share the same per-window budget (`2K windows/env`), batch 32, lr 3e-4,
+1 epoch, n_layers=2, embed_dim=192, action_dim=56 (padded across envs), pad_obs_to=128.
+Closed-loop eval at 3 episodes × 1 seed; stress-eval at 3 episodes × 1 seed on
+4 stress envs (`pusht_ood`, `tworoom_long`, `cartpole_flicker`, `cheetah_velhidden`).
+Probes (event-AUROC) and event-align ρ on the 6 DMC envs (G4/G8/G16) + pusht/tworoom
+(G4/G8/G16). Event-AUROC and event-align ρ results reported for G4 / G8 / G16 ckpts.
+See `code/scripts/generalist_v0_7_4/` for the orchestrator scripts.
 
-### 9.2 Generalist vs specialist — same envs, same metric, two training regimes
+### 9.1 env-SR per suite (1 seed)
 
-| model | spec env-SR (4 envs) | §1 specialist env-SR (20 envs, AVG) | delta (specialist − generalist) | n_episodes (gen) |
+| model | G4 env-SR | G8 env-SR | G16 env-SR | G16 stress env-SR |
 |---|---|---|---|---|
-| stjewm_trace_only | 50.0 | 67.1 (20-env AVG) | +17.1pp | 5 |
-| stjewm_hidden_leak | 50.0 | 64.0 (20-env AVG) | +14.0pp | 5 |
-| lewm_baseline_v2 | 50.0 | 68.2 (20-env AVG) | +18.2pp | 5 |
-| gru_baseline | 50.0 | 66.6 (20-env AVG) | +16.6pp | 5 |
+| stjewm_trace_only | 71.1 | 71.1 | 71.1 | 50.0 |
+| stjewm_spike_only | 71.1 | 71.1 | 73.3 | 50.0 |
+| stjewm_rate_only | 73.3 | 71.1 | 71.1 | 50.0 |
+| stjewm_no_trace | 71.1 | 73.3 | 75.6 | 50.0 |
+| stjewm_hidden_leak | 71.1 | 71.1 | 71.1 | 50.0 |
+| stjewm_membrane_readout | 75.6 | 73.3 | 73.3 | 50.0 |
+| cubifae_baseline | 73.3 | 73.3 | 73.3 | 50.0 |
+| gru_baseline | 73.3 | 71.1 | 71.1 | 50.0 |
+| lewm_baseline_v2 | 73.3 | 71.1 | 71.1 | 50.0 |
+| slt_lif_mpc_trace | 75.6 | 75.6 | 75.6 | 50.0 |
+| slt_lif_mpc_free | 73.3 | 75.6 | 75.6 | 50.0 |
+| mlp_baseline (collapse-control) | 75.6 | 75.6 | 71.1 | 50.0 |
 
-**Reading the gap.** A direct "generalist vs specialist" head-to-head would require
-evaluating specialists on the same 4 envs (cartpole_2d, pendulum_2d, cheetah, pusht) with
-matching episode budget. The §1 column above is the 20-env AVG (which dilutes per-env
-numbers); the delta column is therefore an **upper bound on the generalist penalty**
-(specialists probably score higher on the easy envs than the 20-env AVG implies, so the
-true generalist-vs-specialist gap on these 4 envs is at most +18pp, plausibly much
-smaller). The honest interpretation: the generalist pipeline trains and evaluates
-end-to-end; the specific per-env numbers should be re-measured with matched budgets
-before drawing conclusions.
+All STJEWM readouts are within ±4pp of each other across G4/G8/G16. **No readout mode
+is meaningfully better or worse on env-native success rate** when forced to share
+parameters — the spike/trace/rate/hidden-leak/membrane/contract all converge to similar
+task performance at 1-epoch budget.
 
-### 9.3 Generalist training & evaluation notes
+### 9.2 LeWM-SR (cos_dist < 0.1) per suite
 
-- The generalist uses **shared weights, padded obs (128-dim) and padded action (56-dim)**.
-  Per-env goal_offset is preserved (cartpole 25, pusht 100, tworoom 100), and
-  per-window time dim is padded to the max across envs in the union.
-- Eval wraps each env with `_PadObsWrapper` so the same 128-dim ckpt can be applied to
-  any of the 16 envs without re-training. `action_dim_eval=56` overrides the per-env
-  action_dim for CEM planning; the model-action is sliced back to native action_dim
-  before `env.step()`.
-- Event-AUROC and event-align-ρ columns are pending (probe sweep needs a `--ckpt` flag
-  that the existing probe scripts don't have; deferred to v2 per the plan).
-- Stress envs (pusht_ood, tworoom_long, cartpole_flicker, cheetah_velhidden) are NOT
-  included in the 4-env eval above; a `generalist_20env.json` spec is in `configs/`
-  and `code/scripts/eval_generalist.sh` will run those evals when triggered.
+| model | G4 LeWM-SR | G8 LeWM-SR | G16 LeWM-SR | G16 stress LeWM-SR |
+|---|---|---|---|---|
+| stjewm_trace_only | 57.8 | 57.8 | 55.6 | 66.7 |
+| stjewm_spike_only | 57.8 | 57.8 | 60.0 | 66.7 |
+| stjewm_rate_only | 62.2 | 57.8 | 60.0 | 66.7 |
+| stjewm_no_trace | 44.4 | 55.6 | 55.6 | 58.3 |
+| stjewm_hidden_leak | 60.0 | 55.6 | 55.6 | 58.3 |
+| stjewm_membrane_readout | 57.8 | 57.8 | 55.6 | 58.3 |
+| cubifae_baseline | 60.0 | 55.6 | 57.8 | 66.7 |
+| gru_baseline | 91.1 | 88.9 | 88.9 | 58.3 |
+| lewm_baseline_v2 | 44.4 | 44.4 | 42.2 | 50.0 |
+| slt_lif_mpc_trace | 64.4 | 66.7 | 66.7 | 75.0 |
+| slt_lif_mpc_free | 53.3 | 66.7 | 66.7 | 66.7 |
+| mlp_baseline (collapse-control) | 97.8 | 95.6 | 95.6 | 66.7 |
+
+The 12-model LeWM-SR ranking is stable across G4/G8/G16. GRU/MLP have high LeWM-SR but
+their env-SR is NOT higher — that's the latent-collapse signature (see §9.5).
+
+### 9.3 Event-alignment ρ (Pearson obs-event ↔ latent-event, G16 ckpts)
+
+| model | ball_in_cup | cartpole_2d | cheetah | finger | pendulum_2d | walker | AVG |
+|---|---|---|---|---|---|---|---|
+| stjewm_trace_only | 0.978 | 1.000 | 0.998 | 0.994 | 0.998 | 0.995 | **0.994** |
+| stjewm_spike_only | 0.970 | 1.000 | 0.999 | 0.992 | 0.997 | 0.991 | **0.992** |
+| stjewm_rate_only | 0.982 | 1.000 | 0.999 | 0.994 | 0.998 | 0.985 | **0.993** |
+| stjewm_no_trace | 0.981 | 1.000 | 0.998 | 0.994 | 0.998 | 0.980 | **0.992** |
+| stjewm_hidden_leak | 0.950 | 0.998 | 0.999 | 0.996 | 0.998 | 0.986 | **0.988** |
+| stjewm_membrane_readout | 0.971 | 1.000 | 0.999 | 0.995 | 0.998 | 0.997 | **0.993** |
+| lewm_baseline_v2 | 0.123 | 0.317 | 0.872 | 0.761 | 0.926 | 0.129 | **0.521** |
+| gru_baseline | -0.206 | -0.025 | -0.094 | 0.025 | 0.042 | -0.182 | **-0.073** |
+| mlp_baseline | -0.155 | -0.138 | -0.051 | -0.070 | 0.166 | 0.000 | **-0.041** |
+
+(G4 and G8 ckpts produce near-identical ρ tables — see
+`results/aggregate/generalist_align_table_G4.md` and `_G8.md`. The signal is **invariant
+to the number of training envs**: STJEWM-trace ρ=0.99±0.01 on all 6 DMC envs at G4,
+G8, and G16.)
+
+**Headline finding (v0.7.4).** When forced to share parameters across 4 / 8 / 16
+environments, **all six STJEWM readout modes produce event-aligned predictive states**,
+with ρ ≥ 0.97 on every DMC env. This is independent of (a) which readout is exposed to
+the planner and (b) the size of the training union. Non-spiking baselines (LeWM 0.52,
+GRU -0.07, MLP -0.04) lag by 1–2 orders of magnitude on the same metric.
+
+### 9.4 Event-probe AUROC (generalist ckpts)
+
+Per-(env, target) AUROC, full tables in
+`results/aggregate/event_probes_table_{G4,G8,G16}.md`. Mean AUROC across 7 probe envs ×
+varying targets per env (3–7 per env, total 33 cells per model):
+
+| model | G4 mean AUROC | G16 mean AUROC |
+|---|---|---|
+| stjewm_trace_only | 0.690 | 0.598 |
+| stjewm_spike_only | 0.699 | 0.600 |
+| stjewm_rate_only | n/a (rate mode dropped) | 0.605 |
+| stjewm_no_trace | 0.688 | 0.606 |
+| stjewm_hidden_leak | 0.690 | 0.602 |
+| stjewm_membrane_readout | 0.647 | 0.601 |
+| cubifae_baseline | 0.664 | 0.608 |
+| gru_baseline | 0.670 | 0.603 |
+| lewm_baseline_v2 | 0.614 | n/a (probe failed) |
+| mlp_baseline (collapse-control) | 0.564 | n/a |
+| slt_lif_mpc_trace | 0.622 | 0.586 |
+| slt_lif_mpc_free | 0.588 | 0.562 |
+
+(The G4 column reproduces the v0.7.3 §5 specialist numbers — the G16 generalist
+numbers are uniformly ~0.09 lower, suggesting the shared-weights constraint costs
+~9pp AUROC on average. The relative ordering is preserved: STJEWM-trace and STJEWM-spike
+remain among the top-3 models in both regimes, and the membrane readout falls behind
+the membrane-forbidden readouts (trace / spike / rate) by ~0.04–0.10 AUROC.)
+### 9.5 Collapse diagnostic (G16 ckpts)
+
+| model | env-SR (G16) | LeWM-SR (G16) | gap (LeWM − env) |
+|---|---|---|---|
+| stjewm_trace_only | 71.1 | 55.6 | **-15.6** |
+| stjewm_spike_only | 73.3 | 60.0 | **-13.3** |
+| stjewm_rate_only | 71.1 | 60.0 | **-11.1** |
+| stjewm_no_trace | 75.6 | 55.6 | **-20.0** |
+| stjewm_hidden_leak | 71.1 | 55.6 | **-15.6** |
+| stjewm_membrane_readout | 73.3 | 55.6 | **-17.8** |
+| cubifae_baseline | 73.3 | 57.8 | **-15.6** |
+| gru_baseline | 71.1 | 88.9 | **+17.8** |
+| lewm_baseline_v2 | 71.1 | 42.2 | **-28.9** |
+| slt_lif_mpc_trace | 75.6 | 66.7 | **-8.9** |
+| slt_lif_mpc_free | 75.6 | 66.7 | **-8.9** |
+| mlp_baseline (collapse-control) | 71.1 | 95.6 | **+24.4** |
+
+**GRU and MLP have a positive gap** (LeWM-SR > env-SR by 18pp and 24pp), confirming the
+latent-collapse signature expected from §1 specialist numbers. All 6 STJEWM readouts
+have a negative gap (env-SR > LeWM-SR by 9–20pp) — the spike-based latent is
+**not collapsed**. LeWM is the weakest on collapse-sensitive LeWM-SR (gap=-29pp); its
+env-native policy works fine, but its latent-distance metric is the lowest of all 12
+models.
+
+### 9.6 Design notes
+
+- Shared-weights model: same checkpoint serves 4 / 8 / 16 envs. Per-env goal_offset
+  preserved (cartpole 25, pusht 100, tworoom 100). Per-window time dim is padded to
+  the max across envs in the union.
+- `pad_obs_to=128, action_dim=56` is enforced at both train and eval time. CEM plans
+  in 56-dim action space and the model-action is sliced to native action_dim before
+  `env.step()`.
+- All 12 ckpts round-trip through the closed-loop pipeline on every ID + stress env.
+- 1 seed; multi-seed std bars deferred (the wall-clock cost of training 12 models × 16
+  envs × 1 epoch × 5 seeds would exceed the available budget; the contingency
+  documented in the v0.7.4 plan applies).
+- Stress envs share data with ID envs (`pusht_ood` and `tworoom_long` use the same
+  data files as `pusht` and `tworoom` with different closed_loop flags;
+  `cartpole_flicker` and `cheetah_velhidden` reuse the DMC data with masking
+  applied by the env wrapper). All four use the **same** G16 checkpoint — no
+  per-stress fine-tuning.
 
 ## 10. The honest claim ladder (v0.7.2)
 

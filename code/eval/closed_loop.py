@@ -574,7 +574,11 @@ def main():
             trace_beta=0.9, freeze_encoder=True,
             readout_mode=ck_readout_mode,
         )
-
+    # Move the model to the eval device so encode_obs/encode_history (which
+    # move inputs to `device`) see matching tensor devices. Without this, when
+    # CUDA is available but the trainer saved the ckpt on CPU (or map_location
+    # dropped the device tag), encode fails with "tensors on cpu and cuda".
+    model = model.to(device)
 
     # Optional extra difficulty: for cheetah_velhidden, drop additional non-velocity
     # dims on top of velocity-hidden. Implemented as a small wrapper.

@@ -13,12 +13,66 @@
           "n_episodes": 5,
           "n_seeds": 1
         },
+        "stjewm_spike_only": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "stjewm_rate_only": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "stjewm_no_trace": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
         "stjewm_hidden_leak": {
           "env_sr": 1.0,
           "env_sr_std": 0.0,
           "lewm_sr": 0.8,
           "lewm_sr_std": 0.0,
           "cos_dist": 0.08220335245132446,
+          "n_episodes": 5,
+          "n_seeds": 1
+        },
+        "stjewm_membrane_readout": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "cubifae_baseline": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "gru_baseline": {
+          "env_sr": 1.0,
+          "env_sr_std": 0.0,
+          "lewm_sr": 1.0,
+          "lewm_sr_std": 0.0,
+          "cos_dist": 0.0008286237716674805,
           "n_episodes": 5,
           "n_seeds": 1
         },
@@ -31,14 +85,32 @@
           "n_episodes": 5,
           "n_seeds": 1
         },
-        "gru_baseline": {
-          "env_sr": 1.0,
-          "env_sr_std": 0.0,
-          "lewm_sr": 1.0,
-          "lewm_sr_std": 0.0,
-          "cos_dist": 0.0008286237716674805,
-          "n_episodes": 5,
-          "n_seeds": 1
+        "slt_lif_mpc_trace": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "slt_lif_mpc_free": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "mlp_baseline": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
         }
       }
     },
@@ -54,12 +126,66 @@
           "n_episodes": 5,
           "n_seeds": 1
         },
+        "stjewm_spike_only": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "stjewm_rate_only": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "stjewm_no_trace": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
         "stjewm_hidden_leak": {
           "env_sr": 0.0,
           "env_sr_std": 0.0,
           "lewm_sr": 1.0,
           "lewm_sr_std": 0.0,
           "cos_dist": 0.03622833490371704,
+          "n_episodes": 5,
+          "n_seeds": 1
+        },
+        "stjewm_membrane_readout": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "cubifae_baseline": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "gru_baseline": {
+          "env_sr": 0.0,
+          "env_sr_std": 0.0,
+          "lewm_sr": 1.0,
+          "lewm_sr_std": 0.0,
+          "cos_dist": 0.00026926398277282715,
           "n_episodes": 5,
           "n_seeds": 1
         },
@@ -72,14 +198,32 @@
           "n_episodes": 5,
           "n_seeds": 1
         },
-        "gru_baseline": {
-          "env_sr": 0.0,
-          "env_sr_std": 0.0,
-          "lewm_sr": 1.0,
-          "lewm_sr_std": 0.0,
-          "cos_dist": 0.00026926398277282715,
-          "n_episodes": 5,
-          "n_seeds": 1
+        "slt_lif_mpc_trace": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "slt_lif_mpc_free": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "mlp_baseline": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
         }
       }
     },
@@ -95,12 +239,66 @@
           "n_episodes": 5,
           "n_seeds": 1
         },
+        "stjewm_spike_only": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "stjewm_rate_only": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "stjewm_no_trace": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
         "stjewm_hidden_leak": {
           "env_sr": 1.0,
           "env_sr_std": 0.0,
           "lewm_sr": 1.0,
           "lewm_sr_std": 0.0,
           "cos_dist": 0.01242629885673523,
+          "n_episodes": 5,
+          "n_seeds": 1
+        },
+        "stjewm_membrane_readout": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "cubifae_baseline": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "gru_baseline": {
+          "env_sr": 1.0,
+          "env_sr_std": 0.0,
+          "lewm_sr": 1.0,
+          "lewm_sr_std": 0.0,
+          "cos_dist": 7.126331329345703e-05,
           "n_episodes": 5,
           "n_seeds": 1
         },
@@ -113,14 +311,32 @@
           "n_episodes": 5,
           "n_seeds": 1
         },
-        "gru_baseline": {
-          "env_sr": 1.0,
-          "env_sr_std": 0.0,
-          "lewm_sr": 1.0,
-          "lewm_sr_std": 0.0,
-          "cos_dist": 7.126331329345703e-05,
-          "n_episodes": 5,
-          "n_seeds": 1
+        "slt_lif_mpc_trace": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "slt_lif_mpc_free": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "mlp_baseline": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
         }
       }
     },
@@ -136,12 +352,66 @@
           "n_episodes": 5,
           "n_seeds": 1
         },
+        "stjewm_spike_only": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "stjewm_rate_only": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "stjewm_no_trace": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
         "stjewm_hidden_leak": {
           "env_sr": 0.0,
           "env_sr_std": 0.0,
           "lewm_sr": 0.0,
           "lewm_sr_std": 0.0,
           "cos_dist": 0.2944993257522583,
+          "n_episodes": 5,
+          "n_seeds": 1
+        },
+        "stjewm_membrane_readout": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "cubifae_baseline": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "gru_baseline": {
+          "env_sr": 0.0,
+          "env_sr_std": 0.0,
+          "lewm_sr": 0.0,
+          "lewm_sr_std": 0.0,
+          "cos_dist": 0.31934435069561007,
           "n_episodes": 5,
           "n_seeds": 1
         },
@@ -154,14 +424,32 @@
           "n_episodes": 5,
           "n_seeds": 1
         },
-        "gru_baseline": {
-          "env_sr": 0.0,
-          "env_sr_std": 0.0,
-          "lewm_sr": 0.0,
-          "lewm_sr_std": 0.0,
-          "cos_dist": 0.31934435069561007,
-          "n_episodes": 5,
-          "n_seeds": 1
+        "slt_lif_mpc_trace": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "slt_lif_mpc_free": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
+        },
+        "mlp_baseline": {
+          "env_sr": null,
+          "env_sr_std": null,
+          "lewm_sr": null,
+          "lewm_sr_std": null,
+          "cos_dist": null,
+          "n_episodes": null,
+          "n_seeds": 0
         }
       }
     }

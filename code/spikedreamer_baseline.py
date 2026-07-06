@@ -118,7 +118,8 @@ class _AdaLNZeroBlock(nn.Module):
         nn.init.zeros_(self.adaLN[-1].weight)
         nn.init.zeros_(self.adaLN[-1].bias)
         # Register a causal mask buffer up to a max length.
-        mask = torch.ones(max_T, max_T, dtype=torch.bool).tril(0)
+        mask = torch.zeros(max_T, max_T, dtype=torch.float32)
+        mask = mask.masked_fill(torch.triu(torch.ones(max_T, max_T, dtype=torch.bool), diagonal=1), float("-inf"))
         self.register_buffer("causal_mask", mask, persistent=False)
 
     def forward(self, x: torch.Tensor, cond: torch.Tensor) -> torch.Tensor:

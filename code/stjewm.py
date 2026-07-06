@@ -325,8 +325,9 @@ class STJEWM(nn.Module):
         - TRACE_ONLY:        z = trace_proj(trace)        (NMI)
         - MEMBRANE_READOUT:  z = h.detach()               (treat h as discrete latent)
         - SPIKE_ONLY:        z = h * spike.float().detach()  (mask h by spikes)
-        - RATE_ONLY:         z = F.avg_pool1d(h.transpose(1,2), kernel_size=4, stride=1).transpose(1,2)
-                             (downsampled h, no trace; rate-like)
+        - RATE_ONLY:         z = F.avg_pool1d(spike.float().detach().transpose(1,2),
+                             kernel_size=4, stride=1, padding=2).transpose(1,2)[:,:h.shape[1],:]
+                             (moving-average spike rate along time, detached — no h)
         - NO_TRACE:          z = h                        (ablation)
         """
         mode = self.readout_mode
@@ -339,9 +340,13 @@ class STJEWM(nn.Module):
         if mode == ReadoutMode.SPIKE_ONLY:
             return h * spike.float().detach()
         if mode == ReadoutMode.RATE_ONLY:
-            # downsample h along time as a rate-style readout
-            h_t = h.transpose(1, 2)  # (B, D, T)
-            pooled = F.avg_pool1d(h_t, kernel_size=4, stride=1, padding=2)
+            # Causal-ish moving-average spike rate along time.
+            # Reads the SPIKE TRAIN, not h — honors the RATE_ONLY docstring and
+            # the membrane-forbidden protocol (rate is a population count, not
+            # the continuous hidden).
+            sp = spike.float().detach()                # (B, T, D)
+            sp_t = sp.transpose(1, 2)                  # (B, D, T)
+            pooled = F.avg_pool1d(sp_t, kernel_size=4, stride=1, padding=2)
             return pooled.transpose(1, 2)[:, : h.shape[1], :]
         if mode == ReadoutMode.NO_TRACE:
             return h

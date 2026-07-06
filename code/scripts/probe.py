@@ -176,6 +176,10 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--device", default="cpu",
                    help="cpu or cuda (probe is tiny, cpu is fine).")
     p.add_argument("--val-frac", type=float, default=0.2)
+    p.add_argument("--pad-obs-to", type=int, default=None,
+                   help="Override state_dim with this padded dim (for generalist ckpts).")
+    p.add_argument("--action-dim-eval", type=int, default=None,
+                   help="Override action_dim with this value (for generalist ckpts).")
     return p.parse_args()
 
 
@@ -451,6 +455,8 @@ def _per_step_event_target(state_window: torch.Tensor, target_kind: str, env: st
 def collect_event_targets(
     model, dataset, target_kind: str, env: str, device: str,
     max_windows: int = 5000,
+    pad_obs_to: int | None = None,
+    action_dim_eval: int | None = None,
 ):
     """Walk the dataset, run model.encode() per window, return per-step (Z, Y).
 
@@ -489,10 +495,15 @@ def collect_event_targets(
         T_max = max(T_real_list)
         obs_dim = s_list[0].shape[-1]
         action_dim_ = a_list[0].shape[-1]
-        s_pad = torch.zeros(len(s_list), T_max, obs_dim, dtype=torch.float32)
-        a_pad = torch.zeros(len(s_list), T_max, action_dim_, dtype=torch.float32)
+        # When state_dim was overridden (generalist ckpt with --pad-obs-to),
+        # pad obs to state_dim; same for action_dim.
+        obs_dim_eff = pad_obs_to if pad_obs_to is not None and obs_dim < pad_obs_to else obs_dim
+        action_dim_eff = action_dim_eval if action_dim_eval is not None and action_dim_ < action_dim_eval else action_dim_
+        s_pad = torch.zeros(len(s_list), T_max, obs_dim_eff, dtype=torch.float32)
+        a_pad = torch.zeros(len(s_list), T_max, action_dim_eff, dtype=torch.float32)
         for j, (s, a) in enumerate(zip(s_list, a_list)):
-            s_pad[j, : s.shape[0]] = s
+            s_pad[j, : s.shape[0], : s.shape[-1]] = s
+            a_pad[j, : a.shape[0], : a.shape[-1]] = a
         s_dev = s_pad.to(device)
         a_dev = a_pad.to(device)
         with torch.no_grad():
@@ -590,10 +601,11 @@ def main() -> int:
         save_skip(args.out, "empty dataset")
         return 0
 
-    # Determine state_dim / action_dim from first sample
+    # Determine state_dim / action_dim. When --pad-obs-to/--action-dim-eval
+    # are set (generalist ckpt), override the per-env native dims.
     sample = ds[0]
-    state_dim = sample["state"].shape[-1]
-    action_dim = sample["action"].shape[-1]
+    state_dim = args.pad_obs_to if args.pad_obs_to is not None else sample["state"].shape[-1]
+    action_dim = args.action_dim_eval if args.action_dim_eval is not None else sample["action"].shape[-1]
 
     # Build model + load weights
     try:
@@ -615,6 +627,8 @@ def main() -> int:
         Z, Y, binary, err = collect_event_targets(
             model, ds, target, env, args.device,
             max_windows=args.max_windows,
+            pad_obs_to=args.pad_obs_to,
+            action_dim_eval=args.action_dim_eval,
         )
     else:
         probe_dim = ENV_PROBE[env]["pos"][1] - ENV_PROBE[env]["pos"][0]

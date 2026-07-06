@@ -55,6 +55,10 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--n-resets", type=int, default=2,
                    help="Number of resets to spread the 200 steps across.")
     p.add_argument("--device", default="cpu")
+    p.add_argument("--pad-obs-to", type=int, default=None,
+                   help="Override state_dim with this padded dim (for generalist ckpts).")
+    p.add_argument("--action-dim-eval", type=int, default=None,
+                   help="Override action_dim with this value (for generalist ckpts).")
     return p.parse_args()
 
 
@@ -144,6 +148,10 @@ def main() -> int:
 
     state_dim = env.spec.obs_dim
     action_dim = env.spec.action_dim
+    if args.pad_obs_to is not None:
+        state_dim = args.pad_obs_to
+    if args.action_dim_eval is not None:
+        action_dim = args.action_dim_eval
     a_low = env.spec.action_low
     a_high = env.spec.action_high
 
@@ -167,7 +175,8 @@ def main() -> int:
 
     env.reset(seed=0)
     obs = env.get_state()
-    obs_list.append(obs.astype(np.float32))
+    if args.pad_obs_to is not None and len(obs) < args.pad_obs_to:
+        obs = np.concatenate([obs, np.zeros(args.pad_obs_to - len(obs), dtype=np.float32)])
 
     steps_per_reset = max(1, args.n_steps // args.n_resets)
     n_done = 0
@@ -177,9 +186,15 @@ def main() -> int:
         out, _, done, _ = env.step(a)
         obs = out.get("state", list(out.values())[0])
         obs = np.asarray(obs, dtype=np.float32)
-        # Encode + forward
+        if args.pad_obs_to is not None and len(obs) < args.pad_obs_to:
+            obs = np.concatenate([obs, np.zeros(args.pad_obs_to - len(obs), dtype=np.float32)])
         s_t = torch.from_numpy(obs).reshape(1, 1, -1).to(args.device)
-        a_t = torch.from_numpy(a).reshape(1, 1, -1).to(args.device)
+        # Pad action to model_action_dim so the 56-dim placeholder matches; encode
+        # receives (B, T, model_action_dim) and the model's action encoder was
+        # built with action_dim=56 for generalist ckpts.
+        a_padded = np.zeros(action_dim, dtype=np.float32)
+        a_padded[: len(a)] = a
+        a_t = torch.from_numpy(a_padded).reshape(1, 1, -1).to(args.device)
         with torch.no_grad():
             enc = model.encode(s_t, a_t)
             fwd = model.forward(s_t, a_t)

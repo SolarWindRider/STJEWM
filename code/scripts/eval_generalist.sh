@@ -41,6 +41,7 @@ declare -A STRESS_FLAGS=(
     [cartpole_flicker]="--flicker-mask-ratio 0.5"
     [cheetah_velhidden]="--vel-hidden-mask-obs-ratio 0.0"
     [tworoom_long]=""  # handled via --goal-offset 200 in the spec
+    [pusht_ood]="--split unseen_goal"
 )
 
 if [ -n "$FILTER" ]; then
@@ -65,6 +66,7 @@ stress_flags = {
     "cartpole_flicker": "--flicker-mask-ratio 0.5",
     "cheetah_velhidden": "--vel-hidden-mask-obs-ratio 0.0",
     "tworoom_long": "",
+    "pusht_ood": "--split unseen_goal",
 }
 # env_id used at training -> closed_loop --env argument. DMC 2D envs (cartpole_2d,
 # pendulum_2d) share the same env implementation as their non-2D names, so we map.
