@@ -240,10 +240,21 @@ their env-SR is NOT higher — that's the latent-collapse signature (see §9.5).
 | gru_baseline | -0.206 | -0.025 | -0.094 | 0.025 | 0.042 | -0.182 | **-0.073** |
 | mlp_baseline | -0.155 | -0.138 | -0.051 | -0.070 | 0.166 | 0.000 | **-0.041** |
 
-(G4 and G8 ckpts produce near-identical ρ tables — see
-`results/aggregate/generalist_align_table_G4.md` and `_G8.md`. The signal is **invariant
-to the number of training envs**: STJEWM-trace ρ=0.99±0.01 on all 6 DMC envs at G4,
-G8, and G16.)
+Per-model AVG ρ across the 3 task suites (G4 / G8 / G16):
+
+| model | G4 AVG ρ | G8 AVG ρ | G16 AVG ρ |
+|---|---|---|---|
+| stjewm_trace_only | 0.993 | 0.993 | 0.994 |
+| stjewm_spike_only | 0.992 | 0.996 | 0.992 |
+| stjewm_rate_only | 0.995 | 0.990 | 0.993 |
+| stjewm_no_trace | 0.994 | 0.993 | 0.992 |
+| stjewm_hidden_leak | 0.993 | 0.992 | 0.988 |
+| stjewm_membrane_readout | 0.995 | 0.995 | 0.993 |
+| lewm_baseline_v2 | 0.389 | 0.440 | 0.521 |
+| gru_baseline | 0.072 | -0.064 | -0.073 |
+| mlp_baseline | 0.052 | -0.034 | -0.041 |
+
+The STJEWM AVG ρ is **within ±0.01 across G4 / G8 / G16** for every readout.
 
 **Headline finding (v0.7.4).** When forced to share parameters across 4 / 8 / 16
 environments, **all six STJEWM readout modes produce event-aligned predictive states**,
