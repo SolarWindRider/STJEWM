@@ -1,7 +1,7 @@
 """Aggregate event_align JSONs into a per-(env, model) table.
 
 Reads:
-  results/event_align/<env>_<model>_seed<s>.json   (v0.7.4 layout)
+  results/event_align/<env>_<model>_seed<s>.json   (v0.7.5 layout)
   results/event_align/<env>_<model>.json            (legacy v0.7.3 layout)
 
 Writes:

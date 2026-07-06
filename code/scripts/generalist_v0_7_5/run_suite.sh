@@ -40,7 +40,7 @@ mkdir -p "$OUT_BASE"
 # Smoke mode: N_SEEDS=0 → only run aggregate on whatever exists.
 if [[ "$N_SEEDS" == "0" ]]; then
     echo "[run_suite] smoke mode: skipping train+eval, only aggregate"
-    /home/lx/miniconda3/envs/snn/bin/python -m code.scripts.generalist_v0_7_4.aggregate_master \
+    /home/lx/miniconda3/envs/snn/bin/python -m code.scripts.generalist_v0.7.5.aggregate_master \
         --suite "$SUITE"
     exit $?
 fi
@@ -54,12 +54,12 @@ for MODEL in "${MODELS[@]}"; do
         echo "[run_suite] $SUITE / $MODEL / seed=$SEED"
         echo "============================================="
         if [[ ! -f "$CKPT" ]]; then
-            bash code/scripts/generalist_v0_7_4/train_one.sh \
+            bash code/scripts/generalist_v0.7.5/train_one.sh \
                 "$MODEL" "$TRAIN_SPEC" "$OUT_DIR" "$SEED"
         else
             echo "[run_suite] ckpt exists, skipping train: $CKPT"
         fi
-        bash code/scripts/generalist_v0_7_4/eval_closed_loop_one.sh \
+        bash code/scripts/generalist_v0.7.5/eval_closed_loop_one.sh \
             "$MODEL" "$CKPT" "$EVAL_SPEC" "$SEED"
     done
 done
@@ -68,5 +68,5 @@ echo ""
 echo "============================================="
 echo "[run_suite] $SUITE done — aggregating"
 echo "============================================="
-/home/lx/miniconda3/envs/snn/bin/python -m code.scripts.generalist_v0_7_4.aggregate_master \
+/home/lx/miniconda3/envs/snn/bin/python -m code.scripts.generalist_v0.7.5.aggregate_master \
     --suite "$SUITE"

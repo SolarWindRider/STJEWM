@@ -7,7 +7,7 @@
 # Example:
 #   ./train_one.sh stjewm_trace_only configs/generalist_G4_train.json results/generalist/stjewm_trace_only/seed_0 0
 #
-# This script bakes the v0.7.3/v0.7.4 budget so the 12 model variants are
+# This script bakes the v0.7.3/v0.7.5 budget so the 12 model variants are
 # reproducible: --pad-obs-to 128 --action-dim 56 --embed-dim 192 --n-layers 2
 # --epochs 1 --batch 32 --lr 3e-4. It does NOT call any new code; it just
 # invokes the existing trainer with the right CLI.

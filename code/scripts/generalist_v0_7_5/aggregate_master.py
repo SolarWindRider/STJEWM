@@ -10,9 +10,9 @@ Writes:
   results/aggregate/generalist_master_table.json
 
 Usage:
-    python -m code.scripts.generalist_v0_7_4.aggregate_master
-    python -m code.scripts.generalist_v0_7_4.aggregate_master --suite G16
-    python -m code.scripts.generalist_v0_7_4.aggregate_master --probes --align
+    python -m code.scripts.generalist_v0.7.5.aggregate_master
+    python -m code.scripts.generalist_v0.7.5.aggregate_master --suite G16
+    python -m code.scripts.generalist_v0.7.5.aggregate_master --probes --align
 """
 from __future__ import annotations
 

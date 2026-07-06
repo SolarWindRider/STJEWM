@@ -6,7 +6,7 @@ Reads:
 Writes:
   results/aggregate/generalist_master_table.md
 
-The MD format mirrors v0.7.4 but adds responsiveness + divergence
+The MD format mirrors v0.7.5 but adds responsiveness + divergence
 columns in the per-model summary (collapse-robust by construction).
 """
 from __future__ import annotations
@@ -118,7 +118,7 @@ def render(rows: List[Dict[str, Any]]) -> str:
     out.append(
         "**Three distinct non-spiking failure modes are now visible.** With the"
         " collapse-robust `divergence` metric, the 3 non-spiking baselines"
-        " separate into 3 categories that the v0.7.4 `gap` metric could not"
+        " separate into 3 categories that the v0.7.5 `gap` metric could not"
         " distinguish:\n\n"
         "| model | div | interpretation |\n"
         "|---|---|---|\n"
@@ -129,14 +129,14 @@ def render(rows: List[Dict[str, Any]]) -> str:
         "| **gru_baseline** | 0.008 | noise (responsiveness 30, but ρ ≈ 0) |\n"
         "| **lewm_baseline_v2** | **0.186** | over-reactive (Transformer amplifies obs) |\n\n"
         "**STJEWM is the only family that is simultaneously (a) responsive to obs, (b)"
-        " not collapsed, and (c) event-aligned (ρ ≥ 0.99 from v0.7.4 §9.3).**\n"
+        " not collapsed, and (c) event-aligned (ρ ≥ 0.99 from v0.7.5 §9.3).**\n"
     )
     out.append(
-        "**The `LeWM-SR` column in v0.7.4 §9.5 was collapse-inflatable.** MLP's"
+        "**The `LeWM-SR` column in v0.7.5 §9.5 was collapse-inflatable.** MLP's"
         " LeWM-SR was 95.6% not because it plans well, but because the"
         " constant latent satisfies `cos_dist < 0.1` for any goal. The new"
         " `divergence` metric catches this: MLP's `div = 0.0002` is **50×"
-        " lower** than STJEWM's. The v0.7.4 `gap` column (LeWM-SR −"
+        " lower** than STJEWM's. The v0.7.5 `gap` column (LeWM-SR −"
         " env-SR) was already a collapse-robust proxy and confirms the"
         " signal (MLP gap = +24.4, STJEWM gap = −15.6), but it doesn't show"
         " the *magnitude* of the collapse — `divergence` does.\n"
@@ -145,19 +145,19 @@ def render(rows: List[Dict[str, Any]]) -> str:
         "**GRU's `divergence` is similar to STJEWM (0.008 vs 0.011), but its"
         " `responsiveness` is 150× higher (31.1 vs 0.2).** GRU's latent is"
         " *noisy* — the per-dim std is normal, but the per-step changes"
-        " are 150× larger. Combined with v0.7.4's ρ ≈ −0.07, this is the"
+        " are 150× larger. Combined with v0.7.5's ρ ≈ −0.07, this is the"
         " signature of an uncorrelated noisy latent, not collapse.\n"
     )
     out.append(
         "**LeWM's `responsiveness` is 150× STJEWM and `divergence` is 16× STJEWM"
         " (0.186 vs 0.011).** LeWM is *not* collapsed — it's"
         " over-reactive, with a latent that amplifies obs events by an"
-        " order of magnitude. Combined with v0.7.4's ρ = 0.52, this is"
+        " order of magnitude. Combined with v0.7.5's ρ = 0.52, this is"
         " the signature of a Transformer that tracks obs events but with"
         " a poorly conditioned response surface.\n"
     )
     out.append(
-        "**On env-native success rate (v0.7.4 §9.1) all 12 models are within"
+        "**On env-native success rate (v0.7.5 §9.1) all 12 models are within"
         " ±4pp of each other.** The new metrics do not change that ranking"
         " — STJEWM still doesn't win env-SR. The new finding is that the"
         " *quality* of the latent representation is dramatically different"

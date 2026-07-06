@@ -40,10 +40,10 @@ for MODEL in "${MODELS[@]}"; do
         echo "============================================="
         echo "[eval_stress] $SUITE / $MODEL / seed=$SEED"
         echo "============================================="
-        bash code/scripts/generalist_v0_7_4/eval_closed_loop_one.sh \
+        bash code/scripts/generalist_v0.7.5/eval_closed_loop_one.sh \
             "$MODEL" "$CKPT" configs/generalist_G4_stress.json "$SEED"
     done
 done
 
-/home/lx/miniconda3/envs/snn/bin/python -m code.scripts.generalist_v0_7_4.aggregate_master \
+/home/lx/miniconda3/envs/snn/bin/python -m code.scripts.generalist_v0.7.5.aggregate_master \
     --suite "$SUITE-stress"

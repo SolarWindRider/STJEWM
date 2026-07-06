@@ -6,10 +6,11 @@ OBSUTIL=/home/lx/obsutil_linux_amd64_5.8.3/obsutil
 BUCKET=obs://lixiang01/STJEWM_NMI/aggregate
 LOCAL_DIR=/home/lx/snn/results/aggregate
 
-# Each per-suite v0.7.4 result is consolidated into a single file:
+# Each per-suite v0.7.5 result is consolidated into a single file:
 #   - MASTER_TABLE.md            (main §1-§11)
 #   - generalist_table.md / .json (v0.7.3 4-model pilot, kept for reference)
-#   - generalist_master_table.md / .json  (G4+G8+G16 env-SR / LeWM-SR / collapse-gap)
+#   - generalist_master_table.md / .json  (G4+G8+G16 env-SR / collapse-gap /
+#                                         responsiveness / divergence, 5-column)
 #   - generalist_align_table.md           (G4+G8+G16 event-align ρ)
 #   - event_probes_table.md              (G4+G8+G16 event-AUROC)
 for fname in \

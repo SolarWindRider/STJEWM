@@ -89,7 +89,7 @@ over-reactive. STJEWM is the **only** family that is simultaneously
 (ρ ≥ 0.99). On env-SR alone the families are within ±4pp; the
 corrected metrics separate them.
 
-Pipeline scripts in `code/scripts/generalist_v0_7_4/` (run `bash run_suite.sh` to
+Pipeline scripts in `code/scripts/generalist_v0_7_5/` (run `bash run_suite.sh` to
 reproduce; `aggregate_master.py --suite {G4,G8,G16}` to rebuild the table;
 `measure_latent_stats.py` to recompute the new collapse-robust metrics).
 Per-suite spec files in `configs/generalist_{G4,G8,G16,4_stress,probe_eval}_*.json`.
@@ -202,33 +202,58 @@ python -m code.scripts.aggregate_event_align
 python -m code.scripts.regen_master_table
 ```
 
-### Generalist evaluation (v0.7.4 — 12 ckpts × G4 / G8 / G16 suites)
+### Generalist evaluation (v0.7.5 — 12 ckpts × G4 / G8 / G16 suites)
 
 ```bash
 # Train + eval one suite end-to-end (12 ckpts × 1 seed)
-bash code/scripts/generalist_v0_7_4/run_suite.sh G4 \
+bash code/scripts/generalist_v0_7_5/run_suite.sh G4 \
     configs/generalist_G4_train.json \
     configs/generalist_G16_eval.json 1
-bash code/scripts/generalist_v0_7_4/run_suite.sh G8 \
+bash code/scripts/generalist_v0_7_5/run_suite.sh G8 \
     configs/generalist_G8_train.json \
     configs/generalist_G16_eval.json 1
-bash code/scripts/generalist_v0_7_4/run_suite.sh G16 \
+bash code/scripts/generalist_v0_7_5/run_suite.sh G16 \
     configs/generalist_G16_train.json \
     configs/generalist_G16_eval.json 1
 
 # Probes + event-align (run after ckpts exist)
-N_SEEDS=1 bash code/scripts/generalist_v0_7_4/run_probes.sh
-N_SEEDS=1 bash code/scripts/generalist_v0_7_4/run_align.sh
+N_SEEDS=1 bash code/scripts/generalist_v0_7_5/run_probes.sh
+N_SEEDS=1 bash code/scripts/generalist_v0_7_5/run_align.sh
 
 # Master table aggregation (per-suite)
-bash code/scripts/generalist_v0_7_4/master_aggregate.sh --probes --align --suite=G16
+bash code/scripts/generalist_v0_7_5/master_aggregate.sh --probes --align --suite=G16
 
-# Upload to OBS
 bash code/scripts/upload_master_table_to_obs.sh
 ```
 
-## Status (v0.7.5, 2026-07-06)
+### v0.7.5 collapse-robust metrics (no retraining)
 
+If you have an existing 12-ckpt set from the v0.7.4 / v0.7.5
+generalist runs, you can recompute the collapse-robust metrics
+(`responsiveness` and `divergence-from-constant`) without any
+retraining. Cost: ~15 min on a single CPU for 36 ckpts × 6 DMC envs.
+
+```bash
+# Per-(ckpt, env) random-policy trajectory
+for SUITE in generalist generalist_G8 generalist_G16; do
+    for MODEL in stjewm_trace_only stjewm_spike_only stjewm_rate_only \
+                 stjewm_no_trace stjewm_hidden_leak stjewm_membrane_readout \
+                 cubifae_baseline gru_baseline lewm_baseline_v2 \
+                 slt_lif_mpc_trace slt_lif_mpc_free mlp_baseline; do
+        for ENV in cheetah walker cartpole_2d pendulum_2d finger ball_in_cup; do
+            python -m code.scripts.generalist_v0_7_5.measure_latent_stats \
+                --ckpt results/${SUITE}/${MODEL}/seed_0/final.pt \
+                --env ${ENV} --n-steps 200 \
+                --out results/${SUITE}/${MODEL}/seed_0/latent_stats_${ENV}.json
+        done
+    done
+done
+
+# Consolidated master table with the 5-column collapse diagnostic
+python -m code.scripts.generalist_v0_7_5.aggregate_master --merge-all
+python -m code.scripts.generalist_v0_7_5.render_master_table
+```
+## Status (v0.7.5, 2026-07-06)
 | Component | Status | Output |
 |---|---|---|
 | 13-model specialist suite (20 std envs, env-SR + LeWM-SR) | done | `MASTER_TABLE.md` §1, §2 |

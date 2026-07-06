@@ -1,10 +1,11 @@
-# Master Table — v0.7.2
+# Master Table — v0.7.5 (corrected metrics)
 
 **One table to rule them all.** Every method × every dataset × every metric.
 This is the paper's Figure 1/Table 1/Table 2 all rolled into one view.
 
-Generated 2026-07-03 from freshly re-evaluated checkpoints.
-Sources: `results/<env>/<model>/eval.json` (per-cell) + `aggregate/event_probes/` + `aggregate/eval_v1_*/`.
+§1–§8: v0.7.2 specialist data (regenerated 2026-07-03).
+§9: v0.7.5 generalist data (rebuilt 2026-07-06 with corrected metrics).
+Sources: `results/<env>/<model>/eval.json` (per-cell) + `aggregate/event_probes/` + `aggregate/eval_v1_*/` + `aggregate/generalist_master_table.json` (v0.7.5).
 
 ## 0. N/A legend
 
@@ -182,7 +183,7 @@ Closed-loop eval at 3 episodes × 1 seed; stress-eval at 3 episodes × 1 seed on
 4 stress envs (`pusht_ood`, `tworoom_long`, `cartpole_flicker`, `cheetah_velhidden`).
 Probes (event-AUROC) and event-align ρ on the 6 DMC envs (G4/G8/G16) + pusht/tworoom
 (G4/G8/G16). Event-AUROC and event-align ρ results reported for G4 / G8 / G16 ckpts.
-See `code/scripts/generalist_v0_7_4/` for the orchestrator scripts.
+See `code/scripts/generalist_v0_7_5/` for the orchestrator scripts.
 
 ### 9.1 env-SR per suite (1 seed)
 
