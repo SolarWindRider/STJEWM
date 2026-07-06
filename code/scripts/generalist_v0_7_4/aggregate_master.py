@@ -190,9 +190,42 @@ def main() -> int:
     ap.add_argument("--align", action="store_true", help="(Stage 5) Add event-align section.")
     ap.add_argument("--probe-dir", default="/home/lx/snn/results/probe")
     ap.add_argument("--align-dir", default="/home/lx/snn/results/event_align")
+    ap.add_argument("--merge-all", action="store_true",
+                    help="Aggregate G4/G8/G16 into a single consolidated file (generalist_master_table.md).")
     args = ap.parse_args()
 
-    results_dir = Path(args.results_dir)
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    if args.merge_all:
+        out_json = out_dir / "generalist_master_table.json"
+        all_rows = []
+        for suite in ("G4", "G8", "G16"):
+            suite_results = Path(f"/home/lx/snn/results/generalist{'' if suite == 'G4' else '_' + suite}")
+            suite_stress = Path(f"/home/lx/snn/results/generalist{'' if suite == 'G4' else '_' + suite}_stress")
+            if not suite_results.exists():
+                continue
+            seeds_s = discover_seeds(suite_results, GENERALIST_MODELS)
+            if not seeds_s: seeds_s = [0]
+            for m in GENERALIST_MODELS:
+                for env in ("pendulum_2d", "dog", "tworoom", "quadruped", "reacher", "hopper",
+                            "fish", "stacker", "cheetah", "walker", "pusht", "humanoid",
+                            "finger", "ball_in_cup", "cartpole_2d"):
+                    agg = aggregate_model_env(m, env, suite_results, seeds_s)
+                    if agg["env_sr_mean"] is not None:
+                        all_rows.append({"suite": suite, "env": env, "model": m, **agg})
+                for env in ("pusht_ood", "tworoom_long", "cartpole_flicker", "cheetah_velhidden"):
+                    agg = aggregate_model_env(m, env, suite_stress, seeds_s)
+                    if agg["env_sr_mean"] is not None:
+                        all_rows.append({"suite": suite, "env": env, "model": m, **agg})
+        out_json.write_text(json.dumps({
+            "suites": ["G4", "G8", "G16"],
+            "models": GENERALIST_MODELS,
+            "rows": all_rows,
+        }, indent=2))
+        print(f"[aggregate_master] merged G4/G8/G16 into {out_json} ({len(all_rows)} cells)")
+        return 0
+
     stress_dir = Path(args.stress_dir)
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -239,8 +272,13 @@ def main() -> int:
             agg = aggregate_model_env(m, env, stress_dir, seeds)
             rows.append({"env": env, "model": m, **agg})
 
-    out_md = out_dir / f"generalist_master_table_{args.suite}.md"
-    out_json = out_dir / f"generalist_master_table_{args.suite}.json"
+    if args.merge_all:
+        # Combine results from G4/G8/G16 into a single output file.
+        out_md = out_dir / "generalist_master_table.md"
+        out_json = out_dir / "generalist_master_table.json"
+    else:
+        out_md = out_dir / f"generalist_master_table_{args.suite}.md"
+        out_json = out_dir / f"generalist_master_table_{args.suite}.json"
     with out_md.open("w") as f:
         f.write(f"# Generalist World-Model Evaluation — Master Table\n\n")
         f.write(f"Suite: **{args.suite}**\n\n")

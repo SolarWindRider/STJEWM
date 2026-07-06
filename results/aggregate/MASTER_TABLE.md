@@ -265,7 +265,7 @@ GRU -0.07, MLP -0.04) lag by 1–2 orders of magnitude on the same metric.
 ### 9.4 Event-probe AUROC (generalist ckpts)
 
 Per-(env, target) AUROC, full tables in
-`results/aggregate/event_probes_table_{G4,G8,G16}.md`. Mean AUROC across 7 probe envs ×
+`results/aggregate/event_probes_table.md` (consolidated G4+G8+G16).
 varying targets per env (3–7 per env, total 33 cells per model):
 
 | model | G4 mean AUROC | G16 mean AUROC |

@@ -219,13 +219,12 @@ bash code/scripts/upload_master_table_to_obs.sh
 | Event-type linear probes (252 cells, 7 envs × 12 models × 3 targets) | done | `MASTER_TABLE.md` §5 |
 | Event-boundary alignment (Pearson ρ, 6 DMC, Cohen's d ≈ 3.36) | done | `MASTER_TABLE.md` §6 |
 | FLOPs / efficiency (7 models) | done | `MASTER_TABLE.md` §7 |
-| **v0.7.4 generalist evaluation** (12 ckpts × 3 suites G4/G8/G16 × 1 seed × 4 stress envs) | done | `MASTER_TABLE.md` §9, `results/aggregate/generalist_master_table_{G4,G8,G16}.md` |
-| Generalist event-AUROC (G4/G8/G16 × 7 probe envs × ~7 targets) | done | `results/aggregate/event_probes_table*.md` |
-| Generalist event-align ρ (G4/G8/G16 × 6 DMC envs) | done | `results/aggregate/generalist_align_table_{G4,G8,G16}.md` |
+| Generalist event-probe AUROC (G4/G8/G16 × 7 probe envs × ~7 targets) | done | `results/aggregate/event_probes_table.md` (consolidated) |
+| Generalist event-align ρ (G4/G8/G16 × 6 DMC envs) | done | `results/aggregate/generalist_align_table.md` (consolidated) |
 | Multi-seed std bars on generalist eval | deferred | wallclock cost; 1-seed numbers reported honestly |
 | Paper PDF | v0.7.4 in progress | `paper/paper.pdf` |
 
-## Claim ladder (v0.7.3)
+| **v0.7.4 generalist evaluation** (12 ckpts × 3 suites G4/G8/G16 × 1 seed × 4 stress envs) | done | `MASTER_TABLE.md` §9, `results/aggregate/generalist_master_table.md` (consolidated G4+G8+G16) |
 
 See `MASTER_TABLE.md` §10 for the full claim ladder. Top claims:
 

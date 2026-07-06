@@ -5,8 +5,7 @@ Reads:
   results/event_align/<env>_<model>.json            (legacy v0.7.3 layout)
 
 Writes:
-  results/aggregate/generalist_align_table.md
-  results/aggregate/generalist_align_table.json
+  generalist_align_table.md (or generalist_align_table_<suite>.md with --out-name)
 """
 from __future__ import annotations
 
@@ -34,6 +33,7 @@ MODELS = [
 
 ENV_NAMES = ["cheetah", "walker", "cartpole_2d", "pendulum_2d", "finger", "ball_in_cup"]
 
+
 def parse_filename(stem: str) -> tuple[str | None, str | None]:
     """Return (env, model) by trying multiple filename conventions.
 
@@ -42,11 +42,9 @@ def parse_filename(stem: str) -> tuple[str | None, str | None]:
     greediness.
     """
     for env in ENV_NAMES:
-        # env must appear at the start, followed by '_'
         if not stem.startswith(env + "_"):
             continue
         model_part = stem[len(env) + 1:]
-        # Strip trailing _seed<N>
         m = re.match(r"^(?P<model>.+?)_seed\d+$", model_part)
         if m:
             return env, m.group("model")
@@ -71,7 +69,6 @@ def collect(align_dir: Path) -> Dict[tuple[str, str], Dict[str, Any]]:
         rho = d.get("corr_obs_latent")
         if rho is None:
             continue
-        # Average across seeds for the same (env, model) pair.
         key = (env, model)
         rows.setdefault(key, {"rhos": [], "n_steps": 0})
         rows[key]["rhos"].append(float(rho))
@@ -87,12 +84,10 @@ def write_md(rows: Dict, out_path: Path) -> None:
         f.write("# Event Boundary Alignment (Pearson ρ between obs-event and latent-event)\n\n")
         f.write("Pearson correlation between obs first-difference (event strength) and latent first-difference.\n")
         f.write("High ρ means the latent preserves obs-level event timing. Aggregated across seeds.\n\n")
-        # Determine which envs we actually have data for
         envs_present = sorted({env for (env, _) in rows.keys()})
         if not envs_present:
             f.write("(no data)\n")
             return
-        # Table: rows = models, cols = envs
         f.write("| model | " + " | ".join(envs_present) + " | AVG |\n")
         f.write("|" + "---|" * (len(envs_present) + 2) + "\n")
         for m in MODELS:
@@ -114,10 +109,13 @@ def main() -> int:
     ap.add_argument("--align-dir", default="/home/lx/snn/results/event_align",
                     help="Directory containing event_align JSONs.")
     ap.add_argument("--out-dir", default="/home/lx/snn/results/aggregate")
+    ap.add_argument("--out-name", default=None,
+                    help="Override output filename (default: generalist_align_table.md).")
     args = ap.parse_args()
     rows = collect(Path(args.align_dir))
-    out_md = Path(args.out_dir) / "generalist_align_table.md"
-    out_json = Path(args.out_dir) / "generalist_align_table.json"
+    out_name = args.out_name or "generalist_align_table.md"
+    out_md = Path(args.out_dir) / out_name
+    out_json = Path(args.out_dir) / out_name.replace(".md", ".json")
     write_md(rows, out_md)
     out_json.write_text(json.dumps({f"{env}__{model}": v for (env, model), v in rows.items()}, indent=2))
     print(f"[aggregate_align] {len(rows)} (env, model) pairs")
