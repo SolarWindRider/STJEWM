@@ -265,7 +265,7 @@ python -m code.scripts.generalist_v0_7_5.render_master_table
 | Generalist event-align ρ (G4/G8/G16 × 6 DMC envs) | done | `results/aggregate/generalist_align_table.md` (consolidated) |
 | **v0.7.5 collapse-robust metrics** (responsiveness, divergence-from-constant, 36 ckpts × 6 DMC envs) | done | `MASTER_TABLE.md` §9.5–§9.7, `results/aggregate/generalist_master_table.md` |
 | Multi-seed std bars on generalist eval | deferred | wallclock cost; 1-seed numbers reported honestly |
-| Paper PDF | v0.7.5 in progress | `paper/paper.pdf` |
+| Paper PDF | v0.7.5 done | `paper/paper.pdf` |
 
 See `MASTER_TABLE.md` §10 for the full claim ladder. Top claims:
 
