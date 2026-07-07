@@ -140,22 +140,12 @@ planning uses the same trace dynamics with a longer imagination budget.
 
 #### Figure 1 — Membrane-forbidden predictive-state interface
 
-```
-                ┌──────────────────────────────────────────────────────────┐
- Observation ──▶│   MultiCompStack SNN dynamics (4 layers, embed-dim 192)     │
- Action      ──▶│   v_t = Φ(v_{t-1}, x_t, a_{t-1})   ── internal only ──┐   │
-                │   s_t = 𝟙[v_t > ϑ]                ── spike (event) ──┐  │   │
-                │   r_t = α_t ⊙ r_{t-1} + (1-α_t) ⊙ s_t ── trace ──┐  │  │   │
-                └─────────────────────────────────────────────────────┼──┼───┘
-                                                                      │  │
-                                              ┌───────────────────────┼──┘
-                                              │  Predictor / CEM planner
-                                              │  INPUT ≡ r_t  (bounded, event-driven)
-                                              │  v_t  ⨯  FORBIDDEN
-                                              │  s_t  permitted for spike-only readout
-                                              └───────────────────────┘
-                                              loss = ⟨ĝ_θ(r_t, a_t), sg(E(o_{t+1}))⟩
-```
+![Figure 1: Membrane-forbidden predictive-state interface — observation and
+action enter MultiCompStack SNN (4 layers, embed-dim 192); the membrane
+potential $v_t$ is internal only; spike $s_t$ and post-spike trace $r_t$
+are exposed to the planner. The predictor / CEM planner reads only
+the trace; the membrane is forbidden. The loss is computed entirely
+in trace space: $\mathcal{L} = d(\hat g_\theta(r_t, a_t),\, \mathrm{sg}\,E(o_{t+1}))$.](figs/fig1_protocol.png)
 
 Figure 1 captures the membrane-forbidden protocol as an interface
 contract. The membrane potential $v_t$ is required for spike generation
@@ -263,23 +253,15 @@ alignment matters).
 
 #### Figure 5 — Event-alignment visualization on `cheetah`
 
-```
-        ┌─────────────────────────────────────────────────────────┐
- t (s)  │  obs event-strength ‖Δo_t‖   (orange)                  │ t
-        │  latent-difference   ‖Δz_t‖ (blue)                    │
-        │  STJEWM-trace spike train s_t (gray ticks)             │
-  ──────┼──────────────────────────────────────────────────────────
-        │                       ─peak──      ────────peak──────   │
- obs‖·‖ │                            ────────         ───────      │
- z‖·‖  │         ──                 ──────              ──         │
- s·    │     ·· ·  ·· ··    · ··  ··  ·  ··· ·· ··· ···· ···· ··   │
-  ──────┴──────────────────────────────────────────────────────────
-
- STJEWM-trace:    ρ = 0.840 on cheetah  (latent follows obs events)
- LeWM Transformer: ρ = 0.606 on cheetah (latent lags, drifts)
- GRU:             ρ = 0.057 on cheetah (flat, decoupled)
- MLP collapse-control: ρ = -0.031 (constant latent by construction)
-```
+![Figure 5: Event-alignment visualisation on cheetah. Top row is the
+per-step observation event-strength ‖Δo_t‖ (orange); the second row is
+STJEWM-trace's latent-difference ‖Δz_t‖ (green, ρ = 0.84); the third
+row is LeWM-v2's latent-difference (purple, ρ = 0.61, ~30×
+amplification); the fourth row is MLP-collapse-control's latent-difference
+(red, ρ = -0.03, constant latent). STJEWM-trace aligns latent-change
+peaks with observation-event peaks; the LeWM Transformer drifts even
+when observations are stationary; GRU is flat-on-purpose; MLP-collapse
+is literally flat.](figs/fig5_event_align_ts.png)
 
 Two DMC environments (cheetah, finger) are visualised across one
 500-step random-policy trajectory. For each: (a) per-step
@@ -318,27 +300,16 @@ membrane-forbidden protocol as an *interface discipline*, not an
 
 #### Figure 3 — Specialist summary heatmap (13 models × 6 metrics)
 
-```
-                     env-SR    env-SR    LeWM-SR   LeWM-SR    event      event
-                     std(20)   stress(4) std(20)   stress(4)  probe-AU   align-ρ
-                     ───────  ────────  ────────  ────────   ────────   ────────
- STJEWM trace-only    67.1      25.0      73.5      66.5       0.690     0.626
- STJEWM spike-only    65.9      25.0      66.5      57.5       0.699     0.621
- STJEWM rate-only     64.6      28.5      66.3      62.5        n/a      0.630
- STJEWM no-trace      66.3      25.0      61.8      52.5       0.688     0.624
- STJEWM hidden-leak   64.0      25.5      61.4      54.5       0.690     0.620
- STJEWM membrane-rd   64.5      25.5      60.8      49.5       0.554     0.615
- CuBiFAE              69.5*     25.5      76.3      52.5       0.569     0.638
- SpikeDreamer         68.3      41.5      n/a*     n/a*       0.474     n/a
- SLT-LIF-MPC trace    68.6      25.0      72.6      47.5       0.533     0.636
- SLT-LIF-MPC free     65.7      26.5      66.7      66.5       0.504     0.640
- ──────────────  ──────────────────────────────────────────────────────────
- LeWM Transformer     68.2      25.5      76.9      56.5       0.166     0.160
- GRU                  66.6      42.0*     78.8      51.0       0.574    -0.011
- MLP (collapse-ctrl)  64.7      32.5      98.0†     95.5†      0.524    -0.002
-
- * best non-STJEWM      † MLP LeWM-SR is a collapse artefact; see §2.3, §6.3
-```
+![Figure 3: Specialist summary heatmap. Rows grouped by family: the
+top six rows are the STJEWM six readouts (green), the next four are
+SNN baselines (blue), the last three are non-SNN baselines (red).
+Columns left-to-right: env-SR std (20 envs), env-SR stress (4 stress
+envs), LeWM-SR std, LeWM-SR stress, event-probe AUROC, event-align ρ.
+Greener cells are better on every column. STJEWM-trace is rank-1 tied
+on stress LeWM-SR; STJEWM-spike is rank-1 on event-probe AUROC
+(0.699); STJEWM-trace is rank-2 (ρ = 0.626) on event-align ρ behind
+SLT-free (0.640). MLP LeWM-SR 98.0% is a collapse artefact — see
+§2.3, §6.3 for the diagnostic story.](figs/fig3_specialist_heatmap.png)
 
 Figure 3 is the compact specialist summary. The headline visual
 observations:
@@ -389,23 +360,13 @@ wrong conclusion, and the diagnostic is what shows it.
 
 #### Figure 2 — Metric pathology on the G16 generalist suite
 
-```
-LeWM-SR
-   1.0 ┃                                              ◆ MLP (collapse)
-   0.9 ┃                                                 div 0.0002
-   0.8 ┃
-   0.7 ┃                                       ▲ GRU (noise)
-   0.6 ┃                                          div 0.007, ρ=-0.07
-   0.5 ┃                       ● STJEWM family    △ LeWM-v2 (over-reac.)
-   0.4 ┃                          div 0.011±0.001   div 0.186, ρ=+0.52
-   0.3 ┃                          ρ ≥ 0.99
-   0.2 ┃
-   0.1 ┃  ● CuBiFAE  ● slt-mpc  ● slt-mpc
-   0.0 ┃
-       └─────┬───────────┬───────────┬───────────┬───────────┬───
-             0.00        0.05        0.10        0.15        0.20
-                       divergence-from-constant
-```
+![Figure 2: Metric pathology on the G16 generalist suite. The scatter
+plots LeWM-SR (y-axis) vs divergence-from-constant (x-axis) for all
+12 G16 ckpts. Four clusters separated: collapse (upper-left, MLP at
+LeWM-SR 95.6%, div 0.0002), noise (GRU at LeWM-SR 88.9%, div 0.007,
+ρ = -0.07), over-reactive (LeWM-v2 at div 0.186, ρ = 0.52, lower-LeWM-SR
+~50%), and calibrated (STJEWM family + CuBiFAE + SLT-LIF-MPC at
+div 0.011 ± 0.001, ρ ≥ 0.99, mid-range LeWM-SR 55–67).](figs/fig2_scatter.png)
 
 Figure 2 (G16, 200-step random-policy trajectory per DMC env,
 averaged across 6 envs). Four clusters separated along the
@@ -456,42 +417,16 @@ are also calibrated but are not the focus of this paper.)
 
 #### Figure 4 — Three-panel generalist collapse-robust diagnostic (G4 / G8 / G16)
 
-```
-                  per-dim std of latent trajectory (200 random-policy steps × 6 envs)
-        ┌────┬───────────────┬───────────────┬───────────────┐
-        │    │     G4        │      G8       │      G16      │
-        ├────┼───────────────┼───────────────┼───────────────┤
-        │ STJEWM  ╲  0.012  │  0.011        │  0.011        │ ← calibrated band
-        │ CuBiFAE  │  0.011  │  0.012        │  0.012        │ ← calibrated band
-        │ SLT trace│  0.011  │  0.010        │  0.012        │ ← calibrated band
-        │ SLT free │  0.011  │  0.010        │  (n/a)        │ ← calibrated band
-        │─────────────────────────────────────────────────────────│ 50× gap
-        │ LeWM-v2  │  0.186  │  0.208        │  0.184        │ ← over-reactive
-        │ GRU      │  0.008  │  0.007        │  0.007        │
-        │ MLP (cc) │  0.0002 │  0.0002       │  0.0002       │ ← COLLAPSE
-        └────┴───────────────┴───────────────┴───────────────┘
-
-                responsiveness  (mean ‖Δz‖ / mean ‖Δo‖)
-        ┌────┬───────────────┬───────────────┬───────────────┐
-        │ STJEWM  ╲ 0.21   │   0.21        │   0.21        │ ← calibrated
-        │ CuBiFAE  │ 0.22   │   0.21        │   0.21        │ ← calibrated
-        │ SLT trace│ 0.21   │   0.21        │   0.20        │ ← calibrated
-        │────────────────────────────────────────────────────────│ ~150× gap
-        │ GRU      │ 31.11  │  28.31        │  22.43        │ ← NOISE (resp 30×)
-        │ LeWM-v2  │ 29.99  │  30.43        │  32.73        │ ← OVER-REACTIVE
-        │ MLP (cc) │ 0.55   │   0.53        │   0.58        │
-        └────┴───────────────┴───────────────┴───────────────┘
-
-              event-alignment ρ (Pearson corr(‖Δo‖, ‖Δz‖))
-        ┌────┬───────────────┬───────────────┬───────────────┐
-        │ STJEWM  ╲ 0.99+  │   0.99+       │   0.99+       │ ← aligned
-        │────────────────────────────────────────────────────────│
-        │ LeWM-v2  │ 0.52   │   0.52        │   0.52        │ ← weak align
-        │────────────────────────────────────────────────────────│
-        │ GRU      │ -0.07  │  -0.07        │  -0.07        │ ← unaligned
-        │ MLP (cc) │ ~0     │  ~0           │  ~0           │ ← constant latent
-        └────┴───────────────┴───────────────┴───────────────┘
-```
+![Figure 4: Three-panel generalist collapse-robust diagnostic (G4 / G8 / G16).
+Panel 1: per-dim std of latent trajectory (d). STJEWM family + CuBiFAE
++ SLT-LIF-MPC stay in the calibrated band (0.011 ± 0.001) at every
+task scale; MLP collapse-control is exactly 0.0002 at every scale
+(collapse signature is scale-invariant); LeWM-v2 is ~16× calibrated
+(over-reactive); GRU is normal on d (noise regime). Panel 2:
+responsiveness. STJEWM family ≈ 0.21 at every scale; GRU ≈ 30
+(150× STJEWM); LeWM-v2 ≈ 30 (150× STJEWM); MLP ≈ 0.55. Panel 3:
+event-alignment ρ. STJEWM family ≥ 0.99 at every scale; LeWM-v2 0.52;
+GRU ρ ≈ -0.07; MLP ρ ≈ 0.](figs/fig4_diagnostic_3panel.png)
 
 Figure 4 condenses §6.4–§6.6 onto a single visual. The key result is
 **cross-suite scale-invariance**: STJEWM family + CuBiFAE + SLT-LIF-MPC
