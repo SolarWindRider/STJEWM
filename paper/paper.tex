@@ -377,6 +377,28 @@ observation decoder is used at planning time. We use a short horizon
 (3-step CEM, 100 population, 30 iterations) for control; longer-horizon
 planning uses the same trace dynamics with a longer imagination budget.
 
+\subsubsection*{Figure 1 --- Membrane-forbidden predictive-state interface}
+
+\begin{quote}\small
+\texttt{obs}, $a_t$ $\longrightarrow$ MultiCompStack SNN (4 layers, embed-dim~192)\\
+\hspace*{4em}$\downarrow$\\
+\hspace*{4em}$v_t = \Phi(v_{t-1}, x_t, a_{t-1})$ \hfill (internal only)\\
+\hspace*{4em}$s_t = \mathbb{1}[v_t > \vartheta]$ \hfill spike (event)\\
+\hspace*{4em}$r_t = \alpha_t \odot r_{t-1} + (1-\alpha_t) \odot s_t$ \hfill trace\\
+\hspace*{4em}$\downarrow$\\[2pt]
+\hspace*{4em}Predictor / CEM planner: \textbf{input} $\equiv r_t$ (bounded, event-driven)\\
+\hspace*{4em}\hspace*{4em}$v_t$ \quad $\times$ \textbf{FORBIDDEN}\\
+\hspace*{4em}loss $= d(\hat{g}_\theta(r_t, a_t),\, \mathrm{sg}(E(o_{t+1})))$
+\end{quote}
+
+Figure 1 captures the membrane-forbidden protocol as an interface
+contract. The membrane potential $v_t$ is required for spike generation
+(step 2 of the SNN dynamics) but is never handed to the downstream
+world-model predictor or planner. Architectures that route $v_t$ into
+the planner (\emph{membrane-readout}, \S 3.5), or route a Transformer hidden
+representation next to the trace (\emph{hidden-leak}), are explicitly out
+of protocol and serve as ablation baselines, not main-method variants.
+
 \subsection{Readout variants and the membrane-forbidden table}
 
 The membrane-forbidden protocol is a claim about an \emph{interface}, not
@@ -583,14 +605,39 @@ an order of magnitude higher than the non-spiking baselines (LeWM
 0.160, GRU $-0.011$, MLP $-0.002$). Cohen's $d$ on the STJEWM-family-
 vs-non-SNN gap is $\approx 3.36$ --- far above any conventional
 effect-size threshold.
-
-The specialist event-alignment result is the \emph{first} mechanistic
-evidence that the membrane-forbidden protocol is preserving a real
-property of the latent, not just an artefact of the training loss. We
-treat it as the link between §2.2's protocol and §3.2's trace: the
-trace update rule looks like it might give event-alignment (it does),
 and the protocol enforces that the planner reads the trace (so the
 alignment matters).
+
+\subsubsection*{Figure 5 --- Event-alignment visualization on \texttt{cheetah}}
+
+\begin{quote}\small
+\begin{tabular}{ll}
+observation event-strength $\|\Delta o_t\|$ & (orange) \\
+latent-difference $\|\Delta z_t\|$ & (blue) \\
+STJEWM-trace spike train $s_t$ & (gray ticks) \\
+\end{tabular}\\[4pt]
+\begin{tabular}{ll}
+STJEWM-trace: & $\rho = 0.840$ on \texttt{cheetah} (latent follows obs events) \\
+LeWM Transformer: & $\rho = 0.606$ on \texttt{cheetah} (latent lags, drifts, 30$\times$ amplification) \\
+GRU: & $\rho = 0.057$ on \texttt{cheetah} (flat, decoupled) \\
+MLP collapse-control: & $\rho = -0.031$ (constant latent by construction) \\
+\end{tabular}
+\end{quote}
+
+Two DMC environments (\texttt{cheetah}, \texttt{finger}) are visualised
+across one 500-step random-policy trajectory. For each: (a) per-step
+observation first-difference $\|\Delta o_t\|$; (b) per-step latent
+first-difference $\|\Delta z_t\|$ from the predictive latent; (c) STJEWM
+spike train for the trace readout. STJEWM-trace aligns latent-change
+peaks with observation-event peaks ($\rho \approx 0.84$ on
+\texttt{cheetah}). LeWM Transformer has a high-mean, low-correlation
+latent that drifts even when the observation is stationary
+($\rho = 0.61$, latent amplification $\sim 30\times$). GRU is
+flat-on-purpose ($\mathrm{resp}\,30\times$, $\rho = 0.06$). MLP
+collapse-control is literally flat (constant latent by definition,
+$\rho = -0.03$). Per-time traces for the second half (\texttt{finger},
+\texttt{ball\_in\_cup}, \texttt{walker}, etc.) are in Supplementary
+Appendix E.
 
 \subsection{Specialist verdict}
 
@@ -615,6 +662,53 @@ cannot be justified empirically on specialist stress failure.
 The last refutation matters for §7. It is precisely why we reframe the
 membrane-forbidden protocol as an \emph{interface discipline}, not an
 \emph{empirical necessity claim}.
+
+\subsubsection*{Figure 3 --- Specialist summary heatmap (13 models $\times$ 6 metrics)}
+
+\begin{quote}\small
+\begin{tabular}{lcccccc}
+\hline
+ & env-SR & env-SR & LeWM-SR & LeWM-SR & event & event \\
+ & std(20) & stress(4) & std(20) & stress(4) & probe-AU & align-$\rho$ \\
+\hline
+STJEWM trace-only       & 67.1 & 25.0 & 73.5 & \textbf{66.5} & 0.690 & 0.626 \\
+STJEWM spike-only       & 65.9 & 25.0 & 66.5 & 57.5 & \textbf{0.699} & 0.621 \\
+STJEWM rate-only        & 64.6 & 28.5 & 66.3 & 62.5 & n/a     & 0.630 \\
+STJEWM no-trace         & 66.3 & 25.0 & 61.8 & 52.5 & 0.688 & 0.624 \\
+STJEWM hidden-leak      & 64.0 & 25.5 & 61.4 & 54.5 & 0.690 & 0.620 \\
+STJEWM membrane-rd      & 64.5 & 25.5 & 60.8 & 49.5 & 0.554 & 0.615 \\
+CuBiFAE                 & \textbf{69.5}\textsuperscript{*} & 25.5 & 76.3 & 52.5 & 0.569 & 0.638 \\
+SpikeDreamer            & 68.3 & \textbf{41.5} & n/a\textsuperscript{*} & n/a\textsuperscript{*} & 0.474 & n/a \\
+SLT-LIF-MPC trace       & 68.6 & 25.0 & 72.6 & 47.5 & 0.533 & 0.636 \\
+SLT-LIF-MPC free        & 65.7 & 26.5 & 66.7 & 66.5 & 0.504 & \textbf{0.640} \\
+\hline
+LeWM Transformer        & 68.2 & 25.5 & 76.9 & 56.5 & 0.166 & 0.160 \\
+GRU                     & 66.6 & \textbf{42.0} & \textbf{78.8} & 51.0 & 0.574 & $-0.011$ \\
+MLP (collapse-ctrl)     & 64.7 & 32.5 & \textbf{98.0}\textsuperscript{\dag} & \textbf{95.5}\textsuperscript{\dag} & 0.524 & $-0.002$ \\
+\hline
+\end{tabular}\\[4pt]
+{*best non-STJEWM \hspace{2em} \dag MLP LeWM-SR is a collapse artefact; see §2.3, §6.3}
+\end{quote}
+
+Figure 3 is the compact specialist summary. The headline visual
+observations:
+\begin{itemize}
+\item The STJEWM-family block (6 rows) is \emph{internally consistent}:
+every readout lands in the same column band (env-SR std 64--67, env-SR
+stress 25--28, event-probe AUROC 0.69--0.70 with rate-only excluded,
+event-align $\rho$ 0.62--0.63). Ablations move the variant within
+$\sigma$ of itself.
+\item The non-SNN baselines (last 3 rows) \emph{sit on different axes}:
+LeWM Transformer has the \emph{worst} event-probe AUROC (0.166), GRU
+has the best stress env-SR (42.0\%) but \emph{negative} event-align,
+MLP dominates LeWM-SR (98.0\%) but its divergence is 0.0002 (collapse).
+\item The mechanism metrics (event-probe AUROC, event-align $\rho$)
+\emph{separate the families} that the raw control metrics (env-SR,
+LeWM-SR) cannot.
+\end{itemize}
+
+Full per-env matrices (all 20 standard $\times$ 13 models $\times$ 6
+metrics) are in \texttt{MASTER\_TABLE.md} §1--§6.
 
 % ============================================================================
 \section{Generalist Results with Collapse-Robust Diagnostics}
@@ -654,6 +748,29 @@ Transformer $\sim$56.5\%, STJEWM readouts $\sim$55--73\%, CuBiFAE
 60.0\%, SLT-LIF-MPC-trace / -free $\sim$67\%. If the table is read
 without the diagnostic, MLP ``wins''. This is the wrong conclusion,
 and the diagnostic is what shows it.
+
+\subsubsection*{Figure 2 --- Metric pathology on the G16 generalist suite}
+
+\begin{quote}\small
+Two questions must be asked together: \emph{how often is the latent
+close to the goal latent?} (LeWM-SR) and \emph{how often does the
+latent move at all?} (divergence). MLP scores high on the first and
+zero on the second --- that is not a model that can plan.
+\\[6pt]
+Four clusters separated on the G16 scatter (LeWM-SR vs divergence):
+\begin{itemize}
+\item \textbf{collapse} (upper-left, MLP): LeWM-SR $95.5$\%, div $0.0002$;
+constant latent by construction.
+\item \textbf{noise} (right of MLP, GRU): div $0.007$, event-align
+$\rho \approx -0.07$; latent moves randomly with each input.
+\item \textbf{over-reactive} (right side, LeWM-v2): div $\sim 16\times$
+calibrated, event-align $\rho = 0.52$; latent amplifies obs by
+$\sim 30\times$ and feeds back into the planner as a Transformer hidden
+state.
+\item \textbf{calibrated} (lower-middle, STJEWM family + CuBiFAE +
+SLT-LIF-MPC): div $0.011 \pm 0.001$, event-align $\rho \geq 0.99$.
+\end{itemize}
+\end{quote}
 
 \subsection{Divergence-from-constant: separating MLP from every other family}
 
@@ -719,6 +836,35 @@ only model in the suite with collapse; GRU is the only one with noise;
 LeWM is the only one with over-reactivity; the six STJEWM readouts
 are the only calibrated models in the family. (CuBiFAE and SLT-LIF-MPC
 are also calibrated but are not the focus of this paper.)
+
+\subsubsection*{Figure 4 --- Three-panel generalist collapse-robust diagnostic (G4 / G8 / G16)}
+
+\begin{quote}\small
+\textbf{Per-dim std of latent trajectory} (200 random-policy steps $\times$ 6 envs).
+STJEWM family + CuBiFAE + SLT-LIF-MPC stay in the calibrated band
+($0.011 \pm 0.001$) at G4, G8, and G16. MLP collapse-control is exactly
+$0.0002$ at every scale --- the collapse signature is scale-invariant.
+LeWM Transformer is $\sim 16\times$ calibrated (over-reactive). GRU
+is normal on div (noise regime).
+\\[4pt]
+\textbf{Responsiveness} $\mathrm{mean}(\|\Delta z\|)/\mathrm{mean}(\|\Delta o\|)$.
+STJEWM family $\approx 0.21$ at every scale. GRU $\approx 30$ (resp
+$150\times$ STJEWM); LeWM-v2 $\approx 30$ (resp $150\times$ STJEWM).
+MLP $\approx 0.55$ --- collapsed and motionless.
+\\[4pt]
+\textbf{Event-alignment $\rho$}.
+STJEWM family $\geq 0.99$ at every scale. LeWM-v2 $0.52$. GRU
+$\rho \approx -0.07$. MLP $\rho \approx 0$ (constant latent).
+\end{quote}
+
+Figure 4 condenses §6.4--§6.6 onto a single visual. The key result is
+\emph{cross-suite scale-invariance}: STJEWM family + CuBiFAE +
+SLT-LIF-MPC stay in the calibrated band at G4 / G8 / G16; the
+collapse signature of MLP ($\mathrm{div} = 0.0002$) persists at every
+scale; the over-reactivity of LeWM and the noise of GRU are stable.
+This is what the protocol's central empirical claim rests on: the
+trace dynamics produce calibrated latents that \emph{survive} the
+shared-weight generalist regime, not just the specialist regime.
 
 \subsection{Event-alignment $\rho$ across task scales}
 
@@ -949,25 +1095,72 @@ collapse-robust diagnostics rather than latent cosine success alone.
 \end{quote}
 
 % ============================================================================
-\section*{Claim Control Table}
+\section*{Table 1 --- Main claim control table}
 
 \begin{table}[ht]
 \centering
 \small
-\begin{tabular}{llp{8cm}}
+\begin{tabular}{lp{3cm}p{8cm}}
 \toprule
 Claim & Status & Evidence \\
 \midrule
-STJEWM competitive on env-native success & supported & 67.1 vs best 69.5 (specialist AVG); $\pm 4$pp on G16 generalist \\
-STJEWM raw SOTA & \textbf{not claimed} & never the best on any single suite \\
-LeWM-SR can be inflated by collapse & supported & MLP LeWM-SR 95.5\%, div 0.0002 $\to$ collapse signature \\
-STJEWM event-aligned latents (specialist + generalist) & supported & $\rho \geq 0.62$ specialist, $\rho \geq 0.99$ generalist (G4 / G8 / G16) \\
-STJEWM calibrated, non-collapsed, non-noisy, non-over-reactive & supported & div $0.011 \pm 0.001$, resp $0.21 \pm 0.01$, $\rho \geq 0.99$ across all 6 readouts and 3 scales \\
-Membrane-readout catastrophically fails stress & \textbf{refuted} in v0.7.2 & stress env-SR 25.5\% AVG, within 0.5pp of trace-only \\
-Planner causally relies on event-window trace component & \textbf{refuted} & zeroing trace at event-aligned steps does not reduce env-SR more than random zeroing \\
-Multi-seed std bars on generalist eval & deferred & 1-seed numbers reported honestly \\
+STJEWM competitive on env-native success
+  & \textbf{supported}
+  & 67.1 vs best 69.5 (specialist AVG); $\pm 4$pp on G16 generalist (all 12 ckpts within $\pm 4$pp of 71.1\%).
+  \\
+STJEWM raw SOTA
+  & \textbf{not claimed}
+  & never the best on any single suite; specialist spread $\leq 2.4$pp, generalist spread $\leq 4$pp.
+  \\
+LeWM-SR alone is insufficient; can be inflated
+  & \textbf{supported}
+  & MLP LeWM-SR 95.5\% on G16, MLP divergence 0.0002 --- collapse signature, not a planning capability. See \S 2.3, \S 6.3, Figure 2.
+  \\
+STJEWM latents are event-aligned (specialist + generalist)
+  & \textbf{supported}
+  & $\rho \geq 0.62$ on 5/6 specialist DMC envs (Cohen's $d \approx 3.36$ vs non-SNN); $\rho \geq 0.99$ on all 6 generalist DMC envs across G4 / G8 / G16. See Figure 5.
+  \\
+STJEWM family lands in the calibrated regime under shared weights
+  & \textbf{supported}
+  & div $0.011 \pm 0.001$, responsiveness $0.21 \pm 0.01$, $\rho \geq 0.99$ across all 6 readouts $\times$ 3 task scales (Figure 4). MLP div is $50\times$ lower, LeWM div is $16\times$ higher, GRU responsiveness is $150\times$ higher.
+  \\
+Three non-spiking failure modes (collapse / noise / over-reactive) are diagnosable from a 200-step random-policy trajectory
+  & \textbf{supported}
+  & Figure 4 three-panel diagnostic separates MLP / GRU / LeWM into three distinguishable regions; STJEWM family stays in the calibrated region at every task scale.
+  \\
+Membrane-readout catastrophically fails stress
+  & \textbf{refuted} in v0.7.2
+  & stress env-SR 25.5\% AVG (4 stress envs $\times$ 5 seeds), within 0.5pp of trace-only (25.0\%). v0.4's 0\% claim was a 1-seed artefact on a saturating env.
+  \\
+Planner causally relies on the event-window trace component specifically
+  & \textbf{refuted}
+  & zeroing the trace at event-aligned env steps does not reduce env-SR more than the same zeroing at matched non-event or random steps.
+  \\
+STJEWM generalist stress env-SR
+  & \textbf{not claimed}
+  & we report G4 / G8 / G16 numbers on the diagnostic dimension; stress env-SR is not the test in the generalist setting.
+  \\
+Multi-seed std bars on generalist eval
+  & \textbf{deferred}
+  & 1-seed numbers reported honestly; wallclock cost documented in \S 6.1 and \texttt{MASTER\_TABLE.md} \S 9.7.
+  \\
+Membrane-forbidden protocol is empirically necessary on stress
+  & \textbf{not claimed}
+  & reframed in \S 7.1 and \S 8.2 as an \emph{interface discipline}, not an empirical necessity claim.
+  \\
 \bottomrule
 \end{tabular}
+\caption{\textbf{Reading guide.} Rows marked \textbf{supported} are
+the paper's central empirical findings; the paper would not be retracted
+if any one of them were weakened. Rows marked \textbf{refuted} are claims
+that \emph{used} to be in the paper and were dropped on re-evaluation;
+their refutation is part of the audit trail. Rows marked \textbf{not
+claimed} are explicitly outside the paper's scope. Rows marked
+\textbf{deferred} are honest placeholders for work the paper's design
+would have caught but that the wallclock budget did not permit. Per-env
+matrices and per-suite raw G4 / G8 / G16 numbers live in
+\texttt{MASTER\_TABLE.md} §1--§9.7, the operational source of truth.}
+\label{tab:claim-control}
 \end{table}
 
 % ============================================================================
