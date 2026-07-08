@@ -84,7 +84,7 @@ for model in models:
                     "--pad-obs-to", str(pad),
                     "--action-dim-eval", str(action_dim),
                     "--out", out,
-                    "--max-windows", "1000",
+                    "--max-windows", "200",
                 ]
                 print(f"[probe] {SUITE} {model} seed={seed} {env_id} {target}", flush=True)
                 # Per-cell 5-minute wallclock timeout (same rationale as
