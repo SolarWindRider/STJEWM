@@ -3186,7 +3186,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.186658908923467,
+      "cos_dist_mean": 0.25922461847464245,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -3197,9 +3197,9 @@
       "model": "stjewm_trace_only",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.6666666666666666,
+      "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.08748398224512736,
+      "cos_dist_mean": 0.04771784941355387,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -3212,7 +3212,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.08453375101089478,
+      "cos_dist_mean": 0.07272618015607198,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -3225,7 +3225,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.003399401903152466,
+      "cos_dist_mean": 0.003115028142929077,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -3431,9 +3431,9 @@
       "model": "stjewm_spike_only",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.3333333333333333,
+      "lewm_sr_mean": 0.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.11678589383761089,
+      "cos_dist_mean": 0.21676469842592874,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -3446,7 +3446,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.05947354435920715,
+      "cos_dist_mean": 0.06370076537132263,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -3459,7 +3459,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.05642902851104736,
+      "cos_dist_mean": 0.08584704001744588,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -3472,7 +3472,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.003386924664179484,
+      "cos_dist_mean": 0.0046275655428568525,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -3680,7 +3680,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.3013810987273852,
+      "cos_dist_mean": 0.18437097469965616,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -3691,9 +3691,9 @@
       "model": "stjewm_rate_only",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 1.0,
+      "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.06108428041140238,
+      "cos_dist_mean": 0.08216665188471477,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -3706,7 +3706,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.07343251506487529,
+      "cos_dist_mean": 0.05644108851750692,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -3719,7 +3719,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.004028052091598511,
+      "cos_dist_mean": 0.0040955742200215655,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -3925,9 +3925,9 @@
       "model": "stjewm_no_trace",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.3333333333333333,
+      "lewm_sr_mean": 0.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.2048353006442388,
+      "cos_dist_mean": 0.2932270069917043,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -3938,9 +3938,9 @@
       "model": "stjewm_no_trace",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 1.0,
+      "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.0578283965587616,
+      "cos_dist_mean": 0.07936870058377583,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -3949,11 +3949,11 @@
       "suite": "G8",
       "env": "cartpole_flicker",
       "model": "stjewm_no_trace",
-      "env_sr_mean": 0.6666666666666666,
+      "env_sr_mean": 1.0,
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.12433573106924693,
+      "cos_dist_mean": 0.06188215812047323,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -3966,7 +3966,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.01604919632275899,
+      "cos_dist_mean": 0.0058534542719523115,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -4172,9 +4172,9 @@
       "model": "stjewm_hidden_leak",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.3333333333333333,
+      "lewm_sr_mean": 0.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.15195082624753317,
+      "cos_dist_mean": 0.3331066894655426,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -4185,9 +4185,9 @@
       "model": "stjewm_hidden_leak",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 1.0,
+      "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.06839777032534282,
+      "cos_dist_mean": 0.07863595088322957,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -4200,7 +4200,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.09275254607200623,
+      "cos_dist_mean": 0.05569390455881754,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -4213,7 +4213,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.006904661655426025,
+      "cos_dist_mean": 0.010947883129119873,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -4419,9 +4419,9 @@
       "model": "stjewm_membrane_readout",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.0,
+      "lewm_sr_mean": 0.3333333333333333,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.2956742395957311,
+      "cos_dist_mean": 0.15403571228186289,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -4434,7 +4434,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.07635815938313802,
+      "cos_dist_mean": 0.0722640057404836,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -4447,7 +4447,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.06713222463925679,
+      "cos_dist_mean": 0.13645122945308685,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -4460,7 +4460,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.013975977897644043,
+      "cos_dist_mean": 0.010495265324910482,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -4668,7 +4668,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.23549528419971466,
+      "cos_dist_mean": 0.28343342741330463,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -4679,9 +4679,9 @@
       "model": "cubifae_baseline",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 1.0,
+      "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.06434512138366699,
+      "cos_dist_mean": 0.08249159653981526,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -4694,7 +4694,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.11719236274560292,
+      "cos_dist_mean": 0.06411079565684001,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -4707,7 +4707,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.0034582515557607016,
+      "cos_dist_mean": 0.0037793715794881186,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -4915,7 +4915,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.318143293261528,
+      "cos_dist_mean": 0.24791671335697174,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -4928,7 +4928,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.3333333333333333,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.11405658721923828,
+      "cos_dist_mean": 0.1345941424369812,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -4941,7 +4941,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.0016744335492451985,
+      "cos_dist_mean": 0.0009638071060180664,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -4954,7 +4954,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 2.3305416107177734e-05,
+      "cos_dist_mean": 1.2487173080444336e-05,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -5162,7 +5162,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.2779437303543091,
+      "cos_dist_mean": 0.38920070603489876,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -5175,7 +5175,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.06063768267631531,
+      "cos_dist_mean": 0.05378719170888265,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -5186,9 +5186,9 @@
       "model": "lewm_baseline_v2",
       "env_sr_mean": 1.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.6666666666666666,
+      "lewm_sr_mean": 0.3333333333333333,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.10252320766448975,
+      "cos_dist_mean": 0.13656439383824667,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -5201,7 +5201,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.04954155286153158,
+      "cos_dist_mean": 0.038025846083958946,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -5407,9 +5407,9 @@
       "model": "slt_lif_mpc_trace",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.3333333333333333,
+      "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.1765828231970469,
+      "cos_dist_mean": 0.08733200033505757,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -5422,7 +5422,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.06702473759651184,
+      "cos_dist_mean": 0.06361755728721619,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -5435,7 +5435,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.121391495068868,
+      "cos_dist_mean": 0.10091466705004375,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -5448,7 +5448,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.003931711117426555,
+      "cos_dist_mean": 0.004630148410797119,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -5654,9 +5654,9 @@
       "model": "slt_lif_mpc_free",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.0,
+      "lewm_sr_mean": 0.3333333333333333,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.17345789074897766,
+      "cos_dist_mean": 0.17854789892832437,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -5669,7 +5669,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.07763399680455525,
+      "cos_dist_mean": 0.05531473954518636,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -5682,7 +5682,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.07278479139010112,
+      "cos_dist_mean": 0.09181125958760579,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -5695,7 +5695,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.006452600161234538,
+      "cos_dist_mean": 0.0037262638409932456,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -5901,9 +5901,9 @@
       "model": "mlp_baseline",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.0,
+      "lewm_sr_mean": 0.3333333333333333,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.23143587509791055,
+      "cos_dist_mean": 0.1159152090549469,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -5914,9 +5914,9 @@
       "model": "mlp_baseline",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.6666666666666666,
+      "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.06822216510772705,
+      "cos_dist_mean": 0.06686697403589885,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -5929,7 +5929,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 7.3015689849853516e-06,
+      "cos_dist_mean": 1.1940797170003256e-05,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -6148,9 +6148,9 @@
       "model": "stjewm_trace_only",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.0,
+      "lewm_sr_mean": 0.3333333333333333,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.32260049879550934,
+      "cos_dist_mean": 0.14801262815793356,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -6161,9 +6161,9 @@
       "model": "stjewm_trace_only",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 1.0,
+      "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.06888272364934285,
+      "cos_dist_mean": 0.06421350439389546,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -6176,7 +6176,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.07846585909525554,
+      "cos_dist_mean": 0.07850895325342815,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -6189,7 +6189,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.004432509342829387,
+      "cos_dist_mean": 0.004552394151687622,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -6397,7 +6397,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.2451987067858378,
+      "cos_dist_mean": 0.2905205736557643,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -6410,7 +6410,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.06321547428766887,
+      "cos_dist_mean": 0.0540519654750824,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -6423,7 +6423,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.1169995665550232,
+      "cos_dist_mean": 0.08232364058494568,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -6436,7 +6436,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.0033214688301086426,
+      "cos_dist_mean": 0.005611727635065715,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -6644,7 +6644,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.3333333333333333,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.12120722730954488,
+      "cos_dist_mean": 0.23871260384718576,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -6657,7 +6657,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.07969339688618977,
+      "cos_dist_mean": 0.091769278049469,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -6670,7 +6670,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.05488651990890503,
+      "cos_dist_mean": 0.07764533162117004,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -6683,7 +6683,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.006135811408360799,
+      "cos_dist_mean": 0.007712443669637044,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -6889,9 +6889,9 @@
       "model": "stjewm_no_trace",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.0,
+      "lewm_sr_mean": 0.3333333333333333,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.13451757033665976,
+      "cos_dist_mean": 0.10385910669962566,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -6904,7 +6904,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.0745020608107249,
+      "cos_dist_mean": 0.09648589293162028,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -6917,7 +6917,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.08193928003311157,
+      "cos_dist_mean": 0.11606626212596893,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -6930,7 +6930,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.004015137751897176,
+      "cos_dist_mean": 0.010640054941177368,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -7138,7 +7138,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.4689390193670988,
+      "cos_dist_mean": 0.3657709211111069,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -7149,9 +7149,9 @@
       "model": "stjewm_hidden_leak",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.6666666666666666,
+      "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.10203956564267476,
+      "cos_dist_mean": 0.06322076916694641,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -7164,7 +7164,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.06987050175666809,
+      "cos_dist_mean": 0.0843228002389272,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -7177,7 +7177,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.008331855138142904,
+      "cos_dist_mean": 0.006304919719696045,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -7383,9 +7383,9 @@
       "model": "stjewm_membrane_readout",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.3333333333333333,
+      "lewm_sr_mean": 0.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.09241130948066711,
+      "cos_dist_mean": 0.2347922921180725,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -7398,7 +7398,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.3333333333333333,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.09807024399439494,
+      "cos_dist_mean": 0.0976267158985138,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -7411,7 +7411,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.05743494629859924,
+      "cos_dist_mean": 0.05198630690574646,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -7424,7 +7424,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.00546903411547343,
+      "cos_dist_mean": 0.011523922284444174,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -7632,7 +7632,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.3333333333333333,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.12199340264002483,
+      "cos_dist_mean": 0.14000758528709412,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -7643,9 +7643,9 @@
       "model": "cubifae_baseline",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.6666666666666666,
+      "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.07590596874554952,
+      "cos_dist_mean": 0.05639153718948364,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -7658,7 +7658,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.056901365518569946,
+      "cos_dist_mean": 0.07618234554926555,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -7671,7 +7671,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.003929356733957927,
+      "cos_dist_mean": 0.004038949807484944,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -7879,7 +7879,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.2764611542224884,
+      "cos_dist_mean": 0.414576714237531,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -7892,7 +7892,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.3333333333333333,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.14718266328175864,
+      "cos_dist_mean": 0.1267724335193634,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -7905,7 +7905,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.001037667195002238,
+      "cos_dist_mean": 0.001203775405883789,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -7918,7 +7918,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 2.8779109319051106e-05,
+      "cos_dist_mean": 2.051393191019694e-05,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -8124,9 +8124,9 @@
       "model": "lewm_baseline_v2",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.0,
+      "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.21050891280174255,
+      "cos_dist_mean": 0.11384617288907369,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -8139,7 +8139,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.07407523194948833,
+      "cos_dist_mean": 0.07881341377894084,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -8152,7 +8152,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.3333333333333333,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.12906708816687265,
+      "cos_dist_mean": 0.27707766741514206,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -8165,7 +8165,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.056791732708613075,
+      "cos_dist_mean": 0.03576843937238058,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -8371,9 +8371,9 @@
       "model": "slt_lif_mpc_trace",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.3333333333333333,
+      "lewm_sr_mean": 0.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.13717334469159445,
+      "cos_dist_mean": 0.26984033981959027,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -8384,9 +8384,9 @@
       "model": "slt_lif_mpc_trace",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 1.0,
+      "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.05792261163393656,
+      "cos_dist_mean": 0.08521565794944763,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -8399,7 +8399,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.08446025848388672,
+      "cos_dist_mean": 0.14744737247625986,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -8412,7 +8412,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.0037560065587361655,
+      "cos_dist_mean": 0.0032525062561035156,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -8620,7 +8620,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.1259607970714569,
+      "cos_dist_mean": 0.13550775249799094,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -8631,9 +8631,9 @@
       "model": "slt_lif_mpc_free",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 1.0,
+      "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.060421367486317955,
+      "cos_dist_mean": 0.07577132185300191,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -8646,7 +8646,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.6666666666666666,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.09516954918702443,
+      "cos_dist_mean": 0.13701063891251883,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -8659,7 +8659,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.003907630840937297,
+      "cos_dist_mean": 0.006929645935694377,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -8867,7 +8867,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 0.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.15590650836626688,
+      "cos_dist_mean": 0.18357575436433157,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -8878,9 +8878,9 @@
       "model": "mlp_baseline",
       "env_sr_mean": 0.0,
       "env_sr_std": 0.0,
-      "lewm_sr_mean": 0.6666666666666666,
+      "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 0.08264792958895366,
+      "cos_dist_mean": 0.05373705426851908,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -8893,7 +8893,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 6.943941116333008e-06,
+      "cos_dist_mean": 6.1194101969401044e-06,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null
@@ -8906,7 +8906,7 @@
       "env_sr_std": 0.0,
       "lewm_sr_mean": 1.0,
       "lewm_sr_std": 0.0,
-      "cos_dist_mean": 2.682209014892578e-07,
+      "cos_dist_mean": 1.3907750447591147e-07,
       "n_seeds_with_data": 1,
       "responsiveness_mean": null,
       "divergence_mean": null

@@ -112,7 +112,7 @@ Seeds: [0]. Cells: env-SR mean ± std across seeds, in [0, 100]. '-' = no data.
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | pusht_ood | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
 | tworoom_long | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
-| cartpole_flicker | 100.0 | 100.0 | 100.0 | 66.7 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| cartpole_flicker | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
 | cheetah_velhidden | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
 
 ## 3. Per-model summary (env-SR AVG, collapse-gap, responsiveness, divergence)
@@ -129,7 +129,7 @@ Columns:
 | stjewm_trace_only | 71.1/71.1/71.1 | -15.6/-13.3/-4.4 | 50.0/50.0/50.0 | 0.206/0.210/0.207 | 0.0117/0.0122/0.0112 |
 | stjewm_spike_only | 73.3/71.1/73.3 | -13.3/-13.3/-6.7 | 50.0/50.0/50.0 | 0.210/0.200/0.207 | 0.0111/0.0074/0.0122 |
 | stjewm_rate_only | 71.1/73.3/71.1 | -11.1/-11.1/-11.1 | 50.0/50.0/50.0 | 0.206/0.208/0.209 | 0.0119/0.0092/0.0129 |
-| stjewm_no_trace | 75.6/71.1/71.1 | -20.0/-26.7/-8.9 | 50.0/50.0/41.7 | 0.201/0.202/0.196 | 0.0112/0.0114/0.0114 |
+| stjewm_no_trace | 75.6/71.1/71.1 | -20.0/-26.7/-8.9 | 50.0/50.0/50.0 | 0.201/0.202/0.196 | 0.0112/0.0114/0.0114 |
 | stjewm_hidden_leak | 71.1/71.1/71.1 | -15.6/-11.1/-15.6 | 50.0/50.0/50.0 | 0.202/0.202/0.206 | 0.0125/0.0114/0.0125 |
 | stjewm_membrane_readout | 73.3/75.6/73.3 | -17.8/-17.8/-22.2 | 50.0/50.0/50.0 | 0.210/0.205/0.207 | 0.0117/0.0099/0.0121 |
 | cubifae_baseline | 73.3/73.3/73.3 | -15.6/-13.3/-17.8 | 50.0/50.0/50.0 | 0.215/0.211/0.215 | 0.0110/0.0117/0.0121 |
@@ -141,7 +141,7 @@ Columns:
 
 ## 4. Headline takeaways (v0.7.5 — corrected metrics)
 
-**Three distinct non-spiking failure modes are now visible.** With the collapse-robust `divergence` metric, the 3 non-spiking baselines separate into 3 categories that the v0.7.4 `gap` metric could not distinguish:
+**Three distinct non-spiking failure modes are now visible.** With the collapse-robust `divergence` metric, the 3 non-spiking baselines separate into 3 categories that the v0.7.5 `gap` metric could not distinguish:
 
 | model | div | interpretation |
 |---|---|---|
@@ -152,13 +152,13 @@ Columns:
 | **gru_baseline** | 0.008 | noise (responsiveness 30, but ρ ≈ 0) |
 | **lewm_baseline_v2** | **0.186** | over-reactive (Transformer amplifies obs) |
 
-**STJEWM is the only family that is simultaneously (a) responsive to obs, (b) not collapsed, and (c) event-aligned (ρ ≥ 0.99 from v0.7.4 §9.3).**
+**STJEWM is the only family that is simultaneously (a) responsive to obs, (b) not collapsed, and (c) event-aligned (ρ ≥ 0.99 from v0.7.5 §9.3).**
 
-**The `LeWM-SR` column in v0.7.4 §9.5 was collapse-inflatable.** MLP's LeWM-SR was 95.6% not because it plans well, but because the constant latent satisfies `cos_dist < 0.1` for any goal. The new `divergence` metric catches this: MLP's `div = 0.0002` is **50× lower** than STJEWM's. The v0.7.4 `gap` column (LeWM-SR − env-SR) was already a collapse-robust proxy and confirms the signal (MLP gap = +24.4, STJEWM gap = −15.6), but it doesn't show the *magnitude* of the collapse — `divergence` does.
+**The `LeWM-SR` column in v0.7.5 §9.5 was collapse-inflatable.** MLP's LeWM-SR was 95.6% not because it plans well, but because the constant latent satisfies `cos_dist < 0.1` for any goal. The new `divergence` metric catches this: MLP's `div = 0.0002` is **50× lower** than STJEWM's. The v0.7.5 `gap` column (LeWM-SR − env-SR) was already a collapse-robust proxy and confirms the signal (MLP gap = +24.4, STJEWM gap = −15.6), but it doesn't show the *magnitude* of the collapse — `divergence` does.
 
-**GRU's `divergence` is similar to STJEWM (0.008 vs 0.011), but its `responsiveness` is 150× higher (31.1 vs 0.2).** GRU's latent is *noisy* — the per-dim std is normal, but the per-step changes are 150× larger. Combined with v0.7.4's ρ ≈ −0.07, this is the signature of an uncorrelated noisy latent, not collapse.
+**GRU's `divergence` is similar to STJEWM (0.008 vs 0.011), but its `responsiveness` is 150× higher (31.1 vs 0.2).** GRU's latent is *noisy* — the per-dim std is normal, but the per-step changes are 150× larger. Combined with v0.7.5's ρ ≈ −0.07, this is the signature of an uncorrelated noisy latent, not collapse.
 
-**LeWM's `responsiveness` is 150× STJEWM and `divergence` is 16× STJEWM (0.186 vs 0.011).** LeWM is *not* collapsed — it's over-reactive, with a latent that amplifies obs events by an order of magnitude. Combined with v0.7.4's ρ = 0.52, this is the signature of a Transformer that tracks obs events but with a poorly conditioned response surface.
+**LeWM's `responsiveness` is 150× STJEWM and `divergence` is 16× STJEWM (0.186 vs 0.011).** LeWM is *not* collapsed — it's over-reactive, with a latent that amplifies obs events by an order of magnitude. Combined with v0.7.5's ρ = 0.52, this is the signature of a Transformer that tracks obs events but with a poorly conditioned response surface.
 
-**On env-native success rate (v0.7.4 §9.1) all 12 models are within ±4pp of each other.** The new metrics do not change that ranking — STJEWM still doesn't win env-SR. The new finding is that the *quality* of the latent representation is dramatically different across families, and only STJEWM has a calibrated, responsive, non-collapsed, event-aligned latent.
+**On env-native success rate (v0.7.5 §9.1) all 12 models are within ±4pp of each other.** The new metrics do not change that ranking — STJEWM still doesn't win env-SR. The new finding is that the *quality* of the latent representation is dramatically different across families, and only STJEWM has a calibrated, responsive, non-collapsed, event-aligned latent.
 
