@@ -87,7 +87,16 @@ for model in models:
                     "--max-windows", "1000",
                 ]
                 print(f"[probe] {SUITE} {model} seed={seed} {env_id} {target}", flush=True)
-                rc = subprocess.call(cmd)
+                # Per-cell 5-minute wallclock timeout (same rationale as
+                # run_probes.sh).
+                try:
+                    rc = subprocess.call(cmd, timeout=300)
+                except subprocess.TimeoutExpired:
+                    print(f"[WARN] stress_probe {SUITE}/{model}/{env_id}/{target} "
+                          f"timed out at 5min; writing skip-stub", file=sys.stderr, flush=True)
+                    with open(out, "w") as f:
+                        f.write('{"skipped": true, "reason": "timeout 5min"}')
+                    rc = -1
                 if rc != 0:
                     print(f"[WARN] probe for {SUITE}/{model}/{env_id}/{target} exited rc={rc}", file=sys.stderr, flush=True)
                 if os.path.exists(out):

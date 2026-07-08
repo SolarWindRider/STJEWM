@@ -90,7 +90,18 @@ for model in models:
                     "--max-windows", "1000",
                 ]
                 print(f"[probe] {SUITE} {model} seed={seed} {env_id} {target}", flush=True)
-                rc = subprocess.call(cmd)
+                # pathological (model, env) pair can spin indefinitely
+                # (e.g. stjewm_rate_only × tworoom_long × event_high_motion
+                # in v0.7.5). We hard-cap each cell to keep the
+                # suite-level pipeline making forward progress.
+                try:
+                    rc = subprocess.call(cmd, timeout=300)
+                except subprocess.TimeoutExpired:
+                    print(f"[WARN] probe {SUITE}/{model}/{env_id}/{target} "
+                          f"timed out at 5min; writing skip-stub", file=sys.stderr, flush=True)
+                    with open(out, "w") as f:
+                        f.write('{"skipped": true, "reason": "timeout 5min"}')
+                    rc = -1
                 if rc != 0:
                     print(f"[WARN] probe for {SUITE}/{model}/{env_id}/{target} exited rc={rc}", file=sys.stderr, flush=True)
                 if os.path.exists(out):
