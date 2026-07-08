@@ -1,16 +1,17 @@
 #!/bin/bash
-# Run event-align ρ for every (model, dmc_env) cell.
+# Run event-align ρ on the 4 stress envs (pusht_ood / tworoom_long
+# / cartpole_flicker / cheetah_velhidden) for every generalist
+# (model, env) cell.
 #
 # Usage:
-#   ./run_align.sh <suite_name> [n_seeds]
+#   ./run_stress_align.sh <suite_name> [n_seeds]
 #
-# 6 DMC envs × 12 models × N_SEEDS = up to 216 runs. SUITE selects
-# which trained ckpts to load:
+# SUITE selects which trained ckpts to load:
 #   G4  -> results/generalist/<model>/seed_<s>/final.pt
 #   G8  -> results/generalist_G8/<model>/seed_<s>/final.pt
 #   G16 -> results/generalist_G16/<model>/seed_<s>/final.pt
 #
-# Output goes to results/<suite>/event_align/<env>_<model>_seed<s>.json.
+# Output goes to results/<suite>/stress_align/<env>_<model>_seed<s>.json.
 set -e
 cd /home/lx/snn
 
@@ -23,7 +24,7 @@ case "$SUITE" in
     *) echo "Usage: $0 <G4|G8|G16> [n_seeds]"; exit 2 ;;
 esac
 
-DMC_ENVS=(cheetah walker cartpole_2d pendulum_2d finger ball_in_cup)
+STRESS_ENVS=(pusht_ood tworoom_long cartpole_flicker cheetah_velhidden)
 MODELS=(
     stjewm_trace_only
     stjewm_spike_only
@@ -39,13 +40,13 @@ MODELS=(
     mlp_baseline
 )
 
-ALIGN_BASE=/home/lx/snn/results/${SUITE_DIR}/event_align
+ALIGN_BASE=/home/lx/snn/results/${SUITE_DIR}/stress_align
 CKPT_BASE=/home/lx/snn/results/$SUITE_DIR
 mkdir -p "$ALIGN_BASE"
 
 /home/lx/miniconda3/envs/snn/bin/python - <<PY
-import json, os, subprocess, sys
-dmc_envs = ["cheetah", "walker", "cartpole_2d", "pendulum_2d", "finger", "ball_in_cup"]
+import os, subprocess, sys
+stress_envs = ["pusht_ood", "tworoom_long", "cartpole_flicker", "cheetah_velhidden"]
 models = ["stjewm_trace_only","stjewm_spike_only","stjewm_rate_only","stjewm_no_trace",
           "stjewm_hidden_leak","stjewm_membrane_readout","cubifae_baseline",
           "gru_baseline","lewm_baseline_v2","slt_lif_mpc_trace","slt_lif_mpc_free",
@@ -63,7 +64,7 @@ for model in models:
         if not os.path.exists(ckpt):
             print(f"[skip] {model}/seed_{seed} (no ckpt)", flush=True)
             continue
-        for env in dmc_envs:
+        for env in stress_envs:
             base = f"{env}_{model}_seed{seed}"
             out = os.path.join(align_base, base + ".json")
             if os.path.exists(out):

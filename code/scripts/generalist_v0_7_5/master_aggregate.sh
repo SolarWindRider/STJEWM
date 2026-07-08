@@ -24,7 +24,7 @@ done
 /home/lx/miniconda3/envs/snn/bin/python -m code.scripts.aggregate_analysis \
     || echo "[master_aggregate] aggregate_analysis skipped (no probe/align data yet)"
 
-/home/lx/miniconda3/envs/snn/bin/python -m code.scripts.generalist_v0.7.5.aggregate_master \
+/home/lx/miniconda3/envs/snn/bin/python -m code.scripts.generalist_v0_7_5.aggregate_master \
     --suite "$SUITE" $PROBES $ALIGN
 
 echo "[master_aggregate] done"

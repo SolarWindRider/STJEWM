@@ -23,23 +23,45 @@ sys.path.insert(0, "/home/lx/snn")
 
 ENV_DATA = {
     # env_name: data_path used to determine state/action dims
-    "cheetah":     "/home/lx/snn/data/dm_control/3d_rollouts_250k/cheetah_250k.npz",
-    "walker":      "/home/lx/snn/data/dm_control/3d_rollouts_250k/walker_250k.npz",
-    "cartpole_2d": "/home/lx/snn/data/dm_control/cartpole_250k.npz",
-    "pendulum_2d": "/home/lx/snn/data/dm_control/pendulum_250k.npz",
-    "finger":      "/home/lx/snn/data/dm_control/3d_rollouts_250k/finger_250k.npz",
-    "ball_in_cup": "/home/lx/snn/data/dm_control/3d_rollouts_250k/ball_in_cup_250k.npz",
+    "cheetah":          "/home/lx/snn/data/dm_control/3d_rollouts_250k/cheetah_250k.npz",
+    "walker":           "/home/lx/snn/data/dm_control/3d_rollouts_250k/walker_250k.npz",
+    "cartpole_2d":      "/home/lx/snn/data/dm_control/cartpole_250k.npz",
+    "pendulum_2d":      "/home/lx/snn/data/dm_control/pendulum_250k.npz",
+    "finger":           "/home/lx/snn/data/dm_control/3d_rollouts_250k/finger_250k.npz",
+    "ball_in_cup":      "/home/lx/snn/data/dm_control/3d_rollouts_250k/ball_in_cup_250k.npz",
+    # Stress envs share the underlying env data; the clo env
+    # decides which closure flags are applied. ENV_KIND_MAP below
+    # pins each stress env to the closed_loop env kind that
+    # adversarial-mask settings are implemented for.
+    "pusht_ood":        "/home/lx/LeWM/data/pusht_expert_train.h5",
+    "tworoom_long":     "/home/lx/LeWM/data/tworoom_extract/tworoom.h5",
+    "cartpole_flicker": "/home/lx/snn/data/dm_control/cartpole_250k.npz",
+    "cheetah_velhidden":"/home/lx/snn/data/dm_control/3d_rollouts_250k/cheetah_250k.npz",
 }
 
 # Map our event_align env names to the env_kind expected by make_env.
 # All DMC envs in DMC_ENVS use their env_kind as the key in make_env.
 ENV_KIND_MAP = {
-    "cartpole_2d": "cartpole",
-    "pendulum_2d": "pendulum",
-    "finger":      "finger",
-    "ball_in_cup": "ball_in_cup",
-    "cheetah":     "cheetah",
-    "walker":      "walker",
+    "cartpole_2d":      "cartpole",
+    "pendulum_2d":      "pendulum",
+    "finger":           "finger",
+    "ball_in_cup":      "ball_in_cup",
+    "cheetah":          "cheetah",
+    "walker":           "walker",
+    "pusht_ood":        "pusht",
+    "tworoom_long":     "tworoom",
+    "cartpole_flicker": "cartpole",
+    "cheetah_velhidden":"cheetah",
+}
+
+# Stress-env closures (event_align simulates the same way closed_loop
+# does, but only for the observation stream — perturbation isn't
+# applied here because event definition is observation-level).
+STRESS_FLAGS = {
+    "pusht_ood":        ["--split", "unseen_goal"],
+    "tworoom_long":     ["--goal-offset", "200"],
+    "cartpole_flicker": ["--flicker-mask-ratio", "0.5"],
+    "cheetah_velhidden":["--vel-hidden-mask-obs-ratio", "0.0"],
 }
 
 

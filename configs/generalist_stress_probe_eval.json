@@ -1,0 +1,14 @@
+[
+  {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/cheetah_250k.npz", "history_size": 1, "goal_offset": 25, "env_id": "cheetah_velhidden",
+   "clo_env": "cheetah", "extra_flags": ["--vel-hidden-mask-obs-ratio", "0.0"],
+   "probe_targets": ["event_contact", "event_high_motion", "event_future_k10"]},
+  {"env_kind": "pusht", "path": "/home/lx/LeWM/data/pusht_expert_train.h5", "history_size": 1, "goal_offset": 100, "env_id": "pusht_ood",
+   "clo_env": "pusht", "extra_flags": ["--split", "unseen_goal"],
+   "probe_targets": ["event_contact", "event_block_near_target", "event_future_k10"]},
+  {"env_kind": "tworoom", "path": "/home/lx/LeWM/data/tworoom_extract/tworoom.h5", "history_size": 1, "goal_offset": 200, "env_id": "tworoom_long",
+   "clo_env": "tworoom", "extra_flags": ["--goal-offset", "200"],
+   "probe_targets": ["event_room_entered", "event_high_motion", "event_future_k5"]},
+  {"env_kind": "dmc", "path": "data/dm_control/cartpole_250k.npz", "history_size": 1, "goal_offset": 25, "env_id": "cartpole_flicker",
+   "clo_env": "cartpole", "extra_flags": ["--flicker-mask-ratio", "0.5"],
+   "probe_targets": ["event_contact", "event_persistent", "event_future_k10"]}
+]
