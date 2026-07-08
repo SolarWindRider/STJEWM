@@ -265,8 +265,7 @@ python -m code.scripts.generalist_v0_7_5.render_master_table
 | Generalist event-align ρ (G4/G8/G16 × 6 DMC envs) | done | `results/aggregate/generalist_align_table.md` (consolidated) |
 | **v0.7.5 collapse-robust metrics** (responsiveness, divergence-from-constant, 36 ckpts × 6 DMC envs) | done | `MASTER_TABLE.md` §9.5–§9.7, `results/aggregate/generalist_master_table.md` |
 | Multi-seed std bars on generalist eval | deferred | wallclock cost; 1-seed numbers reported honestly |
-| Paper PDF | v0.7.5 done | `paper/paper.pdf` |
-
+| **G8/G16 stress re-eval** (re-using G-suite-trained ckpts on stress envs, not G4 ckpts) | **partial** | v0.7.5 `eval_stress.sh` was hard-coded to `results/generalist/` — G8 stress and G16 stress eval JSONs existed but they were actually eval of the **G4** ckpts, not the G8/G16-trained ones. **Fixed in audit** (`eval_stress.sh` now keys `OUT_BASE` by suite), **rerun needed** to align tables. Until rerun, all published "G8 stress" and "G16 stress" rows in `MASTER_TABLE.md` §9.1-§9.5 use the G4 ckpt. |
 See `MASTER_TABLE.md` §10 for the full claim ladder. Top claims:
 
 - **STJEWM is competitive on env-SR** — SUPPORTED (env-SR std 67.1 vs best 69.5, ≤2.4pp gap).

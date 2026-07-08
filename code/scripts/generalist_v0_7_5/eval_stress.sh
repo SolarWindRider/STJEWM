@@ -6,7 +6,12 @@
 #
 # Iterates the 12 model variants and re-evaluates them against
 # configs/generalist_G4_stress.json, writing to
-# results/generalist_stress/<model>/seed_<s>/eval_<env>.json.
+# results/generalist_<suite>_stress/<model>/seed_<s>/eval_<env>.json.
+#
+# The SUITE arg selects which suite's training ckpt is loaded:
+#   G4  -> results/generalist/<model>/seed_0/final.pt
+#   G8  -> results/generalist_G8/<model>/seed_0/final.pt
+#   G16 -> results/generalist_G16/<model>/seed_0/final.pt
 set -e
 cd /home/lx/snn
 
@@ -27,18 +32,30 @@ MODELS=(
     mlp_baseline
 )
 
-OUT_BASE=/home/lx/snn/results/generalist
+# Map SUITE -> ckpt dir (under results/) and to stress-output dir.
+# The stress output dir is keyed by suite because G4/G8/G16-trained
+# ckpts may have meaningfully different stress behaviour.
+case "$SUITE" in
+    G4)  SUITE_DIR="generalist";        STRESS_DIR="generalist_stress" ;;
+    G8)  SUITE_DIR="generalist_G8";      STRESS_DIR="generalist_G8_stress" ;;
+    G16) SUITE_DIR="generalist_G16";     STRESS_DIR="generalist_G16_stress" ;;
+    *) echo "Usage: $0 <G4|G8|G16> [n_seeds]"; exit 2 ;;
+esac
+
+CKPT_BASE=/home/lx/snn/results/$SUITE_DIR
+OUT_BASE=/home/lx/snn/results/$STRESS_DIR
+mkdir -p "$OUT_BASE"
 
 for MODEL in "${MODELS[@]}"; do
     for ((SEED=0; SEED<N_SEEDS; SEED++)); do
-        CKPT="$OUT_BASE/$MODEL/seed_$SEED/final.pt"
+        CKPT="$CKPT_BASE/$MODEL/seed_$SEED/final.pt"
         if [[ ! -f "$CKPT" ]]; then
-            echo "[eval_stress] skip $MODEL seed=$SEED (no ckpt)"
+            echo "[eval_stress] skip $MODEL seed=$SEED (no ckpt at $CKPT)"
             continue
         fi
         echo ""
         echo "============================================="
-        echo "[eval_stress] $SUITE / $MODEL / seed=$SEED"
+        echo "[eval_stress] $SUITE / $MODEL / seed=$SEED  (ckpt=$CKPT)"
         echo "============================================="
         bash code/scripts/generalist_v0.7.5/eval_closed_loop_one.sh \
             "$MODEL" "$CKPT" configs/generalist_G4_stress.json "$SEED"
@@ -46,4 +63,6 @@ for MODEL in "${MODELS[@]}"; do
 done
 
 /home/lx/miniconda3/envs/snn/bin/python -m code.scripts.generalist_v0.7.5.aggregate_master \
-    --suite "$SUITE-stress"
+    --suite "$SUITE-stress" \
+    --results-dir "$SUITE_DIR" \
+    --stress-dir "$STRESS_DIR"
