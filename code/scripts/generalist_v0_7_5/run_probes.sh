@@ -55,6 +55,7 @@ models = ["stjewm_trace_only","stjewm_spike_only","stjewm_rate_only","stjewm_no_
 n_seeds = int(os.environ.get("N_SEEDS", "3"))
 pad = 128
 action_dim = 56
+SUITE = "$SUITE"   # mirror shell var into python scope
 suite = "$SUITE"
 probe_base = "$PROBE_BASE"
 alt_base = "$ALT_BASE"

@@ -1,7 +1,7 @@
 [
-  {"env_kind": "dmc", "path": "data/dm_control/cartpole_250k.npz", "history_size": 1, "goal_offset": 25, "env_id": "cartpole_2d", "clo_env": "cartpole",
+  {"env_kind": "dmc", "path": "data/dm_control/cartpole_250k.npz", "history_size": 1, "goal_offset": 25, "env_id": "cartpole_2d", "clo_env": "cartpole_2d",
    "probe_targets": ["event_contact", "event_persistent", "event_high_motion", "event_low_motion", "event_future_k5", "event_future_k10", "event_vel_above_median"]},
-  {"env_kind": "dmc", "path": "data/dm_control/pendulum_250k.npz", "history_size": 1, "goal_offset": 25, "env_id": "pendulum_2d", "clo_env": "pendulum",
+  {"env_kind": "dmc", "path": "data/dm_control/pendulum_250k.npz", "history_size": 1, "goal_offset": 25, "env_id": "pendulum_2d", "clo_env": "pendulum_2d",
    "probe_targets": ["event_contact", "event_persistent", "event_high_motion", "event_low_motion", "event_future_k5", "event_future_k10", "event_vel_above_median"]},
   {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/cheetah_250k.npz", "history_size": 1, "goal_offset": 25, "env_id": "cheetah",
    "probe_targets": ["event_contact", "event_persistent", "event_high_motion", "event_low_motion", "event_future_k5", "event_future_k10", "event_vel_above_median"]},

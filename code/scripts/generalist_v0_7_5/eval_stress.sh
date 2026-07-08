@@ -61,10 +61,8 @@ for MODEL in "${MODELS[@]}"; do
         OUT_BASE="/home/lx/snn/results/$SUITE_DIR" \
         bash code/scripts/generalist_v0_7_5/eval_closed_loop_one.sh \
             "$MODEL" "$CKPT" configs/generalist_G4_stress.json "$SEED"
-
-# (Path uses underscore "generalist_v0_7_5" — matches the actual folder
-# under code/scripts/. Older scripts sometimes used dot "v0.7.5" which
-# resolved through the old v0.7.3 alias and would break.)
+    done
+done
 
 /home/lx/miniconda3/envs/snn/bin/python -m code.scripts.generalist_v0_7_5.aggregate_master \
     --suite "$SUITE-stress" \
