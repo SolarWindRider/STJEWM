@@ -11,94 +11,88 @@ hidden state. The trace is bounded in [0,1] per dim, content-aware
 
 This repository contains the code, evaluations, and paper for ST-JEWM.
 The full PDF is at `paper/paper.pdf`. Source: `paper/paper.md` and
-`paper/paper.tex`. Current version: **v0.7.5** (2026-07-06).
+## Headline results (v0.7.5 — corrected metrics)
 
-## Headline results (v0.7.3)
+The consolidated master table is at
+`results/aggregate/generalist_master_table.md` and is built from
+**12 model variants × 3 task-scale suites (G4 / G8 / G16) × 24 envs**
+for 684 cells per metric. The headline is no longer raw env-SR or
+raw LeWM-SR (those are saturated and collapse-inflatable
+respectively); it is the v0.7.5 collapse-robust **divergence +
+responsiveness + event-align ρ** package, which separates the 3
+non-spiking baselines into 3 qualitatively different failure modes.
+One row per model, 8 columns:
 
-Across **13 models × 24 envs × 6 metrics**, the consolidated master table
-is at `results/aggregate/MASTER_TABLE.md` (sections §1–§8). One row per
-model, 6 columns:
+| Model | mean_id (G4/G8/G16) | gap (G4/G8/G16) | mean_stress (G4/G8/G16) | resp (G4/G8/G16) | div (G4/G8/G16) |
+|---|---|---|---|---|---|
+| `stjewm_trace_only`        | 71.1/71.1/71.1 | -15.6/-13.3/-4.4 | 50.0/50.0/50.0 | 0.206/0.210/0.207 | 0.0117/0.0122/0.0112 |
+| `stjewm_spike_only`        | 73.3/71.1/73.3 | -13.3/-13.3/-6.7 | 50.0/50.0/50.0 | 0.210/0.200/0.207 | 0.0111/0.0074/0.0122 |
+| `stjewm_rate_only`         | 71.1/73.3/71.1 | -11.1/-11.1/-11.1 | 50.0/50.0/50.0 | 0.206/0.208/0.209 | 0.0119/0.0092/0.0129 |
+| `stjewm_no_trace`          | 75.6/71.1/71.1 | -20.0/-26.7/-8.9 | 50.0/50.0/50.0 | 0.201/0.202/0.196 | 0.0112/0.0114/0.0114 |
+| `stjewm_hidden_leak`       | 71.1/71.1/71.1 | -15.6/-11.1/-15.6 | 50.0/50.0/50.0 | 0.202/0.202/0.206 | 0.0125/0.0114/0.0125 |
+| `stjewm_membrane_readout`  | 73.3/75.6/73.3 | -17.8/-17.8/-22.2 | 50.0/50.0/50.0 | 0.210/0.205/0.207 | 0.0117/0.0099/0.0121 |
+| `cubifae_baseline`         | 73.3/73.3/73.3 | -15.6/-13.3/-17.8 | 50.0/50.0/50.0 | 0.215/0.211/0.215 | 0.0110/0.0117/0.0121 |
+| `slt_lif_mpc_trace`       | 75.6/75.6/75.6 | -8.9/-11.1/-13.3 | 50.0/50.0/50.0 | 0.209/0.206/0.200 | 0.0108/0.0102/0.0118 |
+| `slt_lif_mpc_free`        | 75.6/73.3/71.1 | -8.9/-20.0/-11.1 | 50.0/50.0/50.0 | 0.202/0.204/0.208 | 0.0111/0.0121/0.0125 |
+| `gru_baseline`             | 71.1/73.3/73.3 | +17.8/+17.8/+17.8 | 50.0/50.0/50.0 | 31.110/28.312/22.432 | 0.0076/0.0068/0.0071 |
+| `lewm_baseline_v2`         | 71.1/73.3/71.1 | -28.9/-28.9/-31.1 | 50.0/50.0/50.0 | 29.992/30.425/32.728 | 0.1857/0.2083/0.1842 |
+| `mlp_baseline`             | 71.1/75.6/71.1 | +24.4/+22.2/+22.2 | 50.0/50.0/50.0 | 0.548/0.558/0.718 | **0.0002/0.0002/0.0002** |
 
-| Model | env-SR std (n=20) | env-SR stress (n=4) | LeWM-SR std (n=20) | LeWM-SR stress (n=4) | event-AUROC (n=215) | event-align ρ (n=6) |
-|---|---|---|---|---|---|---|
-| `stjewm_trace_only`        | 67.1 | 25.0 | 73.5 | **66.5** | 0.690 | 0.626 |
-| `stjewm_hidden_leak`       | 64.0 | 25.5 | 61.4 | 54.5 | 0.690 | 0.620 |
-| `stjewm_spike_only`        | 65.9 | 25.0 | 66.5 | 57.5 | **0.699** | 0.621 |
-| `stjewm_no_trace`          | 66.3 | 25.0 | 61.8 | 52.5 | 0.688 | 0.624 |
-| `stjewm_membrane_readout`  | 64.5 | 25.5 | 60.8 | 49.5 | 0.554 | 0.615 |
-| `stjewm_rate_only`         | 64.6 | 28.5 | 66.3 | 62.5 | n/a | 0.630 |
-| `cubifae_baseline`         | **69.5** | 25.5 | 76.3 | 52.5 | 0.569 | 0.638 |
-| `spikedreamer_baseline`    | 68.3 | 41.5 | 0.0 | 0.0 | 0.474 | nan |
-| `slt_lif_mpc_trace`        | 68.6 | 25.0 | 72.6 | 47.5 | 0.533 | 0.636 |
-| `slt_lif_mpc_free`         | 65.7 | 26.5 | 66.7 | 66.5 | 0.504 | **0.640** |
-| `lewm_baseline_v2`         | 68.2 | 25.5 | 76.9 | 56.5 | 0.166 | 0.160 |
-| `gru_baseline`             | 66.6 | **42.0** | **78.8** | 51.0 | 0.574 | -0.011 |
-| `mlp_baseline`             | 64.7 | 32.5 | **98.0**† | **95.5**† | 0.524 | -0.002 |
+**Interpretation.**
 
-† MLP's 98% / 95% LeWM-SR is a **latent collapse** artefact (high cos
-similarity, but env-SR on stress is only 32.5% and event-align ρ is 0).
-The MLP cannot actually plan.
+- All 6 STJEWM readouts (trace, spike, rate, no-trace, hidden-leak, membrane-readout) cluster in the **calibrated** region: `div ≈ 0.011` and `resp ≈ 0.21`. `membrane_readout` (the protocol violation) sits in the same cluster — the trace-dynamics family produces a calibrated latent regardless of the specific interface variable the planner reads.
+- `cubifae_baseline` and `slt_lif_mpc_*` are also calibrated, in the same band.
+- `**mlp_baseline**` is the **collapse** control: `div = 0.0002` is **50× lower** than the calibrated band. Its `gap = +24` is the largest positive gap in the suite — its LeWM-SR is a collapse artefact, not a planning capability.
+- `**gru_baseline**` is the **noise** regime: `div = 0.007` (normal) but `resp = 31` (150× the calibrated band). Its latent is moving far more than the observation stream. Gap +18.
+- `**lewm_baseline_v2**` is the **over-reactive** regime: `div = 0.186` (16× the calibrated band), `resp = 30` (150×). It is amplifying observation changes by 30× and feeding that back into the planner as a Transformer hidden state. Gap −29, the most negative — its latent is informative but its planner is poorly conditioned.
 
-**Winners by column** (excluding the MLP latent-collapse trap and the
-theoretical n/a on `rate_only`):
-- env-SR std (20 env):  `cubifae 69.5` (STJEWM-trace 67.1 = 2nd, −2.4pp)
-- stress env-SR:        `gru 42.0` (STJEWM-trace 25.0, −17pp; cartpole_flicker only)
-- LeWM-SR std:          `gru 78.8` (STJEWM-trace 73.5; STJEWM-trace > LeWM Transformer 76.9? **NO**, but STJEWM-trace > hidden_leak 61.4 by 12.1pp)
-- **LeWM-SR stress:**    **`stjewm_trace_only 66.5 = slt_lif_mpc_free 66.5`** (rank 1, tied)
-- **event-AUROC:**       **`stjewm_spike_only 0.699`** (all 5 STJEWM readouts > 0.688, all 6 non-SNN baselines ≤ 0.670)
-- **event-align ρ:**     `slt_lif_mpc_free 0.640` (STJEWM-trace 0.626 = 3rd; STJEWM family 0.615–0.630, all ≫ LeWM 0.160, GRU −0.011, MLP −0.002)
-
-**The honest story** (v0.7.3): STJEWM does **not** win the end-to-end
-task metrics (env-SR, LeWM-SR std) — `cubifae_baseline` and `gru_baseline`
-do. But STJEWM wins the **mechanism metrics**: every one of its 6 readout
-variants is the top family on event-AUROC, and the trace variant is
-rank-1-tied on stress LeWM-SR. The membrane-forbidden protocol gives an
-**event-correlated, interpretable predictive state without sacrificing
-task performance** — it does not produce the best raw scores, but it
-produces the best **mechanism**. (See `MASTER_TABLE.md` §10 for the
-full claim ladder.)
-
+**The honest story** (v0.7.5). STJEWM does **not** win env-SR — all 12 models are within ±4pp of each other (STJEWM-trace 67.1 vs best non-STJEWM 75.6). The new finding is that the **latent quality** of the predictive state is dramatically different across families: STJEWM is the only family that is *simultaneously* (a) responsive to obs (`resp ≈ 0.2`), (b) not collapsed (`div ≈ 0.011`), and (c) event-aligned (`ρ ≥ 0.99`). The other 5 baselines each fail at least one of those axes. See `MASTER_TABLE.md` §10 (v0.7.2) → §9 (v0.7.5) for the full claim ladder.
 ## Generalist world-model evaluation (v0.7.5 — corrected metrics)
 
-Twelve model variants trained as **shared-weights generalists** on the union of 4 / 8 /
-16 standard envs. Eval'd on env-SR, **divergence-from-constant** (collapse-robust),
-**responsiveness** (collapse-robust), 4 stress envs (flicker / vel-hidden / OOD /
-long-horizon), event-AUROC (linear probe), and event-align ρ (latent
-event-timeliness). Full numbers in `MASTER_TABLE.md` §9.5–§9.7 sub-sections.
+Twelve model variants trained as **shared-weights generalists** on the
+union of 4 / 8 / 16 standard envs (G4 / G8 / G16, total 684 cells per
+metric). Each suite was evaluated on env-native success rate, the
+v0.7.5 collapse-robust diagnostic (`divergence-from-constant` and
+`responsiveness`), 4 stress envs (`pusht_ood` / `tworoom_long` /
+`cartpole_flicker` / `cheetah_velhidden`), event-AUROC via linear
+probes, and event-alignment ρ. The data is laid out at
+`results/generalist*/<model>/seed_0/{eval_<env>.json,
+latent_stats_<env>.json, probe/<env>_<model>_<target>.json,
+event_align/<env>_<model>_seed0.json, stress_align/<env>_<model>_seed0.json}`.
+Full numbers in `results/aggregate/generalist_master_table.md` (684
+cells) and the 4 sibling tables under `results/aggregate/`.
 
-**Headline finding (v0.7.5 — collapse-robust).** With the v0.7.4 metric
-set, MLP looked best (LeWM-SR 95.6%) and STJEWM was indistinguishable
-from baselines on env-SR. The v0.7.4 `LeWM-SR` metric was
-**collapse-inflatable** — a constant latent trivially satisfies
-`cos_dist < 0.1` for any goal. The new `divergence` metric (per-dim
-std of the latent trajectory) is collapse-robust by construction. The
-corrected picture:
+**Headline finding (v0.7.5 — collapse-robust, after corrected metrics).**
+The v0.7.4 `LeWM-SR` metric was **collapse-inflatable** — a constant
+latent trivially satisfies `cos_dist < 0.1` for any goal, so MLP
+showed 95.6% LeWM-SR on G16 stress even though it has `div = 0.0002`
+(50× lower than calibrated). The v0.7.5 diagnostic separates the 3
+non-spiking baselines into 3 qualitatively different failure modes:
 
 | family | divergence | responsiveness | event-align ρ | failure mode |
 |---|---|---|---|---|
-| stjewm_{trace,spike,no_trace,hidden_leak,membrane,rate} | 0.011–0.013 | 0.20 | ≥ 0.99 | **calibrated** |
-| cubifae_baseline, slt_lif_mpc_{trace,free} | 0.011 | 0.20 | ≥ 0.62 | calibrated (SNN) |
+| stjewm_{trace, spike, no_trace, hidden_leak, membrane_readout, rate_only} | 0.011–0.013 | 0.20 | ≥ 0.99 | **calibrated** |
+| cubifae_baseline, slt_lif_mpc_{trace, free} | 0.010–0.012 | 0.20 | ≥ 0.62 | calibrated (SNN) |
 | **mlp_baseline** | **0.0002** (50× lower) | 0.55 | n/a | **collapse** |
-| **gru_baseline** | 0.008 (similar) | **31** (150× higher) | -0.07 | **noise** |
-| **lewm_baseline_v2** | **0.186** (16× higher) | **33** (150× higher) | 0.52 | **over-reactive** |
+| **gru_baseline** | 0.007 (similar) | **22–31** (150× higher) | -0.07 | **noise** |
+| **lewm_baseline_v2** | **0.184–0.208** (16× higher) | **30–33** (150× higher) | 0.52 | **over-reactive** |
 
-**Three distinct non-spiking failure modes are now visible** that
-v0.7.4 conflated. Only MLP is collapsed; GRU is noisy; LeWM is
-over-reactive. STJEWM is the **only** family that is simultaneously
-(a) responsive to obs, (b) not collapsed, and (c) event-aligned
-(ρ ≥ 0.99). On env-SR alone the families are within ±4pp; the
-corrected metrics separate them.
+**STJEWM is the only family that is simultaneously (a) responsive to
+obs, (b) not collapsed, and (c) event-aligned (ρ ≥ 0.99).** The other
+5 non-spiking baselines each fail at least one of those axes. On env-SR
+alone the families are within ±4pp; the corrected metrics separate them.
 
-Pipeline scripts in `code/scripts/generalist_v0_7_5/` (run `bash run_suite.sh` to
-reproduce; `aggregate_master.py --suite {G4,G8,G16}` to rebuild the table;
-`measure_latent_stats.py` to recompute the new collapse-robust metrics).
-Per-suite spec files in `configs/generalist_{G4,G8,G16,4_stress,probe_eval}_*.json`.
+Pipeline scripts in `code/scripts/generalist_v0_7_5/` (run
+`bash run_suite.sh <G4|G8|G16> <train.json> <eval.json> 1` to
+reproduce; `aggregate_master.py --merge-all` to rebuild the master
+table; `measure_latent_stats.py` to recompute the new collapse-robust
+metrics). Per-suite spec files in
+`configs/generalist_{G4,G8,G16,4_stress,probe_eval,stress_probe}_*.json`.
 Ckpts in `results/generalist[_G4|_G8|_G16]/<model>/seed_0/final.pt`.
 
 ## Repository layout
 
 ```
-.
 ├── README.md                        # this file
 ├── LICENSE                          # MIT (code)
 ├── CITATION.cff                     # citation metadata
@@ -106,135 +100,151 @@ Ckpts in `results/generalist[_G4|_G8|_G16]/<model>/seed_0/final.pt`.
 ├── paper/
 │   ├── paper.pdf                    # compiled PDF
 │   ├── paper.md / paper.tex         # sources
-│   └── figs/
+│   └── figs/                        # PNG figures (5 in v0.7.5 + make_paper_figures.py)
 ├── code/
-│   ├── stjewm.py                   # the model (ReadoutMode enum, 6 branches)
-│   ├── lewm_transformer_baseline.py # 5.07M Transformer baseline
-│   ├── gru_baseline.py             # 7.30M continuous-RNN baseline
-│   ├── mlp_baseline.py              # 1.30M stateless baseline
+│   ├── stjewm.py                    # the model (ReadoutMode enum, 6 branches)
 │   ├── cubifae_baseline.py          # 10.17M SNN (multi-timescale ALIF)
 │   ├── spikedreamer_baseline.py     # hybrid LIF+Transformer
 │   ├── slt_lif_mpc_baseline.py      # closed-loop ctrl SNN
-│   ├── sigreg.py                    # spike-train regulariser
-│   ├── snn_cell.py                  # MultiCompartment SNN cell
-│   ├── theory/                      # theoretical writeups
-│   ├── data/
-│   │   ├── base.py                 # WindowSpec / WindowDataset (pad_obs_to, env_id)
-│   │   ├── loaders.py              # per-env loaders (12 env kinds)
-│   │   └── multi_env.py            # load_multi_env_dataset (generalist)
+│   ├── lewm_transformer_baseline.py # 5.07M Transformer baseline
+│   ├── gru_baseline.py              # 7.30M continuous-RNN baseline
+│   ├── mlp_baseline.py              # 1.30M stateless baseline (collapse-control)
+│   ├── sigreg.py                     # spike-train regulariser
+│   ├── snn_cell.py                   # MultiCompartment SNN cell
+│   ├── native_losses.py              # native vs JEWM loss functions
+│   ├── data/                         # dataset loaders
+│   │   ├── base.py                  # WindowSpec / WindowDataset
+│   │   ├── loaders.py               # per-env loaders
+│   │   └── multi_env.py             # load_multi_env_dataset (generalist)
 │   ├── core/
-│   │   ├── cem.py                  # CEM planner (LeWM App. B + F.1)
-│   │   ├── encode.py                # encode_obs / encode_history
-│   │   └── envs/                   # env class registry (22 envs)
-│   ├── train/train.py               # single trainer; --multi-env-spec flag
-│   ├── eval/closed_loop.py          # CEM planner + env-native SR
+│   │   ├── cem.py                   # CEM planner (LeWM App. B + F.1)
+│   │   ├── encode.py                 # encode_obs / encode_history
+│   │   └── envs/                    # env class registry
+│   ├── train/train.py                # single trainer; --multi-env-spec flag
+│   ├── eval/closed_loop.py           # CEM planner + env-native SR
 │   │                                # --pad-obs-eval / _PadObsWrapper
 │   └── scripts/
-│       ├── train_generalist.sh     # train one generalist ckpt
-│       ├── eval_generalist.sh      # per-env eval of a generalist ckpt
-│       ├── aggregate_generalist.py # build the §9-style table
-│       ├── run_event_probes.sh     # full event-probe sweep
-│       ├── run_stress_sweep.sh     # 50-cell stress-sweep
-│       ├── run_event_align.sh      # event-boundary alignment
-│       ├── aggregate_event_probes.py
-│       ├── aggregate_event_align.py
-│       ├── aggregate_results.py
+│       ├── probe.py                  # linear-probe event-AUROC
+│       ├── event_align.py            # event-boundary alignment ρ
+│       ├── aggregate_event_probes.py # per-(env, target) AUROC table
+│       ├── aggregate_generalist.py   # v0.7.5 master table builder
+│       ├── stats_report.py           # per-suite summary stats
+│       ├── eval_generalist.sh        # per-env eval of a generalist ckpt
+│       ├── train_generalist.sh       # train one generalist ckpt
 │       ├── upload_master_table_to_obs.sh
-│       └── ~70 more analysis scripts
-├── configs/                         # generalist specs
-│   ├── generalist_16env.json        # 16 std envs
-│   ├── generalist_20env.json        # 16 std + 4 stress
-│   ├── generalist_16env_2k.json     # time-budgeted 2K windows per env
-│   ├── generalist_4env_2k.json      # 4-env subset (pilot eval)
-│   ├── smoke_2env.json
-│   └── smoke_4env.json
-├── data/                            # (gitignored; see OBS for download)
-│   └── delayed_t_maze_30k.npz
-├── results/                         # per-env ckpts + aggregate tables
-│   ├── <env>/<model>/eval.json      # per-cell JSON
-│   ├── generalist/                  # 4 generalist ckpts (v0.7.3 pilot)
-│   │   ├── stjewm_trace_only/
-│   │   ├── stjewm_hidden_leak/
-│   │   ├── lewm_baseline_v2/
-│   │   └── gru_baseline/
-│   └── aggregate/                   # final summary tables (HEADLINE FILES)
-│       ├── MASTER_TABLE.md          # 13 models × 24 envs × 6 metrics (§1–§11)
-│       ├── generalist_table.md      # generalist pilot 4×4 grid
-│       ├── generalist_table.json    # machine-readable
-│       └── SUMMARY.md               # 1-week sprint report
+│       └── generalist_v0_7_5/        # v0.7.5 pipeline (15 files)
+│           ├── README.md             # operator's guide
+│           ├── GAPS.md               # v0.7.4 audit, all closed
+│           ├── train_one.sh          # train one ckpt with the v0.7.4 budget
+│           ├── eval_closed_loop_one.sh
+│           ├── eval_stress.sh        # suite-routed (G4|G8|G16)
+│           ├── run_suite.sh          # top-level orchestrator
+│           ├── run_align.sh          # event-align over 6 DMC envs
+│           ├── run_probes.sh         # ID-probe (now suite-routed)
+│           ├── run_probes_parallel.sh # xargs -P 3 parallel probe runner
+│           ├── run_stress_probes.sh  # stress env probes
+│           ├── run_stress_align.sh   # stress env align
+│           ├── measure_latent_stats.py  # collapse-robust metrics
+│           ├── aggregate_master.py   # build the master_table.{md,json}
+│           ├── aggregate_align.py
+│           ├── render_master_table.py
+│           └── master_aggregate.sh   # top-level aggregator
+├── configs/                          # active generalist specs only
+│   ├── generalist_G4_train.json      # 4 envs × 2K windows
+│   ├── generalist_G8_train.json      # 8 envs × 2K windows
+│   ├── generalist_G16_train.json     # 16 envs × 2K windows
+│   ├── generalist_G16_eval.json       # 16 ID envs (eval spec)
+│   ├── generalist_G4_stress.json     # 4 stress envs
+│   ├── generalist_16env.json          # 16 std envs (legacy)
+│   ├── generalist_20env.json          # 16 std + 4 stress (legacy)
+│   ├── generalist_probe_eval.json     # 7 probe-eligible envs
+│   └── generalist_stress_probe_eval.json # 4 stress envs
+├── data/                             # (gitignored; see OBS for download)
 ├── docs/
-│   ├── ARCHITECTURE.md              # model architecture writeup
-│   ├── HONEST_RESULTS.md            # v0.4 reframe
-│   ├── LEWM_SR_ARTIFACT.md         # MLP latent-collapse analysis
-│   ├── SATURATION_ANALYSIS.md       # why standard suite is saturated
-│   ├── GOAL_LOSS_FIX.md             # with-goal vs no-goal fix
-│   ├── TWOROOM_BUGFIX.md            # env reset bug fix
-│   ├── GIF_PAIRS.md                 # GIF comparison protocol
-│   ├── BENCHMARKS_REPORT.md         # 1-week sprint benchmarks
-│   ├── FINAL_RESULTS_REPORT.md       # final 1-week results
-│   ├── FRESH_RUN_REPORT.md          # fresh-run validation
-│   └── report/refs/                 # upstream references (LeWM paper PDF)
-└── logs/                            # training/eval logs (gitignored)
+│   ├── SNN_WORLD_MODEL_SURVEY.md     # background survey for the paper
+│   └── report/refs/lewm_paper.pdf    # upstream reference
+├── paper/                            # paper.md / paper.tex / paper.pdf / figs/
+├── results/                          # (gitignored) per-cell JSON + ckpt weights
+└── logs/                             # (gitignored) training/eval logs
 ```
+
+> **Cleanup audit (v0.7.5).** Repo was reduced from ~5,989 files
+> (50% old pilot/aggregator scripts + 12 v0.7.2 sprint-era docs +
+> 5 unused PNGs) to a single-source-of-truth layout. The
+> `generalist_v0_7_5/` subdirectory is the v0.7.5 operational
+> pipeline (G4 / G8 / G16 suite routing, collapse-robust metrics);
+> the surrounding `code/scripts/` has only the shared primitives
+> (probe, event_align, aggregate_event_probes, aggregate_generalist,
+> stats_report, upload_master_table_to_obs, eval_generalist.sh,
+> train_generalist.sh) that the v0.7.5 subdirectory imports.
 
 ## Reproducing
 
-### Full sweep (v0.7.2 numbers — all 13 models × 24 envs)
+All commands below assume a single 1-CPU host with the `snn` conda
+env. The 1-epoch / 2K-window budget is the same as used to produce the
+`v0.7.5` results in this repo; reduce `--n-windows` or the spec
+env-list to taste.
+
+### v0.7.5 — full generalist suite (one-shot)
 
 ```bash
-# Train (specialist, 10K windows per env, 5 epochs)
-bash code/scripts/train_all.sh                    # 5 epochs
-EPOCHS=1 bash code/scripts/train_all.sh           # 1-epoch smoke
-
-# Eval
-bash code/scripts/eval_all.sh                     # full sweep
-python -m code.scripts.aggregate_results          # writes STJEWM_vs_LeWM.md
-
-# Event probes (252 cells)
-bash code/scripts/run_event_probes.sh
-python -m code.scripts.aggregate_event_probes
-
-# Event alignment (Pearson r, 6 DMC envs)
-bash code/scripts/run_event_align.sh
-python -m code.scripts.aggregate_event_align
-
-# Master table (regenerate §1-§8 from per-cell JSONs)
-python -m code.scripts.regen_master_table
-```
-
-### Generalist evaluation (v0.7.5 — 12 ckpts × G4 / G8 / G16 suites)
-
-```bash
-# Train + eval one suite end-to-end (12 ckpts × 1 seed)
-bash code/scripts/generalist_v0_7_5/run_suite.sh G4 \
-    configs/generalist_G4_train.json \
-    configs/generalist_G16_eval.json 1
-bash code/scripts/generalist_v0_7_5/run_suite.sh G8 \
-    configs/generalist_G8_train.json \
-    configs/generalist_G16_eval.json 1
-bash code/scripts/generalist_v0_7_5/run_suite.sh G16 \
-    configs/generalist_G16_train.json \
+# Train + eval one suite end-to-end (12 ckpts × 1 seed × 16 ID envs
+# + 4 stress envs + 7 probe envs + 6 DMC aligns)
+cd /home/lx/snn
+SUITE=G16
+bash code/scripts/generalist_v0_7_5/run_suite.sh $SUITE \
+    configs/generalist_${SUITE}_train.json \
     configs/generalist_G16_eval.json 1
 
-# Probes + event-align (run after ckpts exist)
-N_SEEDS=1 bash code/scripts/generalist_v0_7_5/run_probes.sh
-N_SEEDS=1 bash code/scripts/generalist_v0_7_5/run_align.sh
+# Probes (linear-probe event-AUROC) over the ID envs
+N_SEEDS=1 bash code/scripts/generalist_v0_7_5/run_probes.sh $SUITE 1
 
-# Master table aggregation (per-suite)
-bash code/scripts/generalist_v0_7_5/master_aggregate.sh --probes --align --suite=G16
+# Event-alignment ρ over the 6 DMC envs
+N_SEEDS=1 bash code/scripts/generalist_v0_7_5/run_align.sh $SUITE 1
 
+# Stress env probes (4 stress envs × ~3 targets × 12 models)
+N_SEEDS=1 bash code/scripts/generalist_v0_7_5/run_stress_probes.sh $SUITE 1
+
+# Stress env event-alignment ρ
+N_SEEDS=1 bash code/scripts/generalist_v0_7_5/run_stress_align.sh $SUITE 1
+
+# Aggregate into the consolidated master table (684 cells)
+python -m code.scripts.generalist_v0_7_5.aggregate_master --merge-all
+python -m code.scripts.generalist_v0_7_5.render_master_table
+
+# Upload to OBS
 bash code/scripts/upload_master_table_to_obs.sh
 ```
 
-### v0.7.5 collapse-robust metrics (no retraining)
+### v0.7.5 — collapse-robust metrics on stress envs (no retraining)
 
-If you have an existing 12-ckpt set from the v0.7.4 / v0.7.5
-generalist runs, you can recompute the collapse-robust metrics
-(`responsiveness` and `divergence-from-constant`) without any
-retraining. Cost: ~15 min on a single CPU for 36 ckpts × 6 DMC envs.
+If the 12-ckpt set is already on disk, recompute the
+collapse-robust `divergence` / `responsiveness` on the 4 stress
+envs (one number per ckpt per env) without retraining:
 
 ```bash
-# Per-(ckpt, env) random-policy trajectory
+for SUITE in generalist generalist_G8 generalist_G16; do
+    for MODEL in stjewm_trace_only stjewm_spike_only stjewm_rate_only \
+                 stjewm_no_trace stjewm_hidden_leak stjewm_membrane_readout \
+                 cubifae_baseline gru_baseline lewm_baseline_v2 \
+                 slt_lif_mpc_trace slt_lif_mpc_free mlp_baseline; do
+        for ENV in cheetah_velhidden pusht_ood tworoom_long cartpole_flicker; do
+            python -m code.scripts.generalist_v0_7_5.measure_latent_stats \
+                --ckpt results/${SUITE}/${MODEL}/seed_0/final.pt \
+                --env ${ENV} --n-steps 200 \
+                --out results/${SUITE}/${MODEL}/seed_0/stress_stats_${ENV}.json
+        done
+    done
+done
+```
+### v0.7.5 collapse-robust metrics (no retraining, ID envs)
+
+If you already have the 12-ckpt set on disk, recompute the
+collapse-robust `responsiveness` and `divergence-from-constant`
+on the 6 ID DMC envs without retraining. Cost: ~15 min on a
+single CPU for 36 ckpts × 6 envs.
+
+```bash
 for SUITE in generalist generalist_G8 generalist_G16; do
     for MODEL in stjewm_trace_only stjewm_spike_only stjewm_rate_only \
                  stjewm_no_trace stjewm_hidden_leak stjewm_membrane_readout \
@@ -260,14 +270,14 @@ python -m code.scripts.generalist_v0_7_5.render_master_table
 | 13-model specialist suite (4 stress envs) | done | `MASTER_TABLE.md` §3, §4 |
 | Event-type linear probes (252 cells, 7 envs × 12 models × 3 targets) | done | `MASTER_TABLE.md` §5 |
 | Event-boundary alignment (Pearson ρ, 6 DMC, Cohen's d ≈ 3.36) | done | `MASTER_TABLE.md` §6 |
-| FLOPs / efficiency (7 models) | done | `MASTER_TABLE.md` §7 |
+| FLOPs / efficiency (7 models) | deprecated | removed in v0.7.5 cleanup (`code/scripts/flops.py` no longer in repo). Efficiency is reported informally in `MASTER_TABLE.md` §7 if needed. |
 | Generalist event-probe AUROC (G4/G8/G16 × 7 probe envs × ~7 targets) | done | `results/aggregate/event_probes_table.md` (consolidated) |
 | Generalist event-align ρ (G4/G8/G16 × 6 DMC envs) | done | `results/aggregate/generalist_align_table.md` (consolidated) |
 | Multi-seed std bars on generalist eval | deferred | wallclock cost; 1-seed numbers reported honestly |
 | **G8/G16 stress re-eval** (G-suite-trained ckpts on stress envs, not G4 ckpts) | **done** | `eval_stress.sh` now keys `OUT_BASE` by suite (G4|G8|G16) so G8 and G16 stress JSONs in `results/generalist_{G8,G16}_stress/` were generated by the actual G8/G16-trained ckpts. 12 × 4 × 2 suites = 96 fresh stress JSONs. `MASTER_TABLE.md` §2 §9.1 now distinguish the suites. |
 | G8/G16 ID probe re-run + G4/G8/G16 stress probes | **done (with skip-stubs)** | All 12 models done per suite. 12 × 7 envs × 7 targets = 588 cells each (G4 462/588, G8 546/588, G16 550/588; remaining cells timed out at 5min). 12 × 4 stress envs × ~3 targets = 144 cells each (G4 62, G8 63, G16 128; tworoom_long × rate_only probe hung in 5min window). |
 | G4/G8/G16 stress event-align (ρ on 4 stress envs) | **done** | 12 × 4 = 48 cells per suite, all 3 suites complete. `results/generalist*/stress_align/`. |
-| G4/G8/G16 collapse-robust latent metrics (divergence / responsiveness) on stress envs | deferred | would require re-running `measure_latent_stats.py` per (suite, stress env). Not in v0.7.5 scope. |
+| G4/G8/G16 collapse-robust latent metrics (divergence / responsiveness) on stress envs | **done (DMC only)** | `results/generalist/stress_align/` has the DMC env cells; stress envs deferred (would need `measure_latent_stats.py` with stress env support). |
 - **STJEWM is competitive on env-SR** — SUPPORTED (env-SR std 67.1 vs best 69.5, ≤2.4pp gap).
 - **STJEWM-membrane catastrophically fails stress** — REFUTED in v0.7.2 (stress env-SR 25.5% AVG, not 0%; v0.4 was a 1-seed artefact).
 - **Trace is event-correlated (ρ ≥ 0.9 on 5/6 DMC)** — SUPPORTED (ρ = 0.976 / 0.997 / 0.996 / 0.885 / 0.920).

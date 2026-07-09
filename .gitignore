@@ -56,3 +56,11 @@ MUJOCO_LOG.TXT
 # Local secrets
 .env
 *.local
+# Compiled artifacts
+__pycache__/
+*.pyc
+*.pyo
+
+# MuJoCo build logs
+MUJOCO_LOG.TXT
+
