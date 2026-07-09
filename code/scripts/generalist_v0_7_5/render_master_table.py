@@ -167,6 +167,59 @@ def render(rows: List[Dict[str, Any]]) -> str:
     return "\n".join(out) + "\n"
 
 
+def render_model_sizes_section(model_size_path: Path) -> str:
+    """§10.8 Model sizes — single canonical param table from
+    `model_size_table.json`. Mirrors the same section in
+    `aggregate_master.py` so both the per-suite and merged master tables
+    point at the same source of truth.
+    """
+    out: List[str] = []
+    out.append("\n## 5. Model sizes (canonical, §10.8)\n")
+    out.append(
+        "\nSingle source of truth for parameter counts cited in the README, "
+        "MASTER_TABLE, and paper. Computed by "
+        "`code/scripts/generalist_v0_7_5/model_sizes.py`; see "
+        f"`{model_size_path}` (raw) and `model_size_table.md` (formatted)."
+        "\n"
+    )
+    if not model_size_path.exists():
+        out.append(
+            f"\n*(model_size_table.json not found at `{model_size_path}`. "
+            "Run `python code/scripts/generalist_v0_7_5/model_sizes.py` to "
+            "generate it.)*\n"
+        )
+        return "\n".join(out)
+    try:
+        payload = json.loads(model_size_path.read_text())
+    except Exception as e:  # noqa: BLE001
+        out.append(f"\n*(failed to parse {model_size_path}: {e})*\n")
+        return "\n".join(out)
+    models = payload.get("models") or []
+    if not models:
+        out.append("\n*(model_size_table.json contains no models.)*\n")
+        return "\n".join(out)
+    out.append("\n| model | trainable (M) | total (M) | n_layers | embed_dim | ckpt | notes |")
+    out.append("\n|---|---|---|---|---|---|---|")
+    for m in sorted(models, key=lambda x: x["name"]):
+        ck = m.get("ckpt", "")
+        if ck and ck != "<canonical (no ckpt found)>":
+            ck_disp = f"`{Path(ck).name}`"
+        else:
+            ck_disp = "—"
+        out.append(
+            f"\n| {m['name']} | {m['trainable']/1e6:.2f} | {m['total']/1e6:.2f} | "
+            f"{m.get('n_layers','-')} | {m.get('embed_dim','-')} | "
+            f"{ck_disp} | {m.get('notes','')} |"
+        )
+    out.append(
+        f"\n\n_{len(models)} model classes total. For STJEWM, `trainable` is what the "
+        "optimizer updates (everything except the frozen ViT-Tiny encoder); "
+        "`total` is the full module including the frozen encoder (~5.5M). "
+        "Across the 6 STJEWM readouts the only difference is the readout "
+        "layer, so they share param counts._\n"
+    )
+    return "".join(out)
+
 def write_grid(out, rows, suites, models, envs, key):
     """Write a (suite × env) grid of model values."""
     by = defaultdict(dict)
@@ -190,9 +243,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--json", default="/home/lx/snn/results/aggregate/generalist_master_table.json")
     ap.add_argument("--out", default="/home/lx/snn/results/aggregate/generalist_master_table.md")
+    ap.add_argument("--model-size-json",
+                    default="/home/lx/snn/results/aggregate/model_size_table.json",
+                    help="(v0.7.6) Path to model_size_table.json; set to '' to skip the §10.8 section.")
     args = ap.parse_args()
     rows = json.loads(Path(args.json).read_text())["rows"]
     md = render(rows)
+    if args.model_size_json:
+        md += render_model_sizes_section(Path(args.model_size_json))
     Path(args.out).write_text(md)
     print(f"[render] wrote {args.out} ({len(md)} chars)")
 

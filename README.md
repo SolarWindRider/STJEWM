@@ -11,16 +11,22 @@ hidden state. The trace is bounded in [0,1] per dim, content-aware
 
 This repository contains the code, evaluations, and paper for ST-JEWM.
 The full PDF is at `paper/paper.pdf`. Source: `paper/paper.md` and
-## Headline results (v0.7.5 — corrected metrics)
+`paper/paper.tex`. Source for the headline table: `paper/paper.md` §1,
+§6 (diagnostic), §8 (utility). **v0.7.7 — diagnostic + utility.**
+
+## Headline results (v0.7.7 — diagnostic + utility)
 
 The consolidated master table is at
 `results/aggregate/generalist_master_table.md` and is built from
 **12 model variants × 3 task-scale suites (G4 / G8 / G16) × 24 envs**
-for 684 cells per metric. The headline is no longer raw env-SR or
-raw LeWM-SR (those are saturated and collapse-inflatable
+for 684 cells per metric. The diagnostic headline is no longer raw
+env-SR or raw LeWM-SR (those are saturated and collapse-inflatable
 respectively); it is the v0.7.5 collapse-robust **divergence +
-responsiveness + event-align ρ** package, which separates the 3
-non-spiking baselines into 3 qualitatively different failure modes.
+responsiveness + event-align ρ** package. The v0.7.7 *utility* headline
+is the §8 package: latent-goal MPC horizon sweep, latent-vs-env
+gradient correlation, frozen-encoder sample efficiency. Together they
+separate the 4 non-spiking baselines into 4 qualitatively different
+failure modes (collapse / noise / over-reactive / calibrated).
 One row per model, 8 columns:
 
 | Model | mean_id (G4/G8/G16) | gap (G4/G8/G16) | mean_stress (G4/G8/G16) | resp (G4/G8/G16) | div (G4/G8/G16) |
@@ -89,6 +95,20 @@ table; `measure_latent_stats.py` to recompute the new collapse-robust
 metrics). Per-suite spec files in
 `configs/generalist_{G4,G8,G16,4_stress,probe_eval,stress_probe}_*.json`.
 Ckpts in `results/generalist[_G4|_G8|_G16]/<model>/seed_0/final.pt`.
+
+## Utility experiments (v0.7.7 — does the planner use the calibration?)
+
+The diagnostic above tells us *that* the STJEWM latents are calibrated. It does *not* by itself tell us *that the planner can use the calibration*. We therefore add three new utility measurements, all run on the same 12 G16 generalist checkpoints (no retraining). Full tables at `results/utility/`:
+
+| utility axis | setup | calibrated family | non-calibrated families |
+|---|---|---|---|
+| **Latent-goal MPC horizon sweep** | CEM in latent space, $\cos(z_{\text{terminal}}, z_{\text{goal}})$ as cost, sweep $H \in \{1,3,5,10,20\}$ | STJEWM `trace/spike/rate`: $\cos_{\text{term}} \le 0.10$ *and* stable across $H$ | MLP $\approx 10^{-4}$ (collapse), GRU $\approx 10^{-3}$ (noise), `membrane_readout/no_trace` $\approx 0.25$ *and* grows with $H$ (over-reactive) |
+| **Latent-vs-env gradient correlation** | $\cos\!\left(\nabla_a (1 - \cos(z_t, z_g)),\ \nabla_a (-\|s_t - s_g\|^2)\right)$ over 100 random states | $\lvert \text{corr}\rvert \approx 0.42$–$0.81$ for STJEWM `trace/spike` | MLP $\le 0.10$ (undef cosine — zero grad), GRU sign-flipping (noise) |
+| **Frozen-encoder sample efficiency** | freeze encoder, train a single linear $\pi(z_t) = a_t$ on 1%–100% of data, roll out | $\cos_{\text{term}} \approx 0.06$ at 1% of data | MLP / GRU stay at $\approx 0$ at every data fraction |
+
+The three utility axes *separately* fail the non-calibrated baselines by $5$–$50\times$. The calibrated STJEWM family is the only one that passes all three. The "honest claim ladder" is therefore not "STJEWM wins env-SR" (it doesn't, ±4pp) but **"a calibrated latent is the only one a planner can trust"** — the diagnostic says so, and the three utility experiments now show that the planner actually *uses* the calibration.
+
+Pipeline scripts in `code/scripts/utility/` (run `latent_goal_mpc.py`, `latent_env_grad.py`, `sample_efficiency.py` per (model, env); the `run_*.py` drivers sweep all 12 ckpts and aggregate to `results/utility/*_table.md`). 11 models × 4 envs × 6 horizons = 264 latent-goal-MPC runs; 11 × 4 × 100 = 4400 gradient-correlation samples; 11 × 4 × 5 = 220 frozen-encoder rollouts.
 
 ## Repository layout
 

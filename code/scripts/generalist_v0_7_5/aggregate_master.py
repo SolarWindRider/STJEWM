@@ -207,6 +207,62 @@ def write_summary(rows: List[Dict[str, Any]], envs_id: List[str], envs_stress: L
         )
 
 
+def write_model_sizes_section(out, model_size_path: Path) -> None:
+    """§10.8 Model sizes — single canonical param table from
+    `results/aggregate/model_size_table.json`.
+
+    This is the SINGLE SOURCE OF TRUTH for parameter counts cited in the
+    README, MASTER_TABLE, and paper. It supersedes the prior scattered
+    numbers (4.6M / 8.2M / 10.53M) that the reviewer flagged as a hard
+    inconsistency.
+
+    Counts are computed by `code/scripts/generalist_v0_7_5/model_sizes.py` by
+    instantiating each model on CPU with the args from the G16 checkpoint
+    (preferred) and falling back to the canonical G16 budget
+    (`pad_obs_to=128, action_dim=56, embed_dim=192, n_layers=2`).
+
+    For STJEWM, `trainable` excludes the frozen ViT-Tiny encoder (which is
+    ~5.5M); `total` includes it. The 6 STJEWM readouts share the same
+    architecture modulo the readout layer, so they have identical param
+    counts.
+    """
+    out.write("\n## 5. Model sizes (canonical, §10.8)\n\n")
+    out.write(
+        "Single source of truth for parameter counts cited in the README, "
+        "MASTER_TABLE, and paper. Computed by "
+        "`code/scripts/generalist_v0_7_5/model_sizes.py`; see "
+        f"`{model_size_path}` (raw) and `model_size_table.md` (formatted).\n\n"
+    )
+    payload = load_json(model_size_path)
+    if payload is None or not payload.get("models"):
+        out.write(
+            f"*(model_size_table.json not found at `{model_size_path}`. "
+            "Run `python code/scripts/generalist_v0_7_5/model_sizes.py` to "
+            "generate it.)*\n"
+        )
+        return
+    out.write("| model | trainable (M) | total (M) | n_layers | embed_dim | ckpt | notes |\n")
+    out.write("|---|---|---|---|---|---|---|\n")
+    for m in sorted(payload["models"], key=lambda x: x["name"]):
+        ck = m.get("ckpt", "")
+        if ck and ck != "<canonical (no ckpt found)>":
+            ck_disp = f"`{Path(ck).name}`"
+        else:
+            ck_disp = "—"
+        out.write(
+            f"| {m['name']} | {m['trainable']/1e6:.2f} | {m['total']/1e6:.2f} | "
+            f"{m.get('n_layers','-')} | {m.get('embed_dim','-')} | "
+            f"{ck_disp} | {m.get('notes','')} |\n"
+        )
+    n = len(payload["models"])
+    out.write(
+        f"\n_{n} model classes total. For STJEWM, `trainable` is what the "
+        "optimizer updates (everything except the frozen ViT-Tiny encoder); "
+        "`total` is the full module including the frozen encoder (~5.5M). "
+        "Across the 6 STJEWM readouts the only difference is the readout "
+        "layer, so they share param counts._\n"
+    )
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--suite", default="all",
@@ -318,6 +374,7 @@ def main() -> int:
         if envs_stress:
             write_section(f"{args.suite} — Stress", rows, envs_stress, GENERALIST_MODELS, f)
         write_summary(rows, envs_id, envs_stress, GENERALIST_MODELS, f)
+        write_model_sizes_section(f, out_dir / "model_size_table.json")
 
         if args.probes:
             f.write("\n## G16-Probes (event-AUROC)\n\n")

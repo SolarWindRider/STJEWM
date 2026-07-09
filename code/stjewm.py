@@ -46,16 +46,39 @@ class ReadoutMode(str, Enum):
         - HIDDEN_LEAK       (default, legacy): z_final = h + trace_proj(trace)
         - TRACE_ONLY        (NMI requirement): z_final = trace_proj(trace)
         - MEMBRANE_READOUT  : z_final = h_post_cell.detach()  # discrete state
-        - SPIKE_ONLY        : z_final = post_mlp(spike).detach()
+        - SPIKE_GATED       : z_final = h * spike.float().detach()
+                              # continuous hidden × binary mask (legacy "SPIKE_ONLY"
+                              # behavior, now renamed to be unambiguous)
+        - RAW_SPIKE         : z_final = raw_spike_proj(spike.float()).detach()
+                              # raw binary-event predictive state; learns a
+                              # Linear(d, d) over the spike train so the latent
+                              # depends only on spikes, not on the continuous h
+                              # (honors membrane-forbidden protocol)
         - RATE_ONLY         : z_final = moving_average(spike).detach()
         - NO_TRACE          : z_final = h  # ablation: no trace branch
+
+    Back-compat: the string "spike_only" is accepted by `STJEWM.__init__` and
+    silently mapped to `SPIKE_GATED`. The legacy `ReadoutMode.SPIKE_ONLY` is
+    preserved as a module-level alias equal to `ReadoutMode.SPIKE_GATED` so
+    existing checkpoints whose `args["readout_mode"] == "spike_only"` still
+    construct cleanly.
     """
     TRACE_ONLY = "trace_only"
     HIDDEN_LEAK = "hidden_leak"
     MEMBRANE_READOUT = "membrane_readout"
-    SPIKE_ONLY = "spike_only"
+    SPIKE_GATED = "spike_gated"
+    RAW_SPIKE = "raw_spike"
     RATE_ONLY = "rate_only"
     NO_TRACE = "no_trace"
+
+
+# Back-compat alias: legacy module-level `SPIKE_ONLY` symbol now points at the
+# same enum member as `ReadoutMode.SPIKE_GATED`, so any caller that did
+# `from code.stjewm import SPIKE_ONLY` still gets a valid enum member. The
+# value of that member is "spike_gated". For string-form back-compat
+# (`args["readout_mode"] == "spike_only"`), `STJEWM.__init__` performs an
+# explicit remap to "spike_gated" before constructing the enum.
+SPIKE_ONLY = ReadoutMode.SPIKE_GATED
 
 # ============== B1: Gated Spike Trace (reused from v3) ==============
 class GatedSpikeTrace(nn.Module):
@@ -253,6 +276,11 @@ class STJEWM(nn.Module):
         self.action_dim = action_dim
         self.state_dim = state_dim
         self.trace_beta = trace_beta
+        # Back-compat: legacy checkpoints store readout_mode="spike_only" but
+        # the enum member has been renamed to SPIKE_GATED ("spike_gated").
+        # Map the legacy string to the new name before constructing the enum.
+        if isinstance(readout_mode, str) and readout_mode == "spike_only":
+            readout_mode = "spike_gated"
         self.readout_mode = ReadoutMode(readout_mode)
 
         # ViT-Tiny encoder (frozen by default)
@@ -288,6 +316,15 @@ class STJEWM(nn.Module):
         # Trace projection (skip-style, added to h)
         self.trace_proj = nn.Linear(d_hid, d_hid, bias=False)
 
+        # RAW_SPIKE readout projection: turns the binary spike train into a
+        # useful latent without ever consulting the continuous hidden state
+        # `h`. Only instantiated when needed so legacy checkpoints (which
+        # never had this buffer) keep matching the old state_dict layout.
+        if self.readout_mode == ReadoutMode.RAW_SPIKE:
+            self.raw_spike_proj = nn.Linear(d_hid, d_hid, bias=True)
+        else:
+            self.raw_spike_proj = None
+
         # Freeze encoder
         if freeze_encoder:
             for p in self.encoder.parameters():
@@ -321,14 +358,17 @@ class STJEWM(nn.Module):
     def _readout(self, h: torch.Tensor, spike: torch.Tensor, trace: torch.Tensor) -> torch.Tensor:
         """Apply the configured readout mode to combine h/spike/trace into z_final.
 
-        - HIDDEN_LEAK:       z = h + trace_proj(trace)  (legacy)
-        - TRACE_ONLY:        z = trace_proj(trace)        (NMI)
-        - MEMBRANE_READOUT:  z = h.detach()               (treat h as discrete latent)
-        - SPIKE_ONLY:        z = h * spike.float().detach()  (mask h by spikes)
+        - HIDDEN_LEAK:       z = h + trace_proj(trace)                       (legacy)
+        - TRACE_ONLY:        z = trace_proj(trace)                          (NMI)
+        - MEMBRANE_READOUT:  z = h.detach()                                 (treat h as discrete latent)
+        - SPIKE_GATED:       z = h * spike.float().detach()                 (continuous hidden × binary mask)
+        - RAW_SPIKE:         z = raw_spike_proj(spike.float()).detach()     (pure spike * linear projection;
+                                                                            no `h` is read at all — honors
+                                                                            membrane-forbidden protocol)
         - RATE_ONLY:         z = F.avg_pool1d(spike.float().detach().transpose(1,2),
                              kernel_size=4, stride=1, padding=2).transpose(1,2)[:,:h.shape[1],:]
                              (moving-average spike rate along time, detached — no h)
-        - NO_TRACE:          z = h                        (ablation)
+        - NO_TRACE:          z = h                                          (ablation)
         """
         mode = self.readout_mode
         if mode == ReadoutMode.HIDDEN_LEAK:
@@ -337,8 +377,18 @@ class STJEWM(nn.Module):
             return self.trace_proj(trace)
         if mode == ReadoutMode.MEMBRANE_READOUT:
             return h.detach()
-        if mode == ReadoutMode.SPIKE_ONLY:
+        if mode == ReadoutMode.SPIKE_GATED:
+            # Legacy "spike_only" math: continuous hidden state gated by the
+            # binary spike train. The gating is detached so spikes act as a
+            # pure mask.
             return h * spike.float().detach()
+        if mode == ReadoutMode.RAW_SPIKE:
+            # Real raw-binary-event predictive state: the latent is a learned
+            # linear projection of the spike train only. The continuous hidden
+            # `h` is NEVER read here, satisfying the membrane-forbidden
+            # protocol. `raw_spike_proj` is instantiated in __init__ only when
+            # this mode is selected.
+            return self.raw_spike_proj(spike.float()).detach()
         if mode == ReadoutMode.RATE_ONLY:
             # Causal-ish moving-average spike rate along time.
             # Reads the SPIKE TRAIN, not h — honors the RATE_ONLY docstring and
@@ -351,6 +401,7 @@ class STJEWM(nn.Module):
         if mode == ReadoutMode.NO_TRACE:
             return h
         raise ValueError(f"Unknown readout mode: {mode}")
+
     # ============== API: match v3 exactly ==============
     def encode(self, x: torch.Tensor, a: torch.Tensor) -> dict:
         """Encode (obs, action) -> {'emb': (B,T,D), 'act_emb': (B,T,D)}.

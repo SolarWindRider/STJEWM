@@ -29,6 +29,7 @@ stjewm_rate_only|stjewm|rate_only
 stjewm_no_trace|stjewm|no_trace
 stjewm_hidden_leak|stjewm|hidden_leak
 stjewm_membrane_readout|stjewm|membrane_readout
+stjewm_raw_spike|stjewm|raw_spike
 cubifae_baseline|cubifae_baseline|hidden_leak
 gru_baseline|gru_baseline|
 lewm_baseline_v2|lewm_baseline|hidden_leak

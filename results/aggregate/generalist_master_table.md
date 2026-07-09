@@ -162,3 +162,25 @@ Columns:
 
 **On env-native success rate (v0.7.5 §9.1) all 12 models are within ±4pp of each other.** The new metrics do not change that ranking — STJEWM still doesn't win env-SR. The new finding is that the *quality* of the latent representation is dramatically different across families, and only STJEWM has a calibrated, responsive, non-collapsed, event-aligned latent.
 
+
+## 5. Model sizes (canonical, §10.8)
+
+Single source of truth for parameter counts cited in the README, MASTER_TABLE, and paper. Computed by `code/scripts/generalist_v0_7_5/model_sizes.py`; see `/home/lx/snn/results/aggregate/model_size_table.json` (raw) and `model_size_table.md` (formatted).
+
+| model | trainable (M) | total (M) | n_layers | embed_dim | ckpt | notes |
+|---|---|---|---|---|---|---|
+| cubifae_baseline | 5.31 | 5.31 | 2 | 192 | `final.pt` | ALIF + time-cell readout |
+| gru_baseline | 7.42 | 7.42 | 2 | 192 | `final.pt` | 3-layer GRU h=576 |
+| lewm_transformer_baseline | 1.58 | 1.58 | 2 | 192 | `final.pt` | LeWM-style AdaLN-zero Transformer (G16: 2 layers) |
+| mlp_baseline | 1.44 | 1.44 | 2 | 192 | `final.pt` | per-step FFN, no recurrence (collapse-control) |
+| slt_lif_mpc_free | 0.26 | 0.26 | 2 | 192 | `final.pt` | DECOLLE LIF, free-access readout |
+| slt_lif_mpc_trace | 0.22 | 0.22 | 2 | 192 | `final.pt` | DECOLLE LIF, trace-only readout |
+| spikedreamer_baseline | 1.58 | 1.58 | 2 | 192 | — | 2-layer LIF + AdaLN-zero Transformer |
+| stjewm_hidden_leak | 2.70 | 8.20 | 2 | 192 | `final.pt` | v2 default readout |
+| stjewm_membrane_readout | 2.70 | 8.20 | 2 | 192 | `final.pt` | h.detach() (treat h as discrete latent) |
+| stjewm_no_trace | 2.70 | 8.20 | 2 | 192 | `final.pt` | ablation: no trace branch |
+| stjewm_rate_only | 2.70 | 8.20 | 2 | 192 | `final.pt` | moving-avg spike rate, no h |
+| stjewm_spike_only | 2.70 | 8.20 | 2 | 192 | `final.pt` | h * spike (back-compat alias for spike_gated) |
+| stjewm_trace_only | 2.70 | 8.20 | 2 | 192 | `final.pt` | hidden + trace_proj(trace), gated alpha |
+
+_13 model classes total. For STJEWM, `trainable` is what the optimizer updates (everything except the frozen ViT-Tiny encoder); `total` is the full module including the frozen encoder (~5.5M). Across the 6 STJEWM readouts the only difference is the readout layer, so they share param counts._

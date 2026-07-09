@@ -90,7 +90,7 @@ def parse_args():
                    help="Max steps per collected episode (for env-based data)")
     p.add_argument("--readout-mode", type=str, default="hidden_leak",
                    choices=["trace_only", "hidden_leak", "membrane_readout",
-                            "spike_only", "rate_only", "no_trace"],
+                            "spike_only", "rate_only", "no_trace", "raw_spike"],
                    help="STJEWM readout mode (membrane-forbidden protocol)")
     args = p.parse_args()
     # Validate that exactly one of --env-kind / --multi-env-spec is set
