@@ -55,6 +55,7 @@ import torch
 DMC_ENVS = [
     ("cheetah",     "data/dm_control/3d_rollouts_250k/cheetah_250k.npz"),
     ("walker",      "data/dm_control/3d_rollouts_250k/walker_250k.npz"),
+    ("humanoid",    "data/dm_control/3d_rollouts_250k/humanoid_250k.npz"),
     ("cartpole_2d", "data/dm_control/cartpole_250k.npz"),
     ("pendulum_2d", "data/dm_control/pendulum_250k.npz"),
     ("finger",      "data/dm_control/3d_rollouts_250k/finger_250k.npz"),

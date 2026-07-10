@@ -1,4 +1,4 @@
-% ST-JEWM v0.7.5 - Spike Traces as Calibrated Predictive States for Reconstruction-Free World Models
+% ST-JEWM v0.7.8 - Learning Calibrated Event-Driven Predictive States for Generalizable World Models
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
@@ -451,12 +451,17 @@ cheetah-velhidden, dog, finger, fish, hopper, humanoid, humanoid-CMU,
 pendulum-2d, quadruped, reacher, stacker, walker; LeWM ball-in-cup,
 pusht, tworoom, reacher-full, delayed-t-maze).
 \item \textbf{Stress 4-environment suite} designed to break the LeWM
-evaluator: pusht-OOD (held-out goal split), tworoom-long (longer horizon),
-cartpole-flicker (mask-randomised observation stream), cheetah-velhidden
-(held-out velocity field).
+evaluator: \texttt{pusht\_ood} (held-out goal split — i.e.\ a
+within-environment distribution shift on the \emph{goal} axis),
+\texttt{tworoom\_long} (longer horizon), \texttt{cartpole\_flicker}
+(mask-randomised observation stream), \texttt{cheetah\_velhidden}
+(held-out velocity field). These are \emph{environment-distribution shifts}
+within the DMC + LeWM family — \emph{not} cross-environment generalisation
+tests — and are intended to stress whether the planner can read latent
+geometry under shifted observation distributions within an env it has seen.
 \end{itemize}
 
-Two metrics anchor the suite: \textbf{env-native success rate (env-SR)}
+ Two metrics anchor the suite: \textbf{env-native success rate (env-SR)}
 --- the honest task metric, evaluated by re-rolling each trained policy
 in the live environment for 50 episodes $\times$ 5 seeds --- and
 \textbf{LeWM-SR} --- the latent-cosine-distance planning metric,
@@ -539,7 +544,7 @@ On the stress 4-environment suite, the spread widens. GRU leads at
 six STJEWM readouts cluster between 25.0\% and 28.5\%. We do not claim
 STJEWM wins the stress suite either. We do claim the \emph{range of
 stress env-SR for STJEWM (25.0--28.5\%) is not catastrophic}: every
-model fails pusht-OOD and tworoom-long at 0\%; the only stress
+model fails \texttt{pusht\_ood} and \texttt{tworoom\_long} at 0\%; the only stress
 environment that discriminates is cheetah-velhidden (all 100\%) and
 cartpole-flicker, where SpikeDreamer and GRU are genuinely better.
 

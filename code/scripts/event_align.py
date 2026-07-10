@@ -29,6 +29,7 @@ ENV_DATA = {
     "pendulum_2d":      "/home/lx/snn/data/dm_control/pendulum_250k.npz",
     "finger":           "/home/lx/snn/data/dm_control/3d_rollouts_250k/finger_250k.npz",
     "ball_in_cup":      "/home/lx/snn/data/dm_control/3d_rollouts_250k/ball_in_cup_250k.npz",
+    "humanoid":         "/home/lx/snn/data/dm_control/3d_rollouts_250k/humanoid_250k.npz",
     # Stress envs share the underlying env data; the clo env
     # decides which closure flags are applied. ENV_KIND_MAP below
     # pins each stress env to the closed_loop env kind that
@@ -48,6 +49,7 @@ ENV_KIND_MAP = {
     "ball_in_cup":      "ball_in_cup",
     "cheetah":          "cheetah",
     "walker":           "walker",
+    "humanoid":         "humanoid",
     "pusht_ood":        "pusht",
     "tworoom_long":     "tworoom",
     "cartpole_flicker": "cartpole",
@@ -102,13 +104,24 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict)
         return make_mlp_baseline(state_dim=state_dim, action_dim=action_dim)
     if m == "cubifae_baseline" or model_name.startswith("cubifae"):
         from code.cubifae_baseline import make_cubifae_baseline
-        return make_cubifae_baseline(state_dim=state_dim, action_dim=action_dim)
+        return make_cubifae_baseline(
+            state_dim=state_dim, action_dim=action_dim,
+            n_layers=ck_args.get("n_layers", 4),
+        )
     if m == "slt_lif_mpc_trace" or model_name.startswith("slt_lif_mpc_trace"):
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
-        return make_slt_lif_mpc_trace(state_dim=state_dim, action_dim=action_dim)
+        return make_slt_lif_mpc_trace(
+            state_dim=state_dim, action_dim=action_dim,
+            d_in=192, embed_dim=192, n_layers=ck_args.get("n_layers", 4),
+            trace_beta=0.9, k_avg=4,
+        )
     if m == "slt_lif_mpc_free" or model_name.startswith("slt_lif_mpc_free"):
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
-        return make_slt_lif_mpc_free(state_dim=state_dim, action_dim=action_dim)
+        return make_slt_lif_mpc_free(
+            state_dim=state_dim, action_dim=action_dim,
+            d_in=192, embed_dim=192, n_layers=ck_args.get("n_layers", 4),
+            trace_beta=0.9,
+        )
     if m == "spikedreamer_baseline" or model_name.startswith("spikedreamer"):
         from code.spikedreamer_baseline import make_spikedreamer
         return make_spikedreamer(state_dim=state_dim, action_dim=action_dim)
@@ -119,6 +132,7 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict)
         d_hid=192, embed_dim=192, action_dim=action_dim, action_emb_dim=192,
         state_dim=state_dim, cell_n_layers=n_layers, n_d=3,
         trace_beta=0.9, freeze_encoder=True,
+        readout_mode=ck_args.get("readout_mode", "hidden_leak"),
     )
 
 
