@@ -198,13 +198,13 @@ All 12 models (six STJEWM readouts + cubifae + gru + lewm-v2 + slt-trace + slt-f
 
 Due to wall-clock cost, all generalist results are reported with **one seed**. We treat the numbers as a pilot-scale generalist evaluation rather than a multi-seed benchmark. Multi-seed std bars are deferred; this is documented in the §10 honest claim ladder.
 
-### 4.3 Diagnostic package
+### 4.3 Diagnostic and utility packages (v0.7.7 + v0.7.8)
 
-Three diagnostics are run on the generalist checkpoints after training, on the same set of DMC environments:
+The diagnostic package is run on the generalist checkpoints after training, on the same set of DMC environments (v0.7.5 numbers; reproduced here for continuity):
 
 - **Event-probe linear classifiers.** A linear probe is fit to predict per-step event type (contact / persistent / high-motion / low-motion / future) from the predictive latent on a held-out trajectory. Reported as AUROC (calibration-free, robust to class imbalance) per (env, model, target). 7 envs × 12 models × ~3 targets = 252 cells.
 - **Event-boundary Pearson correlation (ρ).** Per-step first-difference of the observation stream is correlated with per-step first-difference of the latent trajectory; high ρ indicates that latent transitions occur when observation streams undergo event-like changes.
-- **Latent divergence-from-constant + responsiveness.** Computed from a 200-step random-policy trajectory per DMC env (6 envs × 12 ckpts = 72 trajectories). Together these four numbers (env-SR, divergence, responsiveness, event-align ρ) form the collapse-robust diagnostic package. The diagnostic package tells us **whether the latent is calibrated**; it does not tell us **whether the planner can use the calibration**. We therefore add a three-part utility package (§8) — latent-goal MPC horizon sweep, latent-vs-env gradient correlation, frozen-encoder sample efficiency — which measures planner-side behaviour directly. The diagnostic and utility packages together form the v0.7.7 *diagnostic-plus-utility* claim ladder.
+- **Latent divergence-from-constant + responsiveness.** Computed from a 200-step random-policy trajectory per DMC env (6 envs × 12 ckpts = 72 trajectories). Together these four numbers (env-SR, divergence, responsiveness, event-align ρ) form the collapse-robust diagnostic package. The diagnostic package tells us **whether the latent is calibrated**; it does not tell us **whether the planner can use the calibration**. We therefore add a three-part utility package (§8) — latent-goal MPC horizon sweep, latent-vs-env gradient correlation, frozen-encoder sample efficiency — which measures planner-side behaviour directly. The diagnostic and utility packages together form the v0.7.7 *diagnostic-plus-utility* claim ladder, and the v0.7.8 *cross-environment generalisation* test (see §7) is the third leg that closes the loop on whether the calibration transfers to held-out envs and survives data-budget compression.
 ### 4.4 Baselines
 
 | Family                    | Models                             | What it tests                                  |
@@ -593,9 +593,7 @@ We explicitly do *not* claim any of the following, and the structure of the pape
 
 ### 8.4 Take-home sentence
 
-> ST-JEWM does not prove that spike traces are the highest-scoring control representation. It proves (a) that post-spike traces can be valid, calibrated, event-aligned predictive states under a stricter membrane-forbidden world-model interface, and (b) that this calibration makes the latent usable to a planner in a way that non-calibrated latents are not. Together (a) and (b) are the diagnostic-plus-utility package. Raw env-native success alone cannot tell these two claims apart.
-
----
+> ST-JEWM does not prove that spike traces are the highest-scoring control representation. It proves (a) that post-spike traces can be valid, calibrated, event-aligned predictive states under a stricter membrane-forbidden world-model interface, (b) that this calibration makes the latent usable to a planner in a way that non-calibrated latents are not, and (c) — the v0.7.8 contribution — that **the calibration transfers to held-out envs**: when 2 of 16 G16 envs (`walker`, `humanoid`) are held out of training, the STJEWM `trace` / `spike` ckpts reach the same calibrated regime on the held-out envs as the full-G16 ckpts, while MLP stays collapsed and GRU stays noisy. The diagnostic + utility + cross-environment generalisation package together establish the predictive-state interface as the load-bearing design choice; the load-bearing property is the calibrated event history, not the SNN substrate. Raw env-native success alone cannot tell these three claims apart.
 
 ## Table 1 — Main claim control table
 

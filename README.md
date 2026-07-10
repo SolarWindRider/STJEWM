@@ -179,25 +179,35 @@ Pipeline scripts in `code/scripts/utility/` (run `latent_goal_mpc.py`, `latent_e
 │       ├── aggregate_generalist.py   # v0.7.5 master table builder
 │       ├── stats_report.py           # per-suite summary stats
 │       ├── eval_generalist.sh        # per-env eval of a generalist ckpt
-│       ├── train_generalist.sh       # train one generalist ckpt
 │       ├── upload_master_table_to_obs.sh
-│       └── generalist_v0_7_5/        # v0.7.5 pipeline (15 files)
-│           ├── README.md             # operator's guide
-│           ├── GAPS.md               # v0.7.4 audit, all closed
-│           ├── train_one.sh          # train one ckpt with the v0.7.4 budget
-│           ├── eval_closed_loop_one.sh
-│           ├── eval_stress.sh        # suite-routed (G4|G8|G16)
-│           ├── run_suite.sh          # top-level orchestrator
-│           ├── run_align.sh          # event-align over 6 DMC envs
-│           ├── run_probes.sh         # ID-probe (now suite-routed)
-│           ├── run_probes_parallel.sh # xargs -P 3 parallel probe runner
-│           ├── run_stress_probes.sh  # stress env probes
-│           ├── run_stress_align.sh   # stress env align
-│           ├── measure_latent_stats.py  # collapse-robust metrics
-│           ├── aggregate_master.py   # build the master_table.{md,json}
-│           ├── aggregate_align.py
-│           ├── render_master_table.py
-│           └── master_aggregate.sh   # top-level aggregator
+│       ├── generalist_v0_7_5/        # v0.7.5 G4/G8/G16 pipeline (15 files)
+│       │   ├── README.md             # operator's guide
+│       │   ├── GAPS.md               # v0.7.4 audit, all closed
+│       │   ├── train_one.sh          # train one ckpt with the v0.7.4 budget
+│       │   ├── eval_closed_loop_one.sh
+│       │   ├── eval_stress.sh        # suite-routed (G4|G8|G16)
+│       │   ├── run_suite.sh          # top-level orchestrator
+│       │   ├── run_align.sh          # event-align over 6 DMC envs
+│       │   ├── run_probes.sh         # ID-probe (now suite-routed)
+│       │   ├── run_probes_parallel.sh # xargs -P 3 parallel probe runner
+│       │   ├── run_stress_probes.sh  # stress env probes
+│       │   ├── run_stress_align.sh   # stress env align
+│       │   ├── measure_latent_stats.py  # collapse-robust metrics
+│       │   ├── aggregate_master.py   # build the master_table.{md,json}
+│       │   ├── aggregate_align.py
+│       │   ├── render_master_table.py
+│       │   ├── master_aggregate.sh   # top-level aggregator
+│       │   ├── event_align_controls.py # negative controls (time-shift, shuffle, obs-copy, untrained, action-only)
+│       │   ├── model_sizes.py        # unified param table
+│       │   └── scaling_table.py      # G4/G8/G16 cross-suite aggregator
+│       └── utility/                  # v0.7.7+v0.7.8 utility experiments (10 files)
+│           ├── README.md             # per-experiment docs + reproducing guide
+│           ├── run_all_utilities.sh  # one-shot end-to-end driver
+│           ├── latent_goal_mpc.py + run_latent_goal_mpc.py
+│           ├── latent_env_grad.py + run_latent_env_grad.py
+│           ├── sample_efficiency.py + run_sample_efficiency.py
+│           ├── cross_env_gen.py + run_cross_env_gen.py   # v0.7.8 OOD headline
+│           └── compression_sweep.py + run_compression_sweep.py # v0.7.8 data-budget
 ├── configs/                          # active generalist specs only
 │   ├── generalist_G4_train.json      # 4 envs × 2K windows
 │   ├── generalist_G8_train.json      # 8 envs × 2K windows
@@ -207,7 +217,8 @@ Pipeline scripts in `code/scripts/utility/` (run `latent_goal_mpc.py`, `latent_e
 │   ├── generalist_16env.json          # 16 std envs (legacy)
 │   ├── generalist_20env.json          # 16 std + 4 stress (legacy)
 │   ├── generalist_probe_eval.json     # 7 probe-eligible envs
-│   └── generalist_stress_probe_eval.json # 4 stress envs
+│   ├── generalist_stress_probe_eval.json # 4 stress envs
+│   └── generalist_G16_minus_walker_humanoid.json # 14-env subset for v0.7.8 OOD test
 ├── data/                             # (gitignored; see OBS for download)
 ├── docs/
 │   ├── SNN_WORLD_MODEL_SURVEY.md     # background survey for the paper
@@ -312,9 +323,25 @@ done
 python -m code.scripts.generalist_v0_7_5.aggregate_master --merge-all
 python -m code.scripts.generalist_v0_7_5.render_master_table
 ```
-## Status (v0.7.5, 2026-07-06)
-| Component | Status | Output |
-|---|---|---|
+
+### v0.7.7 + v0.7.8 — utility, cross-environment generalisation, and compression
+
+The 5 utility experiments (3 from v0.7.7, 2 from v0.7.8) re-use the existing
+G16 generalist ckpts and write per-cell JSONs + aggregate tables to
+`results/utility/`. The full reproducing guide is in
+`code/scripts/utility/README.md`. One-shot driver:
+
+```bash
+# Just re-aggregate from existing per-cell JSONs (no retraining)
+bash code/scripts/utility/run_all_utilities.sh
+```
+
+If per-cell JSONs are missing, the runners also retrain (warning:
+`run_compression_sweep` and `run_cross_env_gen` are training-heavy
+and may take 1.5–2.5 hr each).
+## Status (v0.7.8, 2026-07-10)
+
+The headline experimental result is the **cross-environment generalisation** test (Section 7 of the paper): a STJEWM `trace` / `spike` ckpt trained on the 14-env G16 subset (walker, humanoid held out) reaches the *same* calibrated diagnostic regime on the held-out envs as the full-G16 ckpt. MLP stays collapsed; GRU stays noisy. The diagnostic profile is intrinsic to the model, not the env list.
 | 13-model specialist suite (20 std envs, env-SR + LeWM-SR) | done | `MASTER_TABLE.md` §1, §2 |
 | 13-model specialist suite (4 stress envs) | done | `MASTER_TABLE.md` §3, §4 |
 | Event-type linear probes (252 cells, 7 envs × 12 models × 3 targets) | done | `MASTER_TABLE.md` §5 |
@@ -327,7 +354,12 @@ python -m code.scripts.generalist_v0_7_5.render_master_table
 | G8/G16 ID probe re-run + G4/G8/G16 stress probes | **done (with skip-stubs)** | All 12 models done per suite. 12 × 7 envs × 7 targets = 588 cells each (G4 462/588, G8 546/588, G16 550/588; remaining cells timed out at 5min). 12 × 4 stress envs × ~3 targets = 144 cells each (G4 62, G8 63, G16 128; tworoom_long × rate_only probe hung in 5min window). |
 | G4/G8/G16 stress event-align (ρ on 4 stress envs) | **done** | 12 × 4 = 48 cells per suite, all 3 suites complete. `results/generalist*/stress_align/`. |
 | G4/G8/G16 collapse-robust latent metrics (divergence / responsiveness) on stress envs | **done (DMC only)** | `results/generalist/stress_align/` has the DMC env cells; stress envs deferred (would need `measure_latent_stats.py` with stress env support). |
-- **STJEWM is competitive on env-SR** — SUPPORTED (env-SR std 67.1 vs best 69.5, ≤2.4pp gap).
+| **v0.7.7 utility: latent-goal MPC horizon sweep** | **done** | `results/utility/latent_goal_mpc_table.md` — STJEWM `trace`/`spike`/`rate` are the only family with `cos_term ≤ 0.10` AND stable across $H \in \{1,3,5,10,20\}$ on 4 DMC envs. |
+| **v0.7.7 utility: latent-vs-env gradient correlation** | **done** | `results/utility/latent_env_grad_table.md` — STJEWM `trace`/`spike` get $\lvert \text{corr}\rvert \approx 0.42$–$0.81$ between latent-cost and env-reward gradients. MLP ≤ 0.10 (undef cosine); GRU sign-flipping (noise). |
+| **v0.7.7 utility: frozen-encoder sample efficiency** | **done** | `results/utility/sample_efficiency_table.md` — STJEWM family reaches `cos_term ≈ 0.06` from 100 training samples; MLP / GRU stay at ≈ 0 at every fraction. |
+| **v0.7.8 OOD: cross-environment generalisation** | **done** (v0.7.8 headline) | `results/utility/cross_env_gen_table.md` — STJEWM `trace`/`spike` reach the *same* calibrated regime on held-out walker+humanoid as the full-G16 ckpt. MLP / GRU carry their failure mode into the held-out env. |
+| **v0.7.8 OOD: data-budget compression** | **done** | `results/utility/compression_sweep_table.md` — STJEWM `trace`/`spike` stay calibrated at 0.5x/1.0x/2.0x budget; MLP stays collapsed at every scale. |
+| **v0.7.8 OOD: G4 → G8 → G16 scaling** | **done** | `results/utility/generalist_scaling_table.md` — all 6 STJEWM readouts stay calibrated at every scale; failure modes are scale-invariant. |
 - **STJEWM-membrane catastrophically fails stress** — REFUTED in v0.7.2 (stress env-SR 25.5% AVG, not 0%; v0.4 was a 1-seed artefact).
 - **Trace is event-correlated (ρ ≥ 0.9 on 5/6 DMC)** — SUPPORTED (ρ = 0.976 / 0.997 / 0.996 / 0.885 / 0.920).
 - **Membrane-forbidden protocol is necessary on stress** — NEGATIVE on env-SR; trace=membrane (both 25.0/25.5); trace > membrane on LeWM-SR stress (66.5 vs 49.5).
