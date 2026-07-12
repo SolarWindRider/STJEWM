@@ -95,106 +95,95 @@ DEFAULT_CKPT_BUDGET = [
 
 def _load_model_for_env(ckpt_path: str, env, device: str = "cpu"):
     """Build the model whose weights are in ckpt, with action/state dims
-    padded to match ckpt args. Mirrors closed_loop._PadObsWrapper path."""
-    ck = torch.load(ckpt_path, map_location="cpu", weights_only=False)
-    ck_args = ck.get("args", {})
-    pad_obs_to = (ck_args.get("pad_obs_to") or env.spec.obs_dim)
-    action_dim_ckpt = ck_args.get("action_dim") or env.spec.action_dim
+    padded to match ckpt args. Wraps the spec obs with _PadObsWrapper
+    if needed, then delegates to the shared build_model_from_ckpt helper
+    (which knows the right kwargs for every baseline + STJEWM).
+    """
+    import torch
     from code.eval.closed_loop import _PadObsWrapper
-    if pad_obs_to > env.spec.obs_dim:
+    from code.scripts.utility.latent_goal_mpc import build_model_from_ckpt
+    ck = torch.load(ckpt_path, map_location=device, weights_only=False)
+    ck_args = ck.get("args", {})
+    pad_obs_to = ck_args.get("pad_obs_to") or ck_args.get("state_dim") or env.spec.obs_dim
+    action_dim = ck_args.get("action_dim") or env.spec.action_dim
+    if pad_obs_to and pad_obs_to > env.spec.obs_dim:
         env = _PadObsWrapper(env, pad_obs_to)
-    m = ck_args.get("model", "stjewm")
-    if m == "lewm_baseline":
-        from code.lewm_transformer_baseline import LeWMTransformerBaseline
-        action_dim = ck_args.get("action_dim")
-        mdl = LeWMTransformerBaseline(env_spec=env.spec,
-                                       embed_dim=ck_args.get("embed_dim", 128),
-                                       n_layers=ck_args.get("n_layers", 4),
-                                       horizon=ck_args.get("horizon", 5),
-                                       action_dim=action_dim).to(device)
-    elif m == "mlp_baseline":
-        from code.mlp_baseline import MLPBaseline
-        mdl = MLPBaseline(env_spec=env.spec,
-                          embed_dim=ck_args.get("embed_dim", 128),
-                          action_dim=ck_args.get("action_dim"),
-                          n_layers=ck_args.get("n_layers", 2)).to(device)
-    elif m == "gru_baseline":
-        from code.gru_baseline import GRUBaseline
-        mdl = GRUBaseline(env_spec=env.spec,
-                           embed_dim=ck_args.get("embed_dim", 128),
-                           action_dim=ck_args.get("action_dim"),
-                           n_layers=ck_args.get("n_layers", 2)).to(device)
-    elif m == "cubifae_baseline":
-        from code.cubifae_baseline import CuBiFAEBaseline
-        mdl = CuBiFAEBaseline(env_spec=env.spec,
-                             embed_dim=ck_args.get("embed_dim", 128),
-                             action_dim=ck_args.get("action_dim"),
-                             n_layers=ck_args.get("n_layers", 4)).to(device)
-    elif m == "slt_lif_mpc_trace":
-        from code.slt_lif_mpc_baseline import SLTLIFMPCBaseline
-        mdl = SLTLIFMPCBaseline(env_spec=env.spec,
-                                embed_dim=ck_args.get("embed_dim", 128),
-                                action_dim=ck_args.get("action_dim"),
-                                n_layers=ck_args.get("n_layers", 4),
-                                mode="trace").to(device)
-    else:
-        from code.stjewm import STJEWM
-        mdl = STJEWM(
-            obs_dim=env.spec.obs_dim,
-            action_dim=ck_args.get("action_dim") or env.spec.action_dim,
-            embed_dim=ck_args.get("embed_dim", 192),
-            state_dim=ck_args.get("state_dim", 128),
-            n_layers=ck_args.get("n_layers", 4),
-            readout_mode=ck_args.get("readout_mode", "trace"),
-            cell_n_d=ck_args.get("cell_n_d", 3),
-            trace_beta=ck_args.get("trace_beta", 0.9),
-        ).to(device)
+    state_dim = pad_obs_to
+    mdl = build_model_from_ckpt(ck_args, state_dim, action_dim, device)
     mdl.load_state_dict(ck["model"], strict=False)
     mdl.eval()
-    # Sliced-action dim guard: if ckpt was trained at smaller action_dim,
-    # the predictor will slice; model already supports via action_dim.
     return mdl
 
 
 def measure_diagnostic_cross_family(
     ckpt_path: str, env_kind: str, env_path: str, env_id: str,
     n_steps: int = 200, seed: int = 0, device: str = "cpu",
+    action_dim: int = 56,  # CKPT action_dim; defaults to G16 train value
 ) -> Dict[str, float]:
-    """Roll a ckpt on a (possibly non-DMC) env for n_steps and return
-    {divergence, responsiveness}. The metric is the same as v0.7.8
-    measure_latent_stats but dispatches on env_kind (DMC/PushT/Reacher/...)
-    so we can measure cross-family OOD diagnostics.
+    """Roll a ckpt on a (possibly non-DMC) env for n_steps and return {div, resp}. Same shape as v0.7.8 measure_latent_stats but dispatches on env_kind (DMC/PushT/Reacher/...) so we can measure cross-family OOD diagnostics.
     """
-    from code.core.envs import make_env
-    env = make_env(env_kind=env_kind, env_path=env_path, env_id=env_id)
-    env.seed(seed)
+    # Cross-family factory lives in code.eval.closed_loop (handles (handles
+    # DMC/PushT/TwoRoom/Reacher/DelayedT/Cube/Swim via one make_env).
+    from code.eval.closed_loop import make_env
+    env = make_env(env_kind=env_kind, data_path=env_path)
+    if hasattr(env, "seed"):
+        env.seed(seed)
+
+    def _flat_obs(o):
+        # DMC envs return a 1D np.ndarray; swm / reacher / delayed_t_maze
+        # envs return dicts like {"obs": ...} or {"pixels": ..., "obs": ...}.
+        # Flatten both shapes to (D,) consistently. If the dict has no
+        # standard key, pick the first tensor-like value.
+        if isinstance(o, dict):
+            for k in ("obs", "pixels", "state"):
+                if k in o:
+                    o = o[k]
+                    break
+            else:
+                for v in o.values():
+                    if hasattr(v, "numpy") or hasattr(v, "cpu"):
+                        o = v
+                        break
+        o = np.asarray(o)
+        if o.ndim > 1:
+            o = o.reshape(o.shape[0], -1).mean(axis=0)
+        return o.astype(np.float32)
+
+    has_gym_action_space = (
+        hasattr(env, "action_space") and hasattr(env.action_space, "sample")
+    )
+    cur_obs = _flat_obs(env.reset(seed=seed))
     model = _load_model_for_env(str(ckpt_path), env, device)
 
     obs_list, lat_list = [], []
-    obs = env.reset()
-    # Pad obs to model.obs_dim if needed
-    cur_obs = obs
+    from code.core.encode import encode_obs as _encode_obs_obs
     for t in range(n_steps):
-        action = env.action_space.sample()
-        model_obs = torch.as_tensor(cur_obs, dtype=torch.float32,
-                                    device=device).unsqueeze(0).unsqueeze(0)
-        with torch.no_grad():
-            out = model(model_obs, deterministic=True)
-        z = out.get("z", out.get("trace"))
-        if isinstance(z, tuple):
-            z = z[0]
-        lat_list.append(z.squeeze(0).squeeze(0).detach().cpu().numpy())
-        obs_list.append(np.asarray(cur_obs))
-        cur_obs, _, done, _ = env.step(action)
+        if has_gym_action_space:
+            action = env.action_space.sample()
+        else:
+            # Swm / Reacher / DelayedT envs don't expose action_space;
+            # sample uniformly in the spec.action_low / action_high bound.
+            action = np.random.uniform(
+                env.spec.action_low, env.spec.action_high
+            ).astype(np.float32)
+        z = _encode_obs_obs(model, torch.as_tensor(cur_obs, dtype=torch.float32),
+                            action_dim, device)
+        lat_list.append(z.detach().cpu().numpy())
+        obs_list.append(cur_obs)
+        step_out, _, done, _ = env.step(action)
+        cur_obs = _flat_obs(step_out)
         if done:
-            cur_obs = env.reset()
+            cur_obs = _flat_obs(env.reset(seed=seed))
     obs_arr = np.stack(obs_list)
     lat_arr = np.stack(lat_list)
     d_obs = np.diff(obs_arr, axis=0)
     d_lat = np.diff(lat_arr, axis=0)
     per_dim_std = lat_arr.std(axis=0)
     divergence = float(per_dim_std.mean())
-    ratio = np.linalg.norm(d_lat, axis=1) / (np.linalg.norm(d_obs, axis=1) + 1e-9)
+    ratio = (
+        np.linalg.norm(d_lat, axis=1)
+        / (np.linalg.norm(d_obs, axis=1) + 1e-9)
+    )
     responsiveness = float(ratio.mean())
     return {
         "ckpt": str(ckpt_path),
@@ -210,45 +199,65 @@ def measure_diagnostic_cross_family(
     }
 
 
-# ============================================================
-# In-process event_align (cross-family)
-# ============================================================
 
 def event_align_cross_family(
     ckpt_path: str, env_kind: str, env_path: str, env_id: str,
     n_steps: int = 100, seed: int = 0, device: str = "cpu",
+    action_dim: int = 56,
 ) -> Dict[str, float]:
     """Per-step correlation between ||Δobs_t|| and ||Δlatent_t||.
-    The same diagnostic measure_latent_stats supports internally for
-    DMC; this replicates the cross-family version.
+    Same diagnostic measure_latent_stats supports for DMC; this replicates
+    the cross-family version using the canonical encode helper.
     """
-    from code.core.envs import make_env
-    env = make_env(env_kind=env_kind, env_path=env_path, env_id=env_id)
-    env.seed(seed)
+    from code.eval.closed_loop import make_env
+    env = make_env(env_kind=env_kind, data_path=env_path)
+    if hasattr(env, "seed"):
+        env.seed(seed)
+
+    def _flat_obs(o):
+        if isinstance(o, dict):
+            for k in ("obs", "pixels", "state"):
+                if k in o:
+                    o = o[k]
+                    break
+            else:
+                for v in o.values():
+                    if hasattr(v, "numpy") or hasattr(v, "cpu"):
+                        o = v
+                        break
+        o = np.asarray(o)
+        if o.ndim > 1:
+            o = o.reshape(o.shape[0], -1).mean(axis=0)
+        return o.astype(np.float32)
+
     model = _load_model_for_env(str(ckpt_path), env, device)
+    from code.core.encode import encode_obs as _encode_obs_obs
+    has_gym_action_space = (
+        hasattr(env, "action_space") and hasattr(env.action_space, "sample")
+    )
 
     dobs_arr, dlat_arr = [], []
-    obs = env.reset()
-    cur_obs = obs
+    cur_obs = _flat_obs(env.reset(seed=seed))
     prev_obs, prev_lat = None, None
     for t in range(n_steps):
-        action = env.action_space.sample()
-        model_obs = torch.as_tensor(cur_obs, dtype=torch.float32,
-                                    device=device).unsqueeze(0).unsqueeze(0)
-        with torch.no_grad():
-            out = model(model_obs, deterministic=True)
-        z = out.get("z", out.get("trace"))
-        if isinstance(z, tuple):
-            z = z[0]
-        lat = z.squeeze(0).squeeze(0).detach().cpu().numpy()
+        z = _encode_obs_obs(model, torch.as_tensor(cur_obs, dtype=torch.float32),
+                            action_dim, device)
+        lat = z.detach().cpu().numpy()
         if prev_obs is not None:
-            dobs_arr.append(np.linalg.norm(np.asarray(cur_obs) - prev_obs))
+            dobs_arr.append(np.linalg.norm(cur_obs - prev_obs))
             dlat_arr.append(np.linalg.norm(lat - prev_lat))
-        prev_obs = np.asarray(cur_obs)
+        prev_obs = cur_obs
         prev_lat = lat
-        cur_obs, _, done, _ = env.step(action)
+        if has_gym_action_space:
+            step_action = env.action_space.sample()
+        else:
+            step_action = np.random.uniform(
+                env.spec.action_low, env.spec.action_high
+            ).astype(np.float32)
+        step_out, _, done, _ = env.step(step_action)
+        cur_obs = _flat_obs(step_out)
         if done:
-            cur_obs = env.reset()
+            cur_obs = _flat_obs(env.reset(seed=seed))
     if len(dobs_arr) < 2:
         return {"corr_obs_latent": float("nan"), "n": 0}
     if dobs.std() < 1e-9 or dlat.std() < 1e-9:

@@ -31,11 +31,25 @@ OUT_DIR = ROOT / "results/utility/cross_env_gen"
 TABLE_PATH = ROOT / "results/utility/cross_env_gen_table.md"
 SEED = 0
 
+# v0.7.9 review fix: TARGET_MODELS now == all 12 G16 models
+# (was the 4-ckpt subset trace/spike/mlp/gru; the remaining 8 ckpts —
+#  CuBiFAE / SLT-LIF-MPC trace / SLT-LIF-MPC free / LeWM-v2 + the 4 STJEWM
+#  readouts rate/no_trace/hidden_leak/membrane — were missing per
+#  reviewer feedback). Train is one-shot wallclock ≈ 8 ckpts × ~25 min on 1
+#  CPU = ~3.3 hr; results regenerate results/utility/cross_env_gen_table.md.
 TARGET_MODELS = [
     "stjewm_trace_only",
     "stjewm_spike_only",
-    "mlp_baseline",
+    "stjewm_rate_only",
+    "stjewm_no_trace",
+    "stjewm_hidden_leak",
+    "stjewm_membrane_readout",
+    "cubifae_baseline",
     "gru_baseline",
+    "lewm_baseline_v2",
+    "slt_lif_mpc_trace",
+    "slt_lif_mpc_free",
+    "mlp_baseline",
 ]
 FULL_G16_MODELS = [
     "stjewm_trace_only",

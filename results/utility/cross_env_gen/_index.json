@@ -830,65 +830,6 @@
       "heldout": {
         "humanoid": {
           "gap_in_minus_holdout": {
-            "divergence": -0.00047999999999999996,
-            "env_sr": -0.30952380952380953,
-            "responsiveness": 0.5321799999999999,
-            "rho": 0.12831632122397424
-          },
-          "metrics": {
-            "divergence": 0.0007,
-            "env_sr": 1.0,
-            "lewm_sr": 1.0,
-            "mean_cos_dist": 1.5358130137125652e-05,
-            "responsiveness": 0.1073,
-            "rho": -0.19719038903713226,
-            "skipped": false,
-            "sources": {
-              "eval": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/mlp_baseline/seed_0/eval_humanoid.json",
-              "event_align": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/event_align/humanoid_mlp_baseline_seed0.json",
-              "latent_stats": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/mlp_baseline/seed_0/latent_stats_humanoid.json"
-            }
-          }
-        },
-        "walker": {
-          "gap_in_minus_holdout": {
-            "divergence": -7.999999999999997e-05,
-            "env_sr": -0.30952380952380953,
-            "responsiveness": 0.41317999999999994,
-            "rho": -0.07651798399165273
-          },
-          "metrics": {
-            "divergence": 0.0003,
-            "env_sr": 1.0,
-            "lewm_sr": 1.0,
-            "mean_cos_dist": 6.447235743204753e-06,
-            "responsiveness": 0.2263,
-            "rho": 0.007643916178494692,
-            "skipped": false,
-            "sources": {
-              "eval": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/mlp_baseline/seed_0/eval_walker.json",
-              "event_align": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/event_align/walker_mlp_baseline_seed0.json",
-              "latent_stats": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/mlp_baseline/seed_0/latent_stats_walker.json"
-            }
-          }
-        }
-      },
-      "in_domain_means": {
-        "divergence": 0.00022,
-        "env_sr": 0.6904761904761905,
-        "responsiveness": 0.6394799999999999,
-        "rho": -0.06887406781315804
-      },
-      "model": "mlp_baseline",
-      "row_id": "mlp_baseline__minus_walker_humanoid",
-      "seed": 0,
-      "train_regime": "minus_walker_humanoid",
-      "train_regime_label": "minus walker+humanoid"
-    },
-    {
-      "heldout": {
-        "humanoid": {
-          "gap_in_minus_holdout": {
             "divergence": -0.014000000000000002,
             "env_sr": -0.30952380952380953,
             "responsiveness": 20.8108,
@@ -940,6 +881,65 @@
       },
       "model": "gru_baseline",
       "row_id": "gru_baseline__minus_walker_humanoid",
+      "seed": 0,
+      "train_regime": "minus_walker_humanoid",
+      "train_regime_label": "minus walker+humanoid"
+    },
+    {
+      "heldout": {
+        "humanoid": {
+          "gap_in_minus_holdout": {
+            "divergence": -0.00047999999999999996,
+            "env_sr": -0.30952380952380953,
+            "responsiveness": 0.5321799999999999,
+            "rho": 0.12831632122397424
+          },
+          "metrics": {
+            "divergence": 0.0007,
+            "env_sr": 1.0,
+            "lewm_sr": 1.0,
+            "mean_cos_dist": 1.5358130137125652e-05,
+            "responsiveness": 0.1073,
+            "rho": -0.19719038903713226,
+            "skipped": false,
+            "sources": {
+              "eval": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/mlp_baseline/seed_0/eval_humanoid.json",
+              "event_align": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/event_align/humanoid_mlp_baseline_seed0.json",
+              "latent_stats": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/mlp_baseline/seed_0/latent_stats_humanoid.json"
+            }
+          }
+        },
+        "walker": {
+          "gap_in_minus_holdout": {
+            "divergence": -7.999999999999997e-05,
+            "env_sr": -0.30952380952380953,
+            "responsiveness": 0.41317999999999994,
+            "rho": -0.07651798399165273
+          },
+          "metrics": {
+            "divergence": 0.0003,
+            "env_sr": 1.0,
+            "lewm_sr": 1.0,
+            "mean_cos_dist": 6.447235743204753e-06,
+            "responsiveness": 0.2263,
+            "rho": 0.007643916178494692,
+            "skipped": false,
+            "sources": {
+              "eval": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/mlp_baseline/seed_0/eval_walker.json",
+              "event_align": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/event_align/walker_mlp_baseline_seed0.json",
+              "latent_stats": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/mlp_baseline/seed_0/latent_stats_walker.json"
+            }
+          }
+        }
+      },
+      "in_domain_means": {
+        "divergence": 0.00022,
+        "env_sr": 0.6904761904761905,
+        "responsiveness": 0.6394799999999999,
+        "rho": -0.06887406781315804
+      },
+      "model": "mlp_baseline",
+      "row_id": "mlp_baseline__minus_walker_humanoid",
       "seed": 0,
       "train_regime": "minus_walker_humanoid",
       "train_regime_label": "minus walker+humanoid"
