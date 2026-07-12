@@ -207,7 +207,7 @@ Pipeline scripts in `code/scripts/utility/` (run `latent_goal_mpc.py`, `latent_e
 │           ├── latent_env_grad.py + run_latent_env_grad.py
 │           ├── sample_efficiency.py + run_sample_efficiency.py
 │           ├── cross_env_gen.py + run_cross_env_gen.py   # v0.7.8 OOD headline
-│           └── compression_sweep.py + run_compression_sweep.py # v0.7.8 data-budget
+│           └── budget_scaling.py + run_budget_scaling.py # v0.7.8 data-budget
 ├── configs/                          # active generalist specs only
 │   ├── generalist_G4_train.json      # 4 envs × 2K windows
 │   ├── generalist_G8_train.json      # 8 envs × 2K windows
@@ -324,7 +324,7 @@ python -m code.scripts.generalist_v0_7_5.aggregate_master --merge-all
 python -m code.scripts.generalist_v0_7_5.render_master_table
 ```
 
-### v0.7.7 + v0.7.8 — utility, cross-environment generalisation, and compression
+### v0.7.7 + v0.7.8 — utility, cross-environment generalisation, and budget scaling
 
 The 5 utility experiments (3 from v0.7.7, 2 from v0.7.8) re-use the existing
 G16 generalist ckpts and write per-cell JSONs + aggregate tables to
@@ -337,11 +337,11 @@ bash code/scripts/utility/run_all_utilities.sh
 ```
 
 If per-cell JSONs are missing, the runners also retrain (warning:
-`run_compression_sweep` and `run_cross_env_gen` are training-heavy
+`run_budget_scaling` and `run_cross_env_gen` are training-heavy
 and may take 1.5–2.5 hr each).
 ## Status (v0.7.8, 2026-07-10)
 
-The headline experimental result is the **cross-environment generalisation** test (Section 7 of the paper): a STJEWM `trace` / `spike` ckpt trained on the 14-env G16 subset (walker, humanoid held out) reaches the *same* calibrated diagnostic regime on the held-out envs as the full-G16 ckpt. MLP stays collapsed; GRU stays noisy. The diagnostic profile is intrinsic to the model, not the env list.
+The v0.7.8 evidence supports a **leave-two-environment-out pilot**: a STJEWM `trace` / `spike` ckpt trained on the 14-env G16 subset (walker, humanoid held out) largely **preserves its diagnostic profile** (div, responsiveness, ρ) on those two held-out environments. MLP stays collapsed; GRU stays noisy. This is a within-suite transfer claim, not a cross-benchmark-family OOD claim — see §"Honest scope" of paper.md. The diagnostic profile is intrinsic to the model, not the env list.
 | 13-model specialist suite (20 std envs, env-SR + LeWM-SR) | done | `MASTER_TABLE.md` §1, §2 |
 | 13-model specialist suite (4 stress envs) | done | `MASTER_TABLE.md` §3, §4 |
 | Event-type linear probes (252 cells, 7 envs × 12 models × 3 targets) | done | `MASTER_TABLE.md` §5 |
@@ -357,8 +357,8 @@ The headline experimental result is the **cross-environment generalisation** tes
 | **v0.7.7 utility: latent-goal MPC horizon sweep** | **done** | `results/utility/latent_goal_mpc_table.md` — STJEWM `trace`/`spike`/`rate` are the only family with `cos_term ≤ 0.10` AND stable across $H \in \{1,3,5,10,20\}$ on 4 DMC envs. |
 | **v0.7.7 utility: latent-vs-env gradient correlation** | **done** | `results/utility/latent_env_grad_table.md` — STJEWM `trace`/`spike` get $\lvert \text{corr}\rvert \approx 0.42$–$0.81$ between latent-cost and env-reward gradients. MLP ≤ 0.10 (undef cosine); GRU sign-flipping (noise). |
 | **v0.7.7 utility: frozen-encoder sample efficiency** | **done** | `results/utility/sample_efficiency_table.md` — STJEWM family reaches `cos_term ≈ 0.06` from 100 training samples; MLP / GRU stay at ≈ 0 at every fraction. |
-| **v0.7.8 OOD: cross-environment generalisation** | **done** (v0.7.8 headline) | `results/utility/cross_env_gen_table.md` — STJEWM `trace`/`spike` reach the *same* calibrated regime on held-out walker+humanoid as the full-G16 ckpt. MLP / GRU carry their failure mode into the held-out env. |
-| **v0.7.8 OOD: data-budget compression** | **done** | `results/utility/compression_sweep_table.md` — STJEWM `trace`/`spike` stay calibrated at 0.5x/1.0x/2.0x budget; MLP stays collapsed at every scale. |
+| **v0.7.8: leave-two-env-out pilot (within-suite)** | **done** | `results/utility/cross_env_gen_table.md` — trained STJEWM `trace` / `spike`, `mlp_baseline`, `gru_baseline` on the 14-env G16 subset (walker, humanoid held out). STJEWM's div/resp/ρ land in the calibrated band on the held-out env; MLP/GRU carry their failure mode. **Not a generalisation claim across benchmark families** — for that we need OOD1/OOD2/OOD3 (see §"Honest scope"). |
+| **v0.7.8 OOD: training-data-budget scaling (0.5x / 1.0x / 2.0x)** | **done** | `results/utility/budget_scaling_table.md` — STJEWM `trace`/`spike` stay calibrated at 0.5x/1.0x/2.0x budget; MLP stays collapsed at every scale. |
 | **v0.7.8 OOD: G4 → G8 → G16 scaling** | **done** | `results/utility/generalist_scaling_table.md` — all 6 STJEWM readouts stay calibrated at every scale; failure modes are scale-invariant. |
 - **STJEWM-membrane catastrophically fails stress** — REFUTED in v0.7.2 (stress env-SR 25.5% AVG, not 0%; v0.4 was a 1-seed artefact).
 - **Trace is event-correlated (ρ ≥ 0.9 on 5/6 DMC)** — SUPPORTED (ρ = 0.976 / 0.997 / 0.996 / 0.885 / 0.920).
@@ -366,7 +366,7 @@ The headline experimental result is the **cross-environment generalisation** tes
 - **STJEWM dominates event-type AUROC** — SUPPORTED (6 STJEWM readouts all > 0.688; best non-SNN = GRU 0.574).
 - **MLP 98.8% LeWM-SR is real capability** — **REFUTED in v0.7.5** (latent collapse: MLP `divergence-from-constant = 0.0002` is 50× lower than STJEWM's 0.011; the high LeWM-SR is the collapse signature, not a real capability). **NEW v0.7.5 finding:** the `divergence` metric separates the 3 non-spiking baselines — MLP=collapse, GRU=noise (resp 31, div normal), LeWM=over-reactive (resp 33, div 16× STJEWM).
 - **GRU is the strongest stress env-SR baseline** — NEW v0.7.2 (GRU 42.0% AVG, beats all SNN family 25–26%; but GRU event-align ρ = −0.011, so its high stress env-SR is a perception/memory hack, not event-structure).
-- **STJEWM is the only family that is calibrated, event-aligned, AND non-collapsed** — NEW v0.7.5: all 6 STJEWM readouts have `divergence = 0.011–0.013` (50× MLP, 1/16× LeWM), `event-align ρ ≥ 0.99`, and `responsiveness ≈ 0.20` (1/150× GRU/LeWM). All 3 non-spiking baselines fail at least one of these axes.
+- **STJEWM is the only family that is calibrated, event-aligned, AND non-collapsed** — NEW v0.7.5: all 6 STJEWM readouts have `divergence = 0.011–0.013` (50× MLP, 1/16× LeWM), `event-align ρ ≥ 0.99`, and `responsiveness ≈ 0.20` (1/150× GRU/LeWM). All 3 non-spiking baselines fail at least one of these axes. **v0.7.9 caveat:** the leave-two-env-out pilot only re-trained 4 of 12 models (STJEWM trace/spike, MLP, GRU); the *only-family-generalises* claim still requires OOD1 retraining for the 8 remaining models (CuBiFAE / SLT-LIF-MPC trace/free / LeWM / STJEWM rate/no_trace/hidden_leak/membrane_readout).
 ## Pre-push checklist (GitHub)
 
 - [x] Add `LICENSE` (MIT for code) — done

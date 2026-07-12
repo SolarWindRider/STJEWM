@@ -1,0 +1,63 @@
+{
+  "ckpt": "results/generalist_G16/gru_baseline/seed_0/final.pt",
+  "env": "finger",
+  "n_episodes": 5,
+  "cem_samples": 100,
+  "cem_elites": 10,
+  "cem_iters": 10,
+  "horizons": [
+    1,
+    3,
+    5,
+    10,
+    20
+  ],
+  "per_horizon": {
+    "1": {
+      "horizon": 1,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 0.0006865978240966797,
+      "mean_cos_dist_terminal_std": 0.00029459466406915315,
+      "wall_time_sec": 4.328551530838013,
+      "n_episodes": 5
+    },
+    "3": {
+      "horizon": 3,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 0.0007832169532775879,
+      "mean_cos_dist_terminal_std": 0.0003431704776627681,
+      "wall_time_sec": 0.638115406036377,
+      "n_episodes": 5
+    },
+    "5": {
+      "horizon": 5,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 0.0006466388702392578,
+      "mean_cos_dist_terminal_std": 0.0002946529661890744,
+      "wall_time_sec": 0.8520684242248535,
+      "n_episodes": 5
+    },
+    "10": {
+      "horizon": 10,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 0.0006295263767242432,
+      "mean_cos_dist_terminal_std": 0.0003092592669732043,
+      "wall_time_sec": 1.6026313304901123,
+      "n_episodes": 5
+    },
+    "20": {
+      "horizon": 20,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 0.0005980730056762695,
+      "mean_cos_dist_terminal_std": 0.0003091698020824588,
+      "wall_time_sec": 3.1326942443847656,
+      "n_episodes": 5
+    }
+  },
+  "generated_at": "2026-07-10 00:09:22"
+}

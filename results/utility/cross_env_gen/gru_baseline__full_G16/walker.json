@@ -1,0 +1,63 @@
+{
+  "cross_env_generalisation_drop": {
+    "divergence": 0.0,
+    "env_sr": 0.0,
+    "responsiveness": 23.977239999999995,
+    "rho": 0.10130113819614053
+  },
+  "cross_env_generalisation_gap": {
+    "divergence": -0.0043,
+    "env_sr": -0.30952380952380953,
+    "responsiveness": 23.977239999999995,
+    "rho": 0.10130113819614053
+  },
+  "env": "walker",
+  "held_out_from_training": false,
+  "holdout_metrics": {
+    "divergence": 0.0112,
+    "env_sr": 1.0,
+    "lewm_sr": 1.0,
+    "mean_cos_dist": 0.0006075203418731689,
+    "responsiveness": 11.1293,
+    "rho": -0.07712048292160034,
+    "skipped": false,
+    "sources": {
+      "eval": "/home/lx/snn/results/generalist_G16/gru_baseline/seed_0/eval_walker.json",
+      "event_align": "/home/lx/snn/results/generalist_G16/event_align/walker_gru_baseline_seed0.json",
+      "latent_stats": "/home/lx/snn/results/generalist_G16/gru_baseline/seed_0/latent_stats_walker.json"
+    }
+  },
+  "in_domain_diagnostic_envs": [
+    "cartpole_2d",
+    "pendulum_2d",
+    "finger",
+    "ball_in_cup",
+    "cheetah"
+  ],
+  "in_domain_eval_envs": [
+    "cartpole_2d",
+    "pendulum_2d",
+    "finger",
+    "ball_in_cup",
+    "cheetah",
+    "hopper",
+    "quadruped",
+    "humanoid_CMU",
+    "dog",
+    "fish",
+    "stacker",
+    "reacher",
+    "pusht",
+    "tworoom"
+  ],
+  "in_domain_means": {
+    "divergence": 0.0069,
+    "env_sr": 0.6904761904761905,
+    "responsiveness": 35.106539999999995,
+    "rho": 0.024180655274540185
+  },
+  "model": "gru_baseline",
+  "seed": 0,
+  "train_regime": "full_G16",
+  "train_regime_label": "full-G16"
+}

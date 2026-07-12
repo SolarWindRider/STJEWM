@@ -1,16 +1,16 @@
-"""Driver for the data-budget compression sweep (v0.7.8 utility experiment 2).
+"""Driver for the data-budget scaling sweep (v0.7.8 utility experiment 2).
 
 Loops over 3 models x 3 data budgets (0.5x, 1.0x, 2.0x). For each cell it:
   - trains a new ckpt (skips if final.pt already exists) — at 0.5x and 2.0x
   - measures latent_stats + event_align + closed_loop on 6 DMC envs
-  - aggregates to results/utility/compression_sweep/<model>/<frac>.json
+  - aggregates to results/utility/budget_scaling/<model>/<frac>.json
 
-The final results/utility/compression_sweep_table.md is the paper-ready summary.
+The final results/utility/budget_scaling_table.md is the paper-ready summary.
 
 Usage:
-    python -m code.scripts.utility.run_compression_sweep
-    python -m code.scripts.utility.run_compression_sweep --skip-train
-    python -m code.scripts.utility.run_compression_sweep --aggregate-only
+    python -m code.scripts.utility.run_budget_scaling
+    python -m code.scripts.utility.run_budget_scaling --skip-train
+    python -m code.scripts.utility.run_budget_scaling --aggregate-only
 """
 from __future__ import annotations
 
@@ -85,8 +85,8 @@ def aggregate_table(out_dir: Path, table_path: Path) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out-dir", default="results/utility/compression_sweep")
-    ap.add_argument("--table-path", default="results/utility/compression_sweep_table.md")
+    ap.add_argument("--out-dir", default="results/utility/budget_scaling")
+    ap.add_argument("--table-path", default="results/utility/budget_scaling_table.md")
     ap.add_argument("--skip-train", action="store_true",
                     help="don't retrain (use existing ckpts; useful to re-eval).")
     ap.add_argument("--aggregate-only", action="store_true",
@@ -103,7 +103,7 @@ def main() -> int:
         fracs = [float(x) for x in args.fracs.split(",")]
 
     if not args.aggregate_only:
-        from code.scripts.utility.compression_sweep import (
+        from code.scripts.utility.budget_scaling import (
             run_for_1x_baseline, run_for_new_ckpt,
         )
 

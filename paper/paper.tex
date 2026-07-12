@@ -1,4 +1,4 @@
-% ST-JEWM v0.7.8 - Learning Calibrated Event-Driven Predictive States for Generalizable World Models
+% ST-JEWM v0.7.9 - Learning Calibrated Predictive States for Generalizable World Models
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
@@ -15,12 +15,23 @@
 
 \title{Spike Traces as Calibrated Predictive States for Reconstruction-Free World Models}
 \author{Anonymous Authors}
-\date{2026-07-06}
+\date{2026-07-10}
 
 \begin{document}
 \maketitle
 
-% ============================================================================
+\noindent\textbf{v0.7.9 honest-scope correction (read first).} The v0.7.8
+release described §7 as ``cross-environment generalisation'' and called the
+within-suite leave-two-env-out pilot sufficient evidence for the working
+title ``Generalisable World Models''. On reviewer feedback the framing has
+been downgraded: §7 is now ``Cross-Environment Transfer and Scaling
+(Within Suite)''; OOD1/OOD2/OOD3 (14-split cross-benchmark-family matrix)
+is the gating experiment for the working title and is deferred to v0.7.10;
+§7 uses \emph{largely preserved} / \emph{shows limited drift} / \emph{in the
+same diagnostic regime}, never \emph{invariant}; §9 downgrades the
+``only-family-generalises'' claim to ``only-family-among-the-4-retrained''.
+All numbers in the tables are unchanged; only the interpretation is.
+
 \section*{Abstract}
 
 Reconstruction-free world models compress observation--action streams into

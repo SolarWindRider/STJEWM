@@ -1,0 +1,32 @@
+# Cross-environment generalisation: held-out walker + humanoid
+
+This is a zero-shot cross-environment generalisation table over an environment-distribution shift.
+Rows compare checkpoints trained on all G16 environments with checkpoints trained on G16 minus walker and humanoid.
+
+`env-SR_in` is the mean env-native success over the 14 non-held-out training environments. 
+`drop_in_minus_holdout` / gap columns are signed in-domain minus held-out differences, so negative env-SR values mean the held-out env scored higher than the in-domain mean. 
+`div_in`, `resp_in`, and `ρ_in` are means over the in-domain DMC diagnostic envs: cartpole_2d, pendulum_2d, finger, ball_in_cup, cheetah.
+
+| model | train | walker env-SR_in | walker env-SR_holdout | walker drop_in_minus_holdout | walker div_in | walker div_holdout | walker div_gap_in_minus_holdout | walker resp_in | walker resp_holdout | walker resp_gap_in_minus_holdout | walker ρ_in | walker ρ_holdout | walker ρ_gap_in_minus_holdout | humanoid env-SR_in | humanoid env-SR_holdout | humanoid drop_in_minus_holdout | humanoid div_in | humanoid div_holdout | humanoid div_gap_in_minus_holdout | humanoid resp_in | humanoid resp_holdout | humanoid resp_gap_in_minus_holdout | humanoid ρ_in | humanoid ρ_holdout | humanoid ρ_gap_in_minus_holdout | mean drop_in_minus_holdout | mean div_gap | mean resp_gap | mean ρ_gap |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| stjewm_trace_only | full-G16 | 69.0 | 100.0 | -31.0 | 0.0106 | 0.0173 | -0.0067 | 0.204 | 0.216 | -0.012 | 0.994 | 0.986 | 0.008 | 69.0 | 100.0 | -31.0 | 0.0106 | 0.0281 | -0.0175 | 0.204 | 0.207 | -0.003 | 0.994 | 0.974 | 0.020 | -31.0 | -0.0121 | -0.008 | 0.014 |
+| stjewm_trace_only | minus walker+humanoid | 71.4 | 100.0 | -28.6 | 0.0077 | 0.0183 | -0.0106 | 0.205 | 0.202 | 0.003 | 0.996 | 0.989 | 0.007 | 71.4 | 100.0 | -28.6 | 0.0077 | 0.0327 | -0.0250 | 0.205 | 0.204 | 0.001 | 0.996 | 0.950 | 0.046 | -28.6 | -0.0178 | 0.002 | 0.027 |
+| stjewm_spike_only | full-G16 | 71.4 | 100.0 | -28.6 | 0.0103 | 0.0150 | -0.0047 | 0.210 | 0.206 | 0.004 | 0.995 | 0.998 | -0.003 | 71.4 | 100.0 | -28.6 | 0.0103 | 0.0281 | -0.0178 | 0.210 | 0.202 | 0.009 | 0.995 | 0.944 | 0.051 | -28.6 | -0.0113 | 0.006 | 0.024 |
+| stjewm_spike_only | minus walker+humanoid | 69.0 | 100.0 | -31.0 | 0.0106 | 0.0166 | -0.0060 | 0.212 | 0.217 | -0.006 | 0.995 | 0.997 | -0.003 | 69.0 | 100.0 | -31.0 | 0.0106 | 0.0286 | -0.0180 | 0.212 | 0.208 | 0.004 | 0.995 | 0.921 | 0.073 | -31.0 | -0.0120 | -0.001 | 0.035 |
+| mlp_baseline | full-G16 | 69.0 | 100.0 | -31.0 | 0.0002 | 0.0003 | -0.0001 | 0.605 | 0.259 | 0.347 | -0.000 | -0.172 | 0.172 | 69.0 | 100.0 | -31.0 | 0.0002 | 0.0007 | -0.0005 | 0.605 | 0.104 | 0.502 | -0.000 | -0.227 | 0.227 | -31.0 | -0.0003 | 0.424 | 0.199 |
+| mlp_baseline | minus walker+humanoid | 69.0 | 100.0 | -31.0 | 0.0002 | 0.0003 | -0.0001 | 0.639 | 0.226 | 0.413 | -0.069 | 0.008 | -0.077 | 69.0 | 100.0 | -31.0 | 0.0002 | 0.0007 | -0.0005 | 0.639 | 0.107 | 0.532 | -0.069 | -0.197 | 0.128 | -31.0 | -0.0003 | 0.473 | 0.026 |
+| gru_baseline | full-G16 | 69.0 | 100.0 | -31.0 | 0.0069 | 0.0112 | -0.0043 | 35.107 | 11.129 | 23.977 | 0.024 | -0.077 | 0.101 | 69.0 | 100.0 | -31.0 | 0.0069 | 0.0205 | -0.0136 | 35.107 | 5.384 | 29.723 | 0.024 | -0.118 | 0.143 | -31.0 | -0.0089 | 26.850 | 0.122 |
+| gru_baseline | minus walker+humanoid | 69.0 | 100.0 | -31.0 | 0.0070 | 0.0113 | -0.0043 | 25.725 | 11.803 | 13.922 | -0.055 | -0.171 | 0.116 | 69.0 | 100.0 | -31.0 | 0.0070 | 0.0210 | -0.0140 | 25.725 | 4.914 | 20.811 | -0.055 | -0.166 | 0.111 | -31.0 | -0.0092 | 17.367 | 0.113 |
+| stjewm_rate_only | full-G16 | 69.0 | 100.0 | -31.0 | 0.0111 | 0.0161 | -0.0050 | 0.207 | 0.203 | 0.004 | 0.992 | 0.996 | -0.004 | 69.0 | 100.0 | -31.0 | 0.0111 | 0.0309 | -0.0198 | 0.207 | 0.219 | -0.012 | 0.992 | 0.968 | 0.023 | -31.0 | -0.0124 | -0.004 | 0.010 |
+| stjewm_no_trace | full-G16 | 73.8 | 100.0 | -26.2 | 0.0098 | 0.0183 | -0.0085 | 0.203 | 0.193 | 0.010 | 0.997 | 0.992 | 0.005 | 73.8 | 100.0 | -26.2 | 0.0098 | 0.0350 | -0.0252 | 0.203 | 0.205 | -0.002 | 0.997 | 0.967 | 0.029 | -26.2 | -0.0169 | 0.004 | 0.017 |
+| stjewm_hidden_leak | full-G16 | 69.0 | 100.0 | -31.0 | 0.0116 | 0.0174 | -0.0058 | 0.200 | 0.211 | -0.011 | 0.994 | 0.990 | 0.004 | 69.0 | 100.0 | -31.0 | 0.0116 | 0.0315 | -0.0199 | 0.200 | 0.208 | -0.008 | 0.994 | 0.948 | 0.046 | -31.0 | -0.0129 | -0.010 | 0.025 |
+| stjewm_membrane_readout | full-G16 | 71.4 | 100.0 | -28.6 | 0.0108 | 0.0161 | -0.0053 | 0.209 | 0.219 | -0.010 | 0.986 | 0.984 | 0.002 | 71.4 | 100.0 | -28.6 | 0.0108 | 0.0312 | -0.0204 | 0.209 | 0.212 | -0.004 | 0.986 | 0.978 | 0.008 | -28.6 | -0.0128 | -0.007 | 0.005 |
+| cubifae_baseline | full-G16 | 71.4 | 100.0 | -28.6 | 0.0092 | 0.0198 | -0.0106 | 0.211 | 0.233 | -0.022 | 0.996 | 0.994 | 0.002 | 71.4 | 100.0 | -28.6 | 0.0092 | 0.0285 | -0.0193 | 0.211 | 0.206 | 0.006 | 0.996 | 0.915 | 0.081 | -28.6 | -0.0149 | -0.008 | 0.042 |
+| lewm_baseline_v2 | full-G16 | 69.0 | 100.0 | -31.0 | 0.1931 | 0.1488 | 0.0443 | 33.631 | 11.797 | 21.834 | 0.489 | -0.039 | 0.527 | 69.0 | 100.0 | -31.0 | 0.1931 | 0.3053 | -0.1122 | 33.631 | 5.726 | 27.905 | 0.489 | 0.024 | 0.465 | -31.0 | -0.0340 | 24.870 | 0.496 |
+| slt_lif_mpc_trace | full-G16 | 73.8 | 100.0 | -26.2 | 0.0100 | 0.0150 | -0.0050 | 0.209 | 0.209 | 0.000 | 0.995 | 0.968 | 0.027 | 73.8 | 100.0 | -26.2 | 0.0100 | 0.0302 | -0.0202 | 0.209 | 0.207 | 0.002 | 0.995 | 0.917 | 0.078 | -26.2 | -0.0126 | 0.001 | 0.053 |
+| slt_lif_mpc_free | full-G16 | 73.8 | 100.0 | -26.2 | 0.0096 | 0.0186 | -0.0090 | 0.201 | 0.208 | -0.007 | 0.994 | 0.978 | 0.017 | 73.8 | 100.0 | -26.2 | 0.0096 | 0.0261 | -0.0165 | 0.201 | 0.204 | -0.003 | 0.994 | 0.946 | 0.049 | -26.2 | -0.0128 | -0.005 | 0.033 |
+
+## Quick read
+
+Env-SR is saturated on walker/humanoid in this run: every held-out-train checkpoint scores 100% on both held-out envs, so the signed env-SR gap is negative rather than a failure drop.
+The diagnostic transfer signal is in div/resp/ρ: by mean signed ρ gap, `gru_baseline` drops the most (0.113); `mlp_baseline` drops the least (0.026). GRU also shows the largest responsiveness shift, while both STJEWM rows keep calibrated responsiveness near the in-domain mean.

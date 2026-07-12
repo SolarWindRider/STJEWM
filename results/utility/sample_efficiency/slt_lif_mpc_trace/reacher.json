@@ -1,0 +1,61 @@
+{
+  "ckpt": "results/generalist_G16/slt_lif_mpc_trace/seed_0/final.pt",
+  "env": "reacher",
+  "n_steps": 20,
+  "data_fractions": [
+    0.01,
+    0.05,
+    0.1,
+    0.25,
+    1.0
+  ],
+  "n_total": 10000,
+  "per_fraction": {
+    "0.010": {
+      "data_fraction": 0.01,
+      "n_train": 100,
+      "env_success": 0.15,
+      "env_success_std": 0.3570714214271425,
+      "mean_cos_dist_terminal": 0.07798208594322205,
+      "mean_cos_dist_terminal_std": 0.0637631624564925,
+      "train_time_sec": 0.013594388961791992
+    },
+    "0.050": {
+      "data_fraction": 0.05,
+      "n_train": 500,
+      "env_success": 0.15,
+      "env_success_std": 0.3570714214271425,
+      "mean_cos_dist_terminal": 0.08117522671818733,
+      "mean_cos_dist_terminal_std": 0.08084069332393745,
+      "train_time_sec": 0.0481109619140625
+    },
+    "0.100": {
+      "data_fraction": 0.1,
+      "n_train": 1000,
+      "env_success": 0.05,
+      "env_success_std": 0.21794494717703364,
+      "mean_cos_dist_terminal": 0.07337999492883682,
+      "mean_cos_dist_terminal_std": 0.04963757238062747,
+      "train_time_sec": 0.10137176513671875
+    },
+    "0.250": {
+      "data_fraction": 0.25,
+      "n_train": 2500,
+      "env_success": 0.2,
+      "env_success_std": 0.4000000000000001,
+      "mean_cos_dist_terminal": 0.05651029795408249,
+      "mean_cos_dist_terminal_std": 0.05878094838716472,
+      "train_time_sec": 0.2370138168334961
+    },
+    "1.000": {
+      "data_fraction": 1.0,
+      "n_train": 10000,
+      "env_success": 0.2,
+      "env_success_std": 0.4,
+      "mean_cos_dist_terminal": 0.0717178925871849,
+      "mean_cos_dist_terminal_std": 0.0883251348520927,
+      "train_time_sec": 0.9535086154937744
+    }
+  },
+  "generated_at": "2026-07-10 00:21:17"
+}

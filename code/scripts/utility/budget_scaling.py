@@ -1,23 +1,29 @@
-"""Data-budget compression sweep (v0.7.8 utility experiment).
+"""Training-data-budget scaling sweep (v0.7.8 utility experiment, was v0.7.7's 'data-budget compression').
 
-For each (model, data-budget) cell, train a new generalist checkpoint with
-scaled per-entry `max_windows` (a half/double of the G16 baseline) and then
-evaluate the four collapse-robust diagnostics:
+For each (model, budget-fraction) cell, train a new generalist checkpoint with
+a scaled per-entry `max_windows` (=0.5x, 1.0x, or 2.0x of the G16 baseline) and
+then evaluate the four collapse-robust diagnostics:
 
 - env-SR (env-native closed-loop success rate)
 - div  (latent per-dim std, mean across dims)
 - resp (mean |delta-lat| / mean |delta-obs|)
 - event-align rho = corr(obs, latent) at first differences
 
-The 1.0x baseline is the existing G16 ckpt at
+The 1.0x baseline re-uses the existing G16 ckpt at
 results/generalist_G16/<model>/seed_0/final.pt. The 0.5x and 2.0x ckpts are
-trained into results/generalist_G16_compression/<model>/<frac>/seed_0/.
+trained fresh into results/generalist_G16_budget_scaling/<model>/<frac>/seed_0/.
+
+NOTE on the rename: this experiment only changes the *training-data budget*
+(number of windows per env), never the model dimensionality, the latent
+capacity, or the dataset. It is NOT a compression experiment in the model-
+compression / latent-dim-reduction / dataset-distillation sense. Rename
+was made in v0.7.9 after reviewer feedback.
 
 Usage (per cell):
-    python -m code.scripts.utility.compression_sweep \\
+    python -m code.scripts.utility.budget_scaling \\
         --model stjewm_trace_only \\
         --frac 0.5 \\
-        --out results/utility/compression_sweep/stjewm_trace_only/0.5.json
+        --out results/utility/budget_scaling/stjewm_trace_only/0.5.json
 """
 from __future__ import annotations
 
@@ -67,14 +73,18 @@ def write_spec(frac: float, out_path: Path) -> int:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(base, indent=2))
     return per_env
+def train_one_ckpt(model: str, frac: float, frac_label: str, base_seed: int = 0) -> Path:
+    """Train a fresh generalist ckpt at frac x BASE_PER_ENV windows/env.
 
-
-def train_ckpt(model: str, frac: float, frac_label: str, base_seed: int = 0) -> Path:
-    """Train a single (model, frac) ckpt if it doesn't already exist.
-
-    Re-uses code/scripts/generalist_v0_7_5/train_one.sh — only the spec file
-    changes between cells. Writes to
+    Re-uses code/scripts/generalist_v0_7_5/train_one.sh -- only the spec
+    file changes between cells. Writes to
         results/generalist_G16_compression/<model>/<frac_label>/seed_<seed>/
+
+    NOTE on the directory name: the on-disk directory keeps the historical
+    name "_G16_compression" (the rename in v0.7.9 is at the *narrative*
+    layer; changing this path would force a re-train of the 6 ckpts we
+    already have). Existing JSONs + markdown tables under that path
+    remain valid.
     """
     out_dir = Path(f"results/generalist_G16_compression/{model}/{frac_label}/seed_{base_seed}")
     ckpt = out_dir / "final.pt"
@@ -82,7 +92,7 @@ def train_ckpt(model: str, frac: float, frac_label: str, base_seed: int = 0) -> 
         print(f"[train] {model}/frac={frac_label}: ckpt already exists, skipping")
         return ckpt
 
-    spec_path = Path(f"configs/_compression_sweep_{model}_{frac_label}.json")
+    spec_path = Path(f"configs/_budget_scaling_{model}_{frac_label}.json")
     per_env = write_spec(frac, spec_path)
     print(f"[train] {model}/frac={frac_label}: spec per-env max_windows={per_env}")
 

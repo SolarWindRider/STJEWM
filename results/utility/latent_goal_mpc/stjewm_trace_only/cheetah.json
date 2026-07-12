@@ -1,0 +1,63 @@
+{
+  "ckpt": "results/generalist_G16/stjewm_trace_only/seed_0/final.pt",
+  "env": "cheetah",
+  "n_episodes": 5,
+  "cem_samples": 100,
+  "cem_elites": 10,
+  "cem_iters": 10,
+  "horizons": [
+    1,
+    3,
+    5,
+    10,
+    20
+  ],
+  "per_horizon": {
+    "1": {
+      "horizon": 1,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 0.017835849523544313,
+      "mean_cos_dist_terminal_std": 0.005938653353787399,
+      "wall_time_sec": 14.935625314712524,
+      "n_episodes": 5
+    },
+    "3": {
+      "horizon": 3,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 0.015043842792510986,
+      "mean_cos_dist_terminal_std": 0.0034323700954707746,
+      "wall_time_sec": 0.9099419116973877,
+      "n_episodes": 5
+    },
+    "5": {
+      "horizon": 5,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 0.01067509651184082,
+      "mean_cos_dist_terminal_std": 0.0021925079358846803,
+      "wall_time_sec": 1.3684642314910889,
+      "n_episodes": 5
+    },
+    "10": {
+      "horizon": 10,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 0.011520737409591674,
+      "mean_cos_dist_terminal_std": 0.0012535414164393558,
+      "wall_time_sec": 2.3778281211853027,
+      "n_episodes": 5
+    },
+    "20": {
+      "horizon": 20,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 0.011027652025222778,
+      "mean_cos_dist_terminal_std": 0.0027278224810742845,
+      "wall_time_sec": 4.769571304321289,
+      "n_episodes": 5
+    }
+  },
+  "generated_at": "2026-07-09 23:59:14"
+}

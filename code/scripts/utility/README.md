@@ -17,7 +17,7 @@ held-out environments*. The five experiments here are:
 | `latent_env_grad.py`   | is the latent gradient aligned with the env-reward gradient? | $\lvert \cos(\nabla_a \text{cost}_\text{lat}, \nabla_a \text{cost}_\text{env})\rvert$ | `latent_env_grad_table.md` |
 | `sample_efficiency.py` | can a tiny linear policy use the latent at 1% of the data? | env-SR at 5 data fractions | `sample_efficiency_table.md` |
 | `cross_env_gen.py`     | does the calibration transfer to held-out envs? | `div`, `resp`, `rho` on held-out walker+humanoid | `cross_env_gen_table.md` |
-| `compression_sweep.py` | does the calibration survive data compression? | `div`, `resp`, `rho` at 0.5x/1.0x/2.0x budget | `compression_sweep_table.md` |
+| `budget_scaling.py` | does the calibration survive data-budget scaling? | `div`, `resp`, `rho` at 0.5x/1.0x/2.0x budget | `budget_scaling_table.md` |
 
 ## Script organisation
 
@@ -41,11 +41,11 @@ python -m code.scripts.utility.run_sample_efficiency   # ~10 min
 # 2) v0.7.8 cross-environment generalisation (4 ckpts x 2 envs, 12 full-G16 baselines)
 python -m code.scripts.utility.run_cross_env_gen      # ~1.5 hr (training 4 ckpts)
 
-# 3) v0.7.8 data-budget compression (3 models x 3 fracs = 9 cells)
-python -m code.scripts.utility.run_compression_sweep   # ~2.5 hr (training 6 ckpts at 0.5x/2.0x)
+# 3) v0.7.8 data-budget scaling (3 models x 3 fracs = 9 cells)
+python -m code.scripts.utility.run_budget_scaling   # ~2.5 hr (training 6 ckpts at 0.5x/2.0x)
 ```
 
-The `compression_sweep` and `cross_env_gen` are training-heavy;
+The `budget_scaling` and `cross_env_gen` are training-heavy;
 use `--skip-train --aggregate-only` if you only want to rebuild the
 markdown table from existing per-cell JSONs.
 
@@ -75,7 +75,7 @@ to `obs://lixiang01/STJEWM_NMI/utility/` after each run:
 - `obs://.../utility/latent_env_grad_table.md` + per-cell JSONs
 - `obs://.../utility/sample_efficiency_table.md` + per-cell JSONs
 - `obs://.../utility/cross_env_gen_table.md` + per-cell JSONs
-- `obs://.../utility/compression_sweep_table.md` + per-cell JSONs
+- `obs://.../utility/budget_scaling_table.md` + per-cell JSONs
 
 The ckpts themselves (where trained) are gitignored under `results/`
 but uploaded to `obs://.../generalist_G16*/<model>/seed_0/final.pt`.
@@ -86,4 +86,4 @@ Explicitly deferred per user instruction. Every result here is
 **one seed** (seed 0). The diagnostics (`div`, `resp`, `rho`) are
 stable enough across the within-suite repeats that the qualitative
 claim (calibrated family invariant under held-out env / data
-compression) does not depend on multi-seed std bars.
+budget scaling) does not depend on multi-seed std bars.

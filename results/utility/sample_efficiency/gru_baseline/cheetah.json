@@ -1,0 +1,61 @@
+{
+  "ckpt": "results/generalist_G16/gru_baseline/seed_0/final.pt",
+  "env": "cheetah",
+  "n_steps": 20,
+  "data_fractions": [
+    0.01,
+    0.05,
+    0.1,
+    0.25,
+    1.0
+  ],
+  "n_total": 10000,
+  "per_fraction": {
+    "0.010": {
+      "data_fraction": 0.01,
+      "n_train": 100,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 2.6014447212219238e-05,
+      "mean_cos_dist_terminal_std": 1.804473623656111e-05,
+      "train_time_sec": 0.015499353408813477
+    },
+    "0.050": {
+      "data_fraction": 0.05,
+      "n_train": 500,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 3.669857978820801e-05,
+      "mean_cos_dist_terminal_std": 1.6731930998786035e-05,
+      "train_time_sec": 0.05265974998474121
+    },
+    "0.100": {
+      "data_fraction": 0.1,
+      "n_train": 1000,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 4.2644143104553225e-05,
+      "mean_cos_dist_terminal_std": 8.266591740571626e-05,
+      "train_time_sec": 0.10370087623596191
+    },
+    "0.250": {
+      "data_fraction": 0.25,
+      "n_train": 2500,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 7.0914626121521e-05,
+      "mean_cos_dist_terminal_std": 0.00013815523939854132,
+      "train_time_sec": 0.2563493251800537
+    },
+    "1.000": {
+      "data_fraction": 1.0,
+      "n_train": 10000,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 3.5677850246429446e-05,
+      "mean_cos_dist_terminal_std": 2.5357181746653698e-05,
+      "train_time_sec": 1.0112996101379395
+    }
+  },
+  "generated_at": "2026-07-10 00:22:52"
+}

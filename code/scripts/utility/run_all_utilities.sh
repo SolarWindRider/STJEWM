@@ -27,9 +27,9 @@ $PY -m code.scripts.utility.run_cross_env_gen --aggregate-only 2>&1 | tail -5
 
 echo ""
 echo "============================================================"
-echo "3) v0.7.8 data-budget compression"
+echo "3) v0.7.8 data-budget scaling"
 echo "============================================================"
-$PY -m code.scripts.utility.run_compression_sweep --aggregate-only 2>&1 | tail -5
+$PY -m code.scripts.utility.run_budget_scaling --aggregate-only 2>&1 | tail -5
 
 echo ""
 echo "============================================================"

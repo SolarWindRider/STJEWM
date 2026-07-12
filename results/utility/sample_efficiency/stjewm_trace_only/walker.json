@@ -1,0 +1,61 @@
+{
+  "ckpt": "results/generalist_G16/stjewm_trace_only/seed_0/final.pt",
+  "env": "walker",
+  "n_steps": 20,
+  "data_fractions": [
+    0.01,
+    0.05,
+    0.1,
+    0.25,
+    1.0
+  ],
+  "n_total": 10000,
+  "per_fraction": {
+    "0.010": {
+      "data_fraction": 0.01,
+      "n_train": 100,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 0.08745756596326829,
+      "mean_cos_dist_terminal_std": 0.04104238893382102,
+      "train_time_sec": 0.01654672622680664
+    },
+    "0.050": {
+      "data_fraction": 0.05,
+      "n_train": 500,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 0.0672377035021782,
+      "mean_cos_dist_terminal_std": 0.03740682722386829,
+      "train_time_sec": 0.050769805908203125
+    },
+    "0.100": {
+      "data_fraction": 0.1,
+      "n_train": 1000,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 0.06532928049564361,
+      "mean_cos_dist_terminal_std": 0.032483177589975515,
+      "train_time_sec": 0.09820270538330078
+    },
+    "0.250": {
+      "data_fraction": 0.25,
+      "n_train": 2500,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 0.08395324051380157,
+      "mean_cos_dist_terminal_std": 0.032970105126591646,
+      "train_time_sec": 0.24416065216064453
+    },
+    "1.000": {
+      "data_fraction": 1.0,
+      "n_train": 10000,
+      "env_success": 1.0,
+      "env_success_std": 0.0,
+      "mean_cos_dist_terminal": 0.06921502351760864,
+      "mean_cos_dist_terminal_std": 0.030777357335927062,
+      "train_time_sec": 1.0100765228271484
+    }
+  },
+  "generated_at": "2026-07-10 00:18:18"
+}

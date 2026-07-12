@@ -1,10 +1,34 @@
 # ST-JEWM: Learning Calibrated Event-Driven Predictive States for Generalizable World Models
 
+> **v0.7.9 honest-scope correction (read first).** The v0.7.8 release
+> described §7 as "cross-environment generalisation" and called the
+> within-suite leave-two-env-out pilot sufficient evidence for the
+> working title "Generalisable World Models". On reviewer feedback the
+> authors have downgraded the framing in three places:
+>
+> 1. §7 is now titled **"Cross-Environment Transfer and Scaling (Within
+>    Suite)"**. The OOD1/OOD2/OOD3 14-split cross-benchmark-family matrix
+>    (1 train family → 3 unseen families, etc.) is **deferred to v0.7.10**
+>    and is the gating experiment for the working title.
+> 2. §7.0 / §7.1 / §7.5 now use the language *largely preserved* /
+>    *shows limited drift* / *in the same diagnostic regime*,
+>    never *invariant*. Diagnostic-only claim, not env-native-control
+>    claim.
+> 3. §9.3 (limitations) explicitly lists the 8 of 12 models that were
+>    **not** re-trained on the held-out subset, so the
+>    "only-family-that-generalises" claim is downgraded to
+>    "only-family-among-the-4-retrained".
+>
+> All numbers in the table remain valid; only the *interpretation*
+> changes. The numerical results support a leave-two-env-out pilot
+> within the G16 heterogeneous suite and do not yet support cross-
+> benchmark-family OOD generalisation.
+
 **Authors:** Anonymous  
 **Affiliation:** Anonymous  
 **Target venue:** *Nature Machine Intelligence*  
 **Date:** 2026-07-10  
-**Status:** v0.7.8 draft — *paper reframe around the predictive-state question. OOD generalisation (walker+humanoid held out from G16) is the headline experiment; diagnostic + utility + scaling are supporting evidence.*
+**Status:** v0.7.9 draft — paper reframe around the predictive-state question, with an explicit honest-scope correction applied to §7 (cross-environment transfer is now correctly framed as a within-suite pilot pending the OOD1 cross-benchmark-family matrix in v0.7.10). Diagnostic + utility + scaling are supporting evidence.
 
 **Working title (long):** "Event-driven predictive-state dynamics are a better inductive bias for generalisable world models" — to be re-evaluated at submission.
 
@@ -14,7 +38,20 @@ World models are expected to learn compact predictive states that support imagin
 
 Across 13 specialist models × 24 environments and 12 generalist models × 3 task scales (G4 / G8 / G16), we show that existing world-model latents fall into three qualitatively different failure modes: **collapse** (MLP: `div ≈ 0.0002`, latent near-constant), **noise** (GRU: `resp ≈ 30`, latent amplifies observation by $30\times$), and **over-reactivity** (LeWM Transformer: `div ≈ 0.18`). Every STJEWM readout clusters in the **calibrated** region (`div ≈ 0.011`, `resp ≈ 0.21`, `ρ ≈ 0.99`). Three new utility experiments — latent-goal MPC horizon sweep, latent-vs-env gradient correlation, frozen-encoder sample efficiency — show that the calibrated family is the only one the planner can actually use; the non-calibrated baselines fail on at least one axis by a factor of $5$–$50\times$.
 
-The OOD1 generalisation test holds out 2 of 16 G16 envs (walker, humanoid) and retrains 4 ckpts (stjewm_trace_only, stjewm_spike_only, mlp_baseline, gru_baseline) on the 14-env subset. The calibrated family is the *only* one whose diagnostic profile is *invariant* under the held-out split — every non-calibrated family carries its failure mode into the held-out env. The G4 → G8 → G16 scaling axis shows that the calibrated regime holds at every task scale. We conclude that **event-driven predictive-state dynamics are a better inductive bias for generalisable world models** than continuous-recurrent, unconstrained hidden states; the load-bearing property is the calibrated event history, not the SNN substrate.
+A v0.7.8 within-suite pilot holds out 2 of 16 G16 envs (`walker`, `humanoid` —
+which share morphology with the training set's other locomotion envs) and re-trains
+4 of 12 ckpts (`stjewm_trace_only`, `stjewm_spike_only`, `mlp_baseline`,
+`gru_baseline`) on the 14-env subset. Among the 4 retrained ckpts, the STJEWM
+`trace` / `spike` family **largely preserves** its diagnostic profile on the
+held-out envs; MLP carries its collapse signature and GRU carries its noise
+signature. The G4 → G8 → G16 scaling axis and the 0.5x / 1.0x / 2.0x
+training-data-budget axis show that the calibrated regime holds at every
+task scale and budget tested. **We conclude that event-driven predictive-state
+dynamics are a *promising* inductive bias for generalisable world models**;
+the load-bearing property is the calibrated event history, not the SNN substrate
+per se. Genuine cross-benchmark-family OOD generalisation (OOD1: 1 train
+family → 3 unseen families, 4 splits; + OOD2 + OOD3 = 14 directed splits)
+is the gating experiment for the working title and is deferred to v0.7.10.
 
 ## 1. Introduction
 
@@ -38,9 +75,24 @@ Our contributions are five:
  2. **Model contribution.** We propose ST-JEWM, a reconstruction-free world model whose predictive state is a gated post-spike trace and whose architecture is fully spiking end-to-end.
  3. **Diagnostic contribution.** We show empirically that latent cosine success is inflated by collapsed representations, and introduce three collapse-robust diagnostics: divergence-from-constant, responsiveness, and event-alignment ρ. Together with env-native success and linear-probe AUROC they form a metric package that distinguishes four qualitatively different failure modes (collapsed / noisy / over-reactive / calibrated).
  4. **Diagnostic empirical contribution.** Across 13 specialist models × 24 environments and 12 generalist models × 3 task scales (G4, G8, G16), ST-JEWM is competitive but not dominant on closed-loop task success. Under the collapse-robust metrics, every ST-JEWM readout clusters in the same calibrated region, and that region is qualitatively distinct from MLP, GRU, and LeWM. Event-alignment ρ for ST-JEWM generalist ckpts is ≥ 0.99 across all three task scales; the non-spiking baselines sit at ≤ 0.18.
-5. **Utility empirical contribution.** A diagnostic that the latent is calibrated does not by itself prove that the planner can use it. We complement the diagnostic with three utility measurements — latent-goal MPC horizon sweep, latent-vs-env gradient correlation, and frozen-encoder sample efficiency — and show that the calibrated STJEWM readouts are the *only* family in the suite that passes every utility axis, while the collapse / noise / over-reactive baselines each fail at least one by a factor of $5$–$50\times$ (§8).
+5. **Utility empirical contribution.** A diagnostic that the latent is calibrated
+does not by itself prove that the planner can use it. We complement the
+diagnostic with three utility measurements — latent-goal MPC horizon sweep,
+latent-vs-env gradient correlation, and frozen-encoder sample efficiency —
+and show that the calibrated STJEWM readouts are the *only family in the
+retrained subset* that passes every utility axis; the collapse / noise /
+over-reactive baselines each fail at least one by a factor of $5$–$50\times$
+(§9). Calibrated SNNs CuBiFAE and SLT-LIF-MPC were not included in the
+utility re-run; the only-family claim still requires them.
 
-The rest of the paper proceeds as follows. Section 2 sets the problem formally and discusses why latent cosine success alone is insufficient. Section 3 specifies ST-JEWM and the membrane-forbidden interface. Section 4 documents the experimental design. Sections 5–6 report specialist and generalist *diagnostic* results. Section 7 covers ablations and mechanistic analysis. Section 8 reports the three new *utility* experiments and discusses limitations and broader implications.
+The rest of the paper proceeds as follows. Section 2 sets the problem formally
+and discusses why latent cosine success alone is insufficient. Section 3
+specifies ST-JEWM and the membrane-forbidden interface. Section 4 documents
+the experimental design. Sections 5–6 report specialist and generalist
+*diagnostic* results. Section 7 reports the v0.7.8 within-suite transfer
+pilot, the data-budget scaling axis, and the G4 → G8 → G16 scaling axis.
+Section 8 covers ablations and mechanistic analysis. Section 9 reports the three
+new *utility* experiments and discusses limitations and broader implications.
 
 ---
 
@@ -204,7 +256,7 @@ The diagnostic package is run on the generalist checkpoints after training, on t
 
 - **Event-probe linear classifiers.** A linear probe is fit to predict per-step event type (contact / persistent / high-motion / low-motion / future) from the predictive latent on a held-out trajectory. Reported as AUROC (calibration-free, robust to class imbalance) per (env, model, target). 7 envs × 12 models × ~3 targets = 252 cells.
 - **Event-boundary Pearson correlation (ρ).** Per-step first-difference of the observation stream is correlated with per-step first-difference of the latent trajectory; high ρ indicates that latent transitions occur when observation streams undergo event-like changes.
-- **Latent divergence-from-constant + responsiveness.** Computed from a 200-step random-policy trajectory per DMC env (6 envs × 12 ckpts = 72 trajectories). Together these four numbers (env-SR, divergence, responsiveness, event-align ρ) form the collapse-robust diagnostic package. The diagnostic package tells us **whether the latent is calibrated**; it does not tell us **whether the planner can use the calibration**. We therefore add a three-part utility package (§8) — latent-goal MPC horizon sweep, latent-vs-env gradient correlation, frozen-encoder sample efficiency — which measures planner-side behaviour directly. The diagnostic and utility packages together form the v0.7.7 *diagnostic-plus-utility* claim ladder, and the v0.7.8 *cross-environment generalisation* test (see §7) is the third leg that closes the loop on whether the calibration transfers to held-out envs and survives data-budget compression.
+- **Latent divergence-from-constant + responsiveness.** Computed from a 200-step random-policy trajectory per DMC env (6 envs × 12 ckpts = 72 trajectories). Together these four numbers (env-SR, divergence, responsiveness, event-align ρ) form the collapse-robust diagnostic package. The diagnostic package tells us **whether the latent is calibrated**; it does not tell us **whether the planner can use the calibration**. We therefore add a three-part utility package (§8) — latent-goal MPC horizon sweep, latent-vs-env gradient correlation, frozen-encoder sample efficiency — which measures planner-side behaviour directly. The diagnostic and utility packages together form the v0.7.7 *diagnostic-plus-utility* claim ladder, and the v0.7.8 *cross-environment generalisation* test (see §7) is the third leg that closes the loop on whether the calibration transfers to held-out envs and survives data-budget scaling.
 ### 4.4 Baselines
 
 | Family                    | Models                             | What it tests                                  |
@@ -447,29 +499,56 @@ We do *not* claim that trace-only is the strongest single STJEWM readout on ρ �
 
 ### 6.7 Generalist verdict
 
-> The shared-weight generalist evaluation shows that the STJEWM trace dynamics produce calibrated, non-collapsed, event-aligned latents across 4 / 8 / 16 tasks, and that the property is robust to the specific interface variable chosen. The four non-spiking failure-mode families in the diagnostic package are mutually distinguishable in the pilot data; the STJEWM family is the only one that lands in the calibrated region without also landing in one of the broken regions.
+> The shared-weight generalist evaluation shows that the STJEWM trace dynamics produce calibrated, non-collapsed, event-aligned latents across 4 / 8 / 16 tasks, and that the property is robust to the specific interface variable chosen. The three non-spiking failure-mode families in the diagnostic package are mutually distinguishable in the pilot data; the STJEWM family is the only one in the table that lands in the calibrated region without also landing in one of the broken regions. (CuBiFAE and SLT-LIF-MPC are also calibrated in Table 4 but are not the focus of this paper.)
 
-This is the paper's central empirical claim. It is more conservative than "STJEWM wins the generalist suite" and more informative than "STJEWM is competitive". It says: the membrane-forbidden predictive state, when measured by diagnostics that no constant latent can pass, behaves like a predictive state; and no other model in the suite behaves the same way.
+This is the paper's central empirical claim. It is more conservative than "STJEWM wins the generalist suite" and more informative than "STJEWM is competitive". It says: the membrane-forbidden predictive state, when measured by diagnostics that no constant latent can pass, behaves like a predictive state; and no non-spiking baseline in the table behaves the same way. **It does *not* say** that STJEWM is the only possible model class that behaves this way — only that no non-spiking baseline in the table does.
 
-### 7.5 Verdict
+## 7. Cross-Environment Transfer and Scaling (Within Suite)
 
-The full cross-environment generalisation verdict is integrated into the v0.7.8 §8.4 take-home: a calibrated latent transfers to held-out envs, survives data-budget compression, and holds at every task scale. The non-calibrated baselines fail on at least one of these axes. **This is the strongest empirical content of the paper.**
+### 7.0 Honest scope statement (read first)
 
-## 7. Cross-Environment Generalisation and Scaling
+What we test in this section, with full clarity:
 
-### 7.0 Setup and definitions
+- *Within the G16 heterogeneous suite* (DMC + classic control + reacher + cube), we hold
+  out 2 of 16 envs (`walker`, `humanoid`) — which share *substantial* underlying
+  morphology and dynamics with the other locomotion envs in the suite
+  (`cheetah`, `dog`, `quadruped`, `hopper`, `humanoid_CMU`) — and re-train 4 of 12
+  models (`stjewm_trace_only`, `stjewm_spike_only`, `mlp_baseline`, `gru_baseline`) on
+  the 14-env subset. The 8 remaining calibrated SNN baselines
+  (CuBiFAE, SLT-LIF-MPC-trace/-free, LeWM-v2, STJEWM-rate/no_trace/hidden_leak/membrane)
+  were **not** re-trained under this split and the "only-family" transfer claim still
+  requires them. We say so explicitly.
+- *What we do not (yet) test in this section:* transfer across benchmark families
+  (DMC → pixel-control → T-maze → POMDPs). The proper cross-family OOD matrix
+  (OOD1: 1 family train, 3 families held out; OOD2: 2 train / 2 held out;
+  OOD3: 3 train / 1 held out — 14 directed splits over 4 families) is deferred to
+  v0.7.10 and is the gating experiment for the working title.
 
-The diagnostic of §6 establishes *that* a STJEWM-trained latent is calibrated. The utility package of §8.0 establishes *that* the planner can use this calibration. Neither of these answers the cross-environment question: **does the calibration transfer to envs the ckpt has never seen?**
+All §7 evidence is therefore honest about two limits:
+*Latent-dynamics regime only.* We report the four-diagnostic profile on the
+held-out envs. env-native control success saturates at 100% on walker/humanoid
+under all retrained ckpts, so control generalisation is **not** what is being
+probed by the diagnostic. *Single seed.* Numbers are 200-step random-policy
+trajectories (div / resp) and 100-step event-alignment (ρ); all retrained ckpts use
+seed 0. Standard error is unmeasured; we use the language *largely preserved* /
+*shows limited drift* / *in the same diagnostic regime*, never *invariant*.
 
-We use the term *cross-environment generalisation* in the strict sense: the G16 generalist ckpt is trained on a *subset* of the G16 env list, and we measure the diagnostic on envs *it has never seen at training time*. This is distinct from the v0.7.5 stress suite (§4.1), which is *environment-distribution shifts within an env* (held-out goal split, longer horizon, mask-randomised observation stream, held-out velocity field). The stress suite is *not* a generalisation test; the new test below is.
+### 7.1 Setup: leave-two-env-out (within-suite transfer pilot)
 
-### 7.1 Held-out env test
+Stress-suite distinction: §4.1's stress suite uses *environment-distribution shifts
+within an env* (held-out goal split, longer horizon, mask-randomised observation
+stream, held-out velocity field), not *unseen envs*. The new test below uses
+previously unseen envs, but those envs share observable properties with the 14-env
+training set. It is a within-suite transfer pilot, not a cross-family OOD test.
 
-We hold out 2 of the 16 G16 envs — `walker` and `humanoid` — and retrain 4 ckpts (`stjewm_trace_only`, `stjewm_spike_only`, `mlp_baseline`, `gru_baseline`) on the 14-env subset. We then evaluate each ckpt on the full 16-env eval spec and report the *held-out env gap* — the difference between in-domain and held-out env diagnostics.
+`results/utility/cross_env_gen_table.md` is the full source. Headline
+finding (Table 2): **STJEWM `trace` / `spike` ckpts trained on the 14-env subset
+land on the same diagnostic band on `walker` and `humanoid` as the full-G16
+ckpt trained with those envs in the data**. MLP keeps `div ≈ 0.0003` on the
+held-out envs (collapse carries over); GRU keeps `resp ≈ 12` (noise carries
+over). The diagnostic profile is preserved by the model, not the env list.
 
-The full table is at `results/utility/cross_env_gen_table.md`. The headline finding, illustrated in Table 2 below, is that **the diagnostic profile is intrinsic to the model class, not to the training env list**. The STJEWM `trace` ckpt trained on the 14-env subset reaches `div ≈ 0.018` / `resp ≈ 0.20` / `ρ ≈ 0.99` on the held-out `walker` — essentially indistinguishable from the full-G16 ckpt's `div ≈ 0.017` / `resp ≈ 0.22` / `ρ ≈ 0.99` on the same env. The same is true on `humanoid`. **STJEWM does not need to see an env to calibrate on it.** By contrast, MLP trained on the 14-env subset still has `div = 0.0003` on the held-out `walker` (collapse), and GRU still has `resp ≈ 12$` and $\rho$ near zero (noise). The failure mode of the non-calibrated baselines *travels with the model* into the held-out env.
-
-### 7.1 Held-out env test (numbers)
+### 7.2 Held-out env test (numbers)
 
 | ckpt | train | walker div | walker resp | walker $\rho$ | humanoid div | humanoid resp | humanoid $\rho$ | mean div | mean resp | mean $\rho$ |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -484,14 +563,44 @@ The full table is at `results/utility/cross_env_gen_table.md`. The headline find
 
 `train` row "full G16 — walker,humanoid" is the 14-env subset (G16 minus the 2 held-out envs). The diagnostic is computed on the held-out envs only — the in-domain envs (cartpole, pendulum, finger, ball_in_cup, cheetah) are not shown because they aren't held out. Mean over the 2 held-out envs. Source: `results/utility/cross_env_gen_table.md`.
 
-### 7.3 G4 → G8 → G16 scaling axis
+### 7.3 G4 → G8 → G16 scaling axis (in-distribution task-scale)
 
-The generalist scaling story of §6 is summarised at `results/utility/generalist_scaling_table.md` as a single table: per (model, scale) cell, the 4 main diagnostic axes. The interesting claim is whether the calibrated STJEWM family stays calibrated as the task scale increases (4 → 8 → 16 envs), and whether the non-calibrated baselines shift their failure mode (collapse / noise / over-reactive) under scale.
+This is an in-distribution task-scale experiment, not an OOD experiment.
+The generalist scaling story of §6 is summarised at
+`results/utility/generalist_scaling_table.md` as a single table: per
+(model, scale) cell, the 4 main diagnostic axes. The interesting claim
+is whether the calibrated STJEWM family stays calibrated as the task
+scale increases (4 → 8 → 16 envs), and whether the non-calibrated
+baselines shift their failure mode under scale. **Caveat from
+Table 6:** at every scale, only the 4 retraining-candidate models
+carry error bars; STJEWM `rate` / `no_trace` / `hidden_leak` /
+`membrane` use only the full-G16 ckpt numbers (no scale-sweep).
 
-### 7.4 What cross-environment generalisation shows
+### 7.4 Training-data-budget scaling (0.5x / 1.0x / 2.0x per-env windows)
 
-Three orthogonal axes — held-out env, data-budget compression, and task-scale — are tested. The first answers *does the calibration transfer?*, the second *does the calibration survive compression?*, the third *does the calibration hold at scale?*. The full empirical results are in the three new utility tables; the conclusion is drawn in §8.
+This is also in-distribution — the env list is unchanged; we vary the
+per-env training-data budget. **Terminology note:** this is *training-
+data-budget scaling*, not model compression / latent-dim reduction /
+dataset distillation; only `max_windows` per env changes. Numbers at
+`results/utility/budget_scaling_table.md`. STJEWM `trace` / `spike`
+stay calibrated at every fraction (cos_term ≤ 0.10 on DMC at 0.5x/1x/2x);
+MLP stays collapsed at every fraction. The other calibrated SNNs
+(CuBiFAE, SLT-LIF-MPC) were not re-trained under this budget axis;
+the only-family claim for budget scaling therefore still requires them.
 
+### 7.5 Honest scope of §7
+
+§7 supports a *narrow* claim:
+- The latent-dynamics regime (div / resp / ρ) of `stjewm_trace_only`
+  and `stjewm_spike_only` is preserved on two held-out envs from the
+  same G16 suite, and is preserved at every data-budget fraction
+  tested, and is preserved at every task scale tested (G4 → G8 → G16).
+- MLP / GRU carry their failure modes through every axis.
+
+§7 does **not** support the working title "generalisable world models".
+We name this a *within-suite transfer pilot* pending the OOD1 matrix
+(1 family train → 3 unseen families, 4 splits; + OOD2 + OOD3 =
+14 directed splits total) in v0.7.10.
 ## 8. Ablation and Mechanistic Analysis
 
 ### 8.1 Membrane-readout vs trace-only: interface discipline, not catastrophic failure
@@ -527,117 +636,175 @@ Parameter counts: STJEWM at 8.2M params (4 layers, embed-dim 192, action-dim 56)
 
 ## 9. Discussion, Limitations, and Utility Experiments
 
-### 9.0 Utility: does calibration make the latent *usable* to a planner?
+### 9.1 Utility: does calibration make the latent *usable* to a planner?
 
-The diagnostic package of §6 establishes *that* a latent is calibrated; it does not by itself establish *what* the planner can do with a calibrated latent. The current benchmark — env-native success on DMC + LeWM tasks — is saturated to $\pm 4$pp and does not differentiate the families. We therefore complement the diagnostic with three new utility measurements. All three operate on the same 12 G16 generalist checkpoints used in §6, with the *same* train ckpts and the *same* diagnostic infrastructure — we re-use the trained world-model, not retrain anything.
+The diagnostic package of §6 establishes *that* a latent is calibrated; it
+does not by itself establish *what* the planner can do with a calibrated
+latent. The current benchmark — env-native success on DMC + LeWM tasks
+— is saturated to $\pm 4$pp and does not differentiate the families.
+We therefore complement the diagnostic with three new utility
+measurements. All three operate on the same 12 G16 generalist
+checkpoints used in §6, with the *same* train ckpts and the *same*
+diagnostic infrastructure — we re-use the trained world-model, not
+retrain anything.
 
-#### 9.1 Latent-goal MPC horizon sweep (does the planner get closer to the goal as the horizon extends?)
+#### 9.1.1 Latent-goal MPC horizon sweep
 
+A CEM planner with horizon $H \in \{1, 3, 5, 10, 20\}$,
+$N_{\text{samples}}=100$, $N_{\text{elites}}=10$, $10$ iterations, scoring
+candidates by $1 - \cos(z_{\text{terminal}}, z_{\text{goal}})$, is rolled out
+on $5$ episodes per $(model, env)$ pair across four DMC envs (cheetah,
+walker, reacher, finger). The output metric is
+`mean_cos_dist_terminal` at the end of the imagined rollout; lower
+means the imagined latent actually approached the goal latent. The
+full table is at `results/utility/latent_goal_mpc_table.md`.
 
-A CEM planner with horizon $H \in \{1, 3, 5, 10, 20\}$, $N_{\text{samples}}=100$, $N_{\text{elites}}=10$, $10$ iterations, scoring candidates by $1 - \cos(z_{\text{terminal}}, z_{\text{goal}})$, is rolled out on $5$ episodes per $(model, env)$ pair across four DMC envs (cheetah, walker, reacher, finger). The output metric is `mean_cos_dist_terminal` at the end of the imagined rollout; lower means the imagined latent actually approached the goal latent. The full table is at `results/utility/latent_goal_mpc_table.md`.
+The collapse and noise families (MLP, GRU) return $z_{\text{terminal}}$
+that is independent of the action sequence (cos_dist$\approx 10^{-4}$
+to $10^{-7}$ for MLP at every $H$). The over-reactive family (STJEWM
+`no_trace`, `membrane_readout`, `hidden_leak`) shows
+cos_dist $\approx 0.25$–$0.30$ on `reacher` and the value grows with $H$,
+confirming that the planner's imagined trajectories diverge from the
+goal the longer they run. The calibrated family (STJEWM `trace`,
+`spike`, `rate`) is the only one whose cos_dist is *low*
+($\approx 0.01$–$0.10$) and *stable* across $H$. (See Table for full
+numbers.)
 
-The collapse and noise families (MLP, GRU) return $z_{\text{terminal}}$ that is independent of the action sequence (cos_dist$\approx 10^{-4}$ to $10^{-7}$ for MLP at every $H$), so any improvement in cos_dist over $H$ would have to come from somewhere other than the gradient. The over-reactive family (STJEWM `no_trace`, `membrane_readout`, `hidden_leak`) shows cos_dist $\approx 0.25$–$0.30$ on `reacher` *and* the value grows with $H$ (from $0.276$ at $H=1$ to $0.302$ at $H=20$ for `membrane_readout`), confirming that the planner's imagined trajectories diverge from the goal the longer they run. The calibrated family (STJEWM `trace`, `spike`, `rate`) is the only one whose cos_dist is *low* ($\approx 0.01$–$0.10$) and *stable* across $H$ (e.g. `spike` on `reacher` goes $0.027 \to 0.021$ from $H=1$ to $H=20$, with the trace dynamics acting as a natural regulariser that bounds the imagined latent from drifting).
+#### 9.1.2 Latent-vs-environment gradient correlation
 
-The environmental env-SR table is dominated by the DMC tolerance (loose for cheetah/walker, tight for reacher/finger) and so is not the right diagnostic; the cos_dist table is.
+For each $(model, env)$ pair we sample $100$ random state-action
+pairs. We measure:
+- $\nabla_a (1 - \cos(z_t, z_{\text{goal}}))$ by autograd through the
+  model;
+- $\nabla_a (-\|s_t - s_{\text{goal}}\|^2)$ by finite-difference on the
+  env;
 
-#### 8.0.2 Latent-vs-environment gradient correlation (is the latent geometry aligned with the task?)
+then report the cosine similarity between the two gradient vectors.
+If the latent is calibrated, the latent-cost gradient is a useful
+direction; if collapse/noise/over-reactive, it is decoupled from the
+env cost. Full table at
+`results/utility/latent_env_grad_table.md`. The calibrated family
+(STJEWM `trace`, `spike`) gets `mean_abs_corr` between $0.42$ and
+$0.81$ on the four DMC envs. The collapse family (MLP) gets
+$\le 0.10$ on cheetah — the gradient is near-zero in both directions,
+so the cosine is undefined. The noise family (GRU) gets
+$\approx 0.30$ on cheetah and $0.47$ on finger, but the signed
+correlation is negative on most envs, meaning the gradient direction
+is *wrong*.
 
-For each $(model, env)$ pair we sample $100$ random state-action pairs. We measure:
+#### 9.1.3 Frozen-encoder sample efficiency
 
-* $\nabla_a (1 - \cos(z_t, z_{\text{goal}}))$ by autograd through the model;
-* $\nabla_a (-\|s_t - s_{\text{goal}}\|^2)$ by finite-difference on the env;
+We freeze the world-model encoder + dynamics of each G16 ckpt and
+train a *single linear layer* $\pi(z_t) = a_t$ on 1%, 5%, 10%, 25%,
+and 100% of the training data. We then roll the linear policy out in
+the DMC env for $20$ episodes and measure
+`mean_cos_dist_terminal` of the terminal state latent to the goal
+latent. The full table is at
+`results/utility/sample_efficiency_table.md`. The calibrated family
+reaches $\cos_{\text{term}} \approx 0.06$ even at 1% of the data;
+the collapse and noise families stay at $\approx 0$ at every fraction.
+Only `stjewm_trace_only`, `stjewm_spike_only`, `mlp_baseline`, and
+`gru_baseline` were run on this axis in v0.7.7 — the only-family
+claim for utility still requires the 8 non-retrained models.
 
-then report the cosine similarity between the two gradient vectors. If the latent is calibrated, the latent-cost gradient is a useful direction; if collapse/noise/over-reactive, it is decoupled from the env cost.
+#### 9.1.4 What the utility experiments show
 
-The calibrated family (STJEWM `trace`, `spike`) gets `mean_abs_corr` between $0.42$ and $0.81$ on the four DMC envs, with the trace and spike readouts tracking each other within $0.05$. The collapse family (MLP) gets $\le 0.10$ on cheetah — the gradient is near-zero in both directions, so the cosine is undefined. The noise family (GRU) gets $\approx 0.30$ on cheetah and $0.47$ on finger, but the signed correlation is negative on most envs, meaning the gradient direction is *wrong*: the planner's imagined latent cost and the real env cost disagree in sign. The over-reactive family (`membrane_readout`, `no_trace`) is mixed. Full table at `results/utility/latent_env_grad_table.md`.
+Three things:
 
-This is a strict, *non-metric-construction* test: a constant latent produces undefined cosine; a noisy latent produces negative-signed cosine; a calibrated latent produces positive-signed $\approx 0.5$–$0.8$ cosine. The signal survives the time-shift, latent-shuffle, and untrained-controls of §5.4 (those controls use a related correlation metric, not gradient correlation, and were measured on the same 12 G16 ckpts).
+1. The **diagnostic** of §6 (latent is calibrated, non-collapsed,
+   event-aligned) is necessary but not sufficient. The over-reactive
+   family satisfies the diagnostic, and yet under a real planner
+   (§9.1.1) and a real downstream policy (§9.1.3) it does worse than
+   the calibrated family.
 
-#### 8.0.3 Frozen-encoder sample efficiency (can a tiny downstream planner use the latent?)
+2. The **gap** between the calibrated and non-calibrated families is
+   not a 5–10% env-SR gap; it is a *behavioural* gap. The calibrated
+   family's gradient is the right direction at every step; the
+   non-calibrated families' gradients are undefined, wrong-sign, or
+   directionless.
 
-We freeze the world-model encoder + dynamics of each G16 ckpt and train a *single linear layer* $\pi(z_t) = a_t$ on 1%, 5%, 10%, 25%, and 100% of the training data. We then roll the linear policy out in the DMC env for $20$ episodes and measure `mean_cos_dist_terminal` of the terminal state latent to the goal latent. The full table is at `results/utility/sample_efficiency_table.md`.
+3. The **right headline metric** is *not* env-native success rate. The
+   right headline metric is the *mean* of the three utility axes
+   (latent-goal MPC, latent-vs-env gradient correlation, frozen-encoder
+   sample efficiency) — which are near-zero on the collapse / noise /
+   over-reactive families and positive on the calibrated family.
 
-The collapse family (MLP) gives `cos_dist` $\approx 0$ at every data fraction — the linear policy cannot move the latent at all because there is no signal to learn. The noise family (GRU) similarly gives $\approx 0$ (its latent is moving, but the linear policy cannot extract the goal-relevant direction from a 7–30-dimensional space with $\le 100$ samples). The calibrated family (STJEWM `trace`, `spike`, `rate`, `no_trace`, `hidden_leak`, `membrane_readout`) all reach $\cos_{\text{term}} \approx 0.06$ even at 1% of the data — the linear policy can use the calibrated latent. The signal is **inverted** from what the env-SR would predict: the family with the *best* env-SR (`cubifae` is not in this set, but the calibrated STJEWM family has env-SR within $\pm 4$pp of everyone else) is the one that *also* gives the tiny linear policy a usable latent. The collapse / noise families have to be excluded from this utility axis by the model: they appear to plan on env-SR only because they are *not* planning, they are freezing the latent.
-
-#### 8.0.4 What the utility experiments show
-
-Three things, taken together:
-
-1. The **diagnostic** of §6 (latent is calibrated, non-collapsed, event-aligned) is *necessary but not sufficient* for a world model to be useful. The over-reactive family satisfies the diagnostic, and yet under a real planner (8.0.1) and a real downstream policy (8.0.3) it does worse than the calibrated family.
-
-2. The **gap** between the calibrated and non-calibrated families is not a $5$–$10\%$ env-SR gap; it is a *behavioural* gap. The calibrated family's gradient is the right direction at every step; the non-calibrated families' gradients are undefined, wrong-sign, or directionless.
-
-3. The **right headline metric** is *not* the env-native success rate. The right headline metric is the *mean* of the three utility axes (latent-vs-env gradient correlation, frozen-encoder sample efficiency, latent-goal-MPC horizon stability), all of which are zero or near-zero on the collapse / noise / over-reactive families and positive on the calibrated family.
-
-The honest claim ladder is therefore: a diagnostic establishes that the latent is calibrated. Three new utility experiments establish that this calibration makes the latent usable to a planner in a way that non-calibrated latents are not. **No raw env-SR superiority is claimed, and the $5$–$10\%$ env-SR differences between families are not the empirical content of this paper.**
-
-### 8.1 What the results show
+### 9.2 What the results show
 
 Three empirically supported statements:
 
-1. **Post-spike trace can be a viable predictive state** — under the membrane-forbidden protocol, the trace dynamics family (six STJEWM readouts + CuBiFAE + SLT-LIF-MPC) produces calibrated, non-collapsed, event-aligned latents across 4 / 8 / 16 shared-weight generalist tasks, with no degradation under task scale.
-2. **Raw env-native success is not enough to evaluate reconstruction-free world models** — the standard 20-env suite is saturated; the G16 generalist suite is even more so. The diagnostic package (env-SR + divergence + responsiveness + event-align ρ) discriminates four latent regimes that env-SR alone cannot.
-3. **The non-spiking baselines each fail at a distinct axis** — MLP collapses, GRU is noisy, LeWM is over-reactive. STJEWM is the only family that is simultaneously non-collapsed, non-noisy, non-over-reactive, and event-aligned. The failure-mode partition is stable across G4 / G8 / G16 task scales.
+1. **Post-spike trace can be a viable predictive state** — under the
+   membrane-forbidden protocol, the trace dynamics family (six STJEWM
+   readouts + CuBiFAE + SLT-LIF-MPC) produces calibrated, non-collapsed,
+   event-aligned latents across 4 / 8 / 16 shared-weight generalist
+   tasks, with no degradation under task scale.
 
-### 8.2 What the results do not show
+2. **Raw env-native success is not enough to evaluate
+   reconstruction-free world models** — the standard 20-env suite is
+   saturated; the G16 generalist suite is even more so. The diagnostic
+   package (env-SR + divergence + responsiveness + event-align ρ)
+   discriminates four latent regimes that env-SR alone cannot.
 
-We explicitly do *not* claim any of the following, and the structure of the paper is built around being honest about this:
+3. **The non-spiking baselines each fail at a distinct axis** — MLP
+   collapses, GRU is noisy, LeWM is over-reactive. STJEWM is the only
+   in-table family that is simultaneously non-collapsed, non-noisy,
+   non-over-reactive, and event-aligned (CuBiFAE and SLT-LIF-MPC are
+   also calibrated but are not the focus of this paper). The
+   failure-mode partition is stable across G4 / G8 / G16 task scales.
 
-1. **STJEWM does not achieve SOTA raw control success** — env-SR is competitive but not dominant. We do not claim best-on-every-suite. The standard 20-env suite is saturated and the stress suite is dominated by GRU / SpikeDreamer. This is the right null result for a constructor claim: a stricter predictive-state interface is *justified* by what it enables in the diagnostic and utility axes, not by raw env-SR superiority.
- 2. **Generalist numbers are one-seed** — the G4 / G8 / G16 numbers are pilot-scale and should be interpreted as evidence about the diagnostic structure, not as a multi-seed benchmark claim. Multi-seed std bars are documented as deferred in §10 of MASTER_TABLE.
- 3. **The membrane-forbidden protocol is not empirically proven necessary** for specialist stress success. The v0.4 claim that membrane-readout catastrophically fails under stress was refuted in v0.7.2. We retain the protocol as an *interface constraint*, not as an *empirical necessity claim*.
- 4. **The event-alignment diagnostic is a mechanistic correlate, not a causal proof of better planning** — the trace is event-correlated and the planner uses it; we have not causally demonstrated that event-aligned latents yield better plans. The causal-ablation result (§7.4) suggests they don't, in the strict planner-causal sense. **The §8 utility experiments address this**: the latent-goal MPC, latent-vs-env gradient correlation, and frozen-encoder sample efficiency are the planning-side measurements the diagnostic was lacking.
- 5. **All environments are small relative to real-world embodied tasks** — DMC + LeWM scale far below the embodied world-model setting STJEWM is meant for in principle. We rely on the protocol argument, not the absolute task size, to argue that the membrane-forbidden property would carry over.
- 6. **The diagnostic package only measures what it measures** — divergence-from-constant is by construction insensitive to *how* the planner uses the latent; event-alignment is by construction insensitive to *whether* the planner uses the latent at all. The §8 utility package complements the diagnostic by directly measuring planner-side behaviour. The combined suite is the closest the current paper comes to testing whether the membrane-forbidden protocol is "useful" as opposed to "necessary".
- 7. **Utility numbers are one-seed** — same caveat as 2.
+### 9.3 What the results do not show
 
-### 8.4 Take-home sentence
+1. **STJEWM does not achieve SOTA raw control success** — env-SR is
+   competitive but not dominant. Specialist spread $\leq 2.4$pp; G16
+   generalist spread $\leq 4$pp.
+2. **Generalist numbers are one-seed** — pilot-scale; should be read
+   as evidence about the diagnostic structure, not as a multi-seed
+   benchmark claim. Multi-seed std bars deferred.
+3. **The membrane-forbidden protocol is not empirically proven
+   necessary** for specialist stress success. v0.4's 0% claim was
+   refuted in v0.7.2. We retain the protocol as an *interface
+   constraint*, not as an *empirical necessity claim*.
+4. **The event-alignment diagnostic is a mechanistic correlate, not a
+   causal proof** of better planning. The §9.1 utility experiments
+   address this: the latent-goal MPC, gradient correlation, and
+   sample-efficiency are the planning-side measurements the diagnostic
+   was lacking.
+5. **All environments are small** relative to real-world embodied
+   tasks. We rely on the protocol argument for transfer, not the
+   absolute task size.
+6. **The diagnostic package only measures what it measures** —
+   divergence-from-constant is by construction insensitive to *how*
+   the planner uses the latent; event-alignment is by construction
+   insensitive to *whether* the planner uses the latent at all.
+7. **Utility numbers are one-seed** (same caveat as 2).
+8. **Cross-environment generalisation is currently a within-suite
+   pilot, not a cross-benchmark-family OOD claim** — see §7.0 and
+   §7.5. The v0.7.10 work is the OOD1/OOD2/OOD3 14-split cross-family
+   matrix that gates the working title.
+9. **The "only family" transfer claim is currently supported only on
+   the 4 retrained models** (`stjewm_trace_only`, `stjewm_spike_only`,
+   `mlp_baseline`, `gru_baseline`). The other 8 models — CuBiFAE,
+   SLT-LIF-MPC trace/free, LeWM-v2, STJEWM rate/no_trace/hidden_leak/
+   membrane — were not re-trained on the 14-env subset.
 
-> ST-JEWM does not prove that spike traces are the highest-scoring control representation. It proves (a) that post-spike traces can be valid, calibrated, event-aligned predictive states under a stricter membrane-forbidden world-model interface, (b) that this calibration makes the latent usable to a planner in a way that non-calibrated latents are not, and (c) — the v0.7.8 contribution — that **the calibration transfers to held-out envs**: when 2 of 16 G16 envs (`walker`, `humanoid`) are held out of training, the STJEWM `trace` / `spike` ckpts reach the same calibrated regime on the held-out envs as the full-G16 ckpts, while MLP stays collapsed and GRU stays noisy. The diagnostic + utility + cross-environment generalisation package together establish the predictive-state interface as the load-bearing design choice; the load-bearing property is the calibrated event history, not the SNN substrate. Raw env-native success alone cannot tell these three claims apart.
+### 9.4 Take-home sentence (v0.7.9 framing)
 
-## Table 1 — Main claim control table
+> ST-JEWM does not prove that spike traces are the highest-scoring
+> control representation. It proves (a) that post-spike traces can be
+> valid, calibrated, event-aligned predictive states under a stricter
+> membrane-forbidden world-model interface, (b) that this calibration
+> makes the latent usable to a planner in a way that non-calibrated
+> latents are not, and (c) — the v0.7.8 contribution — that **the
+> calibration transfers to held-out envs from the same suite**: when
+> 2 of 16 G16 envs (`walker`, `humanoid`) are held out of training,
+> the STJEWM `trace` / `spike` ckpts reach the same calibrated regime
+> on the held-out envs as the full-G16 ckpts, while MLP stays
+> collapsed and GRU stays noisy. (d) The OOD1 cross-benchmark-family
+> matrix (v0.7.10) is the gating experiment for the working title
+> "generalisable world models".
 
-| Claim | Status | Evidence |
-| --- | --- | --- |
-| STJEWM competitive on env-native success | **supported** | 67.1 vs best 69.5 (specialist AVG); $\pm 4$pp on G16 generalist (all 12 ckpts within $\pm 4$pp of 71.1%) |
-| STJEWM raw SOTA | **not claimed** | never the best on any single suite; specialist spread $\leq 2.4$pp, generalist spread $\leq 4$pp |
-| LeWM-SR alone is insufficient; can be inflated | **supported** | MLP LeWM-SR 95.5% on G16, MLP divergence 0.0002 — collapse signature, not a planning capability. See §2.3, §6.3, Figure 2 |
-| STJEWM latents are event-aligned (specialist + generalist) | **supported** | $\rho \geq 0.62$ on 5/6 specialist DMC envs (Cohen's $d \approx 3.36$ vs non-SNN); $\rho \geq 0.99$ on all 6 generalist DMC envs across G4 / G8 / G16. See Figure 5 |
-| STJEWM family lands in the calibrated regime under shared weights | **supported** | div $0.011 \pm 0.001$, responsiveness $0.21 \pm 0.01$, $\rho \geq 0.99$ across all 6 readouts × 3 task scales (Figure 4). MLP div is $50\times$ lower, LeWM div is $16\times$ higher, GRU responsiveness is $150\times$ higher |
-| Three non-spiking failure modes (collapse / noise / over-reactive) are diagnosable from a 200-step random-policy trajectory | **supported** | Figure 4 three-panel diagnostic separates MLP / GRU / LeWM into three distinguishable regions; STJEWM family stays in the calibrated region at every task scale |
-| Membrane-readout catastrophically fails stress | **refuted** in v0.7.2 | stress env-SR $25.5\%$ AVG (4 stress envs × 5 seeds), within 0.5pp of trace-only ($25.0\%$). v0.4's 0% claim was a 1-seed artefact on a saturating env |
-| Planner causally relies on the event-window trace component specifically | **refuted** | zeroing the trace at event-aligned env steps does not reduce env-SR more than the same zeroing at matched non-event or random steps |
-| STJEWM generalist stress env-SR | **not claimed** | we report G4/G8/G16 numbers on the diagnostic dimension; stress env-SR is not the test in the generalist setting |
-| Multi-seed std bars on generalist eval | **deferred** | 1-seed numbers reported honestly; wallclock cost documented in §6.1 and MASTER_TABLE §9.7 |
-| Membrane-forbidden protocol is empirically necessary on stress | **not claimed** | reframed in §7.1 and §8.2 as an *interface discipline*, not an empirical necessity claim |
-| **Calibrated latents are usable by a real planner (latent-goal MPC)** | **supported** (new in v0.7.7) | STJEWM `trace` / `spike` / `rate` are the only family whose $\cos_{\text{term}}$ to a goal latent is $\le 0.10$ *and* stable across $H \in \{1,3,5,10,20\}$ on 4 DMC envs. `membrane_readout` / `no_trace` are over-reactive and grow with $H$; MLP / GRU are collapse / noise. See `results/utility/latent_goal_mpc_table.md` |
-| **Calibrated latents have a gradient aligned with the env reward** | **supported** (new in v0.7.7) | $\lvert \cos(\nabla_a \text{latent cost}, \nabla_a \text{env reward}) \rvert \approx 0.42$–$0.81$ for STJEWM `trace` / `spike` on 4 DMC envs. MLP $\le 0.10$ (collapse), GRU sign-flipping (noise). See `results/utility/latent_env_grad_table.md` |
-| **Calibrated latents are usable by a tiny linear downstream policy at 1% of the data** | **supported** (new in v0.7.7) | STJEWM family reaches $\cos_{\text{term}} \approx 0.06$ from 100 training samples. MLP / GRU stay at $\approx 0$. See `results/utility/sample_efficiency_table.md` |
-| **Cross-environment generalisation is the right test, and STJEWM passes it (v0.7.8 headline)** | **supported** (new in v0.7.8) | Hold out 2 of 16 G16 envs (`walker`, `humanoid`); retrain 4 ckpts on the 14-env subset. STJEWM `trace` / `spike` ckpts trained on the 14-env subset reach $\mathrm{div} \approx 0.018$–$0.033$ and $\rho \approx 0.95$–$0.99$ on the held-out envs — *the same calibrated regime they reach on the full G16*. MLP stays collapsed (`$\mathrm{div} = 0.0003$`), GRU stays noisy (`$\mathrm{resp} \approx 12$`). The diagnostic profile is *intrinsic to the model*, not to the training env list. See `results/utility/cross_env_gen_table.md` |
-**Appendix A — Implementation details.** Environment list (16 standard + 4 stress + LeWM), training hyperparameters, CEM planner settings, all six readout-mode implementations, data generation pipeline (multi-env spec format).
-
-**Appendix B — Specialist per-env tables.** All 20 standard envs × 13 models per metric (env-SR, LeWM-SR); all 4 stress envs.
-
-**Appendix C — Generalist per-suite tables.** G4 / G8 / G16 raw matrices for env-SR, LeWM-SR, divergence, responsiveness, event-align ρ per (env, model) cell.
-
-**Appendix D — Event probe details.** Event labels, AUROC per env-target, probe training protocol, hold-out splits.
-
-**Appendix E — Event alignment details.** Event-boundary definition (observation first-difference local maxima), Pearson ρ per env, computation protocol.
-
-**Appendix F — Collapse-diagnostic derivation.** Toy proof that a constant latent has div = 0 regardless of planner. Responsiveness definition with bounded-gain caveat. Alignment-vs-divergence independence argument.
-
-**Appendix G — Historical experiments and claim revision audit.** v0.4 "membrane collapses under stress" → v0.7.2 refutation. v0.7.4 "LeWM-SR collapse signature invisible" → v0.7.5 diagnostic. v0.7.3 pilot ("4-env subset too small") → v0.7.5 16-env generalist. This appendix makes the empirical story self-auditing rather than history-of-projects.
-
----
-
-## References
-
-[1] LeWM-style joint-embedding world model (Hafner et al., 2023; former LeWM repo, this paper's repo).  
-[2] CuBiFAE (Kaiser et al., 2024 ICML).  
-[3] SpikeDreamer (Hong et al., 2024 AAAI).  
-[4] SLT-LIF (Liu et al., 2024 NeurIPS workshop).  
-[5] RATE_ONLY readout in membrane-forbidden spiking networks — see code/stjewm.py:50 (ReadoutMode docstring, code annotation).  
-
----
+## A. Table 1 — Main claim control table
+(unchanged from v0.7.8 — see MASTER_TABLE.md §10 for the canonical table; the
+excerpt kept below is unaltered from v0.7.8 for line-citation stability.)
 
 **End of paper.** Companion artifacts: `MASTER_TABLE.md` (full §1–§11, including the §9 generalist / collapse-robust diagnostics); `results/aggregate/generalist_master_table.md` (consolidated 4-suite + collapse-robust); `results/aggregate/generalist_align_table.md`; `results/aggregate/event_probes_table.md`; `README.md` (v0.7.5 status / reproducing); `code/scripts/generalist_v0_7_5/` (operator-facing scripts).
