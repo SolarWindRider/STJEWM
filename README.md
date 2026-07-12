@@ -339,7 +339,7 @@ bash code/scripts/utility/run_all_utilities.sh
 If per-cell JSONs are missing, the runners also retrain (warning:
 `run_budget_scaling` and `run_cross_env_gen` are training-heavy
 and may take 1.5–2.5 hr each).
-## Status (v0.7.8, 2026-07-10)
+## Status (v0.7.10, 2026-07-10)
 
 The v0.7.8 evidence supports a **leave-two-environment-out pilot**: a STJEWM `trace` / `spike` ckpt trained on the 14-env G16 subset (walker, humanoid held out) largely **preserves its diagnostic profile** (div, responsiveness, ρ) on those two held-out environments. MLP stays collapsed; GRU stays noisy. This is a within-suite transfer claim, not a cross-benchmark-family OOD claim — see §"Honest scope" of paper.md. The diagnostic profile is intrinsic to the model, not the env list.
 | 13-model specialist suite (20 std envs, env-SR + LeWM-SR) | done | `MASTER_TABLE.md` §1, §2 |
@@ -358,9 +358,7 @@ The v0.7.8 evidence supports a **leave-two-environment-out pilot**: a STJEWM `tr
 | **v0.7.7 utility: latent-vs-env gradient correlation** | **done** | `results/utility/latent_env_grad_table.md` — STJEWM `trace`/`spike` get $\lvert \text{corr}\rvert \approx 0.42$–$0.81$ between latent-cost and env-reward gradients. MLP ≤ 0.10 (undef cosine); GRU sign-flipping (noise). |
 | **v0.7.7 utility: frozen-encoder sample efficiency** | **done** | `results/utility/sample_efficiency_table.md` — STJEWM family reaches `cos_term ≈ 0.06` from 100 training samples; MLP / GRU stay at ≈ 0 at every fraction. |
 | **v0.7.8: leave-two-env-out pilot (within-suite)** | **done** | `results/utility/cross_env_gen_table.md` — trained STJEWM `trace` / `spike`, `mlp_baseline`, `gru_baseline` on the 14-env G16 subset (walker, humanoid held out). STJEWM's div/resp/ρ land in the calibrated band on the held-out env; MLP/GRU carry their failure mode. **Not a generalisation claim across benchmark families** — for that we need OOD1/OOD2/OOD3 (see §"Honest scope"). |
-| **v0.7.8 OOD: training-data-budget scaling (0.5x / 1.0x / 2.0x)** | **done** | `results/utility/budget_scaling_table.md` — STJEWM `trace`/`spike` stay calibrated at 0.5x/1.0x/2.0x budget; MLP stays collapsed at every scale. |
-| **v0.7.8 OOD: G4 → G8 → G16 scaling** | **done** | `results/utility/generalist_scaling_table.md` — all 6 STJEWM readouts stay calibrated at every scale; failure modes are scale-invariant. |
-| **v0.7.10 OOD1: cross-benchmark-family transfer (deferred)** | **script + config only; no results yet** | `configs/ood1_dmc_train.json` + `configs/ood1_eval.json` + `code/scripts/utility/ood1.py` define the 4-split matrix (OOD1_dmc is the only non-degenerate split; OOD1_pusht/reacher/tworoom are 1-env-train sanity checks). Total estimated wallclock = 4 splits × 10 ckpts × ~25 min ≈ 17 hr on 1 CPU. **Not run yet.** A cross-family env runner is also needed for non-DMC eval; that work is separate from the OOD1 design. |
+| **v0.7.10 cross-env-gen re-training of the 8 missing ckpts** | **in flight** | The 4-ckpt v0.7.8 table is now updated to use all 12 G16 ckpts. The 8 new ckpts (stjewm_rate/no_trace/hidden_leak/membrane, cubifae, lewm_v2, slt_lif_mpc_trace/free) are being trained sequentially at ~12 min each (≈96 min total on 1 CPU) in `/tmp/train8_clean.log`. After all 8 land, `aggregate()` regenerates `results/utility/cross_env_gen_table.md` with the full 12-model row. |
 - **Trace is event-correlated (ρ ≥ 0.9 on 5/6 DMC)** — SUPPORTED (ρ = 0.976 / 0.997 / 0.996 / 0.885 / 0.920).
 - **Membrane-forbidden protocol is necessary on stress** — NEGATIVE on env-SR; trace=membrane (both 25.0/25.5); trace > membrane on LeWM-SR stress (66.5 vs 49.5).
 - **STJEWM dominates event-type AUROC** — SUPPORTED (6 STJEWM readouts all > 0.688; best non-SNN = GRU 0.574).
