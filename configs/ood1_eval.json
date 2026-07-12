@@ -1,0 +1,10 @@
+[
+  "_comment_": "OOD1 eval spec: the 3 unseen families used to test each OOD1 train split. Goal_offset differs per family because of the family's task horizon (pusht/tworoom = 100 steps; reacher_4d = 25 steps). All entries are out-of-family for the dmc-trained OOD1 split.",
+  "split_name": "ood1_eval",
+  "eval_families": ["pusht", "reacher_4d", "tworoom"],
+  "specs": [
+    {"env_kind": "pusht",    "path": "/home/lx/LeWM/data/pusht_expert_train.h5",         "history_size": 1, "goal_offset": 100, "max_windows": 2000, "env_id": "pusht"},
+    {"env_kind": "reacher_4d","path": "data/dm_control/reacher_250k.npz",                "history_size": 1, "goal_offset": 25,  "max_windows": 2000, "env_id": "reacher_4d"},
+    {"env_kind": "tworoom",   "path": "/home/lx/LeWM/data/tworoom_extract/tworoom.h5","history_size": 1, "goal_offset": 100, "max_windows": 2000, "env_id": "tworoom"}
+  ]
+}

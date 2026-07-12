@@ -1,0 +1,21 @@
+[
+  "_comment_": "OOD1 split: train on DMC classic-control family (13 envs). Eval on the 3 unseen families: pusht, reacher_4d, tworoom. Required for v0.7.10 cross-benchmark-family OOD claim.",
+  "split_name": "ood1_dmc_train",
+  "train_family": "dmc",
+  "unseen_families": ["pusht", "reacher_4d", "tworoom"],
+  "specs": [
+    {"env_kind": "dmc", "path": "data/dm_control/cartpole_250k.npz",                  "history_size": 1, "goal_offset": 25,  "max_windows": 2000, "env_id": "cartpole_2d"},
+    {"env_kind": "dmc", "path": "data/dm_control/pendulum_250k.npz",                 "history_size": 1, "goal_offset": 25,  "max_windows": 2000, "env_id": "pendulum_2d"},
+    {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/finger_250k.npz",   "history_size": 1, "goal_offset": 25,  "max_windows": 2000, "env_id": "finger"},
+    {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/ball_in_cup_250k.npz","history_size": 1, "goal_offset": 25,  "max_windows": 2000, "env_id": "ball_in_cup"},
+    {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/cheetah_250k.npz",  "history_size": 1, "goal_offset": 25,  "max_windows": 2000, "env_id": "cheetah"},
+    {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/walker_250k.npz",   "history_size": 1, "goal_offset": 25,  "max_windows": 2000, "env_id": "walker"},
+    {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/hopper_250k.npz",   "history_size": 1, "goal_offset": 25,  "max_windows": 2000, "env_id": "hopper"},
+    {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/dog_250k.npz",      "history_size": 1, "goal_offset": 25,  "max_windows": 2000, "env_id": "dog"},
+    {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/quadruped_250k.npz","history_size": 1, "goal_offset": 25,  "max_windows": 2000, "env_id": "quadruped"},
+    {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/humanoid_250k.npz", "history_size": 1, "goal_offset": 25,  "max_windows": 2000, "env_id": "humanoid"},
+    {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/humanoid_CMU_250k.npz","history_size": 1, "goal_offset": 25,  "max_windows": 2000, "env_id": "humanoid_CMU"},
+    {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/fish_250k.npz",     "history_size": 1, "goal_offset": 25,  "max_windows": 2000, "env_id": "fish"},
+    {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/stacker_250k.npz",  "history_size": 1, "goal_offset": 25,  "max_windows": 2000, "env_id": "stacker"}
+  ]
+}

@@ -13,11 +13,12 @@ held-out environments*. The five experiments here are:
 
 | experiment | what it tests | metric | table |
 |---|---|---|---|
-| `latent_goal_mpc.py`   | can the planner get closer to the goal as the horizon extends? | `mean_cos_dist_terminal` vs $H$ | `latent_goal_mpc_table.md` |
+| `latent_goal_mpc.py`   | does the planner get closer to the goal as $H$ extends? | `mean_cos_dist_terminal` vs $H$ | `latent_goal_mpc_table.md` |
 | `latent_env_grad.py`   | is the latent gradient aligned with the env-reward gradient? | $\lvert \cos(\nabla_a \text{cost}_\text{lat}, \nabla_a \text{cost}_\text{env})\rvert$ | `latent_env_grad_table.md` |
 | `sample_efficiency.py` | can a tiny linear policy use the latent at 1% of the data? | env-SR at 5 data fractions | `sample_efficiency_table.md` |
-| `cross_env_gen.py`     | does the calibration transfer to held-out envs? | `div`, `resp`, `rho` on held-out walker+humanoid | `cross_env_gen_table.md` |
-| `budget_scaling.py` | does the calibration survive data-budget scaling? | `div`, `resp`, `rho` at 0.5x/1.0x/2.0x budget | `budget_scaling_table.md` |
+| `cross_env_gen.py`     | within-suite pilot: does the calibration transfer to held-out envs from the same G16? | `div`, `resp`, `ρ` on held-out walker+humanoid | `cross_env_gen_table.md` |
+| `budget_scaling.py`    | does the calibration survive training-data-budget scaling? | `div`, `resp`, `ρ` at 0.5x/1.0x/2.0x budget | `budget_scaling_table.md` |
+| `ood1.py` *(planned, v0.7.10)* | **cross-benchmark-family OOD**: train 1 family, evaluate 3 unseen families | `div`, `resp`, `ρ` on the unseen families | `ood1_table.md` (not yet produced) |
 
 ## Script organisation
 
