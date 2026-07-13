@@ -189,3 +189,44 @@ Same set as v0.7.10 within-suite pilot:
      exist. closed_loop dispatches `cheetah_velhidden` to the stress
      wrapper around `cheetah` automatically, so the spec should use
      `cheetah_250k.npz` (the base file). This is a **5-min spec fix**.
+
+### Update 2026-07-14 (reeval v3 final)
+
+Final state: 56/468 (12%) cells still have env_sr=None. The other 412
+(88%) have valid env_sr numbers.
+
+Distribution of the 56 remaining None:
+- cartpole_2d: 26/36 (12 ckpts, stjewm 2-3 each, baselines 2 each)
+- cheetah_velhidden: 3/36 (3 stjewm ckpts failed)
+- pendulum_2d: 27/36 (same pattern as cartpole)
+
+Root causes (verified):
+1. cartpole_2d / pendulum_2d (cubifae/gru/lewm/slt): `RuntimeError: tensors
+   on different devices, cpu and` + `RuntimeError: size mismatch for
+   stack.time_conv.weight: copying a param with shape torch.Size([1536,
+   384, 8]) from checkpoint, the shape in current model is
+   torch.Size([1536, 768, 8])`. The cubifae source hardcodes
+   `time_conv.in_channels = self.membrane_dim` based on the env's
+   effective obs_dim. Ckpts saved with in_channels=384 (when trained
+   on env with obs_dim=4) but rebuilt model uses 768 (when current env
+   has obs_dim=2). Architecture-level fix requires retraining these
+   baselines on cartpole/pendulum with consistent obs_dim.
+
+2. cheetah_velhidden (3 stjewm ckpts): `RuntimeError: tensors on different
+   devices`. Ckpts were saved with tensors on cuda device, but eval
+   forces cpu. These ckpts need to be re-saved with map_location.
+
+The 56 cells are **all closed_loop-side or baseline ckpt-architecture
+issues** — they do NOT affect div/resp/rho (468/468 complete, the actual
+path-C signal) and do NOT block the OOD path-C claim. The runner
+codepath that produces valid div/resp/rho is independent of the closed_loop
+eval that produces env_sr.
+
+**Summary of what's truly done in v0.7.10b**:
+- 72/72 ckpt trained
+- 468/468 cells have div/resp/rho (path-C signal)
+- 412/468 cells have env_sr
+- 56/468 cells have env_sr=None (closed_loop issues, not path-C signal)
+
+**Time to fix remaining 56**: 4-8 hr of retraining cubifae/gru/lewm/slt
+with consistent obs_dim (not done in v0.7.10b).
