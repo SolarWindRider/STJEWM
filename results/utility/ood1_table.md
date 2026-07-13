@@ -4,6 +4,8 @@
 6 splits (3 OOD1: F1, F2, F3 trained; 3 OOD2: F1F2, F1F3, F2F3 trained).
 12 ckpts per split, 1 seed, 2K windows/env, 3 episodes per held-out env.
 
+Per-cell metric: `div` (latent per-dim std), `resp` (mean |delta-lat|/|delta-obs|), `rho` (corr ||delta-obs|| vs ||delta-lat||), `env_sr` (closed-loop success rate).
+
 Total: 468 ckpt x env cells.
 
 | split | model | env | div | resp | rho | env_sr |
