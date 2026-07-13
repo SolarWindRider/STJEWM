@@ -61,7 +61,7 @@
     },
     {
       "env_kind": "dmc",
-      "path": "data/delayed_t_maze_30k.npz",
+      "path": "data/delayed_t_maze_30k_3d.npz",
       "history_size": 1,
       "goal_offset": 25,
       "max_windows": 2000,
@@ -69,11 +69,11 @@
     },
     {
       "env_kind": "dmc",
-      "path": "data/dm_control/3d_rollouts_250k/cheetah_velhidden_250k.npz",
+      "path": "data/dm_control/3d_rollouts_250k/cheetah_250k.npz",
       "history_size": 1,
       "goal_offset": 25,
       "max_windows": 2000,
-      "env_id": "cheetah_velhidden"
+      "env_id": "cheetah"
     }
   ],
   "eval_specs": [
