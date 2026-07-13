@@ -68,3 +68,14 @@ Same set as v0.7.10 within-suite pilot:
 - Path C is NOT true cross-modality OOD (all envs are DMC, all state obs, all qpos-based dynamics).
 - It IS true cross-benchmark-family OOD in the within-DMC taxonomy (classic control vs locomotion vs sparse-POMDP) and meaningfully tests whether the calibrated latent dynamics profile transfers to held-out morphologies and reward regimes.
 - If reviewer asks "why not cross-modality": we already have a within-suite 12-ckpt pilot showing same-suite transfer (v0.7.10). Path C extends this from within-suite to within-DMC. True cross-modality (image vs state, DMC vs pixel-particle) is v0.7.11 work and requires raw-obs branch in STJEWM.
+
+## Progress (v0.7.10b - 2026-07-13)
+
+- [x] 6 split specs written (configs/oodc/oodc_{F1,F2,F3,F1F2,F1F3,F2F3}.json)
+- [x] Runner written: code/scripts/utility/ood1_path_c.py
+- [x] Smoke test: mlp_baseline trained on F1, evaluated on all 8 held-out envs.
+      All diagnostic + env-SR numbers produced (div/resp/rho + env-SR per cell).
+- [ ] 6 splits × 12 ckpts (72 trainings) — NOT YET LAUNCHED.
+- [ ] 6 splits × 12 ckpts × 8-11 held-out envs (~600 cells) — NOT YET DONE.
+- [ ] Final ood1_table.md with full matrix — NOT YET.
+- [ ] Paper.md §8 update with the 6-split numbers — NOT YET.
