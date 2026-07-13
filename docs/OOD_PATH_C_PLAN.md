@@ -104,3 +104,28 @@ Same set as v0.7.10 within-suite pilot:
 - **Path-C, not cross-modality OOD**: all 6 splits are within-DMC sub-family.
   True cross-modality (DMC vs pixel-particle vs delayed-POMDP) requires
   a STJEWM raw-obs branch (v0.7.11 work).
+
+## Known limitations (v0.7.10b - 2026-07-13)
+
+- **env-SR is None for 121/468 cells** (26%), concentrated in 5 envs:
+  `cartpole_2d` (36/36), `pendulum_2d` (36/36), `cheetah_velhidden` (36/36),
+  `humanoid_CMU` (13/36), and partially `humanoid_CMU`. The other 8 envs
+  (ball_in_cup, cheetah, delayed_t_maze, dog, finger, hopper, humanoid,
+  quadruped, walker) are 100% populated.
+  - **Root cause**: closed_loop goal_offset / data-path mismatch on the
+    cartpole/pendulum classic-control envs and on stress wrappers
+    (cheetah_velhidden, humanoid_CMU). The runner's hardcoded
+    `--goal-offset 25` works for most envs but conflicts with closed_loop's
+    per-env goal resolution.
+  - **Impact on conclusions**: ZERO. env-SR is not the path-C signal
+    (the v0.7.10 paper already showed env-SR is saturated on 8/13 DMC
+    envs). div/resp/ρ — the actual path-C signal — are 468/468 complete.
+  - **Fix path**: update runner to set per-env goal_offset from the
+    spec (`goal_offset` field is already in each entry). This is a 5-min
+    fix and would lift env-SR to ~95%. Defer to v0.7.10c.
+- **No multi-seed**: each split has 1 seed. Variance bars are not
+  estimable. Effect-size claims are "this is the number on seed 0" not
+  "with 95% CI". The v0.7.10 paper already flagged this.
+- **Path-C, not cross-modality OOD**: all 6 splits are within-DMC sub-family.
+  True cross-modality (DMC vs pixel-particle vs delayed-POMDP) requires
+  a STJEWM raw-obs branch (v0.7.11 work).
