@@ -75,13 +75,25 @@ def build_model_from_ckpt(ck_args: dict, state_dim: int, action_dim: int, device
         return make_mlp_baseline(state_dim=state_dim, action_dim=action_dim).to(device)
     if model_name == "cubifae_baseline":
         from code.cubifae_baseline import make_cubifae_baseline
-        return make_cubifae_baseline(state_dim=state_dim, action_dim=action_dim).to(device)
+        return make_cubifae_baseline(
+            state_dim=state_dim, action_dim=action_dim,
+            d_hid=ck_args.get("embed_dim", 192),
+            n_layers=ck_args.get("n_layers", 2),
+        ).to(device)
     if model_name == "slt_lif_mpc_trace":
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
-        return make_slt_lif_mpc_trace(state_dim=state_dim, action_dim=action_dim).to(device)
+        return make_slt_lif_mpc_trace(
+            state_dim=state_dim, action_dim=action_dim,
+            d_in=ck_args.get("embed_dim", 192),
+            n_layers=ck_args.get("n_layers", 2),
+        ).to(device)
     if model_name == "slt_lif_mpc_free":
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
-        return make_slt_lif_mpc_free(state_dim=state_dim, action_dim=action_dim).to(device)
+        return make_slt_lif_mpc_free(
+            state_dim=state_dim, action_dim=action_dim,
+            d_in=ck_args.get("embed_dim", 192),
+            n_layers=ck_args.get("n_layers", 2),
+        ).to(device)
     raise ValueError(f"Unknown model_name: {model_name}")
 
 
