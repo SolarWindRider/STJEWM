@@ -4,11 +4,7 @@
 6 splits (3 OOD1: F1, F2, F3 trained; 3 OOD2: F1F2, F1F3, F2F3 trained).
 12 ckpts per split, 1 seed, 2K windows/env, 3 episodes per held-out env.
 
-Per-cell metric: `div` (latent per-dim std), `resp` (mean |delta-lat|/|delta-obs|), `rho` (corr ||delta-obs|| vs ||delta-lat||), `env_sr` (closed-loop success rate).
-
-Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
-
-## Per-cell
+Total: 468 ckpt x env cells.
 
 | split | model | env | div | resp | rho | env_sr |
 |---|---|---|---|---|---|---|
@@ -17,7 +13,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F1 | cubifae_baseline | dog | nan | nan | nan | 1.0000 |
 | oodc_F1 | cubifae_baseline | hopper | nan | nan | nan | 1.0000 |
 | oodc_F1 | cubifae_baseline | humanoid | nan | nan | nan | 1.0000 |
-| oodc_F1 | cubifae_baseline | humanoid_CMU | nan | nan | nan | nan |
+| oodc_F1 | cubifae_baseline | humanoid_CMU | nan | nan | nan | 1.0000 |
 | oodc_F1 | cubifae_baseline | quadruped | nan | nan | nan | 1.0000 |
 | oodc_F1 | cubifae_baseline | walker | nan | nan | nan | 1.0000 |
 | oodc_F1 | gru_baseline | cheetah_velhidden | 0.0010 | 0.0987 | 0.9870 | nan |
@@ -25,7 +21,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F1 | gru_baseline | dog | 0.0070 | 0.1046 | 0.9530 | 1.0000 |
 | oodc_F1 | gru_baseline | hopper | 0.0035 | 0.1072 | 0.9940 | 1.0000 |
 | oodc_F1 | gru_baseline | humanoid | 0.0090 | 0.1073 | 0.9510 | 1.0000 |
-| oodc_F1 | gru_baseline | humanoid_CMU | 0.0029 | 0.1076 | 0.8590 | nan |
+| oodc_F1 | gru_baseline | humanoid_CMU | 0.0029 | 0.1076 | 0.8590 | 1.0000 |
 | oodc_F1 | gru_baseline | quadruped | 0.0062 | 0.1076 | 0.9990 | 1.0000 |
 | oodc_F1 | gru_baseline | walker | 0.0055 | 0.1073 | 0.9900 | 1.0000 |
 | oodc_F1 | lewm_baseline_v2 | cheetah_velhidden | 0.1252 | 6.9405 | 0.9780 | nan |
@@ -33,7 +29,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F1 | lewm_baseline_v2 | dog | 0.2996 | 2.4307 | 0.8580 | 1.0000 |
 | oodc_F1 | lewm_baseline_v2 | hopper | 0.1363 | 2.8686 | 0.8690 | 1.0000 |
 | oodc_F1 | lewm_baseline_v2 | humanoid | 0.2713 | 1.9060 | 0.7910 | 1.0000 |
-| oodc_F1 | lewm_baseline_v2 | humanoid_CMU | 0.0887 | 2.0475 | 0.7610 | nan |
+| oodc_F1 | lewm_baseline_v2 | humanoid_CMU | 0.0887 | 2.0475 | 0.7610 | 1.0000 |
 | oodc_F1 | lewm_baseline_v2 | quadruped | 0.2149 | 2.4198 | 0.9880 | 1.0000 |
 | oodc_F1 | lewm_baseline_v2 | walker | 0.1565 | 2.1340 | 0.4940 | 1.0000 |
 | oodc_F1 | mlp_baseline | cheetah_velhidden | 0.0000 | 0.0006 | 0.9740 | nan |
@@ -41,7 +37,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F1 | mlp_baseline | dog | 0.0001 | 0.0007 | 0.9080 | 1.0000 |
 | oodc_F1 | mlp_baseline | hopper | 0.0000 | 0.0007 | 0.9910 | 1.0000 |
 | oodc_F1 | mlp_baseline | humanoid | 0.0001 | 0.0008 | 0.9350 | 1.0000 |
-| oodc_F1 | mlp_baseline | humanoid_CMU | 0.0000 | 0.0007 | 0.8910 | nan |
+| oodc_F1 | mlp_baseline | humanoid_CMU | 0.0000 | 0.0007 | 0.8910 | 1.0000 |
 | oodc_F1 | mlp_baseline | quadruped | 0.0001 | 0.0007 | 0.9950 | 1.0000 |
 | oodc_F1 | mlp_baseline | walker | 0.0000 | 0.0007 | 0.9570 | 1.0000 |
 | oodc_F1 | slt_lif_mpc_free | cheetah_velhidden | 0.0033 | 0.2099 | 0.9830 | nan |
@@ -49,7 +45,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F1 | slt_lif_mpc_free | dog | 0.0273 | 0.2032 | 0.9280 | 1.0000 |
 | oodc_F1 | slt_lif_mpc_free | hopper | 0.0156 | 0.1934 | 0.9950 | 1.0000 |
 | oodc_F1 | slt_lif_mpc_free | humanoid | 0.0291 | 0.2075 | 0.9550 | 1.0000 |
-| oodc_F1 | slt_lif_mpc_free | humanoid_CMU | 0.0087 | 0.2111 | 0.9560 | nan |
+| oodc_F1 | slt_lif_mpc_free | humanoid_CMU | 0.0087 | 0.2111 | 0.9560 | 1.0000 |
 | oodc_F1 | slt_lif_mpc_free | quadruped | 0.0202 | 0.2069 | 0.9970 | 1.0000 |
 | oodc_F1 | slt_lif_mpc_free | walker | 0.0197 | 0.2098 | 0.9750 | 1.0000 |
 | oodc_F1 | slt_lif_mpc_trace | cheetah_velhidden | 0.0040 | 0.2108 | 0.9880 | nan |
@@ -57,7 +53,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F1 | slt_lif_mpc_trace | dog | 0.0271 | 0.1995 | 0.8960 | 1.0000 |
 | oodc_F1 | slt_lif_mpc_trace | hopper | 0.0121 | 0.2021 | 0.9980 | 1.0000 |
 | oodc_F1 | slt_lif_mpc_trace | humanoid | 0.0283 | 0.2084 | 0.9660 | 1.0000 |
-| oodc_F1 | slt_lif_mpc_trace | humanoid_CMU | 0.0103 | 0.2201 | 0.9350 | nan |
+| oodc_F1 | slt_lif_mpc_trace | humanoid_CMU | 0.0103 | 0.2201 | 0.9350 | 1.0000 |
 | oodc_F1 | slt_lif_mpc_trace | quadruped | 0.0203 | 0.2104 | 0.9970 | 1.0000 |
 | oodc_F1 | slt_lif_mpc_trace | walker | 0.0162 | 0.2101 | 0.9950 | 1.0000 |
 | oodc_F1 | stjewm_hidden_leak | cheetah_velhidden | 0.0033 | 0.2093 | 0.9970 | nan |
@@ -65,7 +61,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F1 | stjewm_hidden_leak | dog | 0.0259 | 0.2097 | 0.9310 | 1.0000 |
 | oodc_F1 | stjewm_hidden_leak | hopper | 0.0146 | 0.2113 | 0.9950 | 1.0000 |
 | oodc_F1 | stjewm_hidden_leak | humanoid | 0.0283 | 0.2088 | 0.9540 | 1.0000 |
-| oodc_F1 | stjewm_hidden_leak | humanoid_CMU | 0.0113 | 0.2089 | 0.9000 | nan |
+| oodc_F1 | stjewm_hidden_leak | humanoid_CMU | 0.0113 | 0.2089 | 0.9000 | 1.0000 |
 | oodc_F1 | stjewm_hidden_leak | quadruped | 0.0208 | 0.2097 | 0.9960 | 1.0000 |
 | oodc_F1 | stjewm_hidden_leak | walker | 0.0178 | 0.2058 | 0.9940 | 1.0000 |
 | oodc_F1 | stjewm_membrane_readout | cheetah_velhidden | 0.0036 | 0.2104 | 0.9970 | nan |
@@ -73,7 +69,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F1 | stjewm_membrane_readout | dog | 0.0264 | 0.2132 | 0.9220 | 1.0000 |
 | oodc_F1 | stjewm_membrane_readout | hopper | 0.0125 | 0.2179 | 0.9990 | 1.0000 |
 | oodc_F1 | stjewm_membrane_readout | humanoid | 0.0318 | 0.2090 | 0.9570 | 1.0000 |
-| oodc_F1 | stjewm_membrane_readout | humanoid_CMU | 0.0099 | 0.2111 | 0.9400 | nan |
+| oodc_F1 | stjewm_membrane_readout | humanoid_CMU | 0.0099 | 0.2111 | 0.9400 | 1.0000 |
 | oodc_F1 | stjewm_membrane_readout | quadruped | 0.0202 | 0.2093 | 0.9970 | 1.0000 |
 | oodc_F1 | stjewm_membrane_readout | walker | 0.0180 | 0.2080 | 0.9870 | 1.0000 |
 | oodc_F1 | stjewm_no_trace | cheetah_velhidden | 0.0039 | 0.2103 | 0.9970 | nan |
@@ -81,7 +77,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F1 | stjewm_no_trace | dog | 0.0263 | 0.2119 | 0.9380 | 1.0000 |
 | oodc_F1 | stjewm_no_trace | hopper | 0.0130 | 0.2125 | 0.9940 | 1.0000 |
 | oodc_F1 | stjewm_no_trace | humanoid | 0.0307 | 0.2157 | 0.9670 | 1.0000 |
-| oodc_F1 | stjewm_no_trace | humanoid_CMU | 0.0083 | 0.2102 | 0.9340 | nan |
+| oodc_F1 | stjewm_no_trace | humanoid_CMU | 0.0083 | 0.2102 | 0.9340 | 1.0000 |
 | oodc_F1 | stjewm_no_trace | quadruped | 0.0210 | 0.2095 | 0.9960 | 1.0000 |
 | oodc_F1 | stjewm_no_trace | walker | 0.0169 | 0.2061 | 0.9910 | 1.0000 |
 | oodc_F1 | stjewm_rate_only | cheetah_velhidden | 0.0040 | 0.2094 | 0.9960 | nan |
@@ -89,7 +85,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F1 | stjewm_rate_only | dog | 0.0295 | 0.2101 | 0.9430 | 1.0000 |
 | oodc_F1 | stjewm_rate_only | hopper | 0.0122 | 0.2135 | 0.9970 | 1.0000 |
 | oodc_F1 | stjewm_rate_only | humanoid | 0.0288 | 0.2191 | 0.9680 | 1.0000 |
-| oodc_F1 | stjewm_rate_only | humanoid_CMU | 0.0099 | 0.2091 | 0.9130 | nan |
+| oodc_F1 | stjewm_rate_only | humanoid_CMU | 0.0099 | 0.2091 | 0.9130 | 1.0000 |
 | oodc_F1 | stjewm_rate_only | quadruped | 0.0200 | 0.2071 | 0.9960 | 1.0000 |
 | oodc_F1 | stjewm_rate_only | walker | 0.0197 | 0.2081 | 0.9960 | 1.0000 |
 | oodc_F1 | stjewm_spike_only | cheetah_velhidden | 0.0032 | 0.2081 | 0.9950 | nan |
@@ -97,7 +93,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F1 | stjewm_spike_only | dog | 0.0249 | 0.2102 | 0.9370 | 1.0000 |
 | oodc_F1 | stjewm_spike_only | hopper | 0.0108 | 0.2130 | 0.9980 | 1.0000 |
 | oodc_F1 | stjewm_spike_only | humanoid | 0.0252 | 0.2105 | 0.9510 | 1.0000 |
-| oodc_F1 | stjewm_spike_only | humanoid_CMU | 0.0101 | 0.2116 | 0.9080 | nan |
+| oodc_F1 | stjewm_spike_only | humanoid_CMU | 0.0101 | 0.2116 | 0.9080 | 1.0000 |
 | oodc_F1 | stjewm_spike_only | quadruped | 0.0203 | 0.2083 | 0.9970 | 1.0000 |
 | oodc_F1 | stjewm_spike_only | walker | 0.0139 | 0.2135 | 0.9840 | 1.0000 |
 | oodc_F1 | stjewm_trace_only | cheetah_velhidden | 0.0031 | 0.2101 | 0.9950 | nan |
@@ -105,7 +101,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F1 | stjewm_trace_only | dog | 0.0287 | 0.2085 | 0.9590 | 1.0000 |
 | oodc_F1 | stjewm_trace_only | hopper | 0.0176 | 0.2084 | 0.9930 | 1.0000 |
 | oodc_F1 | stjewm_trace_only | humanoid | 0.0316 | 0.2143 | 0.9550 | 1.0000 |
-| oodc_F1 | stjewm_trace_only | humanoid_CMU | 0.0112 | 0.2122 | 0.9100 | nan |
+| oodc_F1 | stjewm_trace_only | humanoid_CMU | 0.0112 | 0.2122 | 0.9100 | 1.0000 |
 | oodc_F1 | stjewm_trace_only | quadruped | 0.0205 | 0.2099 | 0.9970 | 1.0000 |
 | oodc_F1 | stjewm_trace_only | walker | 0.0189 | 0.2079 | 0.9980 | 1.0000 |
 | oodc_F1F2 | cubifae_baseline | cheetah_velhidden | nan | nan | nan | nan |
@@ -135,73 +131,73 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F1F3 | cubifae_baseline | dog | nan | nan | nan | 1.0000 |
 | oodc_F1F3 | cubifae_baseline | hopper | nan | nan | nan | 1.0000 |
 | oodc_F1F3 | cubifae_baseline | humanoid | nan | nan | nan | 1.0000 |
-| oodc_F1F3 | cubifae_baseline | humanoid_CMU | nan | nan | nan | nan |
+| oodc_F1F3 | cubifae_baseline | humanoid_CMU | nan | nan | nan | 1.0000 |
 | oodc_F1F3 | cubifae_baseline | quadruped | nan | nan | nan | 1.0000 |
 | oodc_F1F3 | cubifae_baseline | walker | nan | nan | nan | 1.0000 |
 | oodc_F1F3 | gru_baseline | dog | 0.0080 | 0.1039 | 0.9550 | 1.0000 |
 | oodc_F1F3 | gru_baseline | hopper | 0.0044 | 0.1061 | 0.9980 | 1.0000 |
 | oodc_F1F3 | gru_baseline | humanoid | 0.0099 | 0.1076 | 0.9640 | 1.0000 |
-| oodc_F1F3 | gru_baseline | humanoid_CMU | 0.0030 | 0.1056 | 0.9300 | nan |
+| oodc_F1F3 | gru_baseline | humanoid_CMU | 0.0030 | 0.1056 | 0.9300 | 1.0000 |
 | oodc_F1F3 | gru_baseline | quadruped | 0.0063 | 0.1071 | 0.9990 | 1.0000 |
 | oodc_F1F3 | gru_baseline | walker | 0.0035 | 0.1030 | 0.9640 | 1.0000 |
 | oodc_F1F3 | lewm_baseline_v2 | dog | 0.2989 | 2.4587 | 0.6810 | 1.0000 |
 | oodc_F1F3 | lewm_baseline_v2 | hopper | 0.1363 | 2.4275 | 0.9340 | 1.0000 |
 | oodc_F1F3 | lewm_baseline_v2 | humanoid | 0.2914 | 2.3495 | 0.8130 | 1.0000 |
-| oodc_F1F3 | lewm_baseline_v2 | humanoid_CMU | 0.0868 | 2.0790 | 0.7930 | nan |
+| oodc_F1F3 | lewm_baseline_v2 | humanoid_CMU | 0.0868 | 2.0790 | 0.7930 | 1.0000 |
 | oodc_F1F3 | lewm_baseline_v2 | quadruped | 0.2214 | 2.3901 | 0.9860 | 1.0000 |
 | oodc_F1F3 | lewm_baseline_v2 | walker | 0.1627 | 2.7423 | 0.3020 | 1.0000 |
 | oodc_F1F3 | mlp_baseline | dog | 0.0001 | 0.0007 | 0.8900 | 1.0000 |
 | oodc_F1F3 | mlp_baseline | hopper | 0.0000 | 0.0007 | 0.9790 | 1.0000 |
 | oodc_F1F3 | mlp_baseline | humanoid | 0.0001 | 0.0008 | 0.9460 | 1.0000 |
-| oodc_F1F3 | mlp_baseline | humanoid_CMU | 0.0000 | 0.0007 | 0.9120 | nan |
+| oodc_F1F3 | mlp_baseline | humanoid_CMU | 0.0000 | 0.0007 | 0.9120 | 1.0000 |
 | oodc_F1F3 | mlp_baseline | quadruped | 0.0001 | 0.0007 | 0.9950 | 1.0000 |
 | oodc_F1F3 | mlp_baseline | walker | 0.0001 | 0.0007 | 0.9850 | 1.0000 |
 | oodc_F1F3 | slt_lif_mpc_free | dog | 0.0278 | 0.2059 | 0.9310 | 1.0000 |
 | oodc_F1F3 | slt_lif_mpc_free | hopper | 0.0187 | 0.1967 | 0.9880 | 1.0000 |
 | oodc_F1F3 | slt_lif_mpc_free | humanoid | 0.0319 | 0.2073 | 0.9320 | 1.0000 |
-| oodc_F1F3 | slt_lif_mpc_free | humanoid_CMU | 0.0088 | 0.2089 | 0.9130 | nan |
+| oodc_F1F3 | slt_lif_mpc_free | humanoid_CMU | 0.0088 | 0.2089 | 0.9130 | 1.0000 |
 | oodc_F1F3 | slt_lif_mpc_free | quadruped | 0.0202 | 0.2066 | 0.9970 | 1.0000 |
 | oodc_F1F3 | slt_lif_mpc_free | walker | 0.0202 | 0.2091 | 0.9880 | 1.0000 |
 | oodc_F1F3 | slt_lif_mpc_trace | dog | 0.0256 | 0.2071 | 0.9500 | 1.0000 |
 | oodc_F1F3 | slt_lif_mpc_trace | hopper | 0.0119 | 0.2003 | 0.9980 | 1.0000 |
 | oodc_F1F3 | slt_lif_mpc_trace | humanoid | 0.0320 | 0.2160 | 0.9640 | 1.0000 |
-| oodc_F1F3 | slt_lif_mpc_trace | humanoid_CMU | 0.0096 | 0.2161 | 0.9190 | nan |
+| oodc_F1F3 | slt_lif_mpc_trace | humanoid_CMU | 0.0096 | 0.2161 | 0.9190 | 1.0000 |
 | oodc_F1F3 | slt_lif_mpc_trace | quadruped | 0.0202 | 0.2079 | 0.9970 | 1.0000 |
 | oodc_F1F3 | slt_lif_mpc_trace | walker | 0.0181 | 0.2080 | 0.9950 | 1.0000 |
 | oodc_F1F3 | stjewm_hidden_leak | dog | 0.0271 | 0.2133 | 0.9230 | 1.0000 |
 | oodc_F1F3 | stjewm_hidden_leak | hopper | 0.0126 | 0.2157 | 0.9970 | 1.0000 |
 | oodc_F1F3 | stjewm_hidden_leak | humanoid | 0.0298 | 0.2129 | 0.9660 | 1.0000 |
-| oodc_F1F3 | stjewm_hidden_leak | humanoid_CMU | 0.0097 | 0.2115 | 0.9350 | nan |
+| oodc_F1F3 | stjewm_hidden_leak | humanoid_CMU | 0.0097 | 0.2115 | 0.9350 | 1.0000 |
 | oodc_F1F3 | stjewm_hidden_leak | quadruped | 0.0208 | 0.2118 | 0.9960 | 1.0000 |
 | oodc_F1F3 | stjewm_hidden_leak | walker | 0.0164 | 0.2101 | 0.9890 | 1.0000 |
 | oodc_F1F3 | stjewm_membrane_readout | dog | 0.0247 | 0.2065 | 0.9450 | 1.0000 |
 | oodc_F1F3 | stjewm_membrane_readout | hopper | 0.0174 | 0.2122 | 0.9890 | 1.0000 |
 | oodc_F1F3 | stjewm_membrane_readout | humanoid | 0.0320 | 0.2084 | 0.9460 | 1.0000 |
-| oodc_F1F3 | stjewm_membrane_readout | humanoid_CMU | 0.0090 | 0.2112 | 0.9430 | nan |
+| oodc_F1F3 | stjewm_membrane_readout | humanoid_CMU | 0.0090 | 0.2112 | 0.9430 | 1.0000 |
 | oodc_F1F3 | stjewm_membrane_readout | quadruped | 0.0206 | 0.2087 | 0.9960 | 1.0000 |
 | oodc_F1F3 | stjewm_membrane_readout | walker | 0.0180 | 0.2117 | 0.9960 | 1.0000 |
 | oodc_F1F3 | stjewm_no_trace | dog | 0.0302 | 0.2139 | 0.9440 | 1.0000 |
 | oodc_F1F3 | stjewm_no_trace | hopper | 0.0127 | 0.2072 | 0.9990 | 1.0000 |
 | oodc_F1F3 | stjewm_no_trace | humanoid | 0.0317 | 0.2123 | 0.9480 | 1.0000 |
-| oodc_F1F3 | stjewm_no_trace | humanoid_CMU | 0.0096 | 0.2127 | 0.9260 | nan |
+| oodc_F1F3 | stjewm_no_trace | humanoid_CMU | 0.0096 | 0.2127 | 0.9260 | 1.0000 |
 | oodc_F1F3 | stjewm_no_trace | quadruped | 0.0206 | 0.2119 | 0.9970 | 1.0000 |
 | oodc_F1F3 | stjewm_no_trace | walker | 0.0175 | 0.2056 | 0.9770 | 1.0000 |
 | oodc_F1F3 | stjewm_rate_only | dog | 0.0219 | 0.2150 | 0.9560 | 1.0000 |
 | oodc_F1F3 | stjewm_rate_only | hopper | 0.0160 | 0.2106 | 0.9940 | 1.0000 |
 | oodc_F1F3 | stjewm_rate_only | humanoid | 0.0248 | 0.2144 | 0.9690 | 1.0000 |
-| oodc_F1F3 | stjewm_rate_only | humanoid_CMU | 0.0088 | 0.2037 | 0.9190 | nan |
+| oodc_F1F3 | stjewm_rate_only | humanoid_CMU | 0.0088 | 0.2037 | 0.9190 | 1.0000 |
 | oodc_F1F3 | stjewm_rate_only | quadruped | 0.0208 | 0.2101 | 0.9960 | 1.0000 |
 | oodc_F1F3 | stjewm_rate_only | walker | 0.0117 | 0.2068 | 0.9880 | 1.0000 |
 | oodc_F1F3 | stjewm_spike_only | dog | 0.0240 | 0.2129 | 0.9060 | 1.0000 |
 | oodc_F1F3 | stjewm_spike_only | hopper | 0.0176 | 0.2162 | 0.9960 | 1.0000 |
 | oodc_F1F3 | stjewm_spike_only | humanoid | 0.0318 | 0.2104 | 0.9510 | 1.0000 |
-| oodc_F1F3 | stjewm_spike_only | humanoid_CMU | 0.0101 | 0.2102 | 0.9350 | nan |
+| oodc_F1F3 | stjewm_spike_only | humanoid_CMU | 0.0101 | 0.2102 | 0.9350 | 1.0000 |
 | oodc_F1F3 | stjewm_spike_only | quadruped | 0.0205 | 0.2108 | 0.9960 | 1.0000 |
 | oodc_F1F3 | stjewm_spike_only | walker | 0.0164 | 0.2126 | 0.9900 | 1.0000 |
 | oodc_F1F3 | stjewm_trace_only | dog | 0.0274 | 0.2102 | 0.9600 | 1.0000 |
 | oodc_F1F3 | stjewm_trace_only | hopper | 0.0173 | 0.2119 | 0.9960 | 1.0000 |
 | oodc_F1F3 | stjewm_trace_only | humanoid | 0.0291 | 0.2131 | 0.9440 | 1.0000 |
-| oodc_F1F3 | stjewm_trace_only | humanoid_CMU | 0.0100 | 0.2129 | 0.9410 | nan |
+| oodc_F1F3 | stjewm_trace_only | humanoid_CMU | 0.0100 | 0.2129 | 0.9410 | 1.0000 |
 | oodc_F1F3 | stjewm_trace_only | quadruped | 0.0207 | 0.2092 | 0.9970 | 1.0000 |
 | oodc_F1F3 | stjewm_trace_only | walker | 0.0194 | 0.2034 | 0.9860 | 1.0000 |
 | oodc_F2 | cubifae_baseline | ball_in_cup | nan | nan | nan | 1.0000 |
@@ -355,7 +351,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F3 | cubifae_baseline | finger | nan | nan | nan | 1.0000 |
 | oodc_F3 | cubifae_baseline | hopper | nan | nan | nan | 1.0000 |
 | oodc_F3 | cubifae_baseline | humanoid | nan | nan | nan | 1.0000 |
-| oodc_F3 | cubifae_baseline | humanoid_CMU | nan | nan | nan | nan |
+| oodc_F3 | cubifae_baseline | humanoid_CMU | nan | nan | nan | 1.0000 |
 | oodc_F3 | cubifae_baseline | pendulum_2d | nan | nan | nan | nan |
 | oodc_F3 | cubifae_baseline | quadruped | nan | nan | nan | 1.0000 |
 | oodc_F3 | cubifae_baseline | walker | nan | nan | nan | 1.0000 |
@@ -366,7 +362,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F3 | gru_baseline | finger | 0.0015 | 0.1053 | 1.0000 | 1.0000 |
 | oodc_F3 | gru_baseline | hopper | 0.0047 | 0.1085 | 0.9920 | 1.0000 |
 | oodc_F3 | gru_baseline | humanoid | 0.0093 | 0.1075 | 0.9600 | 1.0000 |
-| oodc_F3 | gru_baseline | humanoid_CMU | 0.0027 | 0.1058 | 0.9210 | nan |
+| oodc_F3 | gru_baseline | humanoid_CMU | 0.0027 | 0.1058 | 0.9210 | 1.0000 |
 | oodc_F3 | gru_baseline | pendulum_2d | 0.0038 | 0.1079 | 0.9980 | nan |
 | oodc_F3 | gru_baseline | quadruped | 0.0063 | 0.1086 | 0.9990 | 1.0000 |
 | oodc_F3 | gru_baseline | walker | 0.0050 | 0.1070 | 0.9900 | 1.0000 |
@@ -377,7 +373,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F3 | lewm_baseline_v2 | finger | 0.1674 | 5.6748 | 0.9850 | 1.0000 |
 | oodc_F3 | lewm_baseline_v2 | hopper | 0.1278 | 2.6390 | 0.9070 | 1.0000 |
 | oodc_F3 | lewm_baseline_v2 | humanoid | 0.3004 | 2.2354 | 0.8200 | 1.0000 |
-| oodc_F3 | lewm_baseline_v2 | humanoid_CMU | 0.0800 | 2.1116 | 0.8060 | nan |
+| oodc_F3 | lewm_baseline_v2 | humanoid_CMU | 0.0800 | 2.1116 | 0.8060 | 1.0000 |
 | oodc_F3 | lewm_baseline_v2 | pendulum_2d | 0.3677 | 6.2522 | 0.9350 | nan |
 | oodc_F3 | lewm_baseline_v2 | quadruped | 0.2240 | 2.4402 | 0.9890 | 1.0000 |
 | oodc_F3 | lewm_baseline_v2 | walker | 0.1280 | 2.1396 | 0.2240 | 1.0000 |
@@ -388,7 +384,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F3 | mlp_baseline | finger | 0.0000 | 0.0007 | 0.9980 | 1.0000 |
 | oodc_F3 | mlp_baseline | hopper | 0.0000 | 0.0007 | 0.9870 | 1.0000 |
 | oodc_F3 | mlp_baseline | humanoid | 0.0001 | 0.0008 | 0.9560 | 1.0000 |
-| oodc_F3 | mlp_baseline | humanoid_CMU | 0.0000 | 0.0007 | 0.8860 | nan |
+| oodc_F3 | mlp_baseline | humanoid_CMU | 0.0000 | 0.0007 | 0.8860 | 1.0000 |
 | oodc_F3 | mlp_baseline | pendulum_2d | 0.0000 | 0.0007 | 0.9790 | nan |
 | oodc_F3 | mlp_baseline | quadruped | 0.0001 | 0.0007 | 0.9950 | 1.0000 |
 | oodc_F3 | mlp_baseline | walker | 0.0000 | 0.0007 | 0.9140 | 1.0000 |
@@ -399,7 +395,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F3 | slt_lif_mpc_free | finger | 0.0031 | 0.2077 | 0.9980 | 1.0000 |
 | oodc_F3 | slt_lif_mpc_free | hopper | 0.0167 | 0.2024 | 0.9980 | 1.0000 |
 | oodc_F3 | slt_lif_mpc_free | humanoid | 0.0285 | 0.2120 | 0.9550 | 1.0000 |
-| oodc_F3 | slt_lif_mpc_free | humanoid_CMU | 0.0091 | 0.2143 | 0.8700 | nan |
+| oodc_F3 | slt_lif_mpc_free | humanoid_CMU | 0.0091 | 0.2143 | 0.8700 | 1.0000 |
 | oodc_F3 | slt_lif_mpc_free | pendulum_2d | 0.0138 | 0.2093 | 0.9930 | nan |
 | oodc_F3 | slt_lif_mpc_free | quadruped | 0.0200 | 0.2104 | 0.9970 | 1.0000 |
 | oodc_F3 | slt_lif_mpc_free | walker | 0.0202 | 0.2140 | 0.9970 | 1.0000 |
@@ -410,7 +406,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F3 | slt_lif_mpc_trace | finger | 0.0049 | 0.2056 | 0.9970 | 1.0000 |
 | oodc_F3 | slt_lif_mpc_trace | hopper | 0.0113 | 0.1985 | 0.9990 | 1.0000 |
 | oodc_F3 | slt_lif_mpc_trace | humanoid | 0.0304 | 0.2195 | 0.9700 | 1.0000 |
-| oodc_F3 | slt_lif_mpc_trace | humanoid_CMU | 0.0105 | 0.2130 | 0.9310 | nan |
+| oodc_F3 | slt_lif_mpc_trace | humanoid_CMU | 0.0105 | 0.2130 | 0.9310 | 1.0000 |
 | oodc_F3 | slt_lif_mpc_trace | pendulum_2d | 0.0136 | 0.2129 | 0.9940 | nan |
 | oodc_F3 | slt_lif_mpc_trace | quadruped | 0.0204 | 0.2118 | 0.9970 | 1.0000 |
 | oodc_F3 | slt_lif_mpc_trace | walker | 0.0196 | 0.2079 | 0.9910 | 1.0000 |
@@ -421,7 +417,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F3 | stjewm_hidden_leak | finger | 0.0057 | 0.1942 | 1.0000 | 1.0000 |
 | oodc_F3 | stjewm_hidden_leak | hopper | 0.0148 | 0.2145 | 0.9950 | 1.0000 |
 | oodc_F3 | stjewm_hidden_leak | humanoid | 0.0287 | 0.2106 | 0.9470 | 1.0000 |
-| oodc_F3 | stjewm_hidden_leak | humanoid_CMU | 0.0095 | 0.2105 | 0.9300 | nan |
+| oodc_F3 | stjewm_hidden_leak | humanoid_CMU | 0.0095 | 0.2105 | 0.9300 | 1.0000 |
 | oodc_F3 | stjewm_hidden_leak | pendulum_2d | 0.0123 | 0.1950 | 0.9970 | nan |
 | oodc_F3 | stjewm_hidden_leak | quadruped | 0.0207 | 0.2087 | 0.9970 | 1.0000 |
 | oodc_F3 | stjewm_hidden_leak | walker | 0.0183 | 0.2031 | 0.9760 | 1.0000 |
@@ -432,7 +428,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F3 | stjewm_membrane_readout | finger | 0.0053 | 0.1932 | 1.0000 | 1.0000 |
 | oodc_F3 | stjewm_membrane_readout | hopper | 0.0157 | 0.2093 | 0.9970 | 1.0000 |
 | oodc_F3 | stjewm_membrane_readout | humanoid | 0.0311 | 0.2164 | 0.9730 | 1.0000 |
-| oodc_F3 | stjewm_membrane_readout | humanoid_CMU | 0.0094 | 0.2100 | 0.8900 | nan |
+| oodc_F3 | stjewm_membrane_readout | humanoid_CMU | 0.0094 | 0.2100 | 0.8900 | 1.0000 |
 | oodc_F3 | stjewm_membrane_readout | pendulum_2d | 0.0124 | 0.1932 | 0.9970 | nan |
 | oodc_F3 | stjewm_membrane_readout | quadruped | 0.0210 | 0.2096 | 0.9970 | 1.0000 |
 | oodc_F3 | stjewm_membrane_readout | walker | 0.0183 | 0.2053 | 0.9900 | 1.0000 |
@@ -443,7 +439,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F3 | stjewm_no_trace | finger | 0.0069 | 0.1937 | 0.9990 | 1.0000 |
 | oodc_F3 | stjewm_no_trace | hopper | 0.0192 | 0.2160 | 0.9880 | 1.0000 |
 | oodc_F3 | stjewm_no_trace | humanoid | 0.0308 | 0.2147 | 0.9660 | 1.0000 |
-| oodc_F3 | stjewm_no_trace | humanoid_CMU | 0.0105 | 0.2111 | 0.9400 | nan |
+| oodc_F3 | stjewm_no_trace | humanoid_CMU | 0.0105 | 0.2111 | 0.9400 | 1.0000 |
 | oodc_F3 | stjewm_no_trace | pendulum_2d | 0.0123 | 0.1951 | 0.9970 | nan |
 | oodc_F3 | stjewm_no_trace | quadruped | 0.0208 | 0.2094 | 0.9960 | 1.0000 |
 | oodc_F3 | stjewm_no_trace | walker | 0.0188 | 0.2074 | 0.9950 | 1.0000 |
@@ -454,7 +450,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F3 | stjewm_rate_only | finger | 0.0067 | 0.1937 | 1.0000 | 1.0000 |
 | oodc_F3 | stjewm_rate_only | hopper | 0.0113 | 0.2146 | 0.9990 | 1.0000 |
 | oodc_F3 | stjewm_rate_only | humanoid | 0.0322 | 0.2141 | 0.9570 | 1.0000 |
-| oodc_F3 | stjewm_rate_only | humanoid_CMU | 0.0100 | 0.2109 | 0.9270 | nan |
+| oodc_F3 | stjewm_rate_only | humanoid_CMU | 0.0100 | 0.2109 | 0.9270 | 1.0000 |
 | oodc_F3 | stjewm_rate_only | pendulum_2d | 0.0123 | 0.1928 | 0.9970 | nan |
 | oodc_F3 | stjewm_rate_only | quadruped | 0.0206 | 0.2096 | 0.9960 | 1.0000 |
 | oodc_F3 | stjewm_rate_only | walker | 0.0191 | 0.2065 | 0.9930 | 1.0000 |
@@ -465,7 +461,7 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F3 | stjewm_spike_only | finger | 0.0049 | 0.1954 | 0.9990 | 1.0000 |
 | oodc_F3 | stjewm_spike_only | hopper | 0.0135 | 0.2130 | 0.9980 | 1.0000 |
 | oodc_F3 | stjewm_spike_only | humanoid | 0.0342 | 0.2152 | 0.9680 | 1.0000 |
-| oodc_F3 | stjewm_spike_only | humanoid_CMU | 0.0097 | 0.2109 | 0.9300 | nan |
+| oodc_F3 | stjewm_spike_only | humanoid_CMU | 0.0097 | 0.2109 | 0.9300 | 1.0000 |
 | oodc_F3 | stjewm_spike_only | pendulum_2d | 0.0123 | 0.1932 | 0.9970 | nan |
 | oodc_F3 | stjewm_spike_only | quadruped | 0.0201 | 0.2123 | 0.9960 | 1.0000 |
 | oodc_F3 | stjewm_spike_only | walker | 0.0187 | 0.2068 | 0.9610 | 1.0000 |
@@ -476,27 +472,27 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 | oodc_F3 | stjewm_trace_only | finger | 0.0056 | 0.1944 | 1.0000 | 1.0000 |
 | oodc_F3 | stjewm_trace_only | hopper | 0.0107 | 0.2135 | 0.9980 | 1.0000 |
 | oodc_F3 | stjewm_trace_only | humanoid | 0.0269 | 0.2118 | 0.9690 | 1.0000 |
-| oodc_F3 | stjewm_trace_only | humanoid_CMU | 0.0107 | 0.2159 | 0.9220 | nan |
+| oodc_F3 | stjewm_trace_only | humanoid_CMU | 0.0107 | 0.2159 | 0.9220 | 1.0000 |
 | oodc_F3 | stjewm_trace_only | pendulum_2d | 0.0123 | 0.1949 | 0.9970 | nan |
 | oodc_F3 | stjewm_trace_only | quadruped | 0.0207 | 0.2095 | 0.9960 | 1.0000 |
 | oodc_F3 | stjewm_trace_only | walker | 0.0124 | 0.2118 | 0.9920 | 1.0000 |
 
-## Mean per (split, model) over held-out envs
+## Mean per (split, model)
 
-| split | model | n_envs | mean_div | mean_resp | mean_rho | mean_env_sr |
+|split|model|n_envs|mean_div|mean_resp|mean_rho|mean_env_sr|
 |---|---|---|---|---|---|---|
-| oodc_F1 | cubifae_baseline | 8 | nan | nan | nan | 0.8333 |
-| oodc_F1 | gru_baseline | 8 | 0.0106 | 0.1015 | 0.9665 | 0.8333 |
-| oodc_F1 | lewm_baseline_v2 | 8 | 0.1860 | 2.6405 | 0.8020 | 0.8333 |
-| oodc_F1 | mlp_baseline | 8 | 0.0002 | 0.0007 | 0.9563 | 0.8333 |
-| oodc_F1 | slt_lif_mpc_free | 8 | 0.0527 | 0.2095 | 0.9736 | 0.8333 |
-| oodc_F1 | slt_lif_mpc_trace | 8 | 0.0520 | 0.2119 | 0.9719 | 0.8333 |
-| oodc_F1 | stjewm_hidden_leak | 8 | 0.0485 | 0.2090 | 0.9709 | 0.8333 |
-| oodc_F1 | stjewm_membrane_readout | 8 | 0.0486 | 0.2109 | 0.9749 | 0.8333 |
-| oodc_F1 | stjewm_no_trace | 8 | 0.0483 | 0.2106 | 0.9771 | 0.8333 |
-| oodc_F1 | stjewm_rate_only | 8 | 0.0488 | 0.2106 | 0.9761 | 0.8333 |
-| oodc_F1 | stjewm_spike_only | 8 | 0.0468 | 0.2104 | 0.9713 | 0.8333 |
-| oodc_F1 | stjewm_trace_only | 8 | 0.0498 | 0.2099 | 0.9759 | 0.8333 |
+| oodc_F1 | cubifae_baseline | 8 | nan | nan | nan | 0.8571 |
+| oodc_F1 | gru_baseline | 8 | 0.0106 | 0.1015 | 0.9665 | 0.8571 |
+| oodc_F1 | lewm_baseline_v2 | 8 | 0.1860 | 2.6405 | 0.8020 | 0.8571 |
+| oodc_F1 | mlp_baseline | 8 | 0.0002 | 0.0007 | 0.9563 | 0.8571 |
+| oodc_F1 | slt_lif_mpc_free | 8 | 0.0527 | 0.2095 | 0.9736 | 0.8571 |
+| oodc_F1 | slt_lif_mpc_trace | 8 | 0.0520 | 0.2119 | 0.9719 | 0.8571 |
+| oodc_F1 | stjewm_hidden_leak | 8 | 0.0485 | 0.2090 | 0.9709 | 0.8571 |
+| oodc_F1 | stjewm_membrane_readout | 8 | 0.0486 | 0.2109 | 0.9749 | 0.8571 |
+| oodc_F1 | stjewm_no_trace | 8 | 0.0483 | 0.2106 | 0.9771 | 0.8571 |
+| oodc_F1 | stjewm_rate_only | 8 | 0.0488 | 0.2106 | 0.9761 | 0.8571 |
+| oodc_F1 | stjewm_spike_only | 8 | 0.0468 | 0.2104 | 0.9713 | 0.8571 |
+| oodc_F1 | stjewm_trace_only | 8 | 0.0498 | 0.2099 | 0.9759 | 0.8571 |
 | oodc_F1F2 | cubifae_baseline | 2 | nan | nan | nan | 0.0000 |
 | oodc_F1F2 | gru_baseline | 2 | 0.0253 | 0.0853 | 0.9940 | 0.0000 |
 | oodc_F1F2 | lewm_baseline_v2 | 2 | 0.1578 | 3.8558 | 0.8265 | 0.0000 |
@@ -560,15 +556,11 @@ Total: 468 ckpt x env cells across 6 splits x 12 models x 13 envs.
 
 ## Per-split, per-family mean
 
-STJEWM = trace, spike, rate, no_trace, hidden_leak, membrane_readout.
-SNN-baselines = cubifae, slt_lif_mpc_trace, slt_lif_mpc_free.
-non-SNN baselines = mlp, gru, lewm.
-
-| split | family | n_cells | mean_div | mean_resp | mean_rho | mean_env_sr |
+|split|family|n_cells|mean_div|mean_resp|mean_rho|mean_env_sr|
 |---|---|---|---|---|---|---|
-| oodc_F1 | SNN-baselines | 24 | 0.0524 | 0.2107 | 0.9727 | 0.8333 |
-| oodc_F1 | STJEWM | 48 | 0.0485 | 0.2102 | 0.9744 | 0.8333 |
-| oodc_F1 | non-SNN | 24 | 0.0656 | 0.9142 | 0.9082 | 0.8333 |
+| oodc_F1 | SNN-baselines | 24 | 0.0524 | 0.2107 | 0.9727 | 0.8571 |
+| oodc_F1 | STJEWM | 48 | 0.0485 | 0.2102 | 0.9744 | 0.8571 |
+| oodc_F1 | non-SNN | 24 | 0.0656 | 0.9142 | 0.9082 | 0.8571 |
 | oodc_F1F2 | SNN-baselines | 6 | 0.1506 | 0.2205 | 0.9922 | 0.0000 |
 | oodc_F1F2 | STJEWM | 12 | 0.1350 | 0.2087 | 0.9981 | 0.0000 |
 | oodc_F1F2 | non-SNN | 6 | 0.0612 | 1.3139 | 0.9367 | 0.0000 |
