@@ -35,7 +35,7 @@ Same set as v0.7.10 within-suite pilot:
 - `env-SR` (closed-loop success rate, 3 episodes × 1 seed)
 - `div` (latent per-dim std)
 - `resp` (mean |delta-lat|/|delta-obs|)
-- `ρ` (corr ||delta-obs|| vs ||delta-lat||)
+- `rho` (corr ||delta-obs|| vs ||delta-lat||)
 - `latent-goal MPC` (held-out env planner cost)
 - `gradient alignment` (held-out env lat-env gradient vs reward gradient)
 
@@ -43,28 +43,28 @@ Same set as v0.7.10 within-suite pilot:
 
 - 6 splits × 12 ckpts = 72 trainings
 - 25 min/ckpt (2K windows × 13 envs avg) = 30 hr
-- Eval per cell ≈ 5 min × ~7 held-out envs × 12 ckpts × 6 splits = 42 hr
+- Eval per cell ~5 min × ~7 held-out envs × 12 ckpts × 6 splits = 42 hr
 - Sequential on 1-CPU: ~72 hr wallclock
 - Parallel 4-ways: ~18 hr
 
 ## Progress tracker (per-split, per-step)
 
-- [ ] oodc_F1 — training
-- [ ] oodc_F1 — eval
-- [ ] oodc_F2 — training
-- [ ] oodc_F2 — eval
-- [ ] oodc_F3 — training
-- [ ] oodc_F3 — eval
-- [ ] oodc_F1F2 — training
-- [ ] oodc_F1F2 — eval
-- [ ] oodc_F1F3 — training
-- [ ] oodc_F1F3 — eval
-- [ ] oodc_F2F3 — training
-- [ ] oodc_F2F3 — eval
-- [ ] Aggregate → ood1_table.md (NOTE: filename stays ood1_table.md for back-compat)
+- [ ] oodc_F1 -- training
+- [ ] oodc_F1 -- eval
+- [ ] oodc_F2 -- training
+- [ ] oodc_F2 -- eval
+- [ ] oodc_F3 -- training
+- [ ] oodc_F3 -- eval
+- [ ] oodc_F1F2 -- training
+- [ ] oodc_F1F2 -- eval
+- [ ] oodc_F1F3 -- training
+- [] oodc_F1F3 -- eval
+- [ ] oodc_F2F3 -- training
+- [ ] oodc_F2F3 -- eval
+- [ ] Aggregate -> ood1_table.md
 
 ## Honest scope statement
 
-- Path C is **NOT true cross-modality OOD** (all envs are DMC, all state obs, all qpos-based dynamics). 
-- It IS **true cross-benchmark-family OOD** in the within-DMC taxonomy (classic control vs locomotion vs sparse-POMDP) and meaningfully tests whether the calibrated latent dynamics profile transfers to held-out morphologies and reward regimes.
+- Path C is NOT true cross-modality OOD (all envs are DMC, all state obs, all qpos-based dynamics).
+- It IS true cross-benchmark-family OOD in the within-DMC taxonomy (classic control vs locomotion vs sparse-POMDP) and meaningfully tests whether the calibrated latent dynamics profile transfers to held-out morphologies and reward regimes.
 - If reviewer asks "why not cross-modality": we already have a within-suite 12-ckpt pilot showing same-suite transfer (v0.7.10). Path C extends this from within-suite to within-DMC. True cross-modality (image vs state, DMC vs pixel-particle) is v0.7.11 work and requires raw-obs branch in STJEWM.
