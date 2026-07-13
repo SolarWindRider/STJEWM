@@ -100,3 +100,5 @@ MUJOCO_LOG.TXT
 configs/_compression_sweep_*.json
 configs/_cross_env_gen_*.json
 configs/_g16_eval_*.json
+data/delayed_t_maze_30k_3d.npz
+configs/oodc/merged/
