@@ -164,3 +164,28 @@ Same set as v0.7.10 within-suite pilot:
 - **Decision: ship v0.7.10b as-is**. The 108 None env-SR cells are
   known limitations, env-SR is not the path-C signal, and the runner fix
   is documented for v0.7.10c.
+
+### Update 2026-07-13 (re-eval attempt #2)
+
+- The re-eval attempt with the lowercase `env_kind_lower` fix + per-env
+  `goal_offset` fix + cheetah stress flag did **fix** humanoid_CMU (13/13),
+  reducing total None count from 121 to 108. But cheetah_velhidden / cartpole
+  / pendulum remain None because the errors are not "no output produced" but
+  "model fails to load":
+
+  1. **cartpole_2d / pendulum_2d x cubifae_baseline / gru_baseline /
+     lewm_baseline_v2**: `RuntimeError: Error(s) in loading state_dict
+     for CubifAEBaseline: size mismatch for stack.time_conv.weight`.
+     The ckpt was trained with `--action-dim 56` (padded) but the env's
+     native action_dim is 2 (cartpole) / 1 (pendulum). The model's first
+     conv layer can't accept 2-action or 1-action input. This is a
+     **fundamental architecture mismatch** in the v0.7.5 baseline training
+     pipeline - fix requires retraining these baselines on cartpole / pendulum
+     with the correct action_dim (no padding). Estimated cost: 1-2 hr per
+     baseline, 4 baselines = 4-8 hr. NOT DONE.
+
+  2. **cheetah_velhidden x all 36 ckpts**: the spec has
+     `cheetah_velhidden_250k.npz` as `env_path`, but that file does not
+     exist. closed_loop dispatches `cheetah_velhidden` to the stress
+     wrapper around `cheetah` automatically, so the spec should use
+     `cheetah_250k.npz` (the base file). This is a **5-min spec fix**.
