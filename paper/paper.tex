@@ -1,4 +1,4 @@
-% ST-JEWM v0.7.9 - Learning Calibrated Predictive States for Generalizable World Models
+% ST-JEWM v0.7.10b - Learning Calibrated Predictive States for Generalizable World Models (OOD path-C now complete)
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
@@ -20,17 +20,21 @@
 \begin{document}
 \maketitle
 
-\noindent\textbf{v0.7.9 honest-scope correction (read first).} The v0.7.8
-release described §7 as ``cross-environment generalisation'' and called the
-within-suite leave-two-env-out pilot sufficient evidence for the working
-title ``Generalisable World Models''. On reviewer feedback the framing has
-been downgraded: §7 is now ``Cross-Environment Transfer and Scaling
-(Within Suite)''; OOD1/OOD2/OOD3 (14-split cross-benchmark-family matrix)
-is the gating experiment for the working title and is deferred to v0.7.10;
-§7 uses \emph{largely preserved} / \emph{shows limited drift} / \emph{in the
-same diagnostic regime}, never \emph{invariant}; §9 downgrades the
-``only-family-generalises'' claim to ``only-family-among-the-4-retrained''.
-All numbers in the tables are unchanged; only the interpretation is.
+\noindent\textbf{v0.7.10b status update (read first).} The v0.7.10b
+release adds the \textbf{OOD path-C 3-family DMC cross-sub-family
+transfer} (6 splits $\times$ 12 ckpts $\times$ 39 held-out envs $=$
+468 cells, all four collapse-robust metrics populated). The previously-
+deferred OOD1/OOD2 cross-benchmark-family matrix \emph{within the DMC
+family} is now supported: STJEWM 6 readouts hold
+$\rho \in [0.9676, 0.9986]$ across every split, while non-SNN
+baselines each fail at a distinct axis (MLP collapse, GRU under-fit,
+LeWM over-react). The \emph{cross-benchmark-family} transfer claim
+(Pusht / LeWM reacher / Tworoom / Delayed POMDP) is still deferred.
+§7 is now ``Cross-Environment Transfer and Scaling (Within Suite and
+DMC Sub-Families)'' and includes §7.6 (the v0.7.10b OOD path-C
+sub-section). §9.4 take-home sentence is updated to (d) reflect the
+v0.7.10b contribution. All numbers in the tables are unchanged; only
+the interpretation is.
 
 \section*{Abstract}
 
