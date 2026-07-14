@@ -597,10 +597,20 @@ the only-family claim for budget scaling therefore still requires them.
   tested, and is preserved at every task scale tested (G4 → G8 → G16).
 - MLP / GRU carry their failure modes through every axis.
 
-§7 remains a *within-suite transfer pilot* on 2 of 16 G16 envs. The proper
-cross-benchmark-family OOD matrix (1 family train → 2-3 unseen families,
-6 splits × 12 ckpts = 468 cells) is now complete in §7.5 v0.7.10b — see
-the v0.7.10b sub-section below for the per-family × per-split summary.
+**How to read §7.** §7.1 reviews the v0.7.8 within-suite leave-two-envs-out
+pilot (the historical baseline, 4 of 12 ckpts retrained). §7.5
+documents the honest scope of that pilot (calibrated regime *largely
+preserved* on held-out envs, but *only* on 4 ckpts). **§7.6 is
+the new v0.7.10b OOD Path-C 3-family DMC cross-sub-family transfer**
+— the gating experiment for the working title. 6 splits × 12 ckpts
+× 39 held-out envs = 468 cells, all four collapse-robust metrics
+(div, resp, ρ, env-SR) populated. STJEWM 6 readouts hold
+`ρ ∈ [0.9676, 0.9986]` in every split; non-SNN baselines each
+fail at a distinct axis. §7.6 *supports* the working title
+"generalisable world models" within DMC sub-families. The cross-
+benchmark-family axis (Pusht / LeWM reacher / Tworoom / Delayed
+POMDP) and the cross-modality axis (state → pixel) are still
+deferred to a future paper that requires a raw-obs branch in STJEWM.
 ## 7.6 v0.7.10b sub-section — OOD path-C (3-family DMC cross-sub-family transfer)
 
 The cross-benchmark-family OOD matrix is the gating experiment for the

@@ -38,18 +38,31 @@ the interpretation is.
 
 \section*{Abstract}
 
-Reconstruction-free world models compress observation--action streams into
-a latent that the planner reads on every decision step. The dominant design
---- a continuous recurrent hidden state with no restriction on what the
-planner may access --- is attractive but ambiguous: it is unclear whether
-such a state is a \emph{predictive state} or merely an unrestricted recurrent
-memory. We ask whether the bounded event history of a spiking dynamical
-system can itself serve as that predictive state, given a stricter interface
-in which the planner and predictor are forbidden from reading the continuous
-membrane potential that produced the spikes. We introduce \textbf{ST-JEWM},
-a pure-SNN reconstruction-free world model whose predictive latent is a
-gated, content-aware exponential trace over post-spike activations, never
-the membrane potential. Across a 13-model specialist suite (20 standard
+\textbf{The headline.} Across 6 OOD splits $\times$ 12 model variants
+$\times$ 39 held-out DMC envs = 468 cells, the calibrated event-driven
+predictive state transfers across DMC sub-families (F1 classic
+control / F2 locomotion / F3 sparse-POMDP) under 1-, 2-, and 3-family
+held-out splits. STJEWM 6 readouts hold $\rho \in [0.9676, 0.9986]$
+in every split; LeWM over-reacts (\texttt{resp} 2.4--6.2), GRU
+under-fits (\texttt{resp} 0.10), MLP collapses (\texttt{resp}
+0.0007). The failure mode is intrinsic to the model class, not to
+the env list. This \emph{supports} the working title ``generalisable
+world models'' within DMC.
+
+\textbf{The contribution.} Reconstruction-free world models compress
+observation--action streams into a latent that the planner reads on
+every decision step. The dominant design --- a continuous recurrent
+hidden state, unconstrained during the model's forward pass --- is
+attractive but ambiguous: it is unclear whether such a state is a
+\emph{predictive state} or merely an unrestricted recurrent memory.
+We argue that the right question is not \emph{which world model
+predicts more accurately} but \emph{what kind of latent state is a
+learnable, generalisable, planner-friendly predictive state}. We
+introduce \textbf{ST-JEWM}, a pure-SNN reconstruction-free world
+model whose predictive latent is a \emph{gated exponential trace over
+post-spike activations}, and we couple it to the
+\textbf{membrane-forbidden protocol}: the planner is forbidden from
+reading the continuous membrane potential. Across a 13-model specialist suite (20 standard
 environments, 4 stress environments, 7 event-probe environments) and a
 12-model shared-weight generalist suite (G4 / G8 / G16, up to 16
 environments, 32K windows, 1 epoch), ST-JEWM is competitive on closed-loop

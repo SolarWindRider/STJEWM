@@ -67,18 +67,20 @@ Same set as v0.7.10 within-suite pilot:
 
 - Path C is NOT true cross-modality OOD (all envs are DMC, all state obs, all qpos-based dynamics).
 - It IS true cross-benchmark-family OOD in the within-DMC taxonomy (classic control vs locomotion vs sparse-POMDP) and meaningfully tests whether the calibrated latent dynamics profile transfers to held-out morphologies and reward regimes.
-- If reviewer asks "why not cross-modality": we already have a within-suite 12-ckpt pilot showing same-suite transfer (v0.7.10). Path C extends this from within-suite to within-DMC. True cross-modality (image vs state, DMC vs pixel-particle) is v0.7.11 work and requires raw-obs branch in STJEWM.
+- If reviewer asks "why not cross-modality (pixel vs state)": that is a *separate* test that requires raw-obs branch in STJEWM (currently only state-obs is supported). The within-DMC sub-family transfer claim from this plan is what gates the working title; the cross-modality claim is a separate, more demanding paper.
 
-## Progress (v0.7.10b - 2026-07-13)
+## Progress (v0.7.10b - 2026-07-13, COMPLETE 2026-07-14)
 
 - [x] 6 split specs written (configs/oodc/oodc_{F1,F2,F3,F1F2,F1F3,F2F3}.json)
-- [x] Runner written: code/scripts/utility/ood1_path_c.py
+- [x] Runner written: code/scripts/utility/ood1_path_c.py + reaggregate_ood1.py
 - [x] Smoke test: mlp_baseline trained on F1, evaluated on all 8 held-out envs.
       All diagnostic + env-SR numbers produced (div/resp/rho + env-SR per cell).
-- [ ] 6 splits × 12 ckpts (72 trainings) — NOT YET LAUNCHED.
-- [ ] 6 splits × 12 ckpts × 8-11 held-out envs (~600 cells) — NOT YET DONE.
-- [ ] Final ood1_table.md with full matrix — NOT YET.
-- [ ] Paper.md §8 update with the 6-split numbers — NOT YET.
+- [x] 6 splits × 12 ckpts (72 trainings) — TRAINED.
+- [x] 6 splits × 12 ckpts × 8-11 held-out envs (468 cells) — EVALUATED.
+- [x] Final ood1_table.md with full matrix — DONE (468 cells, 0 None).
+- [x] Paper.md §7.6/§7.0/§9.3/§9.4 update with the 6-split numbers — DONE.
+- [x] Upload artifacts to OBS: obs://lixiang01/STJEWM_NMI/aggregate/ood1_table.md
+      (and ood1_table.md + 5 other utility tables + paper.pdf re-uploaded).
 
 ## Known limitations (v0.7.10b - 2026-07-13)
 
@@ -103,7 +105,7 @@ Same set as v0.7.10 within-suite pilot:
   "with 95% CI". The v0.7.10 paper already flagged this.
 - **Path-C, not cross-modality OOD**: all 6 splits are within-DMC sub-family.
   True cross-modality (DMC vs pixel-particle vs delayed-POMDP) requires
-  a STJEWM raw-obs branch (v0.7.11 work).
+  a STJEWM raw-obs branch (separate future work).
 
 ## Known limitations (v0.7.10b - 2026-07-13)
 
@@ -128,7 +130,7 @@ Same set as v0.7.10 within-suite pilot:
   "with 95% CI". The v0.7.10 paper already flagged this.
 - **Path-C, not cross-modality OOD**: all 6 splits are within-DMC sub-family.
   True cross-modality (DMC vs pixel-particle vs delayed-POMDP) requires
-  a STJEWM raw-obs branch (v0.7.11 work).
+  a STJEWM raw-obs branch (separate future work).
 
 ### Update 2026-07-13 (re-eval attempt #2)
 
