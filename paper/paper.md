@@ -503,7 +503,7 @@ We do *not* claim that trace-only is the strongest single STJEWM readout on ρ �
 
 This is the paper's central empirical claim. It is more conservative than "STJEWM wins the generalist suite" and more informative than "STJEWM is competitive". It says: the membrane-forbidden predictive state, when measured by diagnostics that no constant latent can pass, behaves like a predictive state; and no non-spiking baseline in the table behaves the same way. **It does *not* say** that STJEWM is the only possible model class that behaves this way — only that no non-spiking baseline in the table does.
 
-## 7. Cross-Environment Transfer and Scaling (Within Suite)
+## 7. Cross-Sub-Family Transfer: the v0.7.10b OOD Path-C (the gating experiment)
 
 ### 7.0 Honest scope statement (read first)
 
@@ -611,7 +611,7 @@ fail at a distinct axis. §7.6 *supports* the working title
 benchmark-family axis (Pusht / LeWM reacher / Tworoom / Delayed
 POMDP) and the cross-modality axis (state → pixel) are still
 deferred to a future paper that requires a raw-obs branch in STJEWM.
-## 7.6 v0.7.10b sub-section — OOD path-C (3-family DMC cross-sub-family transfer)
+### 7.6 v0.7.10b sub-section — OOD path-C (3-family DMC cross-sub-family transfer)
 
 The cross-benchmark-family OOD matrix is the gating experiment for the
 working title "generalisable world models" (see §7.0 and §9.4). In v0.7.10b

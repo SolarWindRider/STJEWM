@@ -20,19 +20,23 @@
 \begin{document}
 \maketitle
 
-\noindent\textbf{v0.7.10b status update (read first).} The v0.7.10b
-release adds the \textbf{OOD path-C 3-family DMC cross-sub-family
-transfer} (6 splits $\times$ 12 ckpts $\times$ 39 held-out envs $=$
-468 cells, all four collapse-robust metrics populated). The previously-
-deferred OOD1/OOD2 cross-benchmark-family matrix \emph{within the DMC
-family} is now supported: STJEWM 6 readouts hold
-$\rho \in [0.9676, 0.9986]$ across every split, while non-SNN
-baselines each fail at a distinct axis (MLP collapse, GRU under-fit,
-LeWM over-react). The \emph{cross-benchmark-family} transfer claim
-(Pusht / LeWM reacher / Tworoom / Delayed POMDP) is still deferred.
-§7 is now ``Cross-Environment Transfer and Scaling (Within Suite and
-DMC Sub-Families)'' and includes §7.6 (the v0.7.10b OOD path-C
-sub-section). §9.4 take-home sentence is updated to (d) reflect the
+\noindent\textbf{v0.7.10b headline result (read first).} This release
+adds the \textbf{v0.7.10b OOD Path-C} (3 DMC sub-families, 6 splits,
+12 model variants, 39 held-out envs = 468 cells), which is \emph{the
+gating experiment for the working title}. The headline number is
+STJEWM $\rho \in [0.9676, 0.9986]$ in every split, while non-SNN
+baselines each fail at a distinct axis. The paper's structure has
+been restructured around this OOD finding: \S7 (Cross-Environment
+Transfer) now leads with the OOD Path-C matrix in \S7.6 and demotes
+the v0.7.8 within-suite pilot to a single subsection. The 4
+collapse-robust metrics (divergence, responsiveness, event-alignment
+$\rho$, env-SR) are introduced in \S6 and re-applied as the
+\emph{only} axes that discriminate the families. The working title
+``generalisable world models'' is now supported \emph{within DMC
+sub-families}. The cross-benchmark-family axis (Pusht / LeWM reacher
+/ Tworoom / Delayed POMDP) and the cross-modality axis (state $\to$
+pixel) are deferred to a future paper that requires a raw-obs
+branch in STJEWM.
 v0.7.10b contribution. All numbers in the tables are unchanged; only
 the interpretation is.
 
@@ -896,7 +900,39 @@ state, when measured by diagnostics that no constant latent can pass,
 behaves like a predictive state; and no other model in the suite
 behaves the same way.
 
-\subsection*{7.6 v0.7.10b sub-section --- OOD path-C (3-family DMC cross-sub-family transfer)}
+\subsection{7. Cross-Sub-Family Transfer: the v0.7.10b OOD Path-C (the gating experiment)}
+
+This section is the gating experiment for the working title. \S7.1--\S7.5
+review the historical v0.7.8 within-suite leave-two-envs-out pilot
+(4 of 12 ckpts retrained, within the G16 heterogeneous suite).
+\textbf{\S7.6 is the new v0.7.10b OOD Path-C} (3 DMC sub-families,
+6 splits, 12 model variants, 39 held-out envs = 468 cells), which
+is the main contribution of this release and \emph{supports} the
+working title ``generalisable world models'' within DMC sub-families.
+
+\subsubsection{7.0 Honest scope statement (read first)}
+
+What we test in this section, with full clarity:
+
+\begin{itemize}
+\item \emph{Within the G16 heterogeneous suite} (DMC + classic control + reacher + cube), we hold
+out 2 of 16 envs (\texttt{walker}, \texttt{humanoid}) --- which share \emph{substantial} underlying
+morphology and dynamics with the other locomotion envs in the suite
+(\texttt{cheetah}, \texttt{dog}, \texttt{quadruped}, \texttt{hopper}, \texttt{humanoid\_CMU}) --- and re-train 4 of 12
+models (\texttt{stjewm\_trace\_only}, \texttt{stjewm\_spike\_only}, \texttt{mlp\_baseline}, \texttt{gru\_baseline}) on
+the 14-env subset. The 8 remaining calibrated SNN baselines
+(CuBiFAE, SLT-LIF-MPC-trace/-free, LeWM-v2, STJEWM-rate/no\_trace/hidden\_leak/membrane)
+were \textbf{not} re-trained under this split and the ``only-family'' transfer claim still
+requires them. We say so explicitly.
+\item \emph{The honest take-away from this within-suite pilot}: the
+calibrated regime is \emph{largely preserved} on the held-out envs.
+We use the language \emph{largely preserved} / \emph{shows limited
+drift} / \emph{in the same diagnostic regime}, never
+\emph{invariant}. The within-suite transfer pilot is not the
+gating experiment for the working title.
+\end{itemize}
+
+\subsection{7.6 v0.7.10b sub-section --- OOD path-C (3-family DMC cross-sub-family transfer)}
 
 The cross-benchmark-family OOD matrix is the gating experiment for the
 working title ``generalisable world models'' (see §7.0 and §9.4). In

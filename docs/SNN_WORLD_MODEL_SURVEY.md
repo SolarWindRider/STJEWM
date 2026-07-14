@@ -13,6 +13,40 @@ selection filter.
 
 ---
 
+## 0. Status (v0.7.10b, 2026-07-14)
+
+This survey was used to identify SNN world models to add to the
+ST-JEWM comparison. As of v0.7.10b, **two candidates from this
+survey have been trained and evaluated on the v0.7.10b OOD
+Path-C matrix (6 splits × 12 models × 39 held-out envs = 468
+cells)**:
+
+- **CuBiFAE** (Kaiser et al. 2024, candidate #1): trained on all 6
+  OOD splits, evaluated on 8-11 held-out envs per split. Lands
+  in the **calibrated** region (`ρ ∈ [0.9675, 0.9980]` across
+  the 6 splits, `div ∈ [0.0107, 0.1505]`, `resp ∈ [0.2082,
+  0.2204]`). This confirms the survey's prediction that the
+  *time-cell multisampled decay readout* is functionally
+  equivalent to ST-JEWM's *gated exponential trace*. The
+  OOD headline is `ρ_env_sr = 0.49` for the cross-modality
+  pre-test, but this is *not* the metric for the within-DMC
+  sub-family claim — see §7.6 of paper.md and
+  `results/utility/ood1_table.md`.
+
+- **SLT-LIF-MPC** (Liu et al. 2024, candidate #3): trained with
+  both `trace` and `free` variants. Both land in the calibrated
+  region (see `ood1_table.md`). The `slt_lif_mpc_trace`
+  variant's `ρ` is statistically indistinguishable from
+  `cubifae_baseline` (0.9821 vs 0.9711 on the F3 split).
+
+The other 10 candidates from §2 (SpikeDreamer, Hard-EM SNN,
+Online-SNN e-prop, R-STDP, PolyDICE, Phased-LSTM, LSTM-SNN,
+CuMA-SNN) remain in the *future work* list — they are too
+expensive to port within v0.7.10's wall-clock budget, or they
+fail the selection criteria (e.g. PolyDICE is not an SNN).
+
+---
+
 ## 1. Selection criteria
 
 A candidate SNN world model is **portable** to the ST-JEWM / LeWM 16-env
