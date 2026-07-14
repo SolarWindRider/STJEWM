@@ -269,7 +269,8 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
 def collect_latents_and_targets(
     model, dataset, action_dim: int, probe_dim: int,
     target_kind: str, env: str, device: str, k: int = 10,
-    max_windows: int = 5000,
+    max_windows: int = 5000, pad_obs_to: int | None = None,
+    action_dim_eval: int | None = None,
 ):
     """Walk the dataset, run model.encode() per window, return (Z, Y) tensors.
 
@@ -330,11 +331,13 @@ def collect_latents_and_targets(
         T_max = max(s.shape[0] for s in s_list)
         obs_dim = s_list[0].shape[-1]
         action_dim_ = a_list[0].shape[-1]
-        s_pad = torch.zeros(len(s_list), T_max, obs_dim, dtype=torch.float32)
-        a_pad = torch.zeros(len(a_list), T_max, action_dim_, dtype=torch.float32)
+        obs_dim_eff = pad_obs_to if pad_obs_to is not None and obs_dim < pad_obs_to else obs_dim
+        action_dim_eff = action_dim_eval if action_dim_eval is not None and action_dim_ < action_dim_eval else action_dim_
+        s_pad = torch.zeros(len(s_list), T_max, obs_dim_eff, dtype=torch.float32)
+        a_pad = torch.zeros(len(a_list), T_max, action_dim_eff, dtype=torch.float32)
         for j, (s, a) in enumerate(zip(s_list, a_list)):
-            s_pad[j, : s.shape[0]] = s
-            a_pad[j, : a.shape[0]] = a
+            s_pad[j, : s.shape[0], : s.shape[-1]] = s
+            a_pad[j, : a.shape[0], : a.shape[-1]] = a
         s_dev = s_pad.to(device)
         a_dev = a_pad.to(device)
         with torch.no_grad():
@@ -593,7 +596,8 @@ def main() -> int:
     try:
         from code.data import load_dataset
         ds = load_dataset(env_kind, path=data_path, history_size=history_size,
-                          goal_offset=goal_offset, max_windows=args.max_windows)
+                          goal_offset=goal_offset, max_windows=args.max_windows,
+                          pad_obs_to=args.pad_obs_to)
     except Exception as e:
         save_skip(args.out, f"dataset load failed: {e}")
         return 0
@@ -646,6 +650,7 @@ def main() -> int:
         Z, Y, err = collect_latents_and_targets(
             model, ds, action_dim, probe_dim, target, env, args.device,
             k=args.future_k, max_windows=args.max_windows,
+            pad_obs_to=args.pad_obs_to, action_dim_eval=args.action_dim_eval,
         )
     if Z is None:
         save_skip(args.out, err or "no data")

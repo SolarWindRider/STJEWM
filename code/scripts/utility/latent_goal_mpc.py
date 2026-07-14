@@ -49,13 +49,19 @@ DMC_DATA = {
 
 
 def build_model_from_ckpt(ck_args: dict, state_dim: int, action_dim: int, device: str):
+    # Use padded obs/action dims from the ckpt so cubifae/slt/etc load with the
+    # same dims they were trained on (state_projector expects pad_obs_to, not
+    # env-native state_dim).
+    pad_obs = ck_args.get("pad_obs_to") or 128
+    train_state_dim = pad_obs if (state_dim < pad_obs) else state_dim
+    train_action_dim = ck_args.get("action_dim") or action_dim
     model_name = ck_args.get("model", "stjewm")
     if model_name == "stjewm":
         from code.stjewm import STJEWM
         return STJEWM(
             d_hid=192, embed_dim=ck_args.get("embed_dim", 192),
-            action_dim=action_dim, action_emb_dim=192,
-            state_dim=state_dim,
+            action_dim=train_action_dim, action_emb_dim=192,
+            state_dim=train_state_dim,
             cell_n_layers=ck_args.get("n_layers", 2), n_d=3,
             trace_beta=0.9, freeze_encoder=True,
             readout_mode=ck_args.get("readout_mode", "hidden_leak"),
@@ -63,7 +69,7 @@ def build_model_from_ckpt(ck_args: dict, state_dim: int, action_dim: int, device
     if model_name == "lewm_baseline":
         from code.lewm_transformer_baseline import LeWMTransformerBaseline
         return LeWMTransformerBaseline(
-            state_dim=state_dim, action_dim=action_dim,
+            state_dim=train_state_dim, action_dim=train_action_dim,
             embed_dim=ck_args.get("embed_dim", 256),
             num_layers=ck_args.get("n_layers", 4), num_heads=8,
         ).to(device)
@@ -76,21 +82,21 @@ def build_model_from_ckpt(ck_args: dict, state_dim: int, action_dim: int, device
     if model_name == "cubifae_baseline":
         from code.cubifae_baseline import make_cubifae_baseline
         return make_cubifae_baseline(
-            state_dim=state_dim, action_dim=action_dim,
+            state_dim=train_state_dim, action_dim=train_action_dim,
             d_hid=ck_args.get("embed_dim", 192),
             n_layers=ck_args.get("n_layers", 2),
         ).to(device)
     if model_name == "slt_lif_mpc_trace":
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
         return make_slt_lif_mpc_trace(
-            state_dim=state_dim, action_dim=action_dim,
+            state_dim=train_state_dim, action_dim=train_action_dim,
             d_in=ck_args.get("embed_dim", 192),
             n_layers=ck_args.get("n_layers", 2),
         ).to(device)
     if model_name == "slt_lif_mpc_free":
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
         return make_slt_lif_mpc_free(
-            state_dim=state_dim, action_dim=action_dim,
+            state_dim=train_state_dim, action_dim=train_action_dim,
             d_in=ck_args.get("embed_dim", 192),
             n_layers=ck_args.get("n_layers", 2),
         ).to(device)

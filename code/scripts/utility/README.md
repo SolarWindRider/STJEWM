@@ -1,8 +1,9 @@
-# `code/scripts/utility/` — v0.7.7 + v0.7.8 utility experiments
+# `code/scripts/utility/` — v0.7.7 + v0.7.8 + v0.7.10b utility experiments
 
-This directory contains the v0.7.7 **utility** and v0.7.8 **cross-environment
-generalisation + compression** experiments. Every script re-uses the
-existing G16 generalist ckpts (no retraining by default) and writes
+This directory contains the v0.7.7 **utility**, v0.7.8 **cross-environment
+generalisation + compression**, and v0.7.10b **OOD path-C (3-family
+DMC cross-sub-family transfer)** experiments. Every script re-uses
+the existing G16 generalist ckpts (no retraining by default) and writes
 per-cell JSONs to `results/utility/...` plus an aggregate markdown
 table to `results/utility/..._table.md`.
 
@@ -18,7 +19,7 @@ held-out environments*. The five experiments here are:
 | `sample_efficiency.py` | can a tiny linear policy use the latent at 1% of the data? | env-SR at 5 data fractions | `sample_efficiency_table.md` |
 | `cross_env_gen.py`     | within-suite pilot: does the calibration transfer to held-out envs from the same G16? | `div`, `resp`, `ρ` on held-out walker+humanoid | `cross_env_gen_table.md` |
 | `budget_scaling.py`    | does the calibration survive training-data-budget scaling? | `div`, `resp`, `ρ` at 0.5x/1.0x/2.0x budget | `budget_scaling_table.md` |
-| `ood1.py` *(planned, v0.7.10)* | **cross-benchmark-family OOD**: train 1 family, evaluate 3 unseen families | `div`, `resp`, `ρ` on the unseen families | `ood1_table.md` (not yet produced) |
+| `ood1_path_c.py` | **3-family DMC cross-sub-family transfer**: train 1-2 of {F1 classic, F2 locomotion, F3 sparse-POMDP}, evaluate on held-out envs | `div`, `resp`, `ρ`, `env_sr` on the held-out envs | `ood1_table.md` |
 
 ## Script organisation
 
@@ -44,6 +45,20 @@ python -m code.scripts.utility.run_cross_env_gen      # ~1.5 hr (training 4 ckpt
 
 # 3) v0.7.8 data-budget scaling (3 models x 3 fracs = 9 cells)
 python -m code.scripts.utility.run_budget_scaling   # ~2.5 hr (training 6 ckpts at 0.5x/2.0x)
+```
+
+The `ood1_path_c.py` is training-heavy (~30 hr sequential for 72 ckpts);
+use `--skip-train --aggregate-only` if you only want to rebuild the
+table. The cheaper companion `reaggregate_ood1.py` rebuilds the table
+from existing per-cell JSONs (~1 sec) and is the right tool after
+re-evaluating any subset of ckpts.
+
+```bash
+# 4) v0.7.10b OOD path-C (6 splits × 12 ckpts = 468 cells)
+#    Use --skip-train to skip the 30-hr training; --aggregate-only to rebuild
+#    the table from existing per-cell JSONs.
+python -m code.scripts.utility.ood1_path_c --skip-train --aggregate-only  # ~1 sec
+python -m code.scripts.utility.reaggregate_ood1                          # ~1 sec (alternative)
 ```
 
 The `budget_scaling` and `cross_env_gen` are training-heavy;
