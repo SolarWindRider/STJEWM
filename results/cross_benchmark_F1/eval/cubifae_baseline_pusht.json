@@ -1,0 +1,954 @@
+{
+  "env_id": "swm/PushT-v1",
+  "n_episodes": 90,
+  "n_seeds": 3,
+  "cem_samples": 300,
+  "cem_elites": 30,
+  "cem_iters": 10,
+  "horizon": 5,
+  "eval_budget": 50,
+  "goal_offset": 25,
+  "history_size": 3,
+  "success_rate_lewm": 0.15555555555555556,
+  "success_rate_lewm_std": 0.06849348892187751,
+  "success_rate_env": 0.0,
+  "success_rate_env_std": 0.0,
+  "mean_cos_dist": 0.20035632997751238,
+  "mean_cos_dist_std": 0.023281549480846545,
+  "mean_phys_dist": 4101.9681567237485,
+  "mean_phys_dist_std": 244.34660229936227,
+  "mean_reward": -1195760.5184339953,
+  "mean_reward_std": 655209.9214996765,
+  "per_seed": [
+    {
+      "seed": 0,
+      "n": 30,
+      "success_rate_lewm": 0.23333333333333334,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.18455376277367275,
+      "mean_phys_dist": 4045.0934546334397,
+      "mean_reward": -399275.66417668737
+    },
+    {
+      "seed": 1,
+      "n": 30,
+      "success_rate_lewm": 0.16666666666666666,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.18324251870314281,
+      "mean_phys_dist": 3835.22447131929,
+      "mean_reward": -1183931.0377812765
+    },
+    {
+      "seed": 2,
+      "n": 30,
+      "success_rate_lewm": 0.06666666666666667,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.23327270845572154,
+      "mean_phys_dist": 4425.586544218517,
+      "mean_reward": -2004074.853344022
+    }
+  ],
+  "per_episode": [
+    {
+      "seed": 0,
+      "episode_idx": 1504521,
+      "cos_dist": 0.07617884874343872,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 3608.649771554129,
+      "plan_time_sec": 2.4480607509613037,
+      "episode_reward": -29666.37914630674
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1230217,
+      "cos_dist": 0.17668235301971436,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 4874.220493861607,
+      "plan_time_sec": 2.1406476497650146,
+      "episode_reward": -54926.05793900403
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1011818,
+      "cos_dist": 0.3294996917247772,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 4701.930890764508,
+      "plan_time_sec": 2.176631450653076,
+      "episode_reward": -85239.25363241816
+    },
+    {
+      "seed": 0,
+      "episode_idx": 2006271,
+      "cos_dist": 0.2999381721019745,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5938.810076032366,
+      "plan_time_sec": 2.1081132888793945,
+      "episode_reward": -110997.1724460911
+    },
+    {
+      "seed": 0,
+      "episode_idx": 208550,
+      "cos_dist": 0.07392612099647522,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 4831.644548688616,
+      "plan_time_sec": 2.0387213230133057,
+      "episode_reward": -135363.6675005535
+    },
+    {
+      "seed": 0,
+      "episode_idx": 220062,
+      "cos_dist": 0.29533830285072327,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 4787.070138113839,
+      "plan_time_sec": 2.090991973876953,
+      "episode_reward": -160186.01491761967
+    },
+    {
+      "seed": 0,
+      "episode_idx": 426563,
+      "cos_dist": 0.2305419147014618,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5353.242710658482,
+      "plan_time_sec": 2.2046594619750977,
+      "episode_reward": -185997.1761507181
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1922551,
+      "cos_dist": 0.1098945140838623,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 3207.484000069754,
+      "plan_time_sec": 2.139998197555542,
+      "episode_reward": -211759.00043611985
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1836790,
+      "cos_dist": 0.23463323712348938,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 769.2905970982142,
+      "plan_time_sec": 2.2436561584472656,
+      "episode_reward": -237598.79961763992
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1629529,
+      "cos_dist": 0.048629432916641235,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 3578.4247262137274,
+      "plan_time_sec": 2.2203187942504883,
+      "episode_reward": -258744.5402406505
+    },
+    {
+      "seed": 0,
+      "episode_idx": 299362,
+      "cos_dist": 0.31170159578323364,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5368.954031808035,
+      "plan_time_sec": 2.272322416305542,
+      "episode_reward": -285508.7203352854
+    },
+    {
+      "seed": 0,
+      "episode_idx": 470771,
+      "cos_dist": 0.07297956943511963,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 2436.992754255022,
+      "plan_time_sec": 2.27315616607666,
+      "episode_reward": -305113.3471647657
+    },
+    {
+      "seed": 0,
+      "episode_idx": 2279726,
+      "cos_dist": 0.20452451705932617,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 1629.4649396623881,
+      "plan_time_sec": 2.310621738433838,
+      "episode_reward": -332506.4327300515
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1199253,
+      "cos_dist": 0.2331998348236084,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5190.328543526785,
+      "plan_time_sec": 2.288022756576538,
+      "episode_reward": -353879.8755813151
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1962236,
+      "cos_dist": 0.13694733381271362,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5138.551548549107,
+      "plan_time_sec": 2.2728219032287598,
+      "episode_reward": -381130.66413265007
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1826290,
+      "cos_dist": 0.08596456050872803,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 2826.7159598214284,
+      "plan_time_sec": 2.293403387069702,
+      "episode_reward": -404884.2289346431
+    },
+    {
+      "seed": 0,
+      "episode_idx": 866443,
+      "cos_dist": 0.3091123402118683,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5954.804338727678,
+      "plan_time_sec": 2.2111170291900635,
+      "episode_reward": -438199.34225755447
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1719225,
+      "cos_dist": 0.30484142899513245,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 3841.6782924107138,
+      "plan_time_sec": 2.194068670272827,
+      "episode_reward": -460352.50166791305
+    },
+    {
+      "seed": 0,
+      "episode_idx": 940323,
+      "cos_dist": 0.10856688022613525,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 729.2409079415457,
+      "plan_time_sec": 2.2305028438568115,
+      "episode_reward": -487146.50421468366
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1025518,
+      "cos_dist": 0.04519054293632507,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 2213.4769984654017,
+      "plan_time_sec": 2.164259910583496,
+      "episode_reward": -507579.25524257624
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1036129,
+      "cos_dist": 0.21425971388816833,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 4462.781197684151,
+      "plan_time_sec": 2.2706165313720703,
+      "episode_reward": -536566.1794560347
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1274507,
+      "cos_dist": 0.19736650586128235,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5250.994873046874,
+      "plan_time_sec": 2.2684638500213623,
+      "episode_reward": -560569.3254764314
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1052415,
+      "cos_dist": 0.17863762378692627,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 3553.903416224888,
+      "plan_time_sec": 2.262752056121826,
+      "episode_reward": -593819.9362979892
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1169171,
+      "cos_dist": 0.21920901536941528,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 4479.241071428571,
+      "plan_time_sec": 2.245797634124756,
+      "episode_reward": -619181.6710978518
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1808486,
+      "cos_dist": 0.221480131149292,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 6853.62810407366,
+      "plan_time_sec": 2.22153639793396,
+      "episode_reward": -639890.3292657865
+    },
+    {
+      "seed": 0,
+      "episode_idx": 2165572,
+      "cos_dist": 0.27165932953357697,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 4827.301025390624,
+      "plan_time_sec": 2.2721688747406006,
+      "episode_reward": -668164.1156650634
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1676523,
+      "cos_dist": 0.20026838779449463,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 6657.573590959821,
+      "plan_time_sec": 2.2681448459625244,
+      "episode_reward": -696517.4183646801
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1529524,
+      "cos_dist": 0.15225321054458618,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 3796.0453578404013,
+      "plan_time_sec": 2.148442268371582,
+      "episode_reward": -723490.1456954771
+    },
+    {
+      "seed": 0,
+      "episode_idx": 200827,
+      "cos_dist": 0.12066775560379028,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 1208.4443228585378,
+      "plan_time_sec": 2.1386935710906982,
+      "episode_reward": -745173.530610093
+    },
+    {
+      "seed": 0,
+      "episode_idx": 1778548,
+      "cos_dist": 0.07252001762390137,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 3281.914411272321,
+      "plan_time_sec": 1.9230537414550781,
+      "episode_reward": -768118.3390826519
+    },
+    {
+      "seed": 1,
+      "episode_idx": 2195546,
+      "cos_dist": 0.2960503399372101,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 6292.50008719308,
+      "plan_time_sec": 2.0997085571289062,
+      "episode_reward": -794834.6925886747
+    },
+    {
+      "seed": 1,
+      "episode_idx": 858307,
+      "cos_dist": 0.3291262984275818,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5060.741751534598,
+      "plan_time_sec": 2.119560718536377,
+      "episode_reward": -822345.4756770129
+    },
+    {
+      "seed": 1,
+      "episode_idx": 2101545,
+      "cos_dist": 0.24937570095062256,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 710.4431152343749,
+      "plan_time_sec": 2.2614734172821045,
+      "episode_reward": -844990.5787038954
+    },
+    {
+      "seed": 1,
+      "episode_idx": 378940,
+      "cos_dist": 0.2722654938697815,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5650.681849888392,
+      "plan_time_sec": 2.2090351581573486,
+      "episode_reward": -872440.6388663219
+    },
+    {
+      "seed": 1,
+      "episode_idx": 2302747,
+      "cos_dist": 0.17922651767730713,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 3234.8946707589284,
+      "plan_time_sec": 2.2177257537841797,
+      "episode_reward": -897633.5456994857
+    },
+    {
+      "seed": 1,
+      "episode_idx": 2258397,
+      "cos_dist": 0.16190826892852783,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 3961.953735351562,
+      "plan_time_sec": 2.718440055847168,
+      "episode_reward": -921542.8319738696
+    },
+    {
+      "seed": 1,
+      "episode_idx": 624107,
+      "cos_dist": 0.17959392070770264,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 4454.813494001116,
+      "plan_time_sec": 2.7002687454223633,
+      "episode_reward": -951604.6057205558
+    },
+    {
+      "seed": 1,
+      "episode_idx": 1674468,
+      "cos_dist": 0.12303787469863892,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5249.294172014508,
+      "plan_time_sec": 2.302428722381592,
+      "episode_reward": -976702.6859478507
+    },
+    {
+      "seed": 1,
+      "episode_idx": 1054843,
+      "cos_dist": 0.14722800254821777,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 6748.304966517857,
+      "plan_time_sec": 2.316315174102783,
+      "episode_reward": -1004803.5492294779
+    },
+    {
+      "seed": 1,
+      "episode_idx": 139548,
+      "cos_dist": 0.16294118762016296,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 3775.082397460937,
+      "plan_time_sec": 2.308000087738037,
+      "episode_reward": -1026807.2148999261
+    },
+    {
+      "seed": 1,
+      "episode_idx": 2262255,
+      "cos_dist": 0.020374417304992676,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 1392.211696079799,
+      "plan_time_sec": 2.3163836002349854,
+      "episode_reward": -1044740.716032687
+    },
+    {
+      "seed": 1,
+      "episode_idx": 668086,
+      "cos_dist": 0.07326894998550415,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 3990.0251116071427,
+      "plan_time_sec": 2.2075366973876953,
+      "episode_reward": -1077228.517662978
+    },
+    {
+      "seed": 1,
+      "episode_idx": 1639460,
+      "cos_dist": 0.2237831950187683,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 2911.6149902343745,
+      "plan_time_sec": 2.1596455574035645,
+      "episode_reward": -1108072.629379958
+    },
+    {
+      "seed": 1,
+      "episode_idx": 1814107,
+      "cos_dist": 0.16682380437850952,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 2260.1708548409597,
+      "plan_time_sec": 2.2452595233917236,
+      "episode_reward": -1130561.8402909932
+    },
+    {
+      "seed": 1,
+      "episode_idx": 757241,
+      "cos_dist": 0.2720580995082855,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5634.796578543526,
+      "plan_time_sec": 2.2132821083068848,
+      "episode_reward": -1166486.294210575
+    },
+    {
+      "seed": 1,
+      "episode_idx": 1343497,
+      "cos_dist": 0.2613750696182251,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 4475.579833984375,
+      "plan_time_sec": 2.2566378116607666,
+      "episode_reward": -1188305.56663435
+    },
+    {
+      "seed": 1,
+      "episode_idx": 389839,
+      "cos_dist": 0.15808111429214478,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5220.18083844866,
+      "plan_time_sec": 2.2080092430114746,
+      "episode_reward": -1217800.817062446
+    },
+    {
+      "seed": 1,
+      "episode_idx": 616957,
+      "cos_dist": 0.2549598813056946,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5322.881208147321,
+      "plan_time_sec": 2.213833808898926,
+      "episode_reward": -1246902.717009595
+    },
+    {
+      "seed": 1,
+      "episode_idx": 1174509,
+      "cos_dist": 0.1723061203956604,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 2520.167323521205,
+      "plan_time_sec": 2.1972670555114746,
+      "episode_reward": -1284043.0046650758
+    },
+    {
+      "seed": 1,
+      "episode_idx": 1299572,
+      "cos_dist": 0.051780521869659424,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 5371.662248883928,
+      "plan_time_sec": 2.2105090618133545,
+      "episode_reward": -1312536.6672241124
+    },
+    {
+      "seed": 1,
+      "episode_idx": 2326394,
+      "cos_dist": 0.14342957735061646,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 4522.240774972098,
+      "plan_time_sec": 2.184619426727295,
+      "episode_reward": -1333591.4989016366
+    },
+    {
+      "seed": 1,
+      "episode_idx": 1059336,
+      "cos_dist": 0.2586505860090256,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 2513.819449288504,
+      "plan_time_sec": 2.2643206119537354,
+      "episode_reward": -1360776.0087916576
+    },
+    {
+      "seed": 1,
+      "episode_idx": 473573,
+      "cos_dist": 0.09605801105499268,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 5248.046439034598,
+      "plan_time_sec": 2.176210641860962,
+      "episode_reward": -1398529.0188663742
+    },
+    {
+      "seed": 1,
+      "episode_idx": 180637,
+      "cos_dist": 0.10312294960021973,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 3922.9823521205353,
+      "plan_time_sec": 2.2628116607666016,
+      "episode_reward": -1421504.2956570503
+    },
+    {
+      "seed": 1,
+      "episode_idx": 628267,
+      "cos_dist": 0.057535767555236816,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 3704.363577706473,
+      "plan_time_sec": 2.273664712905884,
+      "episode_reward": -1449106.1112920286
+    },
+    {
+      "seed": 1,
+      "episode_idx": 1706186,
+      "cos_dist": 0.15410569310188293,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 1540.3690883091517,
+      "plan_time_sec": 2.2336502075195312,
+      "episode_reward": -1475002.515610198
+    },
+    {
+      "seed": 1,
+      "episode_idx": 639419,
+      "cos_dist": 0.3002915680408478,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 4438.092041015625,
+      "plan_time_sec": 2.2398507595062256,
+      "episode_reward": -1506158.4157194141
+    },
+    {
+      "seed": 1,
+      "episode_idx": 177134,
+      "cos_dist": 0.14158642292022705,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 852.2036961146763,
+      "plan_time_sec": 2.299539566040039,
+      "episode_reward": -1530356.4034871985
+    },
+    {
+      "seed": 1,
+      "episode_idx": 2100882,
+      "cos_dist": 0.2213582694530487,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 698.7096514020647,
+      "plan_time_sec": 2.225029230117798,
+      "episode_reward": -1563979.9759725763
+    },
+    {
+      "seed": 1,
+      "episode_idx": 273053,
+      "cos_dist": 0.2655719369649887,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 3377.9061453683034,
+      "plan_time_sec": 1.7531907558441162,
+      "episode_reward": -1588542.2996603178
+    },
+    {
+      "seed": 2,
+      "episode_idx": 2121611,
+      "cos_dist": 0.3020448237657547,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5556.748744419642,
+      "plan_time_sec": 2.079267978668213,
+      "episode_reward": -1615389.1267933268
+    },
+    {
+      "seed": 2,
+      "episode_idx": 1931625,
+      "cos_dist": 0.2295081615447998,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5393.982369559151,
+      "plan_time_sec": 2.113079309463501,
+      "episode_reward": -1644586.340721874
+    },
+    {
+      "seed": 2,
+      "episode_idx": 2157720,
+      "cos_dist": 0.2911514341831207,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 6189.645385742187,
+      "plan_time_sec": 2.1353023052215576,
+      "episode_reward": -1673759.497985146
+    },
+    {
+      "seed": 2,
+      "episode_idx": 1353894,
+      "cos_dist": 0.2342817187309265,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5010.299246651785,
+      "plan_time_sec": 2.1547811031341553,
+      "episode_reward": -1701385.4552126569
+    },
+    {
+      "seed": 2,
+      "episode_idx": 1991744,
+      "cos_dist": 0.3020736128091812,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5546.527535574776,
+      "plan_time_sec": 2.0865044593811035,
+      "episode_reward": -1725543.2347132326
+    },
+    {
+      "seed": 2,
+      "episode_idx": 864959,
+      "cos_dist": 0.20171737670898438,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5337.580217633928,
+      "plan_time_sec": 2.148028612136841,
+      "episode_reward": -1749869.659526509
+    },
+    {
+      "seed": 2,
+      "episode_idx": 581842,
+      "cos_dist": 0.08979195356369019,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 3943.8537597656245,
+      "plan_time_sec": 2.3795242309570312,
+      "episode_reward": -1771981.353863804
+    },
+    {
+      "seed": 2,
+      "episode_idx": 1966098,
+      "cos_dist": 0.2521139830350876,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 4793.826729910714,
+      "plan_time_sec": 2.3613481521606445,
+      "episode_reward": -1804091.660278448
+    },
+    {
+      "seed": 2,
+      "episode_idx": 656834,
+      "cos_dist": 0.30902574956417084,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5245.713152204241,
+      "plan_time_sec": 1.6500658988952637,
+      "episode_reward": -1835236.2294273658
+    },
+    {
+      "seed": 2,
+      "episode_idx": 2282954,
+      "cos_dist": 0.17105525732040405,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 3727.4845668247763,
+      "plan_time_sec": 1.646742582321167,
+      "episode_reward": -1859883.16595385
+    },
+    {
+      "seed": 2,
+      "episode_idx": 989398,
+      "cos_dist": 0.2781887650489807,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 3337.3437064034597,
+      "plan_time_sec": 1.6491243839263916,
+      "episode_reward": -1884295.0157349166
+    },
+    {
+      "seed": 2,
+      "episode_idx": 1241933,
+      "cos_dist": 0.32759180665016174,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 3051.216125488281,
+      "plan_time_sec": 1.6504390239715576,
+      "episode_reward": -1908725.6390041332
+    },
+    {
+      "seed": 2,
+      "episode_idx": 1945040,
+      "cos_dist": 0.1489742398262024,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 2197.380937848772,
+      "plan_time_sec": 1.6552765369415283,
+      "episode_reward": -1931251.120169429
+    },
+    {
+      "seed": 2,
+      "episode_idx": 739534,
+      "cos_dist": 0.25313492119312286,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 6414.260864257812,
+      "plan_time_sec": 1.6469168663024902,
+      "episode_reward": -1961192.0494698389
+    },
+    {
+      "seed": 2,
+      "episode_idx": 212544,
+      "cos_dist": 0.17438453435897827,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 4984.633091517857,
+      "plan_time_sec": 1.6645362377166748,
+      "episode_reward": -1985618.6517824056
+    },
+    {
+      "seed": 2,
+      "episode_idx": 1180206,
+      "cos_dist": 0.20924308896064758,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 6338.883754185267,
+      "plan_time_sec": 1.6758217811584473,
+      "episode_reward": -2013377.9027370843
+    },
+    {
+      "seed": 2,
+      "episode_idx": 875838,
+      "cos_dist": 0.12178808450698853,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 3418.45463344029,
+      "plan_time_sec": 1.650423288345337,
+      "episode_reward": -2034595.176713503
+    },
+    {
+      "seed": 2,
+      "episode_idx": 656166,
+      "cos_dist": 0.06338924169540405,
+      "lewm_success": true,
+      "env_success": false,
+      "phys_dist": 4511.512538364955,
+      "plan_time_sec": 1.651867389678955,
+      "episode_reward": -2057271.617758827
+    },
+    {
+      "seed": 2,
+      "episode_idx": 943996,
+      "cos_dist": 0.1574329137802124,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 1233.2669939313614,
+      "plan_time_sec": 1.6403636932373047,
+      "episode_reward": -2090112.1426785025
+    },
+    {
+      "seed": 2,
+      "episode_idx": 131475,
+      "cos_dist": 0.3588419258594513,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 4649.417986188616,
+      "plan_time_sec": 1.661400318145752,
+      "episode_reward": -2117271.0547147677
+    },
+    {
+      "seed": 2,
+      "episode_idx": 287025,
+      "cos_dist": 0.1660139560699463,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 2875.0307355608256,
+      "plan_time_sec": 1.6595654487609863,
+      "episode_reward": -2147089.3961660904
+    },
+    {
+      "seed": 2,
+      "episode_idx": 1367157,
+      "cos_dist": 0.3479146361351013,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5055.048479352678,
+      "plan_time_sec": 1.680023431777954,
+      "episode_reward": -2171976.6980641154
+    },
+    {
+      "seed": 2,
+      "episode_idx": 1729385,
+      "cos_dist": 0.3332800567150116,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 4607.5775146484375,
+      "plan_time_sec": 1.6568114757537842,
+      "episode_reward": -2207094.0014549424
+    },
+    {
+      "seed": 2,
+      "episode_idx": 783720,
+      "cos_dist": 0.17519217729568481,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 3217.1615600585933,
+      "plan_time_sec": 1.6508474349975586,
+      "episode_reward": -2233339.388299355
+    },
+    {
+      "seed": 2,
+      "episode_idx": 2237654,
+      "cos_dist": 0.2817060500383377,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5139.545113699776,
+      "plan_time_sec": 1.6639184951782227,
+      "episode_reward": -2261585.672538527
+    },
+    {
+      "seed": 2,
+      "episode_idx": 1209761,
+      "cos_dist": 0.17855626344680786,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 4588.248988560267,
+      "plan_time_sec": 1.6448709964752197,
+      "episode_reward": -2288221.2232323494
+    },
+    {
+      "seed": 2,
+      "episode_idx": 278058,
+      "cos_dist": 0.10710304975509644,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 398.1289454868861,
+      "plan_time_sec": 1.6416082382202148,
+      "episode_reward": -2313437.1808938463
+    },
+    {
+      "seed": 2,
+      "episode_idx": 1237372,
+      "cos_dist": 0.38495564460754395,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5518.87948172433,
+      "plan_time_sec": 1.6445050239562988,
+      "episode_reward": -2351913.733279254
+    },
+    {
+      "seed": 2,
+      "episode_idx": 709180,
+      "cos_dist": 0.31681981682777405,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5269.403512137276,
+      "plan_time_sec": 1.6280605792999268,
+      "episode_reward": -2376968.374896265
+    },
+    {
+      "seed": 2,
+      "episode_idx": 159302,
+      "cos_dist": 0.23090600967407227,
+      "lewm_success": false,
+      "env_success": false,
+      "phys_dist": 5216.539655412946,
+      "plan_time_sec": 1.6375994682312012,
+      "episode_reward": -2405183.836256293
+    }
+  ],
+  "wall_time_sec": 190.20606637001038
+}

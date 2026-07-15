@@ -242,6 +242,39 @@ decoding bottleneck named in §6.5. Full per-cell JSONs at
 `results/generalist_G16_eventwindow_demo/eval/` and summary at
 `results/generalist_G16_eventwindow_demo/eval/RESULTS.md`.
 
+### 6.7 Cross-benchmark family OOD (v0.7.12, partial negative result)
+
+We ran 3 splits (one family held out at a time, from the
+4-family set {DMC, Reacher, PushT, TwoRoom}):
+
+| Split (held-out) | Model | Eval env | LeWM-SR | env-SR |
+|---|---|---|---|---|
+| F1 (PushT) | cubifae_baseline | pusht | 0.156 | 0.000 |
+| F1 (PushT) | stjewm_trace_only | pusht | 0.233 | 0.000 |
+| F1 (PushT) | **stjewm_membrane_readout** | pusht | **0.400** | 0.000 |
+| F2 (TwoRoom) | **cubifae_baseline** | tworoom | **0.878** | 0.000 |
+| F2 (TwoRoom) | stjewm_trace_only | tworoom | 0.778 | 0.000 |
+| F2 (TwoRoom) | stjewm_membrane_readout | tworoom | 0.756 | 0.000 |
+| F3 (Reacher) | cubifae_baseline | reacher | 0.533 | 0.033 |
+| F3 (Reacher) | **stjewm_trace_only** | reacher | **0.578** | 0.033 |
+| F3 (Reacher) | stjewm_membrane_readout | reacher | 0.556 | 0.033 |
+
+**STJEWM does not have a universal hard performance win on
+cross-benchmark-family OOD.** The result is split:
+- F1: STJEWM (membrane readout) wins clearly (+24.4 pp on LeWM-SR)
+- F2: CuBiFAE wins (+10 pp)
+- F3: all three tied within noise
+
+**Implication for the working title.** The working title
+"generalisable world models" is supported within DMC sub-families
+(v0.7.10b, §7.6) but **not** supported across benchmark families
+(v0.7.12, this section). The honest scope is that STJEWM is a
+methodological contribution (a probe for the membrane-forbidden
+protocol), not a universal-performance contribution on
+cross-benchmark-family transfer. Full per-cell JSONs at
+`results/cross_benchmark_F{1,2,3}/eval/` and summary at
+`results/cross_benchmark_F1/eval/RESULTS.md`.
+
 ## 7. Headline sentences (the working title)
 
 > **The calibrated event-driven predictive state transfers across

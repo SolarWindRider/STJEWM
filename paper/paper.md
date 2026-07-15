@@ -1010,6 +1010,42 @@ discipline*, not the *predictive power*. Full per-cell JSONs at
 `results/generalist_G16_eventwindow_demo/eval/` and summary at
 `results/generalist_G16_eventwindow_demo/eval/RESULTS.md`.
 
+### 9.7 Cross-benchmark family OOD (v0.7.12, partial negative result)
+
+The cross-benchmark-family axis is the *true* OOD axis (different
+benchmark families, not just different sub-families of DMC). We
+ran 3 splits (one family held out at a time, from the
+4-family set {DMC, Reacher, PushT, TwoRoom}):
+
+| Split | Eval env | Model | LeWM-SR | env-SR | cos_dist |
+|---|---|---|---|---|---|
+| F1 (PushT held out) | pusht | cubifae_baseline        | 0.156 | 0.000 | 0.200 |
+| F1 (PushT held out) | pusht | stjewm_trace_only       | 0.233 | 0.000 | 0.143 |
+| F1 (PushT held out) | pusht | **stjewm_membrane_readout** | **0.400** | 0.000 | 0.125 |
+| F2 (TwoRoom held out) | tworoom | cubifae_baseline        | **0.878** | 0.000 | 0.061 |
+| F2 (TwoRoom held out) | tworoom | stjewm_trace_only       | 0.778 | 0.000 | 0.070 |
+| F2 (TwoRoom held out) | tworoom | stjewm_membrane_readout | 0.756 | 0.000 | 0.071 |
+| F3 (Reacher held out) | reacher | cubifae_baseline        | 0.533 | 0.033 | 0.118 |
+| F3 (Reacher held out) | reacher | stjewm_trace_only       | 0.578 | 0.033 | 0.109 |
+| F3 (Reacher held out) | reacher | stjewm_membrane_readout | 0.556 | 0.033 | 0.114 |
+
+**Result: STJEWM does not have a universal hard performance win on
+cross-benchmark-family OOD.** The result is split: STJEWM (membrane
+readout) wins clearly on F1 / PushT (+24.4 pp on LeWM-SR); CuBiFAE
+wins on F2 / TwoRoom (+10 pp); all three tied within noise on F3
+/ Reacher. STJEWM does not generalise uniformly across benchmark
+families.
+
+**Implication for the working title.** The working title
+"generalisable world models" is **supported within DMC
+sub-families** (v0.7.10b, §7.6) but **not supported across
+benchmark families** (v0.7.12, this section). The honest scope is
+that STJEWM is a *methodological contribution* (a probe for the
+membrane-forbidden protocol), not a *universal-performance
+contribution* on cross-benchmark-family transfer. Full per-cell
+JSONs at `results/cross_benchmark_F{1,2,3}/eval/` and summary at
+`results/cross_benchmark_F1/eval/RESULTS.md`.
+
 ## A. Table 1 — Main claim control table
 (unchanged from v0.7.8 — see MASTER_TABLE.md §10 for the canonical table; the
 excerpt kept below is unaltered from v0.7.8 for line-citation stability.)

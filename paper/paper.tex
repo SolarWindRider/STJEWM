@@ -1366,6 +1366,56 @@ difference is in the \emph{protocol discipline}, not the
 summary at
 \texttt{results/generalist\_G16\_eventwindow\_demo/eval/RESULTS.md}.
 
+\subsection{Cross-benchmark family OOD (v0.7.12, partial negative result)}
+
+The cross-benchmark-family axis is the \emph{true} OOD axis
+(different benchmark families, not just different sub-families
+of DMC). We ran 3 splits (one family held out at a time, from the
+4-family set \{DMC, Reacher, PushT, TwoRoom\}):
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{lllrr}
+\toprule
+Split (held-out family) & Model & Eval env & LeWM-SR & env-SR \\
+\midrule
+F1 (PushT) & cubifae\_baseline        & pusht   & 0.156 & 0.000 \\
+F1 (PushT) & stjewm\_trace\_only       & pusht   & 0.233 & 0.000 \\
+F1 (PushT) & \textbf{stjewm\_membrane\_readout} & pusht   & \textbf{0.400} & 0.000 \\
+F2 (TwoRoom) & cubifae\_baseline        & tworoom & \textbf{0.878} & 0.000 \\
+F2 (TwoRoom) & stjewm\_trace\_only       & tworoom & 0.778 & 0.000 \\
+F2 (TwoRoom) & stjewm\_membrane\_readout & tworoom & 0.756 & 0.000 \\
+F3 (Reacher) & cubifae\_baseline        & reacher & 0.533 & 0.033 \\
+F3 (Reacher) & stjewm\_trace\_only       & reacher & 0.578 & 0.033 \\
+F3 (Reacher) & stjewm\_membrane\_readout & reacher & 0.556 & 0.033 \\
+\bottomrule
+\end{tabular}
+\caption{Cross-benchmark family OOD result. STJEWM does not have a
+universal hard performance win on cross-benchmark-family transfer.
+The result is split: STJEWM (membrane readout) wins clearly on F1
+(+24.4 pp on LeWM-SR); CuBiFAE wins on F2 (+10 pp); all three tied
+within noise on F3.}
+\label{tab:cross-benchmark}
+\end{table}
+
+\textbf{Result: STJEWM does not have a universal hard performance
+win on cross-benchmark-family OOD.} The result is split: STJEWM
+(membrane readout) wins clearly on F1 / PushT (+24.4 pp on
+LeWM-SR); CuBiFAE wins on F2 / TwoRoom (+10 pp); all three tied
+within noise on F3 / Reacher. STJEWM does not generalise uniformly
+across benchmark families.
+
+\textbf{Implication for the working title.} The working title
+``generalisable world models'' is \textbf{supported within DMC
+sub-families} (v0.7.10b, \S7.6) but \textbf{not supported across
+benchmark families} (v0.7.12, this section). The honest scope
+is that STJEWM is a \emph{methodological contribution} (a probe
+for the membrane-forbidden protocol), not a
+\emph{universal-performance contribution} on cross-benchmark-family
+transfer. Full per-cell JSONs at
+\texttt{results/cross\_benchmark\_F\{1,2,3\}/eval/} and summary at
+\texttt{results/cross\_benchmark\_F1/eval/RESULTS.md}.
+
 % ============================================================================
 \section*{Table 1 --- Main claim control table}
 
