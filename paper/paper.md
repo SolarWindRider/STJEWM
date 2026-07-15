@@ -907,6 +907,58 @@ Three empirically supported statements:
 > over-react). The next gating experiment is the cross-benchmark-
 > family matrix (Pusht / LeWM reacher / Tworoom / Delayed POMDP).
 
+### 9.5 Trace-friendly task negative result (delayed_t_maze, v0.7.10b)
+
+We ran a targeted probe to test whether the gated exponential trace
+readout (STJEWM `trace_only`) outperforms the membrane readout
+(STJEWM `membrane_readout`) and the multi-timescale passive decay
+readout (CuBiFAE) on a deliberately event-aligned, sparse-cue task:
+`delayed_t_maze` (state 6D, action 2D, 3-frame cue phase then 7- or
+47-frame pure-forward corridor before a binary left/right choice).
+
+**Setup.** 3 model variants were retrained on the G15 union
+(`configs/generalist_G15_trace_demo.json`: 14 G16 envs +
+`delayed_t_maze`), 1 seed, 1 epoch, lr 3e-4, batch 32, n_layers 2 —
+the same training budget as the v0.7.10b OOD pilots but with the T-maze
+added to the training mix. Each ckpt was evaluated on `delayed_t_maze`
+with two difficulty levels (`delay50_cue3`, `delay10_cue3`), 30 episodes
+× 3 seeds = 90 episodes per cell. Closed-loop CEM with the same eval
+pipeline as the v0.7.10b OOD pilots (`--pad-obs-eval 128
+--action-dim-eval 56`).
+
+| Model | Difficulty | LeWM-SR (latent match) | **Env-native SR (physical goal)** | cos_dist | phys_dist |
+|---|---|---|---|---|---|
+| `cubifae_baseline`        | delay50_cue3 | 0.900 | **0.000** | 0.048 | 1.783 |
+| `stjewm_trace_only`       | delay50_cue3 | 0.900 | **0.000** | 0.039 | 1.783 |
+| `stjewm_membrane_readout` | delay50_cue3 | 0.900 | **0.000** | 0.047 | 1.783 |
+| `cubifae_baseline`        | delay10_cue3 | 0.944 | **0.033** | 0.048 | 1.802 |
+| `stjewm_trace_only`       | delay10_cue3 | 0.944 | **0.033** | 0.058 | 1.802 |
+| `stjewm_membrane_readout` | delay10_cue3 | 0.944 | **0.033** | 0.060 | 1.802 |
+
+**Result: all three models tie at every difficulty level**, on both
+the latent-match metric (LeWM-SR, 0.90–0.94) and the physical metric
+(env-native SR, 0.000–0.033).
+
+**Interpretation.** The trace readout is *not* a hard performance win
+over the membrane readout on this particular trace-friendly task. The
+LeWM-SR = 0.944 / env-native SR = 0.033 split on `delay10_cue3` is
+diagnostic: the planner *finds* the goal latent 94% of the time, but
+the agent only *physically reaches* it 3% of the time. The bottleneck
+is the **plan-to-action decoding** (how the latent plan maps to the
+env-action sequence), not the latent representation. This is the same
+decoding bottleneck that §9.1 (latent-goal MPC) and §6 (env-SR
+saturates) already established; this targeted probe confirms it on
+the most trace-friendly task we have.
+
+**Honest scope.** The trace interface may still be distinguished on
+tasks where the **decoding bottleneck is removed** — e.g. by a
+hand-crafted controller that maps the latent directly to a known
+target state without going through CEM — but such a controller is no
+longer testing the *predictive-state* question. We do not have such
+a result, and we do not claim one. The full per-cell JSONs are at
+`results/generalist_G15_trace_demo/eval/` and the summary table is
+`results/generalist_G15_trace_demo/eval/RESULTS.md`.
+
 ## A. Table 1 — Main claim control table
 (unchanged from v0.7.8 — see MASTER_TABLE.md §10 for the canonical table; the
 excerpt kept below is unaltered from v0.7.8 for line-citation stability.)

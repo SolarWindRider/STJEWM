@@ -1234,6 +1234,77 @@ membrane-forbidden world-model interface, and that such claims require
 collapse-robust diagnostics rather than latent cosine success alone.
 \end{quote}
 
+\subsection{Trace-friendly task negative result (delayed\_tMaze, v0.7.10b)}
+
+We ran a targeted probe to test whether the gated exponential trace
+readout (STJEWM \texttt{trace\_only}) outperforms the membrane
+readout (STJEWM \texttt{membrane\_readout}) and the multi-timescale
+passive decay readout (CuBiFAE) on a deliberately event-aligned,
+sparse-cue task: \texttt{delayed\_t\_maze} (state 6D, action 2D,
+3-frame cue phase then 7- or 47-frame pure-forward corridor before
+a binary left/right choice).
+
+\textbf{Setup.} 3 model variants were retrained on the G15 union
+(\texttt{configs/generalist\_G15\_trace\_demo.json}: 14 G16 envs +
+\texttt{delayed\_t\_maze}), 1 seed, 1 epoch, lr $3 \times 10^{-4}$, batch 32,
+$n_{\text{layers}}=2$ --- the same training budget as the v0.7.10b OOD
+pilots but with the T-maze added to the training mix. Each ckpt was
+evaluated on \texttt{delayed\_t\_maze} with two difficulty levels
+(\texttt{delay50\_cue3}, \texttt{delay10\_cue3}), 30 episodes $\times$ 3
+seeds = 90 episodes per cell. Closed-loop CEM with the same eval
+pipeline as the v0.7.10b OOD pilots
+(\texttt{--pad-obs-eval 128 --action-dim-eval 56}).
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{llccrr}
+\toprule
+Model & Difficulty & LeWM-SR & \textbf{Env-native SR} & $\cos_{\text{dist}}$ & phys\_dist \\
+\midrule
+\texttt{cubifae\_baseline}        & delay50\_cue3 & 0.900 & \textbf{0.000} & 0.048 & 1.783 \\
+\texttt{stjewm\_trace\_only}       & delay50\_cue3 & 0.900 & \textbf{0.000} & 0.039 & 1.783 \\
+\texttt{stjewm\_membrane\_readout} & delay50\_cue3 & 0.900 & \textbf{0.000} & 0.047 & 1.783 \\
+\texttt{cubifae\_baseline}        & delay10\_cue3 & 0.944 & \textbf{0.033} & 0.048 & 1.802 \\
+\texttt{stjewm\_trace\_only}       & delay10\_cue3 & 0.944 & \textbf{0.033} & 0.058 & 1.802 \\
+\texttt{stjewm\_membrane\_readout} & delay10\_cue3 & 0.944 & \textbf{0.033} & 0.060 & 1.802 \\
+\bottomrule
+\end{tabular}
+\caption{Trace-friendly task negative result. All three calibrated
+SNN readouts tie at every difficulty level, on both the latent-match
+metric (LeWM-SR) and the physical metric (env-native SR). The
+0.944 / 0.033 split on \texttt{delay10\_cue3} shows that the
+plan-to-action decoding (not the latent representation) is the
+bottleneck; the trace does not provide a hard performance win on
+this task.}
+\label{tab:trace-friendly}
+\end{table}
+
+\textbf{Result: all three models tie at every difficulty level}, on
+both the latent-match metric (LeWM-SR, 0.90--0.94) and the physical
+metric (env-native SR, 0.000--0.033).
+
+\textbf{Interpretation.} The trace readout is \emph{not} a hard
+performance win over the membrane readout on this particular
+trace-friendly task. The LeWM-SR $= 0.944$ / env-native SR $= 0.033$
+split on \texttt{delay10\_cue3} is diagnostic: the planner
+\emph{finds} the goal latent 94\% of the time, but the agent only
+\emph{physically reaches} it 3\% of the time. The bottleneck is
+the \textbf{plan-to-action decoding} (how the latent plan maps to
+the env-action sequence), not the latent representation. This is
+the same decoding bottleneck that \S9.1 (latent-goal MPC) and
+\S6 (env-SR saturates) already established; this targeted probe
+confirms it on the most trace-friendly task we have.
+
+\textbf{Honest scope.} The trace interface may still be distinguished
+on tasks where the \textbf{decoding bottleneck is removed} --- e.g.
+by a hand-crafted controller that maps the latent directly to a known
+target state without going through CEM --- but such a controller is
+no longer testing the \emph{predictive-state} question. We do not
+have such a result, and we do not claim one. The full per-cell JSONs
+are at \texttt{results/generalist\_G15\_trace\_demo/eval/} and the
+summary table is
+\texttt{results/generalist\_G15\_trace\_demo/eval/RESULTS.md}.
+
 % ============================================================================
 \section*{Table 1 --- Main claim control table}
 

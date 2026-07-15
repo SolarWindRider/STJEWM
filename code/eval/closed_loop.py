@@ -43,7 +43,8 @@ from code.data import load_dataset
 # ============================================================
 # Env factory (string -> BaseEnv instance)
 # ============================================================
-def make_env(env_kind: str, data_path: str = None, *, flicker_mask_ratio: float = None) -> BaseEnv:
+def make_env(env_kind: str, data_path: str = None, *, flicker_mask_ratio: float = None,
+             delay_length: int = None, cue_visibility: int = None) -> BaseEnv:
     if env_kind == "pusht":
         return PushTEnv()
     if env_kind == "tworoom" or env_kind == "tworoom_long":
@@ -91,7 +92,10 @@ def make_env(env_kind: str, data_path: str = None, *, flicker_mask_ratio: float 
         return make_gym_env(eid)
     if env_kind == "delayed_t_maze":
         from code.core.envs.delayed_t_maze import make_delayed_t_maze
-        return make_delayed_t_maze()
+        return make_delayed_t_maze(
+            delay_length=delay_length or 50,
+            cue_visibility=cue_visibility or 3,
+        )
     raise ValueError(f"Unknown env_kind: {env_kind}")
 
 # ============================================================
@@ -497,6 +501,10 @@ def parse_args():
     p.add_argument("--action-dim-eval", type=int, default=None,
                    help="If set, override the action_dim used to build the model and to "
                         "CEM-plan. Required for loading a generalist checkpoint trained with --action-dim.")
+    p.add_argument("--delay-length", type=int, default=None,
+                   help="Override delayed_t_maze corridor length (default 50).")
+    p.add_argument("--cue-visibility", type=int, default=None,
+                   help="Override delayed_t_maze cue visibility (default 3).")
     return p.parse_args()
 
 
@@ -506,7 +514,8 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Build env (supports per-eval flicker mask_ratio)
-    env = make_env(args.env, args.data, flicker_mask_ratio=args.flicker_mask_ratio)
+    env = make_env(args.env, args.data, flicker_mask_ratio=args.flicker_mask_ratio,
+                     delay_length=args.delay_length, cue_visibility=args.cue_visibility)
 
     # If --pad-obs-eval was passed, wrap env to pad every obs to the target dim.
     # The model will be built with this padded dim; load_dataset below will also pad

@@ -189,6 +189,29 @@ The 6 STJEWM readouts are *indistinguishable* on ρ in the OOD matrix
 dynamics family produces calibrated latents regardless of which
 interface variable the planner reads.
 
+### 6.5 Trace-friendly task negative result (delayed_t_maze, v0.7.10b)
+
+We ran a targeted probe to test whether the trace readout (STJEWM
+`trace_only`) outperforms the membrane readout (STJEWM
+`membrane_readout`) and the multi-timescale passive decay readout
+(CuBiFAE) on `delayed_t_maze` (a deliberately event-aligned, sparse-cue
+task). 3 model variants were retrained on the G15 union (14 G16 envs +
+delayed_t_maze), 1 seed, 1 epoch, the same training budget as the OOD
+pilots. Each ckpt was evaluated at two difficulty levels.
+
+**Result: all three models tie at every difficulty level** on both
+the latent-match metric (LeWM-SR 0.900-0.944) and the physical
+metric (env-native SR 0.000-0.033). The 0.944 / 0.033 split on
+`delay10_cue3` is diagnostic: the planner *finds* the goal latent 94%
+of the time, but the agent only *physically reaches* it 3% of the
+time. The bottleneck is the **plan-to-action decoding** (how the
+latent plan maps to the env-action sequence), not the latent
+representation. This is consistent with the §6 finding that
+env-SR saturates across the calibrated family, and confirms on the
+most trace-friendly task we have that the trace does not provide a
+hard performance win over the membrane readout. Full table:
+`results/generalist_G15_trace_demo/eval/RESULTS.md` and paper.md §9.5.
+
 ## 7. Headline sentences (the working title)
 
 > **The calibrated event-driven predictive state transfers across
