@@ -304,6 +304,38 @@ def load_delayed_t_maze(
     )
     return WindowDataset(observations, actions, spec, max_windows=max_windows)
 
+
+# ============================================================
+# Event-Window loader (10D obs, 5D action; procedurally generated npz)
+# ============================================================
+def load_event_window(
+    npz_path: str = "/home/lx/snn/data/event_window_50k.npz",
+    history_size: int = 1,
+    goal_offset: int = 25,
+    max_windows: Optional[int] = None,
+    pad_obs_to: Optional[int] = None,
+    env_id: Optional[str] = None,
+) -> WindowDataset:
+    """Event-Window loader.
+
+    State vector layout (10D):
+        [one_hot_event (5D), current_rates (5D)]
+    Actions (5D):
+        one-hot categorical pick (the agent's guess for the modal event)
+    """
+    d = np.load(npz_path)
+    observations = d["observations"].astype(np.float32)  # (N, 10)
+    actions = d["actions"].astype(np.float32)            # (N, 5)
+    spec = WindowSpec(
+        obs_dim=10,
+        action_dim=5,
+        history_size=history_size,
+        goal_offset=goal_offset,
+        pad_obs_to=pad_obs_to,
+        env_id=env_id,
+    )
+    return WindowDataset(observations, actions, spec, max_windows=max_windows)
+
 # ============================================================
 # Gym loader (live environment, no offline data file)
 # ============================================================
@@ -446,6 +478,7 @@ def load_dataset(
         dmc             generic DMC npz (cartpole/pendulum/etc)
         mujoco_3d       our 3D rollouts npz
         delayed_t_maze   synthetic Delayed-T-Maze npz (state 6D, 2D action)
+        event_window     synthetic 5-event window npz (state 10D, 5D action)
         gym_live        gym env_id (collects random data on the fly)
     """
     if env_kind == "pusht":
@@ -477,6 +510,8 @@ def load_dataset(
         return load_mujoco_3d(path, **kwargs)
     if env_kind == "delayed_t_maze":
         return load_delayed_t_maze(path or "/home/lx/snn/data/delayed_t_maze_30k.npz", **kwargs)
+    if env_kind == "event_window":
+        return load_event_window(path or "/home/lx/snn/data/event_window_50k.npz", **kwargs)
     if env_kind == "gym_live":
         assert path is not None  # env_id
         return load_gym_live(path, **kwargs)

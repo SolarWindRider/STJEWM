@@ -96,6 +96,9 @@ def make_env(env_kind: str, data_path: str = None, *, flicker_mask_ratio: float 
             delay_length=delay_length or 50,
             cue_visibility=cue_visibility or 3,
         )
+    if env_kind == "event_window":
+        from code.core.envs.event_window import make_event_window
+        return make_event_window()
     raise ValueError(f"Unknown env_kind: {env_kind}")
 
 # ============================================================
@@ -121,6 +124,8 @@ class ClosedLoopResult:
     mean_cos_dist_std: float
     mean_phys_dist: float
     mean_phys_dist_std: float
+    mean_reward: float = 0.0         # mean cumulative reward per episode
+    mean_reward_std: float = 0.0
     per_seed: List[Dict] = field(default_factory=list)
     per_episode: List[Dict] = field(default_factory=list)
     wall_time_sec: float = 0.0
@@ -237,9 +242,14 @@ def eval_closed_loop(
                     action = np.clip(action, action_low, action_high)
                     try:
                         _obs, _r, done, _info = env.step(action)
+                        _step_reward = float(_r)
                     except Exception:
                         done = True
+                        _step_reward = 0.0
                     actions_taken += 1
+                    if "_episode_reward" not in locals():
+                        _episode_reward = 0.0
+                    _episode_reward += _step_reward
                     if done:
                         break
                 if done or actions_taken >= eval_budget:
@@ -281,6 +291,7 @@ def eval_closed_loop(
                 "env_success": bool(env_success),
                 "phys_dist": float(phys_dist),
                 "plan_time_sec": plan_time,
+                "episode_reward": float(_episode_reward) if "_episode_reward" in locals() else 0.0,
             }
             seed_episodes.append(ep_dict)
             per_episode_all.append(ep_dict)
@@ -290,6 +301,7 @@ def eval_closed_loop(
             env_succ = np.mean([e["env_success"] for e in seed_episodes])
             mean_cos = np.mean([e["cos_dist"] for e in seed_episodes])
             mean_phys = np.mean([e["phys_dist"] for e in seed_episodes])
+            mean_reward = np.mean([e.get("episode_reward", 0.0) for e in seed_episodes])
             per_seed_results.append({
                 "seed": seed,
                 "n": len(seed_episodes),
@@ -297,6 +309,7 @@ def eval_closed_loop(
                 "success_rate_env": float(env_succ),
                 "mean_cos_dist": float(mean_cos),
                 "mean_phys_dist": float(mean_phys),
+                "mean_reward": float(mean_reward) if "mean_reward" in dir() else 0.0,
             })
 
     lewm_arr = np.array([s["success_rate_lewm"] for s in per_seed_results])
@@ -323,6 +336,8 @@ def eval_closed_loop(
         mean_cos_dist_std=float(cos_arr.std()) if len(cos_arr) > 0 else float("nan"),
         mean_phys_dist=float(phys_arr.mean()) if len(phys_arr) > 0 else float("nan"),
         mean_phys_dist_std=float(phys_arr.std()) if len(phys_arr) > 0 else float("nan"),
+        mean_reward=float(np.mean([s.get("mean_reward", 0.0) for s in per_seed_results])) if per_seed_results else 0.0,
+        mean_reward_std=float(np.std([s.get("mean_reward", 0.0) for s in per_seed_results])) if per_seed_results else 0.0,
         per_seed=per_seed_results,
         per_episode=per_episode_all,
         wall_time_sec=time.time() - wall_t0,

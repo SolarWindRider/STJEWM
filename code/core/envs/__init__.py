@@ -18,6 +18,7 @@ Available envs (23 total):
 
     Custom working-memory probe:
         delayed_t_maze: synthetic Delayed-T-Maze (6D obs, 2D action)
+        event_window:   synthetic 5-event window task (10D obs, 5D action)
 """
 from .base import BaseEnv, EnvSpec
 from .swm_envs import (
@@ -31,6 +32,7 @@ from .dmc_env import (
     make_dmc_env, make_ogb_scene_env,
     FlickeringDMCEnv, VEL_INDICES, make_vel_hidden_env,
 )
+from .event_window import EventWindowEnv, EventWindowConfig, make_event_window
 from .delayed_t_maze import (
     DelayedTMazeEnv, DelayedTMazeConfig, make_delayed_t_maze,
     generate_delayed_t_maze_dataset,
@@ -45,5 +47,6 @@ __all__ = [
     "make_dmc_env", "make_ogb_scene_env",
     "FlickeringDMCEnv", "VEL_INDICES", "make_vel_hidden_env",
     "DelayedTMazeEnv", "DelayedTMazeConfig", "make_delayed_t_maze",
+    "EventWindowEnv", "EventWindowConfig", "make_event_window",
     "generate_delayed_t_maze_dataset",
 ]

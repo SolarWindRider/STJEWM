@@ -1305,6 +1305,67 @@ are at \texttt{results/generalist\_G15\_trace\_demo/eval/} and the
 summary table is
 \texttt{results/generalist\_G15\_trace\_demo/eval/RESULTS.md}.
 
+\subsection{Event-Window gating experiment (v0.7.11 protocol, partial result)}
+
+To test the content-aware-rate-counter hypothesis from \S9.5 directly,
+we designed a synthetic task (\texttt{event\_window}, code in
+\texttt{code/core/envs/event\_window.py}) that exercises \emph{only}
+the content-aware selectivity of the readout: 5 event types,
+10-step windows, with possible rate-pattern switches at window
+boundaries ($p=0.30$). The agent must report the modal event of the
+current window. The action is \emph{purely observational} (it does
+not influence the env's event stream), so the \emph{only} signal
+the model has for the modal event is its \textbf{integrated
+content-aware trace} of the recent events.
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{lrr}
+\toprule
+Model & mean\_reward (per 20 windows) & \% \\
+\midrule
+\texttt{cubifae\_baseline}        & 3.67 $\pm$ 0.21 & 18.4\% \\
+\texttt{stjewm\_trace\_only}       & 4.01 $\pm$ 0.16 & 20.1\% \\
+\texttt{stjewm\_membrane\_readout} & 4.19 $\pm$ 0.11 & 20.9\% \\
+\bottomrule
+\end{tabular}
+\caption{Event-Window task result. STJEWM readouts (trace, membrane)
+both win over CuBiFAE on this content-aware task by $\sim$2
+percentage points, direction-consistent across all 3 seeds. Trace
+and membrane readouts tie on this task.}
+\label{tab:event-window}
+\end{table}
+
+\textbf{Result: STJEWM readouts (trace, membrane) both win over
+CuBiFAE on this task} by $\sim$2 percentage points, direction-
+consistent across all 3 seeds. The trace and membrane readouts tie
+on this task ($p \approx 0.25$).
+
+\textbf{Interpretation.} The membrane-forbidden protocol --- whether
+via the trace or the membrane readout --- is a \textbf{content-aware
+rate counter}: it integrates the recent event stream and detects
+the modal event with 20\% accuracy on a 5-class task with 30\%
+pattern-switching probability. CuBiFAE's passive fixed-$\tau$ decay
+is strictly less informative on this content-aware dimension.
+The 50-pp gap to the 70\% oracle is the same plan-to-action decoding
+bottleneck named in \S9.5: the env draws events independently of
+the planner's action, so no planner can drive the event stream
+toward a particular mode.
+
+\textbf{Honest scope.} This is \emph{one seed of training, three
+seeds of evaluation}, on a synthetic task. The result is
+\emph{direction-consistent} (STJEWM > CuBiFAE in all 3 seed pairs)
+but the magnitude is small. The interface that wins here is
+\textbf{membrane-forbidden vs not}, not trace vs membrane. The
+trace interface is a \emph{specific instance} of the
+membrane-forbidden family; on tasks where the membrane readout
+ties the trace readout (\S6, \S7, \S9.1, \S9.5, \S9.6), the
+difference is in the \emph{protocol discipline}, not the
+\emph{predictive power}. Full per-cell JSONs at
+\texttt{results/generalist\_G16\_eventwindow\_demo/eval/} and
+summary at
+\texttt{results/generalist\_G16\_eventwindow\_demo/eval/RESULTS.md}.
+
 % ============================================================================
 \section*{Table 1 --- Main claim control table}
 

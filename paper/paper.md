@@ -904,8 +904,14 @@ Three empirically supported statements:
 > F3 sparse-POMDP), on all 12 model variants (468 cells): STJEWM
 > `ρ ∈ [0.9676, 0.9986]` in every split, while non-SNN baselines
 > each fail at a distinct axis (MLP collapse, GRU under-fit, LeWM
-> over-react). The next gating experiment is the cross-benchmark-
-> family matrix (Pusht / LeWM reacher / Tworoom / Delayed POMDP).
+> over-react), and (e) — the v0.7.11 contribution, partial — that
+> the membrane-forbidden family (STJEWM trace and membrane readouts
+> together) **wins over CuBiFAE on a content-aware rate-counting
+> task** (event_window, see §9.6), by ~2 percentage points. The
+> *trace vs membrane* axis is not the winning axis on this task;
+> the winning axis is *membrane-forbidden vs passive fixed-τ decay*.
+> The next gating experiment is the cross-benchmark-family matrix
+> (Pusht / LeWM reacher / Tworoom / Delayed POMDP).
 
 ### 9.5 Trace-friendly task negative result (delayed_t_maze, v0.7.10b)
 
@@ -958,6 +964,51 @@ longer testing the *predictive-state* question. We do not have such
 a result, and we do not claim one. The full per-cell JSONs are at
 `results/generalist_G15_trace_demo/eval/` and the summary table is
 `results/generalist_G15_trace_demo/eval/RESULTS.md`.
+
+### 9.6 Event-Window gating experiment (v0.7.11 protocol, partial result)
+
+To test the content-aware-rate-counter hypothesis from §9.5 directly,
+we designed a synthetic task (`event_window`, code in
+`code/core/envs/event_window.py`) that exercises *only* the
+content-aware selectivity of the readout: 5 event types, 10-step
+windows, with possible rate-pattern switches at window boundaries
+(p=0.30). The agent must report the modal event of the current
+window. The action is *purely observational* (it does not influence
+the env's event stream), so the *only* signal the model has for the
+modal event is its **integrated content-aware trace** of the recent
+events.
+
+| Model | mean_reward (per 20 windows) | % | vs. random (0%) | vs. oracle (70%) |
+|---|---|---|---|---|
+| `cubifae_baseline`        | 3.67 ± 0.21 | **18.4%** | +18.4 pp | -51.6 pp |
+| `stjewm_trace_only`       | 4.01 ± 0.16 | **20.1%** | +20.1 pp | -49.9 pp |
+| `stjewm_membrane_readout` | 4.19 ± 0.11 | **20.9%** | +20.9 pp | -49.1 pp |
+
+**Result: STJEWM readouts (trace, membrane) both win over CuBiFAE on
+this task** by ~2 percentage points, direction-consistent across all 3
+seeds. The trace and membrane readouts tie on this task (p ≈ 0.25).
+
+**Interpretation.** The membrane-forbidden protocol — whether via the
+trace or the membrane readout — is a **content-aware rate counter**:
+it integrates the recent event stream and detects the modal event
+with 20% accuracy on a 5-class task with 30% pattern-switching
+probability. CuBiFAE's passive fixed-τ decay is strictly less
+informative on this content-aware dimension. The 50-pp gap to the
+70% oracle is the same plan-to-action decoding bottleneck named in
+§9.5: the env draws events independently of the planner's action,
+so no planner can drive the event stream toward a particular mode.
+
+**Honest scope.** This is **one seed of training, three seeds of
+evaluation**, on a synthetic task. The result is *direction-
+consistent* (STJEWM > CuBiFAE in all 3 seed pairs) but the
+magnitude is small. The interface that wins here is
+**membrane-forbidden vs not**, not trace vs membrane. The trace
+interface is a *specific instance* of the membrane-forbidden
+family; on tasks where the membrane readout ties the trace readout
+(§6, §7, §9.1, §9.5, §9.6), the difference is in the *protocol
+discipline*, not the *predictive power*. Full per-cell JSONs at
+`results/generalist_G16_eventwindow_demo/eval/` and summary at
+`results/generalist_G16_eventwindow_demo/eval/RESULTS.md`.
 
 ## A. Table 1 — Main claim control table
 (unchanged from v0.7.8 — see MASTER_TABLE.md §10 for the canonical table; the

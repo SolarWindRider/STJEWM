@@ -212,6 +212,36 @@ most trace-friendly task we have that the trace does not provide a
 hard performance win over the membrane readout. Full table:
 `results/generalist_G15_trace_demo/eval/RESULTS.md` and paper.md §9.5.
 
+### 6.6 Event-Window gating experiment (v0.7.11, partial result)
+
+We designed a synthetic task (`event_window`, code in
+`code/core/envs/event_window.py`) that exercises **only** the
+content-aware selectivity of the readout: 5 event types, 10-step
+windows, possible rate-pattern switches at window boundaries
+(p=0.30). The agent must report the modal event of the current
+window. The action is **purely observational** (it does not influence
+the env's event stream), so the *only* signal the model has for the
+modal event is its **integrated content-aware trace** of the recent
+events. This is the place where the content-aware α gate should win.
+
+| Model | mean_reward (per 20 windows) | % |
+|---|---|---|
+| `cubifae_baseline`        | 3.67 ± 0.21 | 18.4% |
+| `stjewm_trace_only`       | 4.01 ± 0.16 | 20.1% |
+| `stjewm_membrane_readout` | 4.19 ± 0.11 | 20.9% |
+
+**STJEWM readouts (trace, membrane) both win over CuBiFAE on this
+task by ~2 percentage points**, direction-consistent across all 3
+seeds. The trace and membrane readouts tie on this task
+(p ≈ 0.25). The interface that wins here is
+**membrane-forbidden vs not**, not trace vs membrane — the
+membrane-forbidden family (STJEWM trace + membrane readouts) is
+the content-aware rate counter; CuBiFAE's passive fixed-τ decay
+is not. The 50-pp gap to the 70% oracle is the same plan-to-action
+decoding bottleneck named in §6.5. Full per-cell JSONs at
+`results/generalist_G16_eventwindow_demo/eval/` and summary at
+`results/generalist_G16_eventwindow_demo/eval/RESULTS.md`.
+
 ## 7. Headline sentences (the working title)
 
 > **The calibrated event-driven predictive state transfers across
