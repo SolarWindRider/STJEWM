@@ -1,0 +1,26 @@
+[
+  {
+    "env_kind": "reacher_4d",
+    "path": "data/dm_control/3d_rollouts_250k/reacher_250k.npz",
+    "history_size": 1,
+    "goal_offset": 25,
+    "max_windows": 10000,
+    "env_id": "reacher"
+  },
+  {
+    "env_kind": "pusht",
+    "path": "/home/lx/LeWM/data/pusht_expert_train.h5",
+    "history_size": 1,
+    "goal_offset": 100,
+    "max_windows": 10000,
+    "env_id": "pusht"
+  },
+  {
+    "env_kind": "tworoom",
+    "path": "/home/lx/LeWM/data/tworoom_extract/tworoom.h5",
+    "history_size": 1,
+    "goal_offset": 100,
+    "max_windows": 10000,
+    "env_id": "tworoom"
+  }
+]

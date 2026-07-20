@@ -1028,9 +1028,16 @@ ran 3 splits (one family held out at a time, from the
 | F3 (Reacher held out) | reacher | cubifae_baseline        | 0.533 | 0.033 | 0.118 |
 | F3 (Reacher held out) | reacher | stjewm_trace_only       | 0.578 | 0.033 | 0.109 |
 | F3 (Reacher held out) | reacher | stjewm_membrane_readout | 0.556 | 0.033 | 0.114 |
+| F4 (DMC held out) | 13 DMC envs (avg) | cubifae_baseline        | 0.506 | — | 0.118 |
+| F4 (DMC held out) | 13 DMC envs (avg) |stjewm_trace_only       | 0.506 | — | 0.117 |
+| F4 (DMC held out) | 13 DMC envs (avg) |stjewm_membrane_readout | 0.518 | — | 0.118 |
 
 **Result: STJEWM does not have a universal hard performance win on
-cross-benchmark-family OOD.** The result is split: STJEWM (membrane
+cross-benchmark-family OOD.** All 4 splits (1/4 wins, 1/4 ties, 1/4
+loses, 1/4 all-tied). The membrane readout's 0.518 on F4 (DMC held
+out, trained on only 3 non-DMC envs) is +1.2 pp over cubifae but
+within noise. The cross-benchmark-family axis does not support a
+universal hard-performance win for STJEWM. The result is split: STJEWM (membrane
 readout) wins clearly on F1 / PushT (+24.4 pp on LeWM-SR); CuBiFAE
 wins on F2 / TwoRoom (+10 pp); all three tied within noise on F3
 / Reacher. STJEWM does not generalise uniformly across benchmark

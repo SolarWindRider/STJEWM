@@ -264,6 +264,8 @@ cross-benchmark-family OOD.** The result is split:
 - F1: STJEWM (membrane readout) wins clearly (+24.4 pp on LeWM-SR)
 - F2: CuBiFAE wins (+10 pp)
 - F3: all three tied within noise
+- F4: all three tied within noise (DMC held out — most extreme split;
+  avg LeWM-SR cubifae 0.506, trace 0.506, membrane 0.518)
 
 **Implication for the working title.** The working title
 "generalisable world models" is supported within DMC sub-families
