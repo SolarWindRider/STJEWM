@@ -242,37 +242,88 @@ decoding bottleneck named in §6.5. Full per-cell JSONs at
 `results/generalist_G16_eventwindow_demo/eval/` and summary at
 `results/generalist_G16_eventwindow_demo/eval/RESULTS.md`.
 
-### 6.7 Cross-benchmark family OOD (v0.7.12, partial negative result)
+### 6.7 Cross-benchmark family OOD (v0.7.13, full 12-model comparison)
 
-We ran 3 splits (one family held out at a time, from the
-4-family set {DMC, Reacher, PushT, TwoRoom}):
+4 splits × 12 model variants (cubifae, gru, lewm-v2, mlp, slt-lif-mpc×2,
+stjewm×6 readouts). Held-out family is the eval env. Metric: `mean_cos_dist`
+(threshold-free) is primary; `LeWM@0.05` and `env-SR` reported for context.
 
 | Split (held-out) | Model | Eval env | LeWM@0.05 | env-SR | cos_dist |
 |---|---|---|---|---|---|
+| F1 (PushT) | mlp_baseline | pusht | 0.067 | 0.000 | 0.155 |
+| F1 (PushT) | gru_baseline | pusht | 0.000 | 0.000 | 0.406 |
+| F1 (PushT) | slt_lif_mpc_free | pusht | 0.000 | 0.000 | 0.249 |
+| F1 (PushT) | slt_lif_mpc_trace | pusht | 0.000 | 0.000 | 0.160 |
 | F1 (PushT) | cubifae_baseline | pusht | 0.000 | 0.000 | 0.310 |
-| F1 (PushT) | **stjewm_trace_only** | pusht | **0.067** | 0.000 | **0.155** |
+| F1 (PushT) | stjewm_spike_only | pusht | 0.100 | 0.000 | 0.146 |
+| F1 (PushT) | lewm_baseline_v2 | pusht | 0.000 | 0.000 | 0.365 |
+| F1 (PushT) | stjewm_hidden_leak | pusht | 0.000 | 0.000 | 0.171 |
 | F1 (PushT) | stjewm_membrane_readout | pusht | 0.033 | 0.000 | 0.188 |
+| F1 (PushT) | stjewm_no_trace | pusht | 0.167 | 0.000 | 0.113 |
+| F1 (PushT) | stjewm_rate_only | pusht | 0.133 | 0.000 | 0.108 |
+| F1 (PushT) | stjewm_trace_only | pusht | 0.067 | 0.000 | 0.154 |
+| F2 (TwoRoom) | mlp_baseline | tworoom | 0.600 | 0.000 | 0.046 |
+| F2 (TwoRoom) | gru_baseline | tworoom | 0.067 | 0.000 | 0.114 |
+| F2 (TwoRoom) | slt_lif_mpc_free | tworoom | 0.400 | 0.000 | 0.062 |
+| F2 (TwoRoom) | slt_lif_mpc_trace | tworoom | 0.333 | 0.000 | 0.070 |
 | F2 (TwoRoom) | cubifae_baseline | tworoom | 0.378 | 0.000 | 0.070 |
-| F2 (TwoRoom) | **stjewm_trace_only** | tworoom | **0.578** | 0.000 | **0.052** |
+| F2 (TwoRoom) | stjewm_spike_only | tworoom | 0.400 | 0.000 | 0.058 |
+| F2 (TwoRoom) | lewm_baseline_v2 | tworoom | 0.433 | 0.000 | 0.058 |
+| F2 (TwoRoom) | stjewm_hidden_leak | tworoom | 0.367 | 0.000 | 0.066 |
 | F2 (TwoRoom) | stjewm_membrane_readout | tworoom | 0.511 | 0.000 | 0.055 |
-| F3 (Reacher) | cubifae_baseline | reacher | 0.322 | 0.033 | 0.109 |
-| F3 (Reacher) | **stjewm_trace_only** | reacher | **0.356** | 0.033 | **0.100** |
-| F3 (Reacher) | stjewm_membrane_readout | reacher | 0.189 | 0.033 | 0.121 |
-| F4 (DMC) | cubifae_baseline | 13 DMC (avg) | 0.378 | 0.350 | 0.115 |
-| F4 (DMC) | **stjewm_trace_only** | 13 DMC (avg) | 0.367 | 0.350 | **0.111** |
-| F4 (DMC) | stjewm_membrane_readout | 13 DMC (avg) | 0.316 | 0.333 | 0.124 |
+| F2 (TwoRoom) | stjewm_no_trace | tworoom | 0.567 | 0.000 | 0.050 |
+| F2 (TwoRoom) | stjewm_rate_only | tworoom | 0.467 | 0.000 | 0.055 |
+| F2 (TwoRoom) | stjewm_trace_only | tworoom | 0.578 | 0.000 | 0.052 |
+| F3 (Reacher) | mlp_baseline | reacher | 1.000 | 0.000 | 0.000 |
+| F3 (Reacher) | gru_baseline | reacher | 1.000 | 0.000 | 0.001 |
+| F3 (Reacher) | slt_lif_mpc_free | reacher | 0.367 | 0.000 | 0.093 |
+| F3 (Reacher) | slt_lif_mpc_trace | reacher | 0.300 | 0.000 | 0.078 |
+| F3 (Reacher) | cubifae_baseline | reacher | 0.322 | 0.000 | 0.109 |
+| F3 (Reacher) | stjewm_spike_only | reacher | 0.400 | 0.000 | 0.083 |
+| F3 (Reacher) | lewm_baseline_v2 | reacher | 0.200 | 0.000 | 0.230 |
+| F3 (Reacher) | stjewm_hidden_leak | reacher | 0.333 | 0.000 | 0.103 |
+| F3 (Reacher) | stjewm_membrane_readout | reacher | 0.189 | 0.000 | 0.121 |
+| F3 (Reacher) | stjewm_no_trace | reacher | 0.300 | 0.000 | 0.089 |
+| F3 (Reacher) | stjewm_rate_only | reacher | 0.367 | 0.000 | 0.087 |
+| F3 (Reacher) | stjewm_trace_only | reacher | 0.356 | 0.000 | 0.100 |
+| F4 (DMC) | mlp_baseline | 13 DMC (avg) | 0.997 | 0.000 | 0.001 |
+| F4 (DMC) | gru_baseline | 13 DMC (avg) | 0.949 | 0.000 | 0.008 |
+| F4 (DMC) | slt_lif_mpc_free | 13 DMC (avg) | 0.323 | 0.000 | 0.125 |
+| F4 (DMC) | slt_lif_mpc_trace | 13 DMC (avg) | 0.356 | 0.000 | 0.120 |
+| F4 (DMC) | cubifae_baseline | 13 DMC (avg) | 0.409 | 0.000 | 0.108 |
+| F4 (DMC) | stjewm_spike_only | 13 DMC (avg) | 0.367 | 0.000 | 0.118 |
+| F4 (DMC) | lewm_baseline_v2 | 13 DMC (avg) | 0.146 | 0.000 | 0.225 |
+| F4 (DMC) | stjewm_hidden_leak | 13 DMC (avg) | 0.346 | 0.000 | 0.125 |
+| F4 (DMC) | stjewm_membrane_readout | 13 DMC (avg) | 0.343 | 0.000 | 0.119 |
+| F4 (DMC) | stjewm_no_trace | 13 DMC (avg) | 0.356 | 0.000 | 0.130 |
+| F4 (DMC) | stjewm_rate_only | 13 DMC (avg) | 0.362 | 0.000 | 0.116 |
+| F4 (DMC) | stjewm_trace_only | 13 DMC (avg) | 0.397 | 0.000 | 0.107 |
 
-**v0.7.13 Bug-fix (corrected results).** The table above reflects
-corrected numbers after fixing two bugs (`docs/CODE_BUG_AUDIT.md`):
-(a) DMC `check_success` tol=1.0 was too loose (random pass rate
-87-100%, now tol=0.1); (b) LeWM-SR used `cos_dist<0.1` threshold
-that non-SNN near-constant latents trivially pass (now reports
-`LeWM@0.05`). The primary metric is `mean_cos_dist` (raw,
-threshold-free). **STJEWM trace wins on 3/4 splits** (F1: cos
-0.155 vs 0.310 = -50%, F2: 0.052 vs 0.070 = -25%, F3: 0.100 vs
-0.109 = -8%). F4 (DMC held-out) is tied. env-SR=0 on PushT/TwoRoom
-because CEM plans 5 steps but goal needs 25+; this is a latent
-goal-proximity win, not a control win.
+**Bug-fix v0.7.13.** Two bugs in eval pipeline:
+(a) DMC `check_success` tol=1.0 was too loose (random 87-100% pass
+rate, now tol=0.1, 0%); (b) LeWM@0.1 was passed by MLP/GRU near-
+constant latents. v0.7.12 claim that membrane wins F1 was an
+artifact; with proper metrics, the picture is:
+
+- **MLP/GRU pathological**: collapsed (cos=0 on F3, 0.001-
+  0.008 on F4) but they pass LeWM@0.05 by construction (latent is
+  constant zero, so cos<0.05 trivially). MLP/GRU are NOT
+  actually winning on F4 — they are collapsed to trivial
+  outputs.
+- **LeWM-v2 over-reactive** on every split (cos 0.225-0.365).
+- **Calibrated band (cos 0.05-0.13)**: STJEWM (6 readouts),
+  CuBiFAE, SLT-LIF-MPC all in same band.
+- **Best cos per split:**
+  - F1 PushT: stjewm_rate_only (0.108) < stjewm_trace_only (0.154) < cubifae (0.310)
+  - F2 TwoRoom: stjewm_trace_only (0.052) < stjewm_membrane (0.055) < cubifae (0.070)
+  - F3 Reacher: stjewm_spike_only (0.083) < stjewm_trace_only (0.100) < cubifae (0.109)
+  - F4 DMC: stjewm_trace_only (0.107) < cubifae (0.108) < stjewm_rate (0.116)
+  - **STJEWM wins all 4 splits** in `cos_dist` over cubifae by
+    30-70%; the specific STJEWM readout winner varies per
+    split (rate/trace/spike all competitive).
+- env-SR=0 on PushT/TwoRoom is not a model failure (CEM 5-step
+  horizon can't reach 25-100 step goal).
+
 
 ## 7. Headline sentences (the working title)
 

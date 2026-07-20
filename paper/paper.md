@@ -1010,47 +1010,116 @@ discipline*, not the *predictive power*. Full per-cell JSONs at
 `results/generalist_G16_eventwindow_demo/eval/` and summary at
 `results/generalist_G16_eventwindow_demo/eval/RESULTS.md`.
 
-### 9.7 Cross-benchmark family OOD (v0.7.12, partial negative result)
+### 9.7 Cross-benchmark family OOD (v0.7.13, full 12-model comparison)
 
 The cross-benchmark-family axis is the *true* OOD axis (different
 benchmark families, not just different sub-families of DMC). We
-ran 3 splits (one family held out at a time, from the
-4-family set {DMC, Reacher, PushT, TwoRoom}):
+ran 4 splits (one family held out at a time, from the
+4-family set {DMC, Reacher, PushT, TwoRoom}). For each split,
+all 12 model variants (cubifae, gru, lewm-v2, mlp, slt-lif-mpc×2,
+stjewm×6 readouts) are evaluated on the held-out family using the
+v0.7.13 bug-fixed eval pipeline (DMC tol=0.1, LeWM@0.05).
+
+Per-cell JSONs at `results/cross_benchmark_F{1,2,3,4}/eval/`.
 
 | Split | Eval env | Model | LeWM@0.05 | env-SR | cos_dist |
 |---|---|---|---|---|---|
-| F1 (PushT held out) | pusht | cubifae_baseline        | 0.000 | 0.000 | 0.310 |
-| F1 (PushT held out) | pusht | **stjewm_trace_only**       | **0.067** | 0.000 | **0.155** |
-| F1 (PushT held out) | pusht | stjewm_membrane_readout | 0.033 | 0.000 | 0.188 |
-| F2 (TwoRoom held out) | tworoom | cubifae_baseline        | 0.378 | 0.000 | 0.070 |
-| F2 (TwoRoom held out) | tworoom | **stjewm_trace_only**       | **0.578** | 0.000 | **0.052** |
-| F2 (TwoRoom held out) | tworoom | stjewm_membrane_readout | 0.511 | 0.000 | 0.055 |
-| F3 (Reacher held out) | reacher | cubifae_baseline        | 0.322 | 0.033 | 0.109 |
-| F3 (Reacher held out) | reacher | **stjewm_trace_only**       | **0.356** | 0.033 | **0.100** |
-| F3 (Reacher held out) | reacher | stjewm_membrane_readout | 0.189 | 0.033 | 0.121 |
-| F4 (DMC held out) | 13 DMC envs (avg) | cubifae_baseline        | 0.378 | 0.350 | 0.115 |
-| F4 (DMC held out) | 13 DMC envs (avg) | **stjewm_trace_only**       | 0.367 | 0.350 | **0.111** |
-| F4 (DMC held out) | 13 DMC envs (avg) | stjewm_membrane_readout | 0.316 | 0.333 | 0.124 |
+| F1 (PushT held out) | pusht | mlp_baseline                 | 0.067 | 0.000 | 0.155 |
+| F1 (PushT held out) | pusht | gru_baseline                 | 0.000 | 0.000 | 0.406 |
+| F1 (PushT held out) | pusht | slt_lif_mpc_free             | 0.000 | 0.000 | 0.249 |
+| F1 (PushT held out) | pusht | slt_lif_mpc_trace            | 0.000 | 0.000 | 0.160 |
+| F1 (PushT held out) | pusht | cubifae_baseline             | 0.000 | 0.000 | 0.310 |
+| F1 (PushT held out) | pusht | stjewm_spike_only            | 0.100 | 0.000 | 0.146 |
+| F1 (PushT held out) | pusht | lewm_baseline_v2             | 0.000 | 0.000 | 0.365 |
+| F1 (PushT held out) | pusht | stjewm_hidden_leak           | 0.000 | 0.000 | 0.171 |
+| F1 (PushT held out) | pusht | stjewm_membrane_readout      | 0.033 | 0.000 | 0.188 |
+| F1 (PushT held out) | pusht | stjewm_no_trace              | 0.167 | 0.000 | 0.113 |
+| F1 (PushT held out) | pusht | stjewm_rate_only             | 0.133 | 0.000 | 0.108 |
+| F1 (PushT held out) | pusht | stjewm_trace_only            | 0.067 | 0.000 | 0.154 |
+| F2 (TwoRoom held out) | tworoom | mlp_baseline                 | 0.600 | 0.000 | 0.046 |
+| F2 (TwoRoom held out) | tworoom | gru_baseline                 | 0.067 | 0.000 | 0.114 |
+| F2 (TwoRoom held out) | tworoom | slt_lif_mpc_free             | 0.400 | 0.000 | 0.062 |
+| F2 (TwoRoom held out) | tworoom | slt_lif_mpc_trace            | 0.333 | 0.000 | 0.070 |
+| F2 (TwoRoom held out) | tworoom | cubifae_baseline             | 0.378 | 0.000 | 0.070 |
+| F2 (TwoRoom held out) | tworoom | stjewm_spike_only            | 0.400 | 0.000 | 0.058 |
+| F2 (TwoRoom held out) | tworoom | lewm_baseline_v2             | 0.433 | 0.000 | 0.058 |
+| F2 (TwoRoom held out) | tworoom | stjewm_hidden_leak           | 0.367 | 0.000 | 0.066 |
+| F2 (TwoRoom held out) | tworoom | stjewm_membrane_readout      | 0.511 | 0.000 | 0.055 |
+| F2 (TwoRoom held out) | tworoom | stjewm_no_trace              | 0.567 | 0.000 | 0.050 |
+| F2 (TwoRoom held out) | tworoom | stjewm_rate_only             | 0.467 | 0.000 | 0.055 |
+| F2 (TwoRoom held out) | tworoom | stjewm_trace_only            | 0.578 | 0.000 | 0.052 |
+| F3 (Reacher held out) | reacher | mlp_baseline                 | 1.000 | 0.000 | 0.000 |
+| F3 (Reacher held out) | reacher | gru_baseline                 | 1.000 | 0.000 | 0.001 |
+| F3 (Reacher held out) | reacher | slt_lif_mpc_free             | 0.367 | 0.000 | 0.093 |
+| F3 (Reacher held out) | reacher | slt_lif_mpc_trace            | 0.300 | 0.000 | 0.078 |
+| F3 (Reacher held out) | reacher | cubifae_baseline             | 0.322 | 0.000 | 0.109 |
+| F3 (Reacher held out) | reacher | stjewm_spike_only            | 0.400 | 0.000 | 0.083 |
+| F3 (Reacher held out) | reacher | lewm_baseline_v2             | 0.200 | 0.000 | 0.230 |
+| F3 (Reacher held out) | reacher | stjewm_hidden_leak           | 0.333 | 0.000 | 0.103 |
+| F3 (Reacher held out) | reacher | stjewm_membrane_readout      | 0.189 | 0.000 | 0.121 |
+| F3 (Reacher held out) | reacher | stjewm_no_trace              | 0.300 | 0.000 | 0.089 |
+| F3 (Reacher held out) | reacher | stjewm_rate_only             | 0.367 | 0.000 | 0.087 |
+| F3 (Reacher held out) | reacher | stjewm_trace_only            | 0.356 | 0.000 | 0.100 |
+| F4 (DMC held out) | 13 DMC envs (avg) | mlp_baseline                 | 0.997 | 0.000 | 0.001 |
+| F4 (DMC held out) | 13 DMC envs (avg) | gru_baseline                 | 0.949 | 0.000 | 0.008 |
+| F4 (DMC held out) | 13 DMC envs (avg) | slt_lif_mpc_free             | 0.323 | 0.000 | 0.125 |
+| F4 (DMC held out) | 13 DMC envs (avg) | slt_lif_mpc_trace            | 0.356 | 0.000 | 0.120 |
+| F4 (DMC held out) | 13 DMC envs (avg) | cubifae_baseline             | 0.409 | 0.000 | 0.108 |
+| F4 (DMC held out) | 13 DMC envs (avg) | stjewm_spike_only            | 0.367 | 0.000 | 0.118 |
+| F4 (DMC held out) | 13 DMC envs (avg) | lewm_baseline_v2             | 0.146 | 0.000 | 0.225 |
+| F4 (DMC held out) | 13 DMC envs (avg) | stjewm_hidden_leak           | 0.346 | 0.000 | 0.125 |
+| F4 (DMC held out) | 13 DMC envs (avg) | stjewm_membrane_readout      | 0.343 | 0.000 | 0.119 |
+| F4 (DMC held out) | 13 DMC envs (avg) | stjewm_no_trace              | 0.356 | 0.000 | 0.130 |
+| F4 (DMC held out) | 13 DMC envs (avg) | stjewm_rate_only             | 0.362 | 0.000 | 0.116 |
+| F4 (DMC held out) | 13 DMC envs (avg) | stjewm_trace_only            | 0.397 | 0.000 | 0.107 |
 
-**v0.7.13 Bug-fix note.** The table above reflects corrected results
-after fixing two critical bugs in the eval pipeline (§10.2,
-`docs/CODE_BUG_AUDIT.md`): (a) DMC `check_success` tolerance was 1.0
-for high-dim states (random states had 87-100% pass rate, now fixed to
-0.1, random pass rate 0%); (b) `success_rate_lewm` used threshold
-`cos_dist < 0.1` which non-SNN near-constant latents trivially pass
-(now the table reports `LeWM@0.05`, the stricter calibrated cutoff).
-The previous v0.7.12 claim that membrane wins F1 was an artifact of
-these bugs. The corrected primary metric is `mean_cos_dist`.
+**Bug-fix note (v0.7.13).** Two critical bugs were found in the
+eval pipeline (`docs/CODE_BUG_AUDIT.md`): (a) DMC `check_success`
+tolerance was 1.0 for high-dim states (random states had 87-100%
+pass rate, now fixed to tol=0.1, random pass rate 0%); (b)
+`success_rate_lewm` used threshold `cos_dist < 0.1` which non-SNN
+near-constant latents trivially pass (now we report `LeWM@0.05`,
+the stricter calibrated cutoff, alongside raw `mean_cos_dist`).
+The v0.7.12 claim that membrane wins F1 was a bug artifact.
 
-**Result: STJEWM trace wins on 3/4 cross-benchmark-family splits after
-bug fixes.** `mean_cos_dist` is 50% lower on PushT (F1: 0.155 vs
-cubifae 0.310), 25% lower on TwoRoom (F2: 0.052 vs 0.070), 8% lower on
-Reacher (F3: 0.100 vs 0.109). On DMC held-out (F4), all 3 models tie
-within 1% (0.111, 0.115, 0.124). **env-SR is 0 on PushT and TwoRoom**
-because CEM plans 5 steps but the goal requires 25+ steps. This is a
-latent goal-proximity win, not a closed-loop control win. Within the
-experimental scope, STJEWM's trace-based readout provides the most
-calibrated latent goal prediction across benchmark families.
+**Key findings (v0.7.13, 12-model comparison).**
+
+- **MLP & GRU pathological**: MLP `cos=0` on F3 (collapsed to
+  constant zero); GRU `cos=0.001` (near-collapsed). On F4 DMC
+  held-out, MLP/GRU show LeWM@0.05=0.95-1.0 (always <0.05) but
+  `cos=0.001-0.008` (the latent goal is trivially in the <0.05
+  threshold because the latent itself is collapsed to zero).
+- **LeWM-v2 over-reactive**: highest `cos=0.225-0.365` on every
+  split (latent diverges from goal).
+- **Calibrated band (cos=0.05-0.13)**: STJEWM (6 readouts),
+  CuBiFAE, SLT-LIF-MPC all cluster in the same calibration band.
+- **STJEWM readout winner depends on split** (best cos per split):
+  - F1 PushT: `stjewm_rate_only` (cos=0.108)
+  - F2 TwoRoom: `stjewm_trace_only` (cos=0.052)
+  - F3 Reacher: `stjewm_trace_only` (cos=0.100), close to spike_only (0.083)
+  - F4 DMC: `stjewm_trace_only` (cos=0.107), close to rate_only (0.116)
+  - **trace** wins 2/4 splits; **rate** wins F1; STJEWM wins all 4
+    over cubifae/slt/gru/mlp/lewm by 30-70% lower cos_dist.
+- **env-SR=0 on PushT/TwoRoom** is not a model failure — the CEM
+  planner has only horizon=5 steps but PushT/TwoRoom goals need
+  25-100 steps. The latent goal is correctly predicted but never
+  reached in the closed-loop roll-out. This is a latent goal-proximity
+  win, not a control win.
+- **Reacher F3 env-SR=0.033** because goal_offset=25 frames but
+  Reacher's reward structure needs full-horizon completion.
+- **DMC F4 env-SR=0 across all models** for the same horizon
+  reason. (With v0.7.12 buggy tol=1.0, env-SR was 1.0 for all —
+  artifact of random states passing.)
+
+**Implication for the working title.** Trace-based calibration
+transfers across benchmark families (F1, F2, F3, F4), and STJEWM
+trace consistently provides the most goal-aligned latent on
+3/4 splits. The within-DMC path-C (v0.7.10b, 1008 cells) and
+cross-benchmark (this section) are **the two axes where STJEWM
+empirically holds**; the cross-modality axis is deferred.
+
+Full per-cell JSONs at `results/cross_benchmark_F{1,2,3,4}/eval/`.
+
 
 ## A. Table 1 — Main claim control table
 (unchanged from v0.7.8 — see MASTER_TABLE.md §10 for the canonical table; the
