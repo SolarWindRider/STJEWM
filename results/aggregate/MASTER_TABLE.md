@@ -1,11 +1,22 @@
-# Master Table — v0.7.5 (corrected metrics)
+# Master Table — v0.7.5 (specialist) + v0.7.13 (cross-bench)
 
 **One table to rule them all.** Every method × every dataset × every metric.
 This is the paper's Figure 1/Table 1/Table 2 all rolled into one view.
 
-§1–§8: v0.7.2 specialist data (regenerated 2026-07-03).
+§1–§8: v0.7.2 specialist data (regenerated 2026-07-03, *pre-bug-fix*).
 §9: v0.7.5 generalist data (rebuilt 2026-07-06 with corrected metrics).
 Sources: `results/<env>/<model>/eval.json` (per-cell) + `aggregate/event_probes/` + `aggregate/eval_v1_*/` + `aggregate/generalist_master_table.json` (v0.7.5).
+
+> **v0.7.13 update (2026-07-21):** the specialist env-SR numbers in §1–§4
+> are from the OLD eval pipeline (DMC tol=1.0, LeWM@0.1 threshold) and
+> should be re-evaluated with the v0.7.13 fix for full consistency. In
+> particular, the DMC locomotion envs (cartpole_2d=60%, finger=18%, etc.)
+> are likely inflated by the v0.7.10b bug. See `docs/CODE_BUG_AUDIT.md`
+> and `docs/v0_7_13_RESULTS.md` for the bug analysis. The cross-bench
+> table (§9.7 in paper.md) has been refreshed for v0.7.13 (12 models ×
+> 4 splits = 192 cells). **For authoritative v0.7.13 numbers, see
+> `docs/v0_7_13_RESULTS.md` and `paper/paper.md` §9.7.**
+
 
 ## 0. N/A legend
 

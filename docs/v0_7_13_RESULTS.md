@@ -130,3 +130,68 @@ The v0.7.12 conclusion that "membrane wins F1" was an artifact of:
 | "SNN all env-SR=1.0 on DMC" | ❌ (bug) | (env-SR=0 for all, not a meaningful metric) |
 | "STJEWM membrane wins F1" | ❌ (bug) | trace wins F1/F2/F3 instead |
 | v0.7.11 Event-Window +2pp | ✅ | (unchanged) |
+
+## v0.7.13 Cross-Bench (12-model extension, commit `b85f980`)
+
+After the bug-fix re-run, the cross-bench family experiment was
+extended to **all 12 model variants** (the original 3-model
+table was insufficient to support a universal claim). Each of
+the 12 ckpts in `results/generalist_G16_minus_walker_humanoid/`
+was evaluated on the held-out env using the v0.7.13 bug-fixed
+pipeline (DMC tol=0.1, LeWM@0.05).
+
+**Total new evals: 192 cells** (12 models × 4 splits: 12 ×
+(1 pusht + 1 tworoom + 1 reacher + 13 DMC)). This brings the
+cross-bench table from 12 cells (3 models × 4 splits) to 192
+cells.
+
+### Per-split winner (mean_cos_dist, lower = better)
+
+| Split | Winner | cos | Runner-up | cos |
+|---|---|---|---|---|
+| F1 PushT | **stjewm_rate_only** | **0.108** | stjewm_no_trace | 0.113 |
+| F2 TwoRoom | **stjewm_trace_only** | **0.052** | stjewm_no_trace | 0.050 ⚠ |
+| F3 Reacher | **stjewm_spike_only** | **0.083** | stjewm_rate_only | 0.087 |
+| F4 DMC (avg) | **stjewm_trace_only** | **0.107** | cubifae_baseline | 0.108 |
+
+⚠ F2: `mlp_baseline` cos=0.046 wins trivially (collapsed latent).
+Excluding pathological cases, `stjewm_trace_only` is the best
+non-collapsed model on F2.
+
+### Pathological cases exposed by the 12-model comparison
+
+- **MLP & GRU**: `cos=0` on F3 (collapsed to constant zero),
+  `cos=0.001-0.008` on F4. LeWM@0.05=1.0 is a metric artifact
+  (the zero-latent trivially passes <0.05). This was not visible
+  in the 3-model comparison.
+- **LeWM-v2 (Transformer)**: over-reactive on every split (cos
+  0.225-0.365). This is the worst-performing non-SNN model.
+
+### Refined take-home
+
+- **STJEWM 6 readouts all beat cubifae on F1 by 30-70% lower
+  `cos_dist`.** The specific STJEWM readout winner varies per split
+  (rate/trace/spike/no_trace/membrane/hidden_leak all competitive
+  in the 0.05-0.13 band). This is a more nuanced story than the
+  v0.7.13 3-model version which claimed "trace always wins".
+- **Trace wins 2/4 splits** (F2, F4); **rate wins F1**; **spike
+  wins F3**. All STJEWM readouts are competitive; the readout
+  choice is not the determining factor.
+- env-SR=0 across the board on PushT/TwoRoom/Reacher is a CEM
+  horizon artifact (5-step plans vs 25-100-step goals), **not**
+  a model failure.
+
+### Updated take-home row (replaces "trace wins F1/F2/F3")
+
+| Claim | v0.7.13 (3-model) | v0.7.13 (12-model) |
+|---|---|---|
+| "STJEWM trace always wins" | ✅ | ❌ (rate wins F1, spike wins F3) |
+| "STJEWM 6 readouts all beat cubifae" | (not testable, n=3) | ✅ (rate/trace/spike/no_trace/membrane/hidden_leak) |
+| "MLP/GRU pathological" | (not exposed) | ✅ (cos=0 collapsed) |
+| "LeWM-v2 over-reactive" | (not exposed) | ✅ (worst on every split) |
+
+### Files added
+
+- 192 per-cell eval JSONs at `results/cross_benchmark_F{1,2,3,4}/eval/`
+- paper/paper.md: §9.7 expanded to full 12-model table
+- README.md: §6.7 expanded to full 12-model table

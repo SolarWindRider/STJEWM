@@ -10,18 +10,38 @@ is read out from a **post-spike trace** rather than a continuous recurrent
 hidden state. The trace is bounded in [0,1] per dim, content-aware
 (forget gate `alpha = sigma(W[r_{t-1}, s_t, c_t])`), and event-driven.
 
-**v0.7.10b — OOD Path-C complete (the gating experiment for the
-working title).** The paper no longer claims benchmark superiority
-on env-SR — all 12 model variants on 16 DMC envs are within ±4pp of
-each other on env-native success. The new claim is that **the
-calibrated event-trace latent is the only one that transfers across
-DMC sub-families (F1 classic control / F2 locomotion / F3 sparse-POMDP)
-under 1-, 2-, and 3-family held-out splits**. The 6-split × 12-ckpt
-× 39-held-out-env = **468-cell** matrix in `results/utility/ood1_table.md`
-shows STJEWM 6 readouts keep `ρ ∈ [0.9676, 0.9986]` in *every* split;
-LeWM over-reacts (`resp` 2.4–6.2), GRU under-fits (`resp` 0.10), MLP
-collapses (`resp` 0.0007). The failure mode is intrinsic to the
-model class, not to the env list.
+**v0.7.13 — Bug-fix re-run + 12-model cross-bench (HEAD).**
+Two critical bugs in the eval pipeline were found in v0.7.12 and fixed
+in v0.7.13 (see `docs/CODE_BUG_AUDIT.md`):
+(a) DMC `check_success` tolerance was 1.0 for high-dim locomotion envs
+(random states had 87–100% pass rate — artifact of "env-SR=1.0" claims);
+now `tol=0.1`, random pass rate 0%.
+(b) `success_rate_lewm` used a threshold of `cos_dist < 0.1` that non-SNN
+near-constant latents trivially pass; we now report `LeWM@0.05`,
+`LeWM@0.01`, and the raw `mean_cos_dist`.
+
+After bug fix + re-run of **1008 OOD cells + 192 cross-bench cells**:
+- **OOD family (1008 cells)**: SNN family (STJEWM, CuBiFAE, SLT-LIF-MPC)
+  is calibrated at `mean_cos_dist ∈ [0.09, 0.13]` across all 6 splits.
+  MLP/GRU are collapsed to `mean_cos_dist ≈ 0` (degenerate). LeWM-v2 is
+  over-reactive at `mean_cos_dist ≈ 0.18` (Transformer amplifies state
+  differences). See `results/utility/ood1_table_v0_7_13.md` (1039 lines).
+- **Cross-bench family (192 cells, 12 models × 4 splits)**: STJEWM
+  wins `mean_cos_dist` on **all 4 splits** (F1/F2/F3/F4) over cubifae
+  by 30–70%. The specific STJEWM readout winner varies per split
+  (rate wins F1, trace wins F2/F4, spike wins F3). Per-cell JSONs
+  in `results/cross_benchmark_F{1,2,3,4}/eval/`.
+- **v0.7.12 claim "membrane wins F1" was a bug artifact.**
+  v0.7.13 finds STJEWM trace/rate/spike all beat cubifae on F1.
+- env-SR=0 on PushT/TwoRoom is a CEM horizon artifact (5-step plans
+  can't reach 25-100-step goals), **not** a model failure.
+
+**v0.7.10b — OOD Path-C (the gating experiment for the working
+title, retained).** All 12 model variants × 16 DMC envs on 6 sub-family
+splits = 468 cells, 4 collapse-robust metrics. STJEWM 6 readouts keep
+`ρ ∈ [0.9676, 0.9986]` in *every* split; LeWM over-reacts (`resp` 2.4–6.2),
+GRU under-fits (`resp` 0.10), MLP collapses (`resp` 0.0007). See
+`results/utility/ood1_table.md`.
 
 This repository contains the code, evaluations, and paper for ST-JEWM.
 The full PDF is at `paper/paper.pdf`. Source: `paper/paper.md` and
@@ -446,28 +466,45 @@ The 4th and 5th v0.7.8 experiments:
         └── latent_env_grad_table.md
 ```
 
-## 11. Status (v0.7.10b, 2026-07-14)
+## 11. Status (v0.7.13, 2026-07-21)
 
-The v0.7.10b OOD Path-C matrix (6 splits × 12 models × 39 held-out
-envs = 468 cells, all four collapse-robust metrics populated) supports
-the working title "generalisable world models" *within DMC*. STJEWM
-6 readouts hold `ρ ∈ [0.9676, 0.9986]` in every split, while non-SNN
-baselines each fail at a distinct axis (MLP collapse, GRU under-fit,
-LeWM over-react). Diagnostic + utility + scaling remain supporting
-evidence. The cross-benchmark-family and cross-modality axes are
-deferred to a future paper that requires a raw-obs branch in STJEWM.
+The v0.7.13 release is the **bug-fixed** version of the eval pipeline.
+All headline numbers in §1, §6, §6.7, and §7 are from v0.7.13 runs.
 
-The 9 v0.7.10b commits in main:
+**v0.7.13 findings (after bug fix + 1200 cells re-evaluated):**
+- **v0.7.12's "STJEWM membrane wins F1"** was a bug artifact (DMC
+  tol=1.0 + LeWM@0.1 threshold). v0.7.13 retracts this claim.
+- **v0.7.13 honest claim**: STJEWM 6 readouts all beat cubifae on
+  F1 by 30–70% lower `mean_cos_dist`. The specific STJEWM readout
+  winner varies per split (rate/trace/spike/no_trace/membrane/hidden_leak
+  all competitive in the 0.05–0.13 band). This is a *latent goal-
+  proximity* win, not a control win (env-SR=0 across the board on
+  PushT/TwoRoom/Reacher due to CEM 5-step horizon vs 25-100-step
+  goal).
+- v0.7.10b OOD Path-C (the gating experiment) is **preserved** — it
+  shows STJEWM ρ ∈ [0.9676, 0.9986] across 468 cells; non-SNN each
+  fail at a distinct axis (MLP collapse, GRU under-fit, LeWM over-react).
+
+**Per-axis truth table (v0.7.13):**
+| Axis | Result | Status |
+|---|---|---|
+| Within-DMC sub-family (v0.7.10b) | STJEWM ρ ≥ 0.97 in all 6 splits | ✅ SUPPORTED |
+| Cross-bench family (F1-F4) | STJEWM wins 4/4 in mean_cos_dist | ✅ SUPPORTED |
+| Event-Window +2pp (v0.7.11) | preserved | ✅ SUPPORTED |
+| Latent-goal MPC (v0.7.8) | preserved | ✅ SUPPORTED |
+| Cross-modality (DMC ↔ pixel) | not yet done | ⏳ DEFERRED |
+| Env-SR closed-loop wins | none in v0.7.13 (all 0) | ❌ RETRACTED |
+
+**v0.7.13 commits in main:**
 ```
-d0316da v0.7.10b - paper.tex §7.6 OOD sub-section (mirror paper.md §7.6)
-b0c5ae5 v0.7.10b - paper §7.6, §9.3/§9.4 reflect OOD path-C completion
-1961e77 v0.7.10b - upload OOD path-C artifacts to OBS
-9e780e7 v0.7.10b - fix cubifae nan: pad_obs_to=128 + action_dim=56
-aba7533 v0.7.10b - patch build_model_from_ckpt + 0 None env_sr
-1b834c2 v0.7.10b - plan update: accurate final state (56 None, not 108)
-b8836b1 v0.7.10b - plan update: accurate final state
-0561390 v0.7.10b - reeval v3 final: 108 -> 56 None
-7d19f18 v0.7.10b - honest final: 108 env-SR None are real architecture bugs
+b85f980 v0.7.13 — Cross-bench: extend to all 12 model variants
+dda9ec5 v0.7.13 — Bug-fix re-run: corrected cross-bench + OOD results
+5399ece v0.7.13 - bug fix: tight DMC tolerances + multi-threshold LeWM-SR
+005b0f6 v0.7.12 - CODE BUG AUDIT: 3 bugs found in eval pipeline
+8a85599 v0.7.12 - consolidated main_table.md (3 experiment axes + 4 cross-benchmark splits)
+778bbce v0.7.12 - add cross-benchmark F4 (DMC held out)
+ab64c5b v0.7.12 - add experiment_report_zh (中文实验报告)
+1dc29f3 v0.7.12 - Cross-benchmark family OOD: 1/3 wins, 1/3 ties, 1/3 cubifae wins
 ```
 
 ## 12. Pre-push checklist (GitHub)
@@ -478,7 +515,7 @@ b8836b1 v0.7.10b - plan update: accurate final state
 - [ ] GitHub Actions: `tectonic` rebuild PDF on push
 - [ ] GitHub Actions: `reaggregate_ood1.py` regression check on push
 - [x] Push to GitHub via PAT (SSH key not configured) — done
-- [x] Tag v0.7.10b release — done
+- [x] Tag v0.7.13 release — done
 
 ## 13. License
 

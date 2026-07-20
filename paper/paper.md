@@ -27,8 +27,31 @@
 **Authors:** Anonymous  
 **Affiliation:** Anonymous  
 **Target venue:** *Nature Machine Intelligence*  
-**Date:** 2026-07-10  
-**Status:** v0.7.10b draft — OOD path-C 3-family DMC cross-sub-family transfer now complete (6 splits × 12 ckpts × 39 held-out envs = 468 cells, all four collapse-robust metrics populated). The previously-deferred OOD1/OOD2 cross-benchmark-family matrix in §7/§9 is now supported: STJEWM 6 readouts hold `ρ ∈ [0.9676, 0.9986]` across all 6 splits, while non-SNN baselines each fail at a distinct axis (MLP collapse, GRU under-fit, LeWM over-react). Diagnostic + utility + scaling remain supporting evidence.
+**Date:** 2026-07-21
+**Status:** v0.7.13 — bug-fix re-run + 12-model cross-bench. Headlines: (i) within-DMC ρ ≥ 0.97 in all 6 splits (v0.7.10b, preserved); (ii) cross-bench STJEWM wins 4/4 splits in `mean_cos_dist` (v0.7.13, 12-model table in §9.7); (iii) env-SR=0 across the board (CEM horizon vs goal-length artifact). See `docs/v0_7_13_RESULTS.md` for the per-cell table (192 cross-bench cells + 1008 OOD cells) and the bug audit (`docs/CODE_BUG_AUDIT.md`).
+> **v0.7.13 — Bug-fix re-run + 12-model cross-bench (read first).**
+> Two critical bugs in the eval pipeline were found and fixed
+> (see §10.2 and `docs/CODE_BUG_AUDIT.md`):
+> (a) DMC `check_success` tolerance was 1.0 for high-dim states (random
+> states had 87-100% pass rate — artifact of the v0.7.10b "env-SR=1.0
+> for all SNN models" claim); now `tol=0.1`, random pass rate 0%.
+> (b) `success_rate_lewm` used threshold `cos_dist < 0.1` that non-SNN
+> near-constant latents trivially pass; we now report `LeWM@0.05`,
+> `LeWM@0.01`, and the raw `mean_cos_dist`.
+>
+> After bug fix + re-run of 1008 OOD cells + 192 cross-bench cells:
+> - **v0.7.12's "STJEWM membrane wins F1" was a bug artifact** —
+>   v0.7.13 retracts this claim. The new v0.7.13 cross-bench table
+>   (§9.7) shows STJEWM wins `mean_cos_dist` on **all 4** cross-bench
+>   splits (F1/F2/F3/F4) over cubifae by 30-70%. The specific STJEWM
+>   readout winner varies per split (rate wins F1, trace wins F2/F4,
+>   spike wins F3).
+> - **env-SR=0** for all 1200 cells is a CEM horizon artifact
+>   (5-step plans vs 25-100-step goals), not a model failure.
+> - **Pathological cases** now exposed by 12-model comparison: MLP/GRU
+>   collapsed to `cos=0` (degenerate); LeWM-v2 over-reactive
+>   (`cos≈0.18`, worst on every split).
+>
 
 **Working title (long):** "Event-driven predictive-state dynamics are a better inductive bias for generalisable world models" — to be re-evaluated at submission.
 

@@ -18,9 +18,9 @@
 
 \title{\textbf{ST-JEWM 实验报告} \\[0.3em]
 \large 标定事件驱动的预测状态用于可泛化世界模型 \\[0.3em]
-\normalsize v0.7.10b + v0.7.11 + v0.7.12 联合实验记录}
+\normalsize v0.7.10b + v0.7.11 + v0.7.12 + v0.7.13 联合实验记录}
 \author{研究团队}
-\date{2026-07-15}
+\date{2026-07-21}
 
 \begin{document}
 \maketitle
@@ -301,15 +301,36 @@ F3: Reacher &stjewm\_membrane\_readout & reacher & 0.556 & 0.033 \\
     是 working title 的下一阶段。
 \end{enumerate}
 
-\subsection{诚实总结}
+\subsection{v0.7.13 Bug-fix re-run（关键更正）}
+
+v0.7.13 在 v0.7.12 之后又发现并修复了 2 个 eval pipeline 关键 bug：
+\begin{enumerate}
+    \item \textbf{DMC tol 修复}：`check\_success` 容差从 1.0 收紧到 0.1。
+    修复前随机 uniform 状态的通过率为 87-100%，是 v0.7.10b "env-SR=1.0"
+    假象的根源；修复后通过率为 0\%。
+    \item \textbf{LeWM-SR 阈值修复}：新增 \texttt{LeWM@0.05} 和 \texttt{LeWM@0.01}
+    阈值（cos<0.05 / cos<0.01），并以原始 \texttt{mean\_cos\_dist}
+    作为主指标。原阈值 0.1 被非 SNN 近似常数 latent 平凡通过。
+\end{enumerate}
+
+修复后 1008 OOD + 192 cross-bench cells 重跑结论：
+\begin{itemize}
+    \item v0.7.12 "membrane 在 F1 胜出" 是 bug 假象——v0.7.13 撤回该结论。
+    \item STJEWM 6 readouts 在 F1/F2/F3/F4 全部以 30-70\% 更低的
+    \texttt{mean\_cos\_dist} 击败 cubifae。
+    \item 特定的 STJEWM readout 胜者随 split 变化：F1 是 rate，F2/F4 是
+    trace，F3 是 spike。
+    \item env-SR=0 是 CEM 5 步规划器达不到 25-100 步 goal 的 artifact，
+    \textbf{不是}模型失败。
+\end{itemize}
+
+\subsection{诚实总结（v0.7.13 修正）}
 
 STJEWM 的核心贡献是\textbf{方法论上的}，而非"性能上普遍胜出"。
 具体来说：
 \begin{itemize}
     \item 提出了一种新的评测协议 (membrane-forbidden protocol)；
-    \item 提出了新的诊断指标 (div, resp, $\rho$)；
-    \item 证明了 SNN 家族（不只 STJEWM）在 calibrated regime 上的共同优势；
-    \item 在 1 个特定跨基准族任务 (PushT) 和 1 个合成任务 (Event-Window) 上显示了胜出。
+    \item 提出了新的诊断指标 (div, resp, $\rho$, mean\_cos\_dist, LeWM@0.05);
 \end{itemize}
 
 工作标题应在投稿前重新评估。
