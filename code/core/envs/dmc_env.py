@@ -87,15 +87,15 @@ DMC_ENVS = {
     "reacher":      ("reacher.xml", 2, 2, 50, 0.05),
     "finger":       ("finger.xml", 3, 2, 100, 0.3),
     "ball_in_cup":  ("ball_in_cup.xml", 4, 2, 100, 0.1),
-    "cheetah":      ("cheetah.xml", 9, 6, 200, 1.0),
-    "walker":       ("walker.xml", 9, 6, 200, 1.0),
-    "hopper":       ("hopper.xml", 7, 4, 200, 1.0),
-    "quadruped":    ("quadruped.xml", 30, 12, 200, 1.0),
-    "humanoid":     ("humanoid.xml", 28, 21, 200, 1.0),
-    "humanoid_cmu": ("humanoid_CMU.xml", 63, 56, 200, 1.0),
-    "dog":          ("dog.xml", 87, 38, 200, 1.0),
-    "fish":         ("fish.xml", 14, 5, 200, 1.0),
-    "stacker":      ("stacker.xml", 20, 5, 200, 1.0),
+    "cheetah":      ("cheetah.xml", 9, 6, 200, 0.1),  # v0.7.13: was 1.0 (random 90% pass)
+    "walker":       ("walker.xml", 9, 6, 200, 0.1),   # v0.7.13: was 1.0 (random 87% pass)
+    "hopper":       ("hopper.xml", 7, 4, 200, 0.1),   # v0.7.13: was 1.0
+    "quadruped":    ("quadruped.xml", 30, 12, 200, 0.1),  # v0.7.13: was 1.0
+    "humanoid":     ("humanoid.xml", 28, 21, 200, 0.1),   # v0.7.13: was 1.0 (random 98%)
+    "humanoid_cmu": ("humanoid_CMU.xml", 63, 56, 200, 0.1),  # v0.7.13: was 1.0
+    "dog":          ("dog.xml", 87, 38, 200, 0.1),   # v0.7.13: was 1.0 (random 100%)
+    "fish":         ("fish.xml", 14, 5, 200, 0.1),   # v0.7.13: was 1.0
+    "stacker":      ("stacker.xml", 20, 5, 200, 0.1),   # v0.7.13: was 1.0 (random 97%)
     "manipulator":  ("manipulator.xml", 14, 5, 200, 0.05),
 }
 

@@ -116,15 +116,16 @@ class ClosedLoopResult:
     eval_budget: int
     goal_offset: int
     history_size: int
-    success_rate_lewm: float         # mean(cos_dist < 0.1)
+    success_rate_lewm: float         # mean(cos_dist < 0.1) — v0.7.13: legacy, mostly noisy
     success_rate_lewm_std: float
-    success_rate_env: float          # mean(env-native success)
-    success_rate_env_std: float
-    mean_cos_dist: float
-    mean_cos_dist_std: float
-    mean_phys_dist: float
-    mean_phys_dist_std: float
-    mean_reward: float = 0.0         # mean cumulative reward per episode
+    success_rate_lewm_005: float = 0.0  # mean(cos_dist < 0.05) — calibrated threshold
+    success_rate_lewm_001: float = 0.0  # mean(cos_dist < 0.01) — strict threshold
+    success_rate_env: float = 0.0          # mean(env-native success)
+    success_rate_env_std: float = 0.0
+    mean_cos_dist: float = 0.0
+    mean_cos_dist_std: float = 0.0
+    mean_phys_dist: float = 0.0
+    mean_phys_dist_std: float = 0.0
     mean_reward_std: float = 0.0
     per_seed: List[Dict] = field(default_factory=list)
     per_episode: List[Dict] = field(default_factory=list)
@@ -280,6 +281,12 @@ def eval_closed_loop(
             )
             cos_dist = float((1.0 - cos.item()) / 2.0)
             lewm_success = cos_dist < success_threshold_cos
+            # v0.7.13: add thresholded-success at multiple cutoffs so the
+            # "LeWM-SR (cos<X)" number is meaningful. Default 0.1 was too loose
+            # (non-SNN near-constant latents always pass). With strict cutoffs
+            # (0.05, 0.01) only a well-calibrated model passes.
+            lewm_succ_005 = cos_dist < 0.05
+            lewm_succ_001 = cos_dist < 0.01
 
             env_success, phys_dist = env.check_success(final_state_np, goal_state_np)
 
@@ -288,6 +295,8 @@ def eval_closed_loop(
                 "episode_idx": int(ep_idx),
                 "cos_dist": cos_dist,
                 "lewm_success": bool(lewm_success),
+                "lewm_success_at_005": bool(lewm_succ_005),
+                "lewm_success_at_001": bool(lewm_succ_001),
                 "env_success": bool(env_success),
                 "phys_dist": float(phys_dist),
                 "plan_time_sec": plan_time,
@@ -298,21 +307,25 @@ def eval_closed_loop(
 
         if seed_episodes:
             lewm_succ = np.mean([e["lewm_success"] for e in seed_episodes])
+            lewm_succ_005 = np.mean([e["lewm_success_at_005"] for e in seed_episodes])
+            lewm_succ_001 = np.mean([e["lewm_success_at_001"] for e in seed_episodes])
             env_succ = np.mean([e["env_success"] for e in seed_episodes])
             mean_cos = np.mean([e["cos_dist"] for e in seed_episodes])
             mean_phys = np.mean([e["phys_dist"] for e in seed_episodes])
             mean_reward = np.mean([e.get("episode_reward", 0.0) for e in seed_episodes])
             per_seed_results.append({
-                "seed": seed,
                 "n": len(seed_episodes),
                 "success_rate_lewm": float(lewm_succ),
+                "success_rate_lewm_005": float(lewm_succ_005),
+                "success_rate_lewm_001": float(lewm_succ_001),
                 "success_rate_env": float(env_succ),
                 "mean_cos_dist": float(mean_cos),
                 "mean_phys_dist": float(mean_phys),
-                "mean_reward": float(mean_reward) if "mean_reward" in dir() else 0.0,
             })
 
     lewm_arr = np.array([s["success_rate_lewm"] for s in per_seed_results])
+    lewm_005_arr = np.array([s["success_rate_lewm_005"] for s in per_seed_results])
+    lewm_001_arr = np.array([s["success_rate_lewm_001"] for s in per_seed_results])
     env_arr = np.array([s["success_rate_env"] for s in per_seed_results])
     cos_arr = np.array([s["mean_cos_dist"] for s in per_seed_results])
     phys_arr = np.array([s["mean_phys_dist"] for s in per_seed_results])
@@ -330,8 +343,8 @@ def eval_closed_loop(
         history_size=history_size,
         success_rate_lewm=float(lewm_arr.mean()) if len(lewm_arr) > 0 else float("nan"),
         success_rate_lewm_std=float(lewm_arr.std()) if len(lewm_arr) > 0 else float("nan"),
-        success_rate_env=float(env_arr.mean()) if len(env_arr) > 0 else float("nan"),
-        success_rate_env_std=float(env_arr.std()) if len(env_arr) > 0 else float("nan"),
+        success_rate_lewm_005=float(lewm_005_arr.mean()) if len(lewm_005_arr) > 0 else float("nan"),
+        success_rate_lewm_001=float(lewm_001_arr.mean()) if len(lewm_001_arr) > 0 else float("nan"),
         mean_cos_dist=float(cos_arr.mean()) if len(cos_arr) > 0 else float("nan"),
         mean_cos_dist_std=float(cos_arr.std()) if len(cos_arr) > 0 else float("nan"),
         mean_phys_dist=float(phys_arr.mean()) if len(phys_arr) > 0 else float("nan"),
