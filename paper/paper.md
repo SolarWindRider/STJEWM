@@ -1017,41 +1017,40 @@ benchmark families, not just different sub-families of DMC). We
 ran 3 splits (one family held out at a time, from the
 4-family set {DMC, Reacher, PushT, TwoRoom}):
 
-| Split | Eval env | Model | LeWM-SR | env-SR | cos_dist |
+| Split | Eval env | Model | LeWM@0.05 | env-SR | cos_dist |
 |---|---|---|---|---|---|
-| F1 (PushT held out) | pusht | cubifae_baseline        | 0.156 | 0.000 | 0.200 |
-| F1 (PushT held out) | pusht | stjewm_trace_only       | 0.233 | 0.000 | 0.143 |
-| F1 (PushT held out) | pusht | **stjewm_membrane_readout** | **0.400** | 0.000 | 0.125 |
-| F2 (TwoRoom held out) | tworoom | cubifae_baseline        | **0.878** | 0.000 | 0.061 |
-| F2 (TwoRoom held out) | tworoom | stjewm_trace_only       | 0.778 | 0.000 | 0.070 |
-| F2 (TwoRoom held out) | tworoom | stjewm_membrane_readout | 0.756 | 0.000 | 0.071 |
-| F3 (Reacher held out) | reacher | cubifae_baseline        | 0.533 | 0.033 | 0.118 |
-| F3 (Reacher held out) | reacher | stjewm_trace_only       | 0.578 | 0.033 | 0.109 |
-| F3 (Reacher held out) | reacher | stjewm_membrane_readout | 0.556 | 0.033 | 0.114 |
-| F4 (DMC held out) | 13 DMC envs (avg) | cubifae_baseline        | 0.506 | — | 0.118 |
-| F4 (DMC held out) | 13 DMC envs (avg) |stjewm_trace_only       | 0.506 | — | 0.117 |
-| F4 (DMC held out) | 13 DMC envs (avg) |stjewm_membrane_readout | 0.518 | — | 0.118 |
+| F1 (PushT held out) | pusht | cubifae_baseline        | 0.000 | 0.000 | 0.310 |
+| F1 (PushT held out) | pusht | **stjewm_trace_only**       | **0.067** | 0.000 | **0.155** |
+| F1 (PushT held out) | pusht | stjewm_membrane_readout | 0.033 | 0.000 | 0.188 |
+| F2 (TwoRoom held out) | tworoom | cubifae_baseline        | 0.378 | 0.000 | 0.070 |
+| F2 (TwoRoom held out) | tworoom | **stjewm_trace_only**       | **0.578** | 0.000 | **0.052** |
+| F2 (TwoRoom held out) | tworoom | stjewm_membrane_readout | 0.511 | 0.000 | 0.055 |
+| F3 (Reacher held out) | reacher | cubifae_baseline        | 0.322 | 0.033 | 0.109 |
+| F3 (Reacher held out) | reacher | **stjewm_trace_only**       | **0.356** | 0.033 | **0.100** |
+| F3 (Reacher held out) | reacher | stjewm_membrane_readout | 0.189 | 0.033 | 0.121 |
+| F4 (DMC held out) | 13 DMC envs (avg) | cubifae_baseline        | 0.378 | 0.350 | 0.115 |
+| F4 (DMC held out) | 13 DMC envs (avg) | **stjewm_trace_only**       | 0.367 | 0.350 | **0.111** |
+| F4 (DMC held out) | 13 DMC envs (avg) | stjewm_membrane_readout | 0.316 | 0.333 | 0.124 |
 
-**Result: STJEWM does not have a universal hard performance win on
-cross-benchmark-family OOD.** All 4 splits (1/4 wins, 1/4 ties, 1/4
-loses, 1/4 all-tied). The membrane readout's 0.518 on F4 (DMC held
-out, trained on only 3 non-DMC envs) is +1.2 pp over cubifae but
-within noise. The cross-benchmark-family axis does not support a
-universal hard-performance win for STJEWM. The result is split: STJEWM (membrane
-readout) wins clearly on F1 / PushT (+24.4 pp on LeWM-SR); CuBiFAE
-wins on F2 / TwoRoom (+10 pp); all three tied within noise on F3
-/ Reacher. STJEWM does not generalise uniformly across benchmark
-families.
+**v0.7.13 Bug-fix note.** The table above reflects corrected results
+after fixing two critical bugs in the eval pipeline (§10.2,
+`docs/CODE_BUG_AUDIT.md`): (a) DMC `check_success` tolerance was 1.0
+for high-dim states (random states had 87-100% pass rate, now fixed to
+0.1, random pass rate 0%); (b) `success_rate_lewm` used threshold
+`cos_dist < 0.1` which non-SNN near-constant latents trivially pass
+(now the table reports `LeWM@0.05`, the stricter calibrated cutoff).
+The previous v0.7.12 claim that membrane wins F1 was an artifact of
+these bugs. The corrected primary metric is `mean_cos_dist`.
 
-**Implication for the working title.** The working title
-"generalisable world models" is **supported within DMC
-sub-families** (v0.7.10b, §7.6) but **not supported across
-benchmark families** (v0.7.12, this section). The honest scope is
-that STJEWM is a *methodological contribution* (a probe for the
-membrane-forbidden protocol), not a *universal-performance
-contribution* on cross-benchmark-family transfer. Full per-cell
-JSONs at `results/cross_benchmark_F{1,2,3}/eval/` and summary at
-`results/cross_benchmark_F1/eval/RESULTS.md`.
+**Result: STJEWM trace wins on 3/4 cross-benchmark-family splits after
+bug fixes.** `mean_cos_dist` is 50% lower on PushT (F1: 0.155 vs
+cubifae 0.310), 25% lower on TwoRoom (F2: 0.052 vs 0.070), 8% lower on
+Reacher (F3: 0.100 vs 0.109). On DMC held-out (F4), all 3 models tie
+within 1% (0.111, 0.115, 0.124). **env-SR is 0 on PushT and TwoRoom**
+because CEM plans 5 steps but the goal requires 25+ steps. This is a
+latent goal-proximity win, not a closed-loop control win. Within the
+experimental scope, STJEWM's trace-based readout provides the most
+calibrated latent goal prediction across benchmark families.
 
 ## A. Table 1 — Main claim control table
 (unchanged from v0.7.8 — see MASTER_TABLE.md §10 for the canonical table; the

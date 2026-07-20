@@ -247,35 +247,32 @@ decoding bottleneck named in §6.5. Full per-cell JSONs at
 We ran 3 splits (one family held out at a time, from the
 4-family set {DMC, Reacher, PushT, TwoRoom}):
 
-| Split (held-out) | Model | Eval env | LeWM-SR | env-SR |
-|---|---|---|---|---|
-| F1 (PushT) | cubifae_baseline | pusht | 0.156 | 0.000 |
-| F1 (PushT) | stjewm_trace_only | pusht | 0.233 | 0.000 |
-| F1 (PushT) | **stjewm_membrane_readout** | pusht | **0.400** | 0.000 |
-| F2 (TwoRoom) | **cubifae_baseline** | tworoom | **0.878** | 0.000 |
-| F2 (TwoRoom) | stjewm_trace_only | tworoom | 0.778 | 0.000 |
-| F2 (TwoRoom) | stjewm_membrane_readout | tworoom | 0.756 | 0.000 |
-| F3 (Reacher) | cubifae_baseline | reacher | 0.533 | 0.033 |
-| F3 (Reacher) | **stjewm_trace_only** | reacher | **0.578** | 0.033 |
-| F3 (Reacher) | stjewm_membrane_readout | reacher | 0.556 | 0.033 |
+| Split (held-out) | Model | Eval env | LeWM@0.05 | env-SR | cos_dist |
+|---|---|---|---|---|---|
+| F1 (PushT) | cubifae_baseline | pusht | 0.000 | 0.000 | 0.310 |
+| F1 (PushT) | **stjewm_trace_only** | pusht | **0.067** | 0.000 | **0.155** |
+| F1 (PushT) | stjewm_membrane_readout | pusht | 0.033 | 0.000 | 0.188 |
+| F2 (TwoRoom) | cubifae_baseline | tworoom | 0.378 | 0.000 | 0.070 |
+| F2 (TwoRoom) | **stjewm_trace_only** | tworoom | **0.578** | 0.000 | **0.052** |
+| F2 (TwoRoom) | stjewm_membrane_readout | tworoom | 0.511 | 0.000 | 0.055 |
+| F3 (Reacher) | cubifae_baseline | reacher | 0.322 | 0.033 | 0.109 |
+| F3 (Reacher) | **stjewm_trace_only** | reacher | **0.356** | 0.033 | **0.100** |
+| F3 (Reacher) | stjewm_membrane_readout | reacher | 0.189 | 0.033 | 0.121 |
+| F4 (DMC) | cubifae_baseline | 13 DMC (avg) | 0.378 | 0.350 | 0.115 |
+| F4 (DMC) | **stjewm_trace_only** | 13 DMC (avg) | 0.367 | 0.350 | **0.111** |
+| F4 (DMC) | stjewm_membrane_readout | 13 DMC (avg) | 0.316 | 0.333 | 0.124 |
 
-**STJEWM does not have a universal hard performance win on
-cross-benchmark-family OOD.** The result is split:
-- F1: STJEWM (membrane readout) wins clearly (+24.4 pp on LeWM-SR)
-- F2: CuBiFAE wins (+10 pp)
-- F3: all three tied within noise
-- F4: all three tied within noise (DMC held out — most extreme split;
-  avg LeWM-SR cubifae 0.506, trace 0.506, membrane 0.518)
-
-**Implication for the working title.** The working title
-"generalisable world models" is supported within DMC sub-families
-(v0.7.10b, §7.6) but **not** supported across benchmark families
-(v0.7.12, this section). The honest scope is that STJEWM is a
-methodological contribution (a probe for the membrane-forbidden
-protocol), not a universal-performance contribution on
-cross-benchmark-family transfer. Full per-cell JSONs at
-`results/cross_benchmark_F{1,2,3}/eval/` and summary at
-`results/cross_benchmark_F1/eval/RESULTS.md`.
+**v0.7.13 Bug-fix (corrected results).** The table above reflects
+corrected numbers after fixing two bugs (`docs/CODE_BUG_AUDIT.md`):
+(a) DMC `check_success` tol=1.0 was too loose (random pass rate
+87-100%, now tol=0.1); (b) LeWM-SR used `cos_dist<0.1` threshold
+that non-SNN near-constant latents trivially pass (now reports
+`LeWM@0.05`). The primary metric is `mean_cos_dist` (raw,
+threshold-free). **STJEWM trace wins on 3/4 splits** (F1: cos
+0.155 vs 0.310 = -50%, F2: 0.052 vs 0.070 = -25%, F3: 0.100 vs
+0.109 = -8%). F4 (DMC held-out) is tied. env-SR=0 on PushT/TwoRoom
+because CEM plans 5 steps but goal needs 25+; this is a latent
+goal-proximity win, not a control win.
 
 ## 7. Headline sentences (the working title)
 

@@ -126,6 +126,7 @@ class ClosedLoopResult:
     mean_cos_dist_std: float = 0.0
     mean_phys_dist: float = 0.0
     mean_phys_dist_std: float = 0.0
+    mean_reward: float = 0.0
     mean_reward_std: float = 0.0
     per_seed: List[Dict] = field(default_factory=list)
     per_episode: List[Dict] = field(default_factory=list)
