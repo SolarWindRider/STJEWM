@@ -25,7 +25,7 @@ After bug fix + re-run of **1008 OOD cells + 192 cross-bench cells**:
   is calibrated at `mean_cos_dist ∈ [0.09, 0.13]` across all 6 splits.
   MLP/GRU are collapsed to `mean_cos_dist ≈ 0` (degenerate). LeWM-v2 is
   over-reactive at `mean_cos_dist ≈ 0.18` (Transformer amplifies state
-  differences). See `results/utility/ood1_table_v0_7_13.md` (1039 lines).
+  differences). See `results/utility/ood1_table.md` (1039 lines).
 - **Cross-bench family (192 cells, 12 models × 4 splits)**: STJEWM
   wins `mean_cos_dist` on **all 4 splits** (F1/F2/F3/F4) over cubifae
   by 30–70%. The specific STJEWM readout winner varies per split
