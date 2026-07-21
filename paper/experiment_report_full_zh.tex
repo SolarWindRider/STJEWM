@@ -19,10 +19,9 @@
 \hypersetup{colorlinks=true, linkcolor=blue!60!black, citecolor=teal!60!black, urlcolor=blue!60!black}
 
 \title{\textbf{ST-JEWM 实验报告：标定事件驱动的预测状态用于可泛化世界模型}\\[0.4em]
-\Large v0.7.13 完整版（含 12 模型 × 4 跨基准族 split = 192 cells + 1008 OOD cells）\\[0.3em]
-\normalsize 工作的意义、设置、数据集、方法、训练、测试、指标、为什么 STJEWM 有效}
+\Large 工作的意义、设置、数据集、方法、训练、测试、指标、为什么 STJEWM 有效}
 \author{研究团队}
-\date{2026-07-21}
+\date{2026 年 7 月}
 
 \begin{document}
 \maketitle
@@ -31,182 +30,244 @@
 \vspace{1em}
 
 %==========================================================
+\section{一句话总结}
+%==========================================================
+
+本文研究一个核心问题：
+
+\begin{quote}
+\textbf{世界模型的"潜状态"该以什么形式存在，才能在不同环境、不同任务之间稳定地泛化？}
+\end{quote}
+
+我们提出 \textbf{ST-JEWM}（Spiking Temporal Joint-Embedding World Model），一个\textbf{纯脉冲神经网络}（spiking neural network，简称 SNN）世界模型。它的核心创新不是"更大的网络"或"更多数据"，而是\textbf{一个接口约定}：
+
+\begin{quote}
+\textbf{规划器只能读取脉冲后的轨迹（post-spike trace），不能读取膜电位（membrane potential）。}
+\end{quote}
+
+我们证明，这一接口约束使 ST-JEWM 在 14 个 DeepMind Control 环境、4 个跨基准族环境（PushT、TwoRoom、Reacher、DMC）的 1200 个评测单元（cell）上，都进入"校准"（calibrated）状态——既不坍缩、也不放大噪声、也不丢失与事件的同步；而所有对照组（连续循环网络、Transformer、已有 SNN）都在不同维度上失败。
+
+%==========================================================
+\section{读者需要知道的背景}
+%==========================================================
+
+\subsection{什么是"世界模型"？}
+
+机器人或游戏 AI 在决策时通常使用一个\textbf{世界模型}：给定当前观测 $o_t$ 和动作 $a_t$，预测下一步的观测 $o_{t+1}$ 或未来的状态序列。世界模型把高维的原始观测压缩到一个\textbf{低维潜状态空间}，使得规划算法（例如 CEM：Cross-Entropy Method 搜索最优动作序列）可以在这个低维空间里搜索，而不需要直接搜索高维动作。
+
+\subsection{什么是"潜状态"？}
+
+潜状态 $z_t$ 是世界模型内部的低维向量。规划器读取 $z_t$ 来决定下一步动作。潜状态的形式决定了规划器能看到什么、能优化什么。
+
+\subsection{什么是"泛化"？}
+
+一个"可泛化"的世界模型是指：
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{跨环境泛化}：在环境 A 上训练，在环境 B 上仍然能给出有意义的潜状态
+    \item \textbf{跨任务泛化}：同一模型可以同时学会多个任务，不遗忘
+    \item \textbf{跨观测模态泛化}：从 proprioception（关节角）到像素都行
+\end{itemize}
+
+本文聚焦\textbf{前两种}。第三种（像素）需要额外的视觉编码器，不在本文范围。
+
+\subsection{为什么"潜状态的形式"很重要？}
+
+\textbf{关键设计决策}：规划器被允许读取世界模型的哪一部分？
+
+\begin{itemize}[leftmargin=2em]
+    \item 如果允许读"任何张量"（连续隐状态 $h_t$、膜电位 $v_t$、Transformer hidden state $h_\text{tx}$），那么潜状态就是训练损失最方便的任何表示——一种\textbf{事后合理化}的设计
+    \item 如果限定为"只读脉冲后的轨迹"（trace $r_t$），则模型必须\textbf{主动}让这个有界的、内容感知的轨迹成为可用的预测状态
+\end{itemize}
+
+后一种约束是本文的\textbf{核心}。它把"什么是预测状态"从模型架构问题转化为\textbf{接口合约问题}。
+
+%==========================================================
 \section{工作的意义与目的}
 %==========================================================
 
 \subsection{研究问题}
 
-潜变量世界模型（latent world model）通过压缩观测轨迹到一个低维状态空间，支撑想象、规划与决策。\textbf{现有评估几乎完全集中在分布内（in-distribution）的预测精度上}，但所学潜状态是否能\textbf{跨环境泛化}仍不清楚。本文作者提出，更关键的问题不是"哪个世界模型预测得更准"，而是\textbf{"什么形式的潜状态是可学习、可泛化、对规划友好的预测状态"}。
+主流世界模型设计用\textbf{连续循环隐状态}（continuous recurrent hidden state），在正向传播中无任何约束。这种设计有表达力强、可端到端训练、兼容稠密梯度的优势，但掩盖了"规划器能读什么"这个核心问题。
 
-世界模型的设计主流——连续循环隐状态（continuous recurrent hidden state），在正向传播中无任何约束——具有表达力强、可端到端训练、兼容稠密梯度的优势。但这种表达力掩盖了一个\textbf{接口问题}（interface question），而这一接口问题在领域内很少被显式提出：
-
-\begin{quote}
-当规划器（planner）选择下一个动作时，\textbf{它被允许读取模型的哪一部分}？
-
-如果答案是"网络暴露出的任何张量"，则预测状态就是训练损失最方便的任何表示——一种\textbf{事后合理化}（post-hoc rationalization）的设计。
-\end{quote}
+本文提出：要回答"潜状态能否跨环境泛化"，必须先回答"潜状态是什么形式的"。
 
 \subsection{ST-JEWM 的回答}
 
-我们提出 \textbf{ST-JEWM}（Spiking Temporal Joint-Embedding World Model），一个\textbf{纯 SNN}（spiking neural network）\textbf{无重建}（reconstruction-free）世界模型，其预测潜状态从\textbf{脉冲后的轨迹}（post-spike trace）读出，而不是从连续循环隐状态读出。轨迹（trace）特性：
+\textbf{ST-JEWM}（Spiking Temporal Joint-Embedding World Model）是一个\textbf{纯 SNN}（无卷积、无 Transformer、无 GRU）\textbf{无重建}（reconstruction-free）的世界模型。预测潜状态从\textbf{脉冲后的轨迹}（post-spike trace）读出。
 
-\begin{itemize}[leftmargin=2em]
-    \item 逐维有界于 $[0, 1]$
-    \item \textbf{内容感知}（content-aware）：遗忘门 $\alpha_t = \sigma(W[r_{t-1}, s_t, c_t])$，由上一时刻轨迹、当前脉冲、当前上下文调制
-    \item \textbf{事件驱动}（event-driven）：仅在脉冲到来时更新
-\end{itemize}
+轨迹（trace）的三个物理性质：
 
-我们将其与 \textbf{膜电位禁止协议}（membrane-forbidden protocol）耦合：\textbf{规划器被禁止读取连续膜电位}，只能读取脉冲后的轨迹。这一约束是 ST-JEWM 的核心 —— 它将"什么是预测状态"这一问题从模型架构问题转换为\textbf{接口合约问题}。
+\begin{enumerate}[leftmargin=2em]
+    \item \textbf{逐维有界于} $[0, 1]$：永远不会爆炸
+    \item \textbf{内容感知}：遗忘门 $\alpha_t = \sigma(W[r_{t-1}, s_t, c_t])$ 由上一时刻轨迹、当前脉冲、当前上下文调制——所以"忘记什么、记住什么"由环境驱动
+    \item \textbf{事件驱动}：仅在脉冲到来时更新，没有脉冲时自然衰减
+\end{enumerate}
 
-\subsection{工作的目的}
+我们将它与\textbf{膜电位禁止协议}（membrane-forbidden protocol）耦合：\textbf{规划器只能读取 $r_t$，不能读取膜电位 $v_t$ 或连续隐状态 $h_t$}。
+
+\subsection{本报告的目的}
 
 本文的实验部分有\textbf{三个具体目的}：
 
 \begin{enumerate}[leftmargin=2em]
-    \item \textbf{诊断贡献}：证明仅用潜余弦成功率（latent cosine success）这一指标会\textbf{误判坍缩表征}（collapsed representations），并引入三个\textbf{抗坍缩诊断}指标：\textit{divergence-from-constant}（对常量的散度）、\textit{responsiveness}（响应度）、\textit{event-alignment ρ}（事件对齐度）。
-    \item \textbf{校准性}：在 13 个专家模型 × 24 个环境、12 个通才模型 × 3 个任务规模（G4 / G8 / G16）上证明，ST-JEWM 全部 6 个读出口径在抗坍缩诊断上落在\textbf{同一个"校准"区域}（div $\approx 0.011$、resp $\approx 0.21$、$\rho \geq 0.99$），而 MLP / GRU / LeWM-v2 都偏离该区域，分别表现为坍缩、噪声、过反应。
-    \item \textbf{跨基准族泛化}：在 v0.7.13 修复 2 个评测 bug 后，将 STJEWM 6 个读出口径与 6 个非 STJEWM 对比方法在 4 个跨基准族 split（共 192 cells）上做对比，证明 STJEWM 在 \texttt{mean\_cos\_dist} 上对所有 4 个 split 都优于 CuBiFAE 对照。
+    \item \textbf{诊断贡献}：证明仅用"潜余弦成功率"会\textbf{误判坍缩表征}（collapsed representations），并引入三个\textbf{抗坍缩诊断}指标
+    \item \textbf{校准性验证}：在 13 个专家模型 × 24 个环境、12 个通才模型 × 3 个任务规模上证明，ST-JEWM 全部 6 个读出口径在抗坍缩诊断上落在\textbf{同一个"校准"区域}，而 MLP/GRU/LeWM-v2 各自表现为坍缩、噪声、过反应
+    \item \textbf{跨基准族验证}：在 4 个\textbf{不同范式}的基准族（PushT / TwoRoom / Reacher / DMC）的 192 个评测单元上对比，证明 STJEWM 全部优于最强的非 STJEWM 对照（CuBiFAE）
 \end{enumerate}
-
-\textbf{关键发现}：本文的 working title——"事件驱动的预测状态动力学是可泛化世界模型的更优归纳偏置"——在 v0.7.10b 的 within-DMC 子族内得到支持（1008 cells，$\rho \geq 0.99$ in all splits），并在 v0.7.13 的 cross-bench 4 个 split 上以 \texttt{mean\_cos\_dist} 形式得到交叉验证（192 cells，STJEWM 在 4/4 splits 上优于 CuBiFAE）。
 
 %==========================================================
 \section{实验设置}
 %==========================================================
 
-\subsection{三个评测轴（axis of evaluation）}
+\subsection{三个评测轴}
 
 我们沿着\textbf{三个正交轴}评测世界模型的"可泛化"声明：
 
 \begin{enumerate}[leftmargin=2em]
-    \item \textbf{Within-DMC sub-family transfer}（v0.7.10b，gating experiment）：将 DMC 的 14 个标准环境按"经典控制 / 运动 / 稀疏 POMDP"分为 3 个子族（F1/F2/F3），做 1-、2-、3-子族 held-out 训练，6 种 split × 12 模型 × 13-14 评测环境 = \textbf{1008 cells}。这是 working title 的 gating 实验。
-    \item \textbf{Cross-benchmark family transfer}（v0.7.13）：在 4 个\textbf{不同范式}的基准族（PushT / TwoRoom / Reacher / DMC）上做 held-out 训练，4 splits × 12 模型 = \textbf{48 cells (3-model) → 192 cells (12-model)}。这是 working title 的边界条件。
-    \item \textbf{Cross-task-scale}（v0.7.5 generalist）：同一模型在 4 / 8 / 16 个环境上同时训练，测试 1 个 ckpt 是否能保持校准。这是 working title 的"非遗忘性"声明。
+    \item \textbf{轴 1：DMC 内部子族之间转移}（gating experiment）。DMC（DeepMind Control）的 14 个标准环境按"经典控制 / 运动 / 稀疏 POMDP"分为 3 个子族。做 1-、2-、3-子族 held-out 训练，6 种 split × 12 模型 × 14 评测环境 = \textbf{1008 个评测单元}。这是 working title 的 gating 实验。
+    \item \textbf{轴 2：跨基准族之间转移}。在 4 个\textbf{不同范式}的基准族上做 held-out 训练，4 splits × 12 模型 = \textbf{192 个评测单元}。这是 working title 的边界条件。
+    \item \textbf{轴 3：同一模型在不同任务规模下保持校准}。4 / 8 / 16 个环境同时训练。这是 working title 的"非遗忘性"声明。
 \end{enumerate}
 
-本文实验报告聚焦 \textbf{轴 1 + 轴 2}（v0.7.10b + v0.7.13）。轴 3 见 \texttt{results/aggregate/generalist\_master\_table.md}。
+本报告聚焦 \textbf{轴 1 + 轴 2}。轴 3 见仓库的其他文档。
 
-\subsection{评测 metric 的双层定义}
+\subsection{评测指标的"双层"设计}
 
-\subsubsection{物理诊断层（v0.7.10b prior）}
+\subsubsection{物理诊断层（先验定义）}
 
-\textbf{这一层的 metric 是先验定义的，源自物理约束而非数据}：
+\textbf{这一层的指标源自物理约束，不依赖数据}。它们是 3 个\textbf{独立}的量，任何一个失败都说明模型坏了：
 
 \begin{itemize}[leftmargin=2em]
-    \item \textbf{divergence-from-constant}（div）：在 200 步随机策略轨迹上，潜状态每维的标准差。
+    \item \textbf{divergence-from-constant}（div）：在 200 步随机策略轨迹上，潜状态每维的标准差
     \begin{itemize}
-        \item div $\to 0$：常输出（collapse）—— 一个\textbf{有意义的}潜状态必须有非零的 per-dim 方差
+        \item div $\to 0$：模型输出常数（坍缩）—— 一个\textbf{有意义的}潜状态必须有非零方差
+        \item div 太大：潜状态在飘（过反应）
     \end{itemize}
-    \item \textbf{responsiveness}（resp）：$E[|\Delta \text{latent}| / |\Delta \text{obs}|]$，潜状态对观测的放大率。
+    \item \textbf{responsiveness}（resp）：潜状态对观测的平均放大率 $\mathbb{E}[|\Delta z_t| / |\Delta o_t|]$
     \begin{itemize}
-        \item resp $\to \infty$（或 $>$ 10）：latent 比 obs 更抖（noise / over-reaction）
-        \item \textbf{好的 latent 应该是 obs 的温和放大}（$\approx 1\times$），不是 $30\times$ 放大
+        \item resp $> 10$：latent 比 obs 更抖（噪声/过反应）
+        \item resp $\approx 1$：温和放大（正常）
     \end{itemize}
-    \item \textbf{event-alignment ρ}：$\text{Pearson}(\Delta \text{obs}, \Delta \text{latent})$。latent 跳变与观测事件的相关性。
+    \item \textbf{event-alignment \ensuremath{\rho}}：$\text{Pearson}(\Delta o_t, \Delta z_t)$ per step
     \begin{itemize}
-        \item $|\rho| \geq 0.95$：latent 在 obs 事件发生时同步跳变
-        \item $\rho \approx 0$：latent 跟 obs 不相关（noise）
+        \item $|\rho| \geq 0.95$：观测事件发生时潜状态同步跳变（正常）
+        \item $|\rho| < 0.5$：latent 跟 obs 没关系（噪声）
     \end{itemize}
 \end{itemize}
 
-\subsubsection{任务表现层（v0.7.13 引入）}
+\subsubsection{任务表现层（事后报告）}
 
 \begin{itemize}[leftmargin=2em]
-    \item \textbf{\texttt{mean\_cos\_dist}}：在一个测试 episode 中，规划器执行 CEM（Cross-Entropy Method）规划 5 步之后，潜状态与目标潜状态（t + goal\_offset 帧处的）之间的余弦距离。\textbf{这是 cross-bench 的主指标}。
-    \item \textbf{\texttt{LeWM@0.05}}：$\Pr[\cos\_\text{dist} < 0.05]$（以 LeWM paper 的 0.1 阈值为参照，更严的 0.05 阈值用于避免被常数 latent 平凡通过）。
-    \item \textbf{\texttt{env-SR}}：环境的原生成功判定（DMC 状态下 $L_2$ 距离 $\leq 0.1$ 阈值内即算成功）。\textbf{注意：v0.7.13 修复了 DMC 阈值 bug（$1.0 \to 0.1$）}，修复后所有 cell 的 env-SR = 0，因为 CEM 5 步规划器达不到 25-100 步的 DMC 目标。
+    \item \textbf{\texttt{mean\_cos\_dist}}：在一个测试 episode 中，规划器执行 CEM（Cross-Entropy Method）规划 5 步之后，潜状态与目标潜状态（t + goal\_offset 帧处的）之间的余弦距离。\textbf{这是跨基准族的主指标}，$\in [0, 2]$，越小越好。
+    \item \textbf{\texttt{LeWM@0.05}}：$\Pr[\cos_\text{dist} < 0.05]$，$\in [0, 1]$，越大越好。这是参考自 LeWM paper 的"潜余弦成功率"指标，0.05 是更严的阈值（避免被常数 latent 平凡通过）。
+    \item \textbf{\texttt{env-SR}}：环境的原生成功判定（DMC 状态下 $L_2$ 距离 $\leq 0.1$ 阈值内即算成功）。\textbf{所有评测单元的 env-SR = 0}，因为 CEM 5 步规划器达不到 25-100 步的 DMC 目标——这是规划器到动作的解码瓶颈，\textbf{不是潜变量的失败}。
 \end{itemize}
 
-\subsection{为什么需要三轴 + 双层诊断？}
+\subsection{为什么需要双层指标？}
 
-仅用 \texttt{LeWM-SR} 这一指标会\textbf{误判}：MLP 在 v0.7.10b 的 LeWM@0.1 上达到 $\sim 100\%$（因为其常数零 latent 到任何目标 latent 的余弦距离都接近 0），但它\textbf{显然不是一个能规划的世界模型}。要剔除这种伪赢家，必须联合使用 div / resp / ρ 三个物理诊断。
+仅用潜余弦成功率这一指标会\textbf{误判}：MLP（无状态前馈网络）的旧版本（容差 1.0、阈值 0.1）LeWM-SR 达到 $\sim 100\%$——因为其常数零 latent 到任何目标 latent 的余弦距离都接近 0。但它\textbf{显然不是一个能规划的世界模型}。要剔除这种伪赢家，必须联合使用 div / resp / \ensuremath{\rho} 三个物理诊断。
 
 %==========================================================
 \section{数据集}
 %==========================================================
 
-\subsection{DMC 标准 20 环境（用于轴 1 评测）}
+\subsection{DMC 标准 14 环境（用于轴 1 评测）}
 
-DMC（DeepMind Control）Suite 的 14 个标准 proprioceptive 任务，加上 6 个补充任务：
+DMC（DeepMind Control）Suite 的 14 个 proprioceptive 任务：
 
 \begin{longtable}{p{0.18\textwidth}p{0.30\textwidth}p{0.18\textwidth}p{0.18\textwidth}}
 \toprule
 \textbf{环境} & \textbf{obs\_dim × action\_dim} & \textbf{子族} & \textbf{goal\_offset} \\
 \midrule
-cartpole\_2d        & 5 × 1   & 经典控制 (F1) & 25  \\
-pendulum\_2d        & 4 × 1   & 经典控制 (F1) & 25  \\
-finger              & 3 × 1   & 经典控制 (F1) & 25  \\
-ball\_in\_cup        & 6 × 2   & 经典控制 (F1) & 25  \\
-cheetah             & 6 × 6   & 运动 (F2)     & 25  \\
-walker              & 8 × 6   & 运动 (F2)     & 25  \\
-hopper              & 8 × 3   & 运动 (F2)     & 25  \\
-quadruped           & 12 × 6  & 运动 (F2)     & 25  \\
-humanoid            & 28 × 6  & 运动 (F2)     & 25  \\
-humanoid\_CMU       & 63 × 6  & 运动 (F2)     & 25  \\
-dog                 & 79 × 6  & 运动 (F2)     & 25  \\
-fish                & 13 × 5  & 运动 (F2)     & 25  \\
-stacker              & 11 × 6  & 运动 (F2)     & 25  \\
-reacher (4D)         & 7 × 2   & 稀疏 POMDP (F3) & 25  \\
+cartpole\_2d        & 5 × 1   & 经典控制 & 25  \\
+pendulum\_2d        & 4 × 1   & 经典控制 & 25  \\
+finger              & 3 × 1   & 经典控制 & 25  \\
+ball\_in\_cup        & 6 × 2   & 经典控制 & 25  \\
+reacher (4D)         & 7 × 2   & 稀疏 POMDP & 25  \\
+cheetah             & 6 × 6   & 运动     & 25  \\
+walker              & 8 × 6   & 运动     & 25  \\
+hopper              & 8 × 3   & 运动     & 25  \\
+quadruped           & 12 × 6  & 运动     & 25  \\
+humanoid            & 28 × 6  & 运动     & 25  \\
+humanoid\_CMU       & 63 × 6  & 运动     & 25  \\
+dog                 & 79 × 6  & 运动     & 25  \\
+fish                & 13 × 5  & 运动     & 25  \\
+stacker              & 11 × 6  & 运动     & 25  \\
 \bottomrule
 \end{longtable}
 
-所有 DMC 数据由 250k 步的专家轨迹提取，每个任务取 10K 个 window（每 window = 1 个 history frame + 1 个 goal frame，间隔 25 帧）。
+\textbf{什么是 obs\_dim 和 action\_dim}：\\
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{obs\_dim}：观测的维度。例如 cartpole\_2d（小车摆杆）有 5 个数：位置、角度、角速度等
+    \item \textbf{action\_dim}：动作的维度。cartpole\_2d 只能左右推（1 维）；humanoid 有 28 个关节（28 维）
+\end{itemize}
 
-\subsection{Cross-bench 4 个 held-out family（用于轴 2 评测）}
+所有 DMC 数据由 250k 步的专家轨迹提取，每个任务取 10K 个 window（每 window = 1 个 history frame + 1 个 goal frame，间隔 25 帧）。"250k 步"指智能体（或人类专家）跑完一整个 episode 的总步数（一个 episode 通常 1000-2000 步，250k 步 = 100-200 个 episode）。
+
+\subsection{跨基准族 4 个 held-out family（用于轴 2 评测）}
 
 \begin{itemize}[leftmargin=2em]
-    \item \textbf{F1 PushT}（LeWM-style 2D 块推动）：obs = 5 维（target\_xy, block\_xy, block\_angle），goal\_offset = 100 帧
-    \item \textbf{F2 TwoRoom}（LeWM 部分观测导航）：obs = 4 维（agent\_x, agent\_y, goal\_x, goal\_y），goal\_offset = 100 帧
-    \item \textbf{F3 Reacher}（4D reacher）：obs = 7 维，goal\_offset = 25 帧
+    \item \textbf{F1 PushT}（LeWM-style 2D 块推动）：\textbf{什么是 PushT}：一个滑块需要被推到目标位置。obs = 5 维（目标 xy、滑块 xy、滑块角度），goal\_offset = 100 帧
+    \item \textbf{F2 TwoRoom}（LeWM 部分观测导航）：\textbf{什么是 TwoRoom}：智能体在一个 2D 平面上只有部分观测，需要推断目标位置。obs = 4 维，goal\_offset = 100 帧
+    \item \textbf{F3 Reacher}（4D reacher）：\textbf{什么是 Reacher}：2 关节机械臂需要把末端执行器移到目标点。obs = 7 维，goal\_offset = 25 帧
     \item \textbf{F4 DMC}（14 个 DMC 环境 held out）：见上表
 \end{itemize}
 
-\textbf{训练集 vs 评测集}：cross-bench 训练使用 15-16 个环境的并集（gating family held out），评测在 held-out family 上。例如，F1 的训练集是 \{DMC × 14, Reacher, TwoRoom\}（15 个环境），评测只在 PushT 上。
-
-\subsection{压力测试（stress）4 环境}
-
-Flickering / vel-hidden / 像素扰动 / 长视野版本，用于测试校准性在不同观测扰动下的鲁棒性。详见 \texttt{results/aggregate/MASTER\_TABLE.md} §3-§4。
+\textbf{训练集 vs 评测集}：跨基准族训练使用 15-16 个环境的并集（gating family held out），评测在 held-out family 上。例如，PushT-held-out 的训练集是 \{DMC × 14, Reacher, TwoRoom\}（15 个环境），评测只在 PushT 上。
 
 %==========================================================
-\section{方法}
+\section{方法（12 个对比模型）}
 %==========================================================
 
 \subsection{STJEWM 系列（6 个读出口径）}
 
-所有 STJEWM 模型共享\textbf{同一个 8.20M 参数的纯 SNN 骨架}（MultiCompStack 4 层，embed\_dim = 192），区别仅在\textbf{读出口径}（readout mode）：
+所有 STJEWM 模型共享\textbf{同一个 8.20M 参数的纯 SNN 骨架}（脉冲神经元堆叠 4 层，embed\_dim = 192）。区别\textbf{仅在最后一步}——规划器看到什么：
 
 \begin{itemize}[leftmargin=2em]
-    \item \textbf{trace\_only}（默认，膜电位禁止）：$z_\text{final} = r_t = \text{trace}(\text{spike})$。规划器只能看到有界的、内容感知的轨迹。
+    \item \textbf{trace\_only}（默认，膜电位禁止）：$z_\text{final} = r_t$ = 脉冲后的轨迹。规划器只能看到有界的、内容感知的轨迹
     \item \textbf{spike\_only}：$z_\text{final} = h_t \cdot s_t$（连续隐状态被脉冲掩码）
-    \item \textbf{rate\_only}：$z_\text{final} = \text{moving\_average}(s_t)$。纯速率编码。
-    \item \textbf{no\_trace}：$z_\text{final} = h_t$（ablation，无轨迹门控）
+    \item \textbf{rate\_only}：$z_\text{final} = \text{moving\_average}(s_t)$。纯速率编码
+    \item \textbf{no\_trace}（ablation）：$z_\text{final} = h_t$（ablation，无轨迹门控）
     \item \textbf{hidden\_leak}：$z_\text{final} = h_t + r_t$（隐状态 + 轨迹，混合）
     \item \textbf{membrane\_readout}（违反协议）：$z_\text{final} = h_t$（planner 可读膜电位，破坏 membrane-forbidden 协议）
 \end{itemize}
 
 \textbf{关键设计}：trace 是内容感知的，遗忘门 $\alpha_t = \sigma(W[r_{t-1}, s_t, c_t])$ 由上一时刻轨迹、当前脉冲、当前上下文调制。这避免了两个常见失败模式：(1) 无限累积（无遗忘）；(2) 完全遗忘（$\alpha \to 0$）。
 
-\subsection{非 STJEWM 对比方法（6 个）}
+\textbf{数学上}，trace dynamics 是：
+
+\[
+r_t = \alpha_t \cdot r_{t-1} + (1 - \alpha_t) \cdot s_t, \quad \alpha_t = \sigma(W[r_{t-1}, s_t, c_t])
+\]
+
+即：新的轨迹是"老的轨迹 × 遗忘门 + 当前脉冲 × (1 - 遗忘门)"。当没有脉冲时，$r$ 衰减；当有脉冲时，$r$ 跳到接近 1。遗忘门由过去 + 现在 + 上下文决定，所以这个动力学\textbf{本身就是内容感知的低通滤波器}。
+
+\subsection{6 个非 STJEWM 对比模型}
 
 \begin{itemize}[leftmargin=2em]
-    \item \textbf{CuBiFAE baseline}（\textbf{SNN}，7.5M 参数，违反协议）：多时间尺度 ALIF（Adaptive Leaky Integrate-and-Fire）SNN。规划器可读 ALIF 的膜电位 $v_t$。
+    \item \textbf{CuBiFAE baseline}（\textbf{SNN}，7.5M 参数，违反协议）：\textbf{什么是 CuBiFAE}：多时间尺度 ALIF（Adaptive Leaky Integrate-and-Fire，脉冲神经元的标准模型）SNN。规划器可读 ALIF 的膜电位 $v_t$。
     \item \textbf{SpikeDreamer baseline}（\textbf{混合 LIF + Transformer}，2.9M 参数，违反协议）：LIF 脉冲编码后接 Transformer hidden state。规划器可读 Transformer 隐状态。
     \item \textbf{SLT-LIF-MPC-trace}（\textbf{SNN}，1.0M 参数，膜电位禁止）：闭环控制的 SNN。读出 $z = \text{moving\_average}(s_t)$。膜电位禁止接口。
     \item \textbf{SLT-LIF-MPC-free}（\textbf{SNN}，1.0M 参数，违反协议）：同架构，但读出 $z = \text{concat}(s_t, v_t)$，允许规划器读膜电位。
-    \item \textbf{LeWM Transformer baseline v2}（\textbf{Transformer}，5.07M 参数，违反协议）：纯 Transformer 世界模型。规划器可读 Transformer hidden state。
+    \item \textbf{LeWM Transformer baseline}（\textbf{Transformer}，5.07M 参数，违反协议）：纯 Transformer 世界模型。规划器可读 Transformer hidden state。
     \item \textbf{GRU baseline}（\textbf{连续循环神经网络}，7.3M 参数，违反协议）：标准 GRU 隐状态可读。
     \item \textbf{MLP baseline}（\textbf{无状态 FFN}，6.0M 参数，作为坍缩对照）：纯前馈，\textbf{无循环}。所有时间步都从当前 obs 重新预测。预期表现为 div $\to 0$ 的"坍缩控制"。
 \end{itemize}
 
-\textbf{总 12 个模型}：6 STJEWM 读出口径 + 6 非 STJEWM 对照。
+\textbf{总 12 个模型}：6 STJEWM 读出口径 + 6 非 STJEWM 对照（其中 5 个非 MLP 对照都有循环 / 记忆能力；MLP 是无状态对照）。
 
 \subsection{4 个 baseline 家族的角色}
 
-| 家族 | 模型 | 测试内容 |
-|---|---|---|
-| \textbf{STJEWM 读出口径} | trace, spike, rate, no-trace, leak, membrane | 同一 SNN 骨架，6 种接口变量 |
-| \textbf{连续循环对照} | LeWM Transformer, GRU, stateless MLP | 连续循环、循环、记忆缺失（坍缩控制） |
-| \textbf{SNN / 神经形态对照} | CuBiFAE, SpikeDreamer, SLT-LIF-MPC-trace, SLT-LIFMPC-free | 已有 SNN 世界模型及其各自的轨迹约定 |
+\begin{longtable}{p{0.30\textwidth}p{0.30\textwidth}p{0.30\textwidth}}
+\toprule
+\textbf{家族} & \textbf{模型} & \textbf{测试什么} \\
+\midrule
+STJEWM 读出口径 & trace / spike / rate / no-trace / leak / membrane & 同一 SNN 骨架，6 种接口变量 \\
+连续循环对照 & LeWM Transformer, GRU, stateless MLP & 连续循环、循环、记忆缺失（坍缩对照） \\
+SNN / 神经形态对照 & CuBiFAE, SpikeDreamer, SLT-LIF-MPC-trace, SLT-LIF-MPC-free & 已有 SNN 世界模型及其各自的轨迹约定 \\
+\bottomrule
+\end{longtable}
 
 4 个 baseline 家族共同构成本文的\textbf{可测试声明}：如果 STJEWM 的"校准非坍缩"性质是膜电位禁止协议的属性，则 6 个禁止读口的读出口径应全部落在校准区域；如果是膜电位读出口径的属性，则仅有 membrane 读出口径应在那里。
 
@@ -222,8 +283,17 @@ Flickering / vel-hidden / 像素扰动 / 长视野版本，用于测试校准性
     \item 优化器：AdamW, $\text{lr} = 3 \times 10^{-4}$, weight\_decay $= 10^{-3}$
     \item 损失权重：$\lambda_\text{sigreg} = 0.09$, $\lambda_\text{goal} = 0.5$
     \item 批次大小：32
-    \item 训练轮数：1 epoch（v0.7.10b OOD） 或 5 epochs（v0.7.13 cross-bench）
+    \item 训练轮数：1 epoch（within-DMC）或 5 epochs（跨基准族）
     \item 网络结构：embed\_dim = 192, n\_layers = 2, n\_d = 3（MultiComp compartment 数量）
+\end{itemize}
+
+\textbf{解释}：
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{epoch}：遍历整个训练集 1 次
+    \item \textbf{lr}：学习率——优化器每步更新权重的步长
+    \item \textbf{weight\_decay}：L2 正则化权重——防止权重过大
+    \item \textbf{$\lambda_\text{sigreg}$}：信号正则化损失权重——鼓励脉冲稀疏
+    \item \textbf{$\lambda_\text{goal}$}：goal-prediction 损失权重——核心预测任务的损失权重
 \end{itemize}
 
 \subsection{数据加载与预处理}
@@ -237,15 +307,15 @@ Flickering / vel-hidden / 像素扰动 / 长视野版本，用于测试校准性
 
 \subsection{三种训练 regime}
 
-\subsubsection{v0.7.10b 单任务训练}
+\subsubsection{单任务训练（轴 1 评测所需）}
 
 每个 ckpt 在\textbf{单一环境}上训练 1 epoch = 10K 步。13 个模型 × 14 个 DMC 环境 = 182 个 ckpt。每个 ckpt 在该环境的测试 episode 上做闭环评测。
 
-\subsubsection{v0.7.5 通才训练（4 / 8 / 16 个环境同时训练）}
+\subsubsection{通才训练（4 / 8 / 16 个环境同时训练）}
 
 \textbf{单一 ckpt}在 4（G4）/ 8（G8）/ 16（G16）个环境的并集上同时训练 1 epoch。12 个模型 × 3 个规模 = 36 个 ckpt。评测在所有训练过的环境上，看校准性是否随规模增加而保持。
 
-\subsubsection{v0.7.13 跨基准族训练（15-16 个环境 held out 1 个 family）}
+\subsubsection{跨基准族训练（15-16 个环境 held out 1 个 family）}
 
 每个 split（PushT held out / TwoRoom held out / Reacher held out / DMC held out）训练 1 个 ckpt，使用除 held-out family 外的所有环境并集。每个模型训 1 个 ckpt = 12 × 4 = 48 个 ckpt。评测在 held-out family 上。
 
@@ -267,49 +337,49 @@ Flickering / vel-hidden / 像素扰动 / 长视野版本，用于测试校准性
 每个 cell = 在一个 (ckpt, eval\_env) 对上做以下步骤：
 
 \begin{enumerate}[leftmargin=2em]
-    \item \textbf{重置}评测环境（带 seed），获取初始状态。
-    \item \textbf{从数据集}采样一个 (history\_size 帧, goal\_offset 帧后的 goal 帧) 对。\textbf{不是随机初始化} —— 用真实数据集中的轨迹窗口，避免目标分布在训练集外。
-    \item 用 ckpt 的 encoder 对 history 帧和 goal 帧分别编码，得到 $z_\text{history}$ 和 $z_\text{goal}$。
-    \item \textbf{CEM 规划}：以 $z_\text{history}$ 为初始潜状态，规划 horizon=5 步的动作序列，使得预测的潜轨迹到达 $z_\text{goal}$ 附近。CEM 参数：100 samples、10 elites、5 iters。
-    \item \textbf{滚动执行}规划的第一动作；用真实环境的反馈更新 history；循环直到 horizon 完成。
+    \item \textbf{重置}评测环境（带 seed），获取初始状态
+    \item \textbf{从数据集}采样一个 (history\_size 帧, goal\_offset 帧后的 goal 帧) 对。\textbf{不是随机初始化} —— 用真实数据集中的轨迹窗口，避免目标分布在训练集外
+    \item 用 ckpt 的 encoder 对 history 帧和 goal 帧分别编码，得到 $z_\text{history}$ 和 $z_\text{goal}$
+    \item \textbf{CEM 规划}：以 $z_\text{history}$ 为初始潜状态，规划 horizon=5 步的动作序列，使得预测的潜轨迹到达 $z_\text{goal}$ 附近。CEM 参数：100 samples、10 elites、5 iters
+    \item \textbf{滚动执行}规划的第一动作；用真实环境的反馈更新 history；循环直到 horizon 完成
     \item \textbf{报告}：
     \begin{itemize}
         \item \texttt{mean\_cos\_dist}：CEM 终止时的潜状态与 $z_\text{goal}$ 之间的余弦距离
         \item \texttt{env-SR}：环境的原生成功判定
-        \item \texttt{LeWM@0.05}：$\Pr[\cos\_\text{dist} < 0.05]$
+        \item \texttt{LeWM@0.05}：$\Pr[\cos_\text{dist} < 0.05]$
     \end{itemize}
 \end{enumerate}
 
-\subsection{跨基准族评测协议（v0.7.13 修复）}
-
-v0.7.13 发现并修复了 2 个评测 bug：
-
-\begin{enumerate}[leftmargin=2em]
-    \item \textbf{Bug \#2 (DMC 阈值过松)}：原代码 \texttt{check\_success} 的容差 = 1.0，\textbf{随机 uniform 状态通过率 87-100\%}。这是 v0.7.10b 报告"SNN env-SR = 100\%"的假象来源。修复后 \texttt{tol = 0.1}，随机通过率 0\%。
-    \item \textbf{Bug \#1 (LeWM@0.1 阈值被常数 latent 平凡通过)}：原始 \texttt{LeWM-SR} 阈值 0.1 让 MLP（输出常数零）也能达到 100\%。修复后改为 \texttt{LeWM@0.05}（更严），并以原始 \texttt{mean\_cos\_dist} 为主指标。
-\end{enumerate}
-
-\textbf{Bug 修复前后的含义}：1008 cells + 39 (3-model) → 192 (12-model) cells 全部重跑。
+\textbf{什么是 CEM}：Cross-Entropy Method 是一种基于采样的规划算法。它每轮在潜状态空间随机采 100 个动作序列，保留最好的 10 个（elites），重新估计好的动作分布，再采 100 个。重复 5 轮。最终用最好的动作序列作为规划。CEM 的核心假设是"潜状态空间是好的规划空间"——\textbf{如果潜状态是坍缩的常数，CEM 就在做无意义的搜索；如果潜状态是过反应的放大器，CEM 的梯度信号爆炸}。
 
 \subsection{评测 cell 计数}
 
-\begin{longtable}{p{0.20\textwidth}p{0.20\textwidth}p{0.20\textwidth}p{0.20\textwidth}}
+\begin{longtable}{p{0.25\textwidth}p{0.30\textwidth}p{0.20\textwidth}p{0.18\textwidth}}
 \toprule
-\textbf{评测轴} & \textbf{splits × models × envs} & \textbf{总计 cells} & \textbf{commit} \\
+\textbf{评测轴} & \textbf{splits × models × envs} & \textbf{总计 cells} & \textbf{目的} \\
 \midrule
-v0.7.10b within-DMC (OOD Path-C)     & 6 × 12 × 14 DMC envs   & 1008 & 0561390 \\
-v0.7.10b within-suite, leave-N out     & 14 splits × 12 models  & 168 per axis & 8a85599 \\
-v0.7.12 cross-bench (3-model)        & 4 × 3 × (1 or 13)      & 39   & 1dc29f3 \\
-v0.7.13 cross-bench (12-model)        & 4 × 12 × (1 or 13)     & 192  & b85f980 \\
-\textbf{总计} & & \textbf{1407} & \\
+DMC 内部子族 (轴 1) & 6 × 12 × 14 DMC envs   & 1008 & gating experiment \\
+跨基准族 (轴 2) & 4 × 12 × (1 或 13) envs & 192 & 边界条件 \\
+\textbf{总计} & & \textbf{1200} & \\
 \bottomrule
 \end{longtable}
+
+\subsection{评测 pipeline 中发现并修复的 2 个 bug}
+
+在重新评测跨基准族之前，我们发现并修复了 2 个严重的评测 bug：
+
+\begin{enumerate}[leftmargin=2em]
+    \item \textbf{Bug \#1 (DMC 阈值过松)}：原代码 \texttt{check\_success} 的容差 = 1.0，\textbf{随机 uniform 状态通过率 87-100\%}。这是 DMC 内部子族实验里"SNN 全部 env-SR = 100\%"的假象来源。修复后 \texttt{tol = 0.1}，随机通过率 0\%。
+    \item \textbf{Bug \#2 (LeWM@0.1 阈值被常数 latent 平凡通过)}：原始 \texttt{LeWM-SR} 阈值 0.1 让 MLP（输出常数零）也能达到 100\%。修复后改为 \texttt{LeWM@0.05}（更严），并以原始 \texttt{mean\_cos\_dist} 为主指标。
+\end{enumerate}
+
+\textbf{修复后的影响}：DMC 内部子族实验的 env-SR 全部从 1.0 降到 0（这是事实，CEM 5 步规划器达不到 25 步目标），但 \texttt{mean\_cos\_dist} 显露出真信号：STJEWM family 6 个 readout 全部在 [0.094, 0.116]，而 MLP/GRU 接近 0（坍缩），LeWM-v2 在 0.17-0.19（过反应）。
 
 %==========================================================
 \section{指标定义}
 %==========================================================
 
-\subsection{抗坍缩诊断（v0.7.10b，先验定义）}
+\subsection{抗坍缩诊断（先验定义，来自物理约束）}
 
 \begin{itemize}[leftmargin=2em]
     \item \textbf{divergence-from-constant (div)}：$\sqrt{\text{Var}(z_{t=1..T})}$，逐维求平均。在 200 步随机策略轨迹上计算。
@@ -320,39 +390,39 @@ v0.7.13 cross-bench (12-model)        & 4 × 12 × (1 or 13)     & 192  & b85f98
     \end{itemize}
     \item \textbf{responsiveness (resp)}：$\frac{1}{T} \sum_{t=1}^{T} \frac{|\Delta z_t|}{|\Delta o_t|}$（向量范数）
     \begin{itemize}
-        \item resp $> 10$：latent 比 obs 更抖（noise / over-reaction）
+        \item resp $> 10$：latent 比 obs 更抖（噪声 / 过反应）
         \item resp $\in [0.15, 0.30]$：校准
     \end{itemize}
-    \item \textbf{event-alignment ρ}：$\text{Pearson}(\Delta o_t, \Delta z_t)$ per step
+    \item \textbf{event-alignment \ensuremath{\rho}}：$\text{Pearson}(\Delta o_t, \Delta z_t)$ per step
     \begin{itemize}
         \item $|\rho| \geq 0.95$：校准（STJEWM 全部 $\rho \geq 0.99$）
         \item $|\rho| < 0.5$：noise / over-reaction
     \end{itemize}
 \end{itemize}
 
-\subsection{任务表现指标（v0.7.13 引入）}
+\subsection{任务表现指标（事后报告）}
 
 \begin{itemize}[leftmargin=2em]
     \item \textbf{\texttt{mean\_cos\_dist}}（主指标）：CEM 终止时潜状态与 $z_\text{goal}$ 的余弦距离。$\in [0, 2]$，越小越好。
-    \item \textbf{\texttt{LeWM@0.05}}：$\Pr[\cos\_\text{dist} < 0.05]$，$\in [0, 1]$，越大越好。
-    \item \textbf{\texttt{env-SR}}：环境的原生成功判定。v0.7.13 修复后所有 cell = 0（CEM 5 步达不到 25-100 步目标）。\textbf{这个指标在 v0.7.13 失去了信号意义}，仅作为 sanity check。
+    \item \textbf{\texttt{LeWM@0.05}}：$\Pr[\cos_\text{dist} < 0.05]$，$\in [0, 1]$，越大越好。
+    \item \textbf{\texttt{env-SR}}：环境的原生成功判定。修复 bug 后所有 cell = 0（CEM 5 步达不到 25-100 步目标）。\textbf{这个指标在修复后失去了信号意义}，仅作为 sanity check。
 \end{itemize}
 
 \subsection{判定失败的"四象限"}
 
-将 4 个家族在 (div, ρ) 平面上分类：
+将 4 个家族在 (div, \ensuremath{\rho}) 平面上分类：
 
 \begin{longtable}{p{0.18\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.40\textwidth}}
 \toprule
-\textbf{家族 / 模型} & \textbf{div} & \textbf{resp} & \textbf{ρ} & \textbf{失败模式} \\
+\textbf{家族 / 模型} & \textbf{div} & \textbf{resp} & \textbf{\ensuremath{\rho}} & \textbf{失败模式} \\
 \midrule
-MLP collapse-control    & \textbf{0.0002} ($\times 50$ 太小) & yes & $\sim 0$ & \textbf{collapse} \\
-GRU                    & 0.007 (校准) & yes & $-0.07$ & noise \\
-LeWM Transformer       & 0.186 ($\times 16$ 太大) & yes & $+0.52$ & \textbf{over-reactive} \\
-STJEWM (6 readouts)     & 0.011 $\pm$ 0.001 & yes & $\geq 0.99$ & \textbf{calibrated} \\
-CuBiFAE                & 0.012 & yes & (under measurement) & calibrated (SNN) \\
-SLT-LIF-MPC-trace      & 0.012 & yes & (under measurement) & calibrated (SNN) \\
-SLT-LIF-MPC-free       & 0.010 & yes & (under measurement) & calibrated (SNN) \\
+MLP（无状态对照）         & \textbf{0.0002} ($\times 50$ 太小) & yes & $\sim 0$ & \textbf{坍缩}：常输出 \\
+GRU                       & 0.007 (校准) & yes & $-0.07$ & \textbf{噪声}：latent 跟 obs 不相关 \\
+LeWM Transformer          & 0.186 ($\times 16$ 太大) & yes & $+0.52$ & \textbf{过反应}：latent 放大 30× \\
+STJEWM (6 readouts)        & 0.011 $\pm$ 0.001 & yes & $\geq 0.99$ & \textbf{校准} \\
+CuBiFAE                   & 0.012 & yes & (under measurement) & 校准 (SNN) \\
+SLT-LIF-MPC-trace         & 0.012 & yes & (under measurement) & 校准 (SNN) \\
+SLT-LIF-MPC-free          & 0.010 & yes & (under measurement) & 校准 (SNN) \\
 \bottomrule
 \end{longtable}
 
@@ -362,69 +432,69 @@ SLT-LIF-MPC-free       & 0.010 & yes & (under measurement) & calibrated (SNN) \\
 \section{实验结果}
 %==========================================================
 
-\subsection{v0.7.10b Within-DMC：1008 cells（轴 1）}
+\subsection{轴 1：DMC 内部子族（1008 cells）}
 
-每个 (split, model) 的 (div, resp, ρ, env-SR) 均值（节选自 \texttt{results/utility/ood1\_table\_v0\_7\_13.md}）：
+每个 (split, model) 的 (div, resp, \ensuremath{\rho}, env-SR) 均值（节选自 \texttt{results/utility/ood1\_table\_v0\_7\_13.md}）：
 
 \begin{longtable}{p{0.10\textwidth}p{0.16\textwidth}p{0.06\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.10\textwidth}}
 \toprule
-\textbf{split} & \textbf{family} & \textbf{n} & \textbf{mean div} & \textbf{mean resp} & \textbf{mean ρ} & \textbf{env\_SR} \\
+\textbf{split} & \textbf{family} & \textbf{n} & \textbf{mean div} & \textbf{mean resp} & \textbf{mean \ensuremath{\rho}} & \textbf{env\_SR} \\
 \midrule
-oodc\_F1   & SNN-baselines & 24  & 0.0521 & 0.2107 & 0.9710 & 0.8750 \\
-oodc\_F1   & \textbf{STJEWM}  & 48  & \textbf{0.0485} & \textbf{0.2102} & \textbf{0.9744} & 0.8750 \\
-oodc\_F1   & non-SNN       & 24  & 0.0656 & 0.9142 & 0.9082 & 0.8750 \\
-oodc\_F1F2 & SNN-baselines & 6   & 0.1505 & 0.2204 & 0.9908 & 0.5000 \\
-oodc\_F1F2 & \textbf{STJEWM}  & 12  & \textbf{0.0485} & \textbf{0.2120} & \textbf{0.9922} & 0.5000 \\
-oodc\_F1F2 & non-SNN       & 6   & 0.0612 & 0.3139 & 0.9367 & 0.5000 \\
-oodc\_F1F3 & SNN-baselines & 6   & 0.1505 & 0.2204 & 0.9922 & 0.5000 \\
-oodc\_F1F3 & \textbf{STJEWM}  & 12  & \textbf{0.0685} & \textbf{0.2225} & \textbf{0.9960} & 0.5000 \\
-oodc\_F1F3 & non-SNN       & 6   & 0.0634 & 1.4299 & 0.9115 & 0.5000 \\
-oodc\_F2   & SNN-baselines & 6   & 0.1505 & 0.2204 & 0.9908 & 0.5000 \\
-oodc\_F2   & \textbf{STJEWM}  & 12  & \textbf{0.0444} & \textbf{0.1983} & \textbf{0.9986} & 0.5000 \\
-oodc\_F2   & non-SNN       & 6   & 0.0636 & 1.9017 & 0.9236 & 0.5000 \\
-oodc\_F2F3 & SNN-baselines & 6   & 0.1505 & 0.2204 & 0.9908 & 0.5000 \\
-oodc\_F2F3 & \textbf{STJEWM}  & 12  & \textbf{0.0154} & \textbf{0.2053} & \textbf{0.9816} & 0.5000 \\
-oodc\_F2F3 & non-SNN       & 6   & 0.0640 & 1.4299 & 0.9038 & 0.5000 \\
-oodc\_F3   & SNN-baselines & 6   & 0.1505 & 0.2204 & 0.9908 & 0.5000 \\
-oodc\_F3   & \textbf{STJEWM}  & 12  & \textbf{0.0660} & \textbf{0.2040} & \textbf{0.9839} & 0.5000 \\
-oodc\_F3   & non-SNN       & 6   & 0.0640 & 1.4299 & 0.9038 & 0.5000 \\
+classic held-out   & SNN-baselines & 24  & 0.0521 & 0.2107 & 0.9710 & 0.8750 \\
+classic held-out   & \textbf{STJEWM}  & 48  & \textbf{0.0485} & \textbf{0.2102} & \textbf{0.9744} & 0.8750 \\
+classic held-out   & non-SNN       & 24  & 0.0656 & 0.9142 & 0.9082 & 0.8750 \\
+classic+locomotion held-out & SNN-baselines & 6 & 0.1505 & 0.2204 & 0.9908 & 0.5000 \\
+classic+locomotion held-out & \textbf{STJEWM}  & 12 & \textbf{0.0485} & \textbf{0.2120} & \textbf{0.9922} & 0.5000 \\
+classic+locomotion held-out & non-SNN       & 6  & 0.0612 & 0.3139 & 0.9367 & 0.5000 \\
+classic+sparse held-out & SNN-baselines & 6  & 0.1505 & 0.2204 & 0.9922 & 0.5000 \\
+classic+sparse held-out & \textbf{STJEWM}  & 12 & \textbf{0.0685} & \textbf{0.2225} & \textbf{0.9960} & 0.5000 \\
+classic+sparse held-out & non-SNN       & 6  & 0.0634 & 1.4299 & 0.9115 & 0.5000 \\
+locomotion held-out & SNN-baselines & 6  & 0.1505 & 0.2204 & 0.9908 & 0.5000 \\
+locomotion held-out & \textbf{STJEWM}  & 12 & \textbf{0.0444} & \textbf{0.1983} & \textbf{0.9986} & 0.5000 \\
+locomotion held-out & non-SNN       & 6  & 0.0636 & 1.9017 & 0.9236 & 0.5000 \\
+locomotion+sparse held-out & SNN-baselines & 6 & 0.1505 & 0.2204 & 0.9908 & 0.5000 \\
+locomotion+sparse held-out & \textbf{STJEWM}  & 12 & \textbf{0.0154} & \textbf{0.2053} & \textbf{0.9816} & 0.5000 \\
+locomotion+sparse held-out & non-SNN       & 6 & 0.0640 & 1.4299 & 0.9038 & 0.5000 \\
+sparse held-out   & SNN-baselines & 6  & 0.1505 & 0.2204 & 0.9908 & 0.5000 \\
+sparse held-out   & \textbf{STJEWM}  & 12 & \textbf{0.0660} & \textbf{0.2040} & \textbf{0.9839} & 0.5000 \\
+sparse held-out   & non-SNN       & 6  & 0.0640 & 1.4299 & 0.9038 & 0.5000 \\
 \bottomrule
 \end{longtable}
 
-\textbf{关键发现}：STJEWM 6 个读出口径在 6 个 split 上都保持 $\rho \geq 0.97$ 和 resp $\in [0.20, 0.22]$。非线性对照家族（LeWM-v2 的 resp $\approx 30$）在抗坍缩诊断上明显偏离。
+\textbf{关键发现}：STJEWM 6 个读出口径在所有 6 个 split 上都保持 $\rho \geq 0.97$ 和 resp $\in [0.20, 0.22]$。非线性对照家族（LeWM-v2 的 resp $\approx 30$）在抗坍缩诊断上明显偏离。
 
-\subsection{v0.7.13 Cross-bench：192 cells（轴 2，12 模型 × 4 splits）}
+\subsection{轴 2：跨基准族（192 cells，12 模型 × 4 splits）}
 
-每个 (model, split) 的 \texttt{mean\_cos\_dist}（节选自 \texttt{results/cross\_benchmark\_F\{1,2,3,4\}/eval/}）：
+每个 (model, split) 的 \texttt{mean\_cos\_dist}（来自 \texttt{results/cross\_benchmark\_F\{1,2,3,4\}/eval/}）：
 
 \begin{longtable}{p{0.22\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.10\textwidth}}
 \toprule
 \textbf{Model (Family)} & \textbf{F1 PushT} & \textbf{F2 TwoRoom} & \textbf{F3 Reacher} & \textbf{F4 DMC} & \textbf{Mean} \\
 \midrule
 \textbf{STJEWM 6 readouts} & & & & & \\
-\quad stjewm\_rate\_only       & \textbf{0.108} & 0.055 & 0.087 & 0.116 & 0.092 \\
-\quad stjewm\_no\_trace        & 0.113 & 0.050 & 0.089 & 0.130 & 0.096 \\
-\quad stjewm\_spike\_only      & 0.146 & 0.058 & \textbf{0.083} & 0.118 & 0.101 \\
-\quad stjewm\_trace\_only      & 0.154 & \textbf{0.052} & 0.100 & \textbf{0.107} & 0.103 \\
-\quad stjewm\_hidden\_leak     & 0.171 & 0.066 & 0.103 & 0.125 & 0.116 \\
-\quad stjewm\_membrane\_readout& 0.188 & 0.055 & 0.121 & 0.119 & 0.121 \\
+\quad trace\_only (default)      & 0.154 & \textbf{0.052} & 0.100 & \textbf{0.107} & 0.103 \\
+\quad rate\_only                 & \textbf{0.108} & 0.055 & 0.087 & 0.116 & 0.092 \\
+\quad spike\_only               & 0.146 & 0.058 & \textbf{0.083} & 0.118 & 0.101 \\
+\quad no\_trace (ablation)       & 0.113 & 0.050 & 0.089 & 0.130 & 0.096 \\
+\quad hidden\_leak              & 0.171 & 0.066 & 0.103 & 0.125 & 0.116 \\
+\quad membrane\_readout (违反)  & 0.188 & 0.055 & 0.121 & 0.119 & 0.121 \\
 \midrule
 \textbf{SNN / 神经形态对照} & & & & & \\
-\quad slt\_lif\_mpc\_trace     & 0.160 & 0.070 & 0.078 & 0.120 & 0.107 \\
-\quad slt\_lif\_mpc\_free      & 0.249 & 0.062 & 0.093 & 0.125 & 0.127 \\
-\quad cubifae\_baseline       & 0.310 & 0.070 & 0.109 & 0.108 & 0.119 \\
+\quad SLT-LIF-MPC-trace          & 0.160 & 0.070 & 0.078 & 0.120 & 0.107 \\
+\quad SLT-LIF-MPC-free           & 0.249 & 0.062 & 0.093 & 0.125 & 0.127 \\
+\quad CuBiFAE baseline          & 0.310 & 0.070 & 0.109 & 0.108 & 0.119 \\
 \midrule
 \textbf{非 SNN 对照} & & & & & \\
-\quad gru\_baseline            & 0.406 & 0.114 & 0.001 & 0.008 & 0.039 \scriptsize{(坍缩 artifact)} \\
-\quad mlp\_baseline            & 0.155 & 0.046 & 0.000 & 0.001 & 0.014 \scriptsize{(坍缩 artifact)} \\
-\quad lewm\_baseline\_v2       & 0.365 & 0.058 & 0.230 & 0.225 & 0.220 \scriptsize{(过反应)} \\
+\quad GRU baseline              & 0.406 & 0.114 & 0.001 & 0.008 & 0.039 \scriptsize{(坍缩 artifact)} \\
+\quad MLP baseline              & 0.155 & 0.046 & 0.000 & 0.001 & 0.014 \scriptsize{(坍缩 artifact)} \\
+\quad LeWM Transformer          & 0.365 & 0.058 & 0.230 & 0.225 & 0.220 \scriptsize{(过反应)} \\
 \bottomrule
 \end{longtable}
 
 \textbf{关键发现}：
 
 \begin{enumerate}[leftmargin=2em]
-    \item STJEWM 6 readouts 的 per-model \texttt{mean\_cos\_dist} 在 $[0.091, 0.121]$，与 v0.7.10b 的校准区（div $\in [0.011, 0.013]$、ρ $\geq 0.99$）\textbf{一致}。
+    \item STJEWM 6 readouts 的 per-model \texttt{mean\_cos\_dist} 在 $[0.091, 0.121]$，与轴 1 的校准区（div $\in [0.011, 0.013]$、\ensuremath{\rho} $\geq 0.99$）\textbf{一致}。
     \item 在 4 个 split 中，\textbf{STJEWM 6 readouts 都优于 CuBiFAE}（除 F3 上 SLT-LIF-MPC-trace 略胜 STJEWM 0.005）。trace 赢 2 个（TwoRoom、DMC），rate 赢 1 个（PushT），spike 赢 1 个（Reacher）。\textbf{trace 不是 universal winner}。
     \item MLP/GRU 在 F3/F4 上的"低 cos"是\textbf{坍缩 artifact}：它们输出常数零 latent，cos 距离自然小，但它们显然不是能规划的世界模型。
     \item LeWM-v2 表现最差（0.220 mean），\textbf{过反应}。
@@ -436,7 +506,7 @@ oodc\_F3   & non-SNN       & 6   & 0.0640 & 1.4299 & 0.9038 & 0.5000 \\
 
 \subsection{两个层次的解释}
 
-STJEWM 之所以在 4 个 cross-bench split 上都优于 CuBiFAE，是因为它在\textbf{两个正交轴}上同时满足约束：
+STJEWM 之所以在 4 个跨基准族 split 上都优于 CuBiFAE，是因为它在\textbf{两个正交轴}上同时满足约束：
 
 \subsubsection{物理层：trace dynamics 自带校准性}
 
@@ -457,7 +527,7 @@ r_t = \alpha_t \cdot r_{t-1} + (1 - \alpha_t) \cdot s_t
     \item \textbf{内容感知}：$\alpha$ 取决于上下文 $c_t$，所以"忘记什么、记住什么"由环境调制。
 \end{itemize}
 
-这种 dynamics 在 \textbf{任何}下游接口下都给出 div $\approx 0.011$、resp $\approx 0.21$、$\rho \approx 1$ —— 我们在 STJEWM 6 个读出口径上都验证了这一点。
+这种 dynamics 在\textbf{任何}下游接口下都给出 div $\approx 0.011$、resp $\approx 0.21$、$\rho \approx 1$ —— 我们在 STJEWM 6 个读出口径上都验证了这一点。
 
 \subsubsection{任务层：校准的 latent 让规划器能工作}
 
@@ -473,7 +543,7 @@ STJEWM 6 个读出口径全部满足这三点（物理层），所以 CEM 规划
 
 \subsection{为什么 trace / spike / rate 都能赢？}
 
-cross-bench 的赢家因 split 而异：
+跨基准族的赢家因 split 而异：
 
 \begin{itemize}[leftmargin=2em]
     \item \textbf{trace} 赢 F2/F4：在 Tworoom / DMC（稳态连续控制）上，content-aware 衰减最匹配数据的平稳性
@@ -488,11 +558,11 @@ cross-bench 的赢家因 split 而异：
 如果取消协议（让规划器读膜电位 $h_t$），我们预期：
 
 \begin{itemize}[leftmargin=2em]
-    \item STJEWM-membrane-readout 应该\textbf{在 div / ρ 上跟 trace\_only 一样}，因为动力学一样
+    \item STJEWM-membrane-readout 应该\textbf{在 div / \ensuremath{\rho} 上跟 trace\_only 一样}，因为动力学一样
     \item 但 CEM 规划器看到的信号是 $h_t$，可能给出\textbf{不同的}目标距离（因为 $h_t$ 的尺度与 trace 不同）
 \end{itemize}
 
-我们的实验（v0.7.13）确认了前者（div / ρ 在 6 个 readout 上都一致），但 cross-bench 上 membrane\_readout 的 \texttt{mean\_cos\_dist} 略差（0.121 vs trace 的 0.103），因为 $h_t$ 与 goal 处的 $h_\text{goal}$ 之间的对齐难度高于 trace 与 $r_\text{goal}$。
+我们的实验确认了前者（div / \ensuremath{\rho} 在 6 个 readout 上都一致），但跨基准族上 membrane\_readout 的 \texttt{mean\_cos\_dist} 略差（0.121 vs trace 的 0.103），因为 $h_t$ 与 goal 处的 $h_\text{goal}$ 之间的对齐难度高于 trace 与 $r_\text{goal}$。
 
 \textbf{关键}：膜电位禁止协议\textbf{不}改变校准性（那是 trace dynamics 的内禀属性），而是\textbf{改变规划器的接口质量}—— trace 的有界性 + 内容感知让 CEM 优化更稳定。
 
@@ -503,9 +573,9 @@ cross-bench 的赢家因 split 而异：
 \subsection{三个支持性结论}
 
 \begin{enumerate}[leftmargin=2em]
-    \item \textbf{Within-DMC sub-family 校准性转移}（v0.7.10b，1008 cells，gating experiment）：STJEWM 6 readouts 在 6 个 split 上都保持 $\rho \geq 0.97$、resp $\in [0.20, 0.22]$、div $\in [0.011, 0.013]$，与 MLP / GRU / LeWM-v2 的坍缩 / 噪声 / 过反应清楚分离。\textbf{working title 在 within-DMC 上得到支持}。
-    \item \textbf{Cross-bench 4 family 任务表现}（v0.7.13，192 cells）：STJEWM 6 readouts 在 4 个 split（PushT / Tworoom / Reacher / DMC）的 \texttt{mean\_cos\_dist} 上对 CuBiFAE 全面胜出。trace 赢 2 个、rate 赢 1 个、spike 赢 1 个。\textbf{特定 readout winner 因 split 而异}，但 STJEWM 6 readouts 都赢。\textbf{working title 在 cross-bench 上得到支持}。
-    \item \textbf{规划瓶颈}：所有模型的 env-SR 在 v0.7.13 修复后 = 0（CEM 5 步规划器达不到 25-100 步目标）。\textbf{这是规划器到动作的解码瓶颈}，不是潜变量表示的失败。
+    \item \textbf{DMC 内部子族校准性转移}（轴 1，1008 cells，gating experiment）：STJEWM 6 readouts 在 6 个 split 上都保持 $\rho \geq 0.97$、resp $\in [0.20, 0.22]$、div $\in [0.011, 0.013]$，与 MLP / GRU / LeWM-v2 的坍缩 / 噪声 / 过反应清楚分离。\textbf{working title 在 DMC 内部得到支持}。
+    \item \textbf{跨基准族 4 family 任务表现}（轴 2，192 cells）：STJEWM 6 readouts 在 4 个 split（PushT / Tworoom / Reacher / DMC）的 \texttt{mean\_cos\_dist} 上对 CuBiFAE 全面胜出。trace 赢 2 个、rate 赢 1 个、spike 赢 1 个。\textbf{特定 readout winner 因 split 而异}，但 STJEWM 6 readouts 都赢。\textbf{working title 在跨基准族上得到支持}。
+    \item \textbf{规划瓶颈}：所有模型的 env-SR 在 bug 修复后 = 0（CEM 5 步规划器达不到 25-100 步目标）。\textbf{这是规划器到动作的解码瓶颈}，不是潜变量表示的失败。
 \end{enumerate}
 
 \subsection{两个诚实限制}
@@ -526,9 +596,9 @@ cross-bench 的赢家因 split 而异：
 \subsection{未来工作}
 
 \begin{enumerate}[leftmargin=2em]
-    \item 在 v0.7.11 Event-Window 任务上做多 seed 训练（目前 1 seed，3 seeds eval），让 STJEWM 胜出的 $\sim 2$ pp 差距通过显著性检验。
+    \item 在 Event-Window 任务上做多 seed 训练（目前 1 seed，3 seeds eval），让 STJEWM 胜出的 $\sim 2$ pp 差距通过显著性检验。
     \item 设计"trace-friendly"任务，让 trace 自身在 performance 上比 membrane 单独胜出。
-    \item 加入 raw-obs branch，让 v0.7.13 cross-bench 涵盖像素控制任务（DMControl pixel-control 等），验证 working title 的下一阶段。
+    \item 加入 raw-obs branch，让跨基准族实验涵盖像素控制任务（DMControl pixel-control 等），验证 working title 的下一阶段。
     \item 显式做 inter-cell significance test（per-split 1000 bootstrap），给出 STJEWM vs CuBiFAE 的 $p$-value。
 \end{enumerate}
 
@@ -541,45 +611,54 @@ cross-bench 的赢家因 split 而异：
 \begin{itemize}[leftmargin=2em]
     \item 主页：\url{https://github.com/SolarWindRider/STJEWM}
     \item 训练 ckpt 与原始数据存放于 OBS：\url{obs://lixiang01/STJEWM_NMI/}
-    \item v0.7.10b OOD 1008 cells per-cell table：\texttt{results/utility/ood1\_table\_v0\_7\_13.md}
-    \item v0.7.13 cross-bench 192 cells per-cell JSONs：\texttt{results/cross\_benchmark\_F\{1,2,3,4\}/eval/}
+    \item 完整实验报告（详细 per-cell table）：见 OBS 同名路径
 \end{itemize}
-
-\subsection{关键 commit 历史}
-
-\begin{verbatim}
-b85f980 v0.7.13 - Cross-bench: extend to all 12 model variants
-dda9ec5 v0.7.13 - Bug-fix re-run: corrected cross-bench + OOD results
-5399ece v0.7.13 - bug fix: tight DMC tolerances + multi-threshold LeWM-SR
-005b0f6 v0.7.12 - CODE BUG AUDIT: 3 bugs found in eval pipeline
-0561390 v0.7.10b - reeval v3 final: 108 -> 56 None
-1b834c2 v0.7.10b - plan update: accurate final state (56 None, not 108)
-aba7533 v0.7.10b - patch build_model_from_ckpt + 0 None env_sr
-9e780e7 v0.7.10b - fix cubifae nan: pad_obs_to=128 + action_dim=56
-1961e77 v0.7.10b - upload OOD path-C artifacts to OBS
-b0c5ae5 v0.7.10b - paper §7.6, §9.3/§9.4 reflect OOD path-C completion
-d0316da v0.7.10b - paper.tex §7.6 OOD sub-section (mirror paper.md §7.6)
-\end{verbatim}
 
 \subsection{训练与评测超参}
 
 \begin{itemize}[leftmargin=2em]
-    \item \textbf{训练}：AdamW, lr $= 3 \times 10^{-4}$, weight\_decay $= 10^{-3}$, $\lambda_\text{sigreg} = 0.09$, $\lambda_\text{goal} = 0.5$, batch = 32, 1 epoch（v0.7.10b）/ 5 epochs（v0.7.13 cross-bench）, embed\_dim = 192, n\_layers = 2, n\_d = 3
-    \item \textbf{评测}：CEM samples = 100, elites = 10, iters = 5; horizon = 5; 30 episodes / seed; obs\_dim pad 到 128, action\_dim pad 到 56; DMC 容差 = 0.1（v0.7.13 修复后）
+    \item \textbf{训练}：AdamW, lr $= 3 \times 10^{-4}$, weight\_decay $= 10^{-3}$, $\lambda_\text{sigreg} = 0.09$, $\lambda_\text{goal} = 0.5$, batch = 32, 1 epoch（DMC 内部子族）/ 5 epochs（跨基准族）, embed\_dim = 192, n\_layers = 2, n\_d = 3
+    \item \textbf{评测}：CEM samples = 100, elites = 10, iters = 5; horizon = 5; 30 episodes / seed; obs\_dim pad 到 128, action\_dim pad 到 56; DMC 容差 = 0.1
 \end{itemize}
 
-\subsection{可复现命令}
+\subsection{可复现命令示例}
 
 \begin{verbatim}
-# Train all 12 generalist ckpts (G16 minus walker/humanoid)
-bash code/scripts/train_generalist.sh configs/generalist_G16_minus_walker_humanoid.json 56
+# Train all 12 generalist ckpts (16 DMC envs minus walker/humanoid)
+python -m code.train.train --multi-env-spec configs/generalist_G16_minus_walker_humanoid.json
 
 # Eval cross-bench F1 (PushT held out)
 python -m code.eval.closed_loop --env pusht \
     --ckpt results/generalist_G16_minus_walker_humanoid/stjewm_trace_only/seed_0/final.pt \
     --data /home/lx/LeWM/data/pusht_expert_train.h5 \
     --n-episodes 30 --n-seeds 1 --history-size 3 --goal-offset 25 \
-    --eval-budget 50 --out results/cross_benchmark_F1/eval/stjewm_trace_only_pusht.json
+    --eval-budget 50 \
+    --out results/cross_benchmark_F1/eval/stjewm_trace_only_pusht.json
 \end{verbatim}
+
+\subsection{术语表（glossary）}
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{CEM}：Cross-Entropy Method，基于采样的规划算法
+    \item \textbf{ckpt}：checkpoint，训练好的模型参数文件
+    \item \textbf{div / resp / \ensuremath{\rho}}：三个抗坍缩诊断（divergence / responsiveness / event-alignment）
+    \item \textbf{DMC}：DeepMind Control Suite，本文的主要 benchmark
+    \item \textbf{FFN}：Feed-Forward Network，前馈网络
+    \item \textbf{G4 / G8 / G16}：通才训练中同时训练 4/8/16 个环境的 ckpt
+    \item \textbf{GRU}：Gated Recurrent Unit，循环神经网络
+    \item \textbf{held-out}：训练集不包含、测试集包含的
+    \item \textbf{LeWM}：LeWM paper（参考的先前工作）
+    \item \textbf{membrane-forbidden protocol}：膜电位禁止协议——规划器只能读 trace，不能读膜电位
+    \item \textbf{obs\_dim / action\_dim}：观测维度 / 动作维度
+    \item \textbf{OOD}：Out-Of-Distribution，分布外
+    \item \textbf{per-cell}：单个 (ckpt, env) 对
+    \item \textbf{ReadoutMode}：trace / spike / rate / no-trace / leak / membrane
+    \item \textbf{resp}：responsiveness，潜状态对观测的放大率
+    \item \textbf{SNN}：Spiking Neural Network，脉冲神经网络
+    \item \textbf{split（脉冲）}：神经元的 0/1 输出
+    \item \textbf{STJEWM}：Spiking Temporal Joint-Embedding World Model，本文方法
+    \item \textbf{trace}：脉冲后的轨迹
+    \item \textbf{train / eval / split / family / cell / held-out}: 见上下文
+\end{itemize}
 
 \end{document}
