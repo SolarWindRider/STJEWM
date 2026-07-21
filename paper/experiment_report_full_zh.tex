@@ -348,6 +348,86 @@ DMC（DeepMind Control）Suite 的 14 个 proprioceptive 任务，按"经典控�
 \end{itemize}
 
 所有 DMC 数据由 250k 步的专家轨迹提取，每个任务取 10K 个 window（每 window = 1 个 history frame + 1 个 goal frame，间隔 25 帧）。"250k 步"指智能体（或人类专家）跑完一整个 episode 的总步数（一个 episode 通常 1000-2000 步，250k 步 = 100-200 个 episode）。
+\subsubsection{16 个 env 的逐个详解（任务描述、状态维度、物理含义与样本观测）}
+
+上一小节给出了 14 个 DMC env + 4 个跨基准族 family 的整体概览。下面\textbf{逐个}展开 16 个 env 的训练用状态（\texttt{env.get\_state()}）的物理含义、可视化样本与一行任务描述。每个 env 都从 \texttt{seed=0} 开始随机重置、走 50 步随机动作后捕获一次``非平凡''状态，并配上：(i) DMC/Reacher 用 MuJoCo 离屏渲染的 3D 场景；(ii) PushT/TwoRoom 用 2D 几何散点；(iii) 观测向量的 bar chart；(iv) 数值化样本。完整脚本与原始数值 dump 见 \texttt{paper/figs/dataset\_samples/generate\_samples.py} 与 \texttt{paper/figs/dataset\_samples/obs\_samples.json}。
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figs/dataset_samples/all_envs_overview.png}
+    \caption{16-env 总览：每个子图是同一个 env 在 \texttt{seed=0}、50 步随机动作后的瞬时状态。左列～右列、上到下：DMC × 13 + Reacher + PushT + TwoRoom。}
+    \label{fig:dataset-samples-overview}
+\end{figure}
+
+\textbf{总体说明}：
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{obs 语义}：DMC / Reacher 的 obs = mujoco qpos[:nq]，即纯\textbf{关节位置}（位置空间 proprioception）。目标位置 / 期望轨迹 \textbf{不在 obs 内}——这是 proprioceptive control 的标准设定。\texttt{goal\_offset=25} 表示从 history frame 出发经过 25 步后的状态作为 goal frame
+    \item \textbf{PushT / TwoRoom}：obs 是 \texttt{stable\_worldmodel} 返回的（agent + target + 内部状态）的拼接，包含 agent 位置/速度与 block/door 等离散几何对象的姿态
+    \item \textbf{观测维度差异}：从 cartpole 的 2D 到 humanoid\_cmu 的 63D——这是评测``跨 obs\_dim 泛化''的核心难度。所有 12 个模型在 G16 训练时 obs 都 0-pad 到 128 维、action 都 0-pad 到 56 维
+    \item \textbf{每幅子图的物理读法}：DMC 3D 渲染的角度是 XML 默认视角（前视或侧视）；PushT 是 2D 平面几何，agent 是蓝圆、block 是绿色 T 形（带角度旋转）、target 是红色虚线 T；TwoRoom 是 2D 平面几何，agent 是蓝点、target 是红星、中央墙 + 门洞（door）位于 x=150 附近
+\end{itemize}
+
+下面按子族分组给出 16 个 env 的\textbf{详细参数表 + 物理含义}。\texttt{obs\_dim} / \texttt{action\_dim} 列是 \texttt{code/core/envs/dmc\_env.py:83-100} 的 \texttt{DMC\_ENVS} 表（或 \texttt{swm\_envs.py:45-170} 的对应 wrapper）的注册值；\texttt{goal\_offset} 列来自 \texttt{configs/generalist\_16env.json}。
+
+\textbf{F1 经典控制（4 个 DMC + Reacher，共 5 个）}：
+
+\begin{longtable}{p{0.13\textwidth}p{0.05\textwidth}p{0.05\textwidth}p{0.05\textwidth}p{0.42\textwidth}p{0.21\textwidth}}
+\toprule
+\textbf{env} & \textbf{obs} & \textbf{act} & \textbf{goal} & \textbf{每维物理含义} & \textbf{样本观测（seed=0, 50 步）} \\
+\midrule
+\endhead
+\texttt{cartpole\_2d}     & 2 & 1 & 25 & \texttt{[cart\_x, pole\_angle]}：推车水平位置（米）、摆杆相对直立的角度（弧度，0 = 直立）。XML: \texttt{mujoco/cartpole.xml} & \texttt{[+0.4032, −0.3384]} \\
+\texttt{pendulum\_2d}     & 2 & 1 & 25 & \texttt{[cos$\theta$, sin$\theta$]}：单摆角度的 $(\cos\theta,\sin\theta)$ 展开（避免角度缠绕）；1D 力矩输入。MuJoCo XML 内部存的是 1 维 $\theta$，wrapper 展开为 2 维 & \texttt{[+0.2967, +0.9550]} \\
+\texttt{finger}          & 3 & 2 & 25 & \texttt{[qpos[0..2]]}：双指关节（前指 proximal / distal 角、目标指轮的旋转角度）；2D action 控制指指尖端 xy 位置 & \texttt{[+0.4220, −0.5861, −0.8207]} \\
+\texttt{ball\_in\_cup}    & 4 & 2 & 25 & \texttt{[cup\_x, cup\_z, ball\_x, ball\_z]}：杯的水平/垂直铰链角（弧度）、小球在支架坐标系下的位置；目标是把球摇进杯里 & \texttt{[−0.0004, −0.0233, +0.0003, −0.0315]} \\
+\texttt{reacher (4D)}    & 4 & 2 & 25 & \texttt{[shoulder\_q, elbow\_q, target\_x, target\_y]}：两关节角（弧度）+ 目标位置在 2D 平面坐标（米，范围 $\pm 0.21$）。目标 \textbf{在 obs 内} 但每 episode 重置，是 sparse POMDP 的代表 & \texttt{[+0.4303, −0.7232, −0.1836, −0.1934]} \\
+\bottomrule
+\end{longtable}
+
+\textbf{F2 运动（9 个 DMC）}：
+
+\begin{longtable}{p{0.12\textwidth}p{0.04\textwidth}p{0.04\textwidth}p{0.04\textwidth}p{0.42\textwidth}p{0.26\textwidth}}
+\toprule
+\textbf{env} & \textbf{obs} & \textbf{act} & \textbf{goal} & \textbf{每维物理含义} & \textbf{样本观测（seed=0, 50 步）} \\
+\midrule
+\endhead
+\texttt{cheetah}         & 9  & 6 & 25 & \texttt{[x\_pos, z\_pos, y\_rot, front\_hip, front\_shin, front\_foot, back\_hip, back\_shin, back\_foot]}：2D 半猎豹沿地面奔跑，qpos 含 1 个 root 水平位置 + 1 个 root 高度 + 1 个 root 旋转 + 6 个后腿关节；6D action = 6 个关节扭矩 & \texttt{[−0.1404, −0.0982, +0.0556, +0.0160, −0.0522, −0.0787, −0.0404, −0.0527, −0.2024]} \\
+\texttt{walker}          & 9  & 6 & 25 & \texttt{[x\_pos, z\_pos, y\_rot, right\_hip, right\_knee, right\_ankle, left\_hip, left\_knee, left\_ankle]}：2D 双足行走器（MuJoCo walker）；9 个 qpos 含 root 三参数 + 6 个关节 & \texttt{[−0.0743, −0.0050, +0.0590, +0.6904, −1.2262, −0.0472, +0.0987, −0.6197, +0.6887]} \\
+\texttt{hopper}          & 7  & 4 & 25 & \texttt{[x\_pos, z\_pos, y\_rot, thigh, leg, foot]}：2D 单腿跳跃器（root 三参数 + 3 个关节）；4D action 控制 4 个扭矩 & \texttt{[−0.0239, −0.2937, +0.1536, −0.1824, −1.0106, +0.0819, −0.2233]} \\
+\texttt{quadruped}       & 30 & 12 & 25 & \texttt{[root\_xyz, root\_quat(4), $\times$4 legs (hip×3 + knee×3)/leg]}：3D 四足机器人，每条腿 3 个关节共 12 个关节；XML qpos 含 root 7 参数（xyz + 四元数）+ 12 关节 = 19；但 obs\_dim=30 因 XML 注册包含额外 root 自由度与脚趾指示变量。12D action = 12 个关节扭矩 & \texttt{[−0.4621, +0.2896, +1.3941, +0.7517, −0.4908, +0.0646, …, +1.0000, +0.0000, +0.0000, +0.0000]} \\
+\texttt{humanoid}        & 28 & 21 & 25 & \texttt{[root\_xyz, root\_quat(4), 21 关节角]}：2D 简化人形 21 关节（MuJoCo humanoid.xml，21 个 actuator 对应 21 个 joint）。\textbf{注意}：XML 注册 obs\_dim=28、act\_dim=21 & \texttt{[−0.0613, −0.0062, +1.1277, +0.9768, −0.1051, −0.1106, …, −0.4508, −0.2026, −0.5048, −0.6437]} \\
+\texttt{humanoid\_CMU}   & 63 & 56 & 25 & \texttt{[root\_xyz, root\_quat(4), cmurange(56)]}：3D 高自由度人形（CMU mocap 标记）；56 维 cmurange 是 mocap 关节角度，56 维 action 控制 56 个 actuator & \texttt{[−0.0004, −0.0002, +0.9503, +0.7367, +0.6759, −0.0203, …, +0.2063, +0.0861, −0.1953, +0.1751]} \\
+\texttt{dog}             & 87 & 38 & 25 & \texttt{[root\_xyz, root\_quat(4), 38 关节 + 18 速度辅助变量]}：3D 高自由度四足狗（MuJoCo dog.xml），38 维 actuator；XML 注册 obs\_dim=87（含额外 root state 与速度估计项） & \texttt{[+0.0363, +0.0127, +0.1913, +0.9867, +0.1426, +0.0737, …, +1.0000, −0.0000, +0.0000, +0.0000]} \\
+\texttt{fish}            & 14 & 5 & 25 & \texttt{[root\_quat(4), 5 关节角, 5 速度, 1 尾巴辅助]}：2D 鱼形游泳（MuJoCo fish.xml）；5 维 actuator 控制躯体摆动 + 尾部 & \texttt{[+0.0045, −0.0177, +0.1039, +0.9898, +0.0307, −0.1151, …, −22.0118, +14.5302, +14.8166, +4.2708]} \\
+\texttt{stacker}         & 20 & 5 & 25 & \texttt{[root\_xyz, root\_quat(4), 5 关节, 5 个 cube 指示变量]}：2D 抓取机械臂堆叠 3 个立方体（MuJoCo stacker.xml）；5D action 控制末端 & \texttt{[+0.0032, +0.3956, −0.6476, −1.1333, +0.1196, +0.0730, …, +0.0000, +0.2000, +0.3875, +0.0000]} \\
+\bottomrule
+\end{longtable}
+
+\textbf{跨基准族 2 个 2D 几何 env（PushT / TwoRoom）}：
+
+\begin{longtable}{p{0.12\textwidth}p{0.04\textwidth}p{0.04\textwidth}p{0.04\textwidth}p{0.42\textwidth}p{0.26\textwidth}}
+\toprule
+\textbf{env} & \textbf{obs} & \textbf{act} & \textbf{goal} & \textbf{每维物理含义} & \textbf{样本观测（seed=0, 50 步）} \\
+\midrule
+\endhead
+\texttt{pusht}           & 7 & 2 & 100 & \texttt{[agent\_x, agent\_y, agent\_vx, agent\_vy, block\_x, block\_y, block\_angle]}：\texttt{swm/PushT-v1} 的 7D 状态。Agent 是平面圆盘（半径 12 px），位置/速度；block 是 60×60 px 的 T 形方块，位置 + 旋转角度。成功判定：block 位于目标位置 (200,100) $\pm$ 70 px 且角度 $\pm$ 1.0 rad。\textbf{action\_low/high} 来自 \texttt{gym} action\_space（$\sim [-1,1]^2$） & \texttt{[+163.82, +265.62, +383.77, +318.04, +4.97, −285.17, +347.66]} \\
+\texttt{tworoom}         & 10 & 2 & 100 & \texttt{[agent\_x, agent\_y, target\_x, target\_y, door?, 5 内部状态]}：\texttt{swm/TwoRoom-v1} 的 10D Box 观测。前 4 维是 agent + target 在 2D 平面的位置；第 5 维是 door 状态（开放/关闭）；最后 5 维是环境内部状态（门状态码、agent 是否在房间 A/B、目标房间等）。Goal\_offset=100（典型 LeWM paper 设置）；目标可能在房间 A 或房间 B，agent 不知道——\textbf{需要工作记忆 / 推断} & \texttt{[+149.17, +84.13, +99.83, +81.18, +112.0, +49.0, +0.0, +0.0, +0.0, +0.0]} \\
+\bottomrule
+\end{longtable}
+
+\textbf{为什么 goal\_offset 在 DMC/Reach/PushT 之间不同}：
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{DMC × 14 + Reacher（goal\_offset = 25）}：25 步 $\approx$ 0.5 秒控制循环（dt=0.02s），agent 短视野即可完成大多数 DMC 任务的``局部姿态调整''；CEM 5 步规划器达不到 25 步目标（详见 §8.3 Bug \#3），但 \texttt{mean\_cos\_dist} 仍给出有意义的潜变量对齐信号
+    \item \textbf{PushT / TwoRoom（goal\_offset = 100）}：100 步 $\approx$ 2 秒控制循环；PushT 需要 agent 绕到 block 后面推动 $\rightarrow$ 必须有长期预测能力；TwoRoom 需要 agent 穿过 door 才能到达另一房间——单步视野无意义。两者的 LeWM paper 也使用 100。\texttt{configs/oodc/cross\_benchmark\_F4\_train\_only.json} 中 pusht / tworoom 的 goal\_offset=100 是 \textbf{显式选择}（与 DMC 的 25 形成对比）
+\end{itemize}
+
+\textbf{每幅子图的展示位置}：
+\begin{itemize}[leftmargin=2em]
+    \item 16-env 总览（图 \ref{fig:dataset-samples-overview}）：4×4 网格，每个子图是一个 env 在 seed=0 / 50 步后的瞬时渲染
+    \item 单 env 大图（\texttt{paper/figs/dataset\_samples/<env>.png}，800×600）：三栏——上：物理场景（DMC 3D 渲染或 2D 几何散点）；中：obs 向量 bar chart（带维度标签）；下：文字 caption（任务描述 + obs\_dim + action\_dim + 数值化样本）
+\end{itemize}
+
+\textbf{由 obs\_dim 看 STJEWM 设计的物理负担}：从 cartpole 的 2D 到 dog 的 87D，STJEWM 通过 G16 训练的 \texttt{pad\_obs\_to=128} 统一接收；每个 env 的样本在进入模型前都先做 per-batch 全局 z-score 归一化，让跨 env 的 obs 在同一尺度——这是跨基准族评测能成立的前提（详见 §5.3``状态标准化''）。
 
 \subsubsection{``DMC$\times$14'' / ``DMC$\times$13'' / ``+ reacher / tworoom / pusht'' 记法说明}
 
