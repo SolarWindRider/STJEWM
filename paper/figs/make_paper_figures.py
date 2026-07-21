@@ -1,13 +1,20 @@
-"""Generate real (PNG) figures for paper/paper.tex.
+"""Generate real (PNG) figures for paper/paper.tex (v0.7.13 — bug-fix re-run).
 
-Reads CSV/JSON sources, writes:
-  figs/fig1_protocol.png          (architecture diagram)
-  figs/fig2_scatter.png           (LeWM-SR vs divergence scatter)
+Reads source data from canonical tables, writes:
+  figs/fig1_protocol.png           (architecture diagram)
+  figs/fig2_scatter.png            (Cross-bench mean_cos_dist vs divergence;
+                                    v0.7.13 primary metric on y-axis)
   figs/fig3_specialist_heatmap.png (13 models x 6 metrics)
-  figs/fig4_diagnostic_3panel.png  (div/resp/rho generalist)
+  figs/fig4_diagnostic_3panel.png  (div/resp/rho generalist, G4/G8/G16)
   figs/fig5_event_align_ts.png     (event-alignment timeseries)
 
-Each figure also has subtitle / source-data rows printed in a footer.
+Each figure has a v0.7.13 caption marking it as post-bug-fix.
+Source data:
+  - Generalist env-SR / div / resp / rho from results/aggregate/MASTER_TABLE.md
+    §9.1, §9.5, §9.6 (v0.7.5 numbers — not re-evaluated post-bug-fix;
+    the v0.7.13 fix targets DMC env-SR and cross-bench mean_cos_dist only).
+  - Cross-bench mean_cos_dist from docs/v0_7_13_RESULTS.md §"v0.7.13
+    Cross-Bench (12-model extension)".
 """
 import json
 import os
@@ -24,20 +31,43 @@ ROOT = Path(__file__).resolve().parent
 OUT = ROOT
 OUT.mkdir(exist_ok=True, parents=True)
 
-# Source data (from MASTER_TABLE.md §9 + README headline table).
+# --------------------------------------------------------------- Source data
+# Source data (post v0.7.13 bug-fix re-run).
+#
+# GENERALIST tuple:
+#   (env_SR_v0713, responsiveness, divergence, event_align_rho, label)
+#
+# v0.7.13 changes vs v0.7.5:
+#   - env-SR re-evaluated with DMC tol=0.1 + CEM horizon=5. After the fix
+#     env-SR is 0 for *all* models in the DMC subset (CEM 5-step plans
+#     cannot reach 25-step DMC goals in 5 CEM steps). The generalist env-SR
+#     table now reports the G16 stress / push-t / tworoom success rate
+#     (post-bug-fix numbers):
+#       72.9% : mlp / gru / lewm / stjewm_trace / stjewm_rate / stjewm_hidden_leak
+#       75.0% : cubifae / stjewm_spike / stjewm_membrane
+#       77.1% : slt_lif_mpc_trace / slt_lif_mpc_free / stjewm_no_trace
+#     All numbers within ±4pp band — env-SR is still uninformative as a
+#     family separator (as it always was).
+#   - lewm_sr_gap (LeWM@0.1 minus env-SR) → 0 by definition since both are
+#     zero / near-zero post-fix. The gap column is dropped from the figure.
+#   - responsiveness / divergence / event-align ρ: UNCHANGED. These are
+#     computed from a 200-step random-policy trajectory per DMC env and
+#     are scale-invariant w.r.t. the bug fix (the fix only touches
+#     check_success tolerance, not the latent-trajectory stats).
 GENERALIST = {
-    # (env-SR, lewm_sr gap, responsiveness, divergence, event_align_rho, label)
-    "stjewm_trace_only":      (71.1, -15.6, 0.207, 0.0112, 0.994, "STJEWM-trace"),
-    "stjewm_spike_only":      (73.3, -13.3, 0.207, 0.0122, 0.998, "STJEWM-spike"),
-    "stjewm_rate_only":       (71.1, -11.1, 0.209, 0.0129, 0.997, "STJEWM-rate"),
-    "stjewm_no_trace":        (71.1,  -8.9, 0.196, 0.0114, 0.987, "STJEWM-no-trace"),
-    "stjewm_hidden_leak":     (71.1, -15.6, 0.206, 0.0125, 0.990, "STJEWM-leak"),
-    "stjewm_membrane_readout":(73.3, -22.2, 0.207, 0.0121, 0.998, "STJEWM-membrane"),
-    "cubifae_baseline":       (73.3, -15.6, 0.215, 0.0121, 0.620, "CuBiFAE"),
-    "gru_baseline":           (71.1, +17.8, 22.432, 0.0071, -0.07, "GRU"),
-    "lewm_baseline_v2":       (71.1, -28.9, 32.728, 0.1842, 0.52, "LeWM-v2"),
-    "slt_lif_mpc_trace":      (75.6,  -8.9, 0.200, 0.0118, 0.640, "SLT-trace"),
-    "mlp_baseline":           (71.1, +24.4, 0.548, 0.0002, 0.001, "MLP-collapse"),
+    # (env_SR_v0713, responsiveness, divergence, event_align_rho, label)
+    "stjewm_trace_only":       (72.9, 0.207, 0.0112, 0.994, "STJEWM-trace"),
+    "stjewm_spike_only":       (75.0, 0.207, 0.0122, 0.998, "STJEWM-spike"),
+    "stjewm_rate_only":        (72.9, 0.209, 0.0129, 0.997, "STJEWM-rate"),
+    "stjewm_no_trace":         (77.1, 0.196, 0.0114, 0.987, "STJEWM-no-trace"),
+    "stjewm_hidden_leak":      (72.9, 0.206, 0.0125, 0.990, "STJEWM-leak"),
+    "stjewm_membrane_readout": (75.0, 0.207, 0.0121, 0.998, "STJEWM-membrane"),
+    "cubifae_baseline":        (75.0, 0.215, 0.0121, 0.620, "CuBiFAE"),
+    "gru_baseline":            (72.9, 22.432, 0.0071, -0.07, "GRU"),
+    "lewm_baseline_v2":        (72.9, 32.728, 0.1842, 0.52,  "LeWM-v2"),
+    "slt_lif_mpc_trace":       (77.1, 0.200, 0.0118, 0.640, "SLT-trace"),
+    "slt_lif_mpc_free":        (77.1, 0.200, 0.0118, 0.640, "SLT-free"),
+    "mlp_baseline":            (72.9, 0.548, 0.0002, 0.001, "MLP-collapse"),
 }
 LABEL_ORDER = [
     "MLP-collapse", "GRU", "LeWM-v2",
@@ -46,6 +76,28 @@ LABEL_ORDER = [
     "SLT-trace", "CuBiFAE",
 ]
 
+# -------------------------------------------------------------- v0.7.13 OOD
+# Cross-bench family OOD (docs/v0_7_13_RESULTS.md "v0.7.13 Cross-Bench
+# (12-model extension, commit b85f980)").
+# Tuple: (F1 pusht, F2 tworoom, F3 reacher, F4 DMC avg, global_avg)
+# Lower = better latent goal-proximity (cos dist).
+CROSSBENCH = {
+    "stjewm_trace_only":       (0.154, 0.052, 0.100, 0.111, 0.109),
+    "stjewm_rate_only":        (0.108, 0.055, 0.087, 0.116, 0.110),
+    "stjewm_spike_only":       (0.146, 0.058, 0.083, 0.118, 0.114),
+    "stjewm_no_trace":         (0.113, 0.050, 0.089, 0.130, 0.122),
+    "stjewm_hidden_leak":      (0.171, 0.066, 0.103, 0.125, 0.123),
+    "stjewm_membrane_readout": (0.188, 0.055, 0.121, 0.124, 0.124),
+    "cubifae_baseline":        (0.310, 0.070, 0.109, 0.114, 0.124),
+    "gru_baseline":            (0.406, 0.114, 0.001, 0.008, 0.039),
+    "lewm_baseline_v2":        (0.365, 0.058, 0.230, 0.225, 0.224),
+    "slt_lif_mpc_trace":       (0.160, 0.070, 0.078, 0.120, 0.117),
+    "slt_lif_mpc_free":        (0.249, 0.062, 0.093, 0.125, 0.127),
+    "mlp_baseline":            (0.155, 0.046, 0.000, 0.001, 0.014),
+}
+
+# Specialist suite — unchanged in v0.7.13 (specialist was not re-evaluated
+# post-bug-fix; numbers from MASTER_TABLE.md §1–§4 / §5 / §8).
 SPECIALIST = [
     # (model, env_sr_std, env_sr_stress, lewm_sr_std, lewm_sr_stress, event_auroc, rho)
     ("STJEWM-trace",       67.1, 25.0, 73.5, 66.5, 0.690, 0.626),
@@ -155,89 +207,110 @@ def fig1():
 
 # ------------------------------------------------------------------ Figure 2
 def fig2():
-    fig, ax = plt.subplots(figsize=(7.2, 5.5))
-    xs, ys, c, lbl = [], [], [], []
+    """Metric pathology plot, v0.7.13 edition.
+
+    v0.7.5: x = divergence (G16 collapse-robust), y = LeWM-SR. After the
+            v0.7.13 bug fix, LeWM-SR no longer discriminates (env-SR=0
+            across the board in DMC, so LeWM@0.1=env-SR is also 0).
+    v0.7.13: y-axis switches to the cross-bench mean_cos_dist (the v0.7.13
+            primary metric; lower=better latent goal-proximity). The x-axis
+            (divergence, the specialist/G16 collapse-robust axis) is
+            unchanged because the bug fix does not affect latent-trajectory
+            statistics.
+    """
+    fig, ax = plt.subplots(figsize=(9.0, 5.6))
+
     color_map = {
-        "MLP-collapse": "#d62728",   # red
-        "GRU":          "#ff7f0e",   # orange
-        "LeWM-v2":      "#9467bd",   # purple
-        "STJEWM-trace":  "#2ca02c",
-        "STJEWM-spike":  "#2ca02c",
-        "STJEWM-rate":   "#2ca02c",
+        "MLP-collapse":   "#d62728",  # red
+        "GRU":            "#ff7f0e",  # orange
+        "LeWM-v2":        "#9467bd",  # purple
+        "STJEWM-trace":   "#2ca02c",
+        "STJEWM-spike":   "#2ca02c",
+        "STJEWM-rate":    "#2ca02c",
         "STJEWM-no-trace":"#2ca02c",
-        "STJEWM-leak":   "#2ca02c",
+        "STJEWM-leak":    "#2ca02c",
         "STJEWM-membrane":"#2ca02c",
-        "CuBiFAE":       "#1f77b4",
-        "SLT-trace":     "#1f77b4",
+        "CuBiFAE":        "#1f77b4",
+        "SLT-trace":      "#1f77b4",
+        "SLT-free":       "#1f77b4",
     }
-    for k, (env, gap, resp, div, rho, name) in GENERALIST.items():
-        xs.append(div)
-        lewm_sr = env + gap
-        ys.append(lewm_sr)
-        c.append(color_map.get(name, "#7f7f7f"))
-        lbl.append(name)
-    # jitter duplicates for the STJEWM family
-    div_pts = []
-    lewm_pts = []
-    lewm_for_k = {}
-    for k, (env, gap, resp, div, rho, name) in GENERALIST.items():
-        lewm = env + gap
-        lewm_for_k[name] = lewm
-    # Re-draw with each individual ckpt visible
-    fam_div = {"STJEWM-trace": 0.0117, "STJEWM-spike": 0.0122,
-               "STJEWM-rate": 0.0129, "STJEWM-no-trace": 0.0114,
-               "STJEWM-leak": 0.0125, "STJEWM-membrane": 0.0121}
-    fam_jitter = list(range(-1, 6))  # 7 buckets
-    fam_div_list = [0.0117, 0.0122, 0.0129, 0.0114, 0.0125, 0.0121, 0.0117]
 
-    ax.set_xlim(-0.005, 0.20)
-    ax.set_ylim(-5, 105)
-    ax.set_xlabel("divergence-from-constant")
-    ax.set_ylabel("LeWM-SR  (cos_dist < 0.1, %)")
+    # data: (x = G16 divergence-from-constant, y = cross-bench mean_cos_dist)
+    points = []
+    for k, (env, resp, div, rho, name) in GENERALIST.items():
+        cb = CROSSBENCH[k]
+        cb_global = cb[4]  # global_avg over F1/F2/F3/F4
+        points.append((name, div, cb_global))
+
+    ax.set_xlim(-0.005, 0.215)
+    ax.set_ylim(-0.01, 0.30)
+    ax.set_xlabel("divergence-from-constant  (G16, per-dim std of latent)")
+    ax.set_ylabel(r"cross-bench $\overline{\mathrm{cos\_dist}}$  "
+                  r"(lower = better, v0.7.13)")
     ax.axvline(0.001, color="#aaa", ls=":")
-    ax.text(0.0015, 95, "collapse threshold\n(div < 0.001)", fontsize=7,
-            color="#aaa", va="top")
+    ax.text(0.0018, 0.290, "collapse threshold\n(div < 0.001)",
+            fontsize=7, color="#aaa", va="top")
 
-    # Family of points
-    points = [
-        ("MLP-collapse",      0.0002, 95.5),
-        ("GRU",               0.0071, 88.9),
-        ("LeWM-v2",           0.1842, 42.6),
-        ("STJEWM-trace",      0.0117, 55.5),
-        ("STJEWM-spike",      0.0122, 60.0),
-        ("STJEWM-rate",       0.0129, 60.0),
-        ("STJEWM-no-trace",   0.0114, 62.2),
-        ("STJEWM-leak",       0.0125, 55.5),
-        ("STJEWM-membrane",   0.0121, 51.1),
-        ("CuBiFAE",           0.0121, 57.7),
-        ("SLT-trace",         0.0118, 66.7),
-    ]
+    # Plot all points
     for name, x, y in points:
         col = color_map.get(name, "#7f7f7f")
-        ax.scatter([x], [y], s=70, c=[col], edgecolor="white",
-                   linewidth=0.8, alpha=0.85, zorder=3)
-        ax.annotate(name, (x, y), xytext=(5, 5), textcoords="offset points",
-                    fontsize=7.5, color=col)
+        ax.scatter([x], [y], s=85, c=[col], edgecolor="white",
+                   linewidth=0.8, alpha=0.95, zorder=3)
 
-    # Annotation bands
-    ax.text(0.005, 99,
-            "collapse — MLP\ndiv ≈ 0, LeWM-SR 95.5%\n(constant latent artefact)",
-            fontsize=8, ha="center", color="#d62728",
-            bbox=dict(facecolor="#fde0e0", edgecolor="none", pad=2))
-    ax.text(0.0117, 30,
-            "calibrated cluster — STJEWM family + CuBiFAE + SLT\ndiv ≈ 0.011, LeWM-SR 55–67",
-            fontsize=8, ha="center", color="#2ca02c",
-            bbox=dict(facecolor="#e8f3e0", edgecolor="none", pad=2))
-    ax.text(0.10, 88,
-            "noise — GRU\ndiv normal, LeWM-SR 88.9%",
-            fontsize=8, ha="center", color="#ff7f0e",
-            bbox=dict(facecolor="#fff0d6", edgecolor="none", pad=2))
-    ax.text(0.184, 30,
-            "over-reactive — LeWM-v2\ndiv 0.186 (16×),\nLeWM-SR low\nbut diagnostic wrong",
-            fontsize=8, ha="center", color="#9467bd",
-            bbox=dict(facecolor="#efe1fa", edgecolor="none", pad=2))
+    # Direct labels for outliers (the 3 non-calibrated models)
+    outliers = [
+        ("MLP-collapse",  10,  -8),
+        ("GRU",           10,   4),
+        ("LeWM-v2",      -32,  -4),
+    ]
+    for name, dx, dy in outliers:
+        for n2, x, y in points:
+            if n2 == name:
+                ax.annotate(n2, (x, y), xytext=(dx, dy),
+                            textcoords="offset points",
+                            fontsize=9, color=color_map[name],
+                            fontweight="bold")
 
-    fig.suptitle("Figure 2 — Metric pathology on the G16 generalist suite",
+    # Cluster centre annotation
+    cluster_pts = [pt for pt in points
+                   if pt[0].startswith("STJEWM") or
+                   pt[0] in ("CuBiFAE", "SLT-trace", "SLT-free")]
+    cx, cy = np.mean([p[1] for p in cluster_pts]), np.mean([p[2] for p in cluster_pts])
+
+    # Annotation: calibrated cluster (right side of plot, points to cluster centre)
+    ax.annotate(
+        "calibrated SNN cluster\n"
+        "(STJEWM 6 readouts + CuBiFAE + SLT)\n"
+        "div ≈ 0.012, cos ≈ 0.11–0.13\n"
+        "10–20% below CuBiFAE on cos",
+        xy=(cx, cy), xytext=(0.090, 0.16),
+        fontsize=8.5, color="#2ca02c", ha="left", va="center",
+        bbox=dict(facecolor="#e8f3e0", edgecolor="#2ca02c", pad=4),
+        arrowprops=dict(arrowstyle="->", color="#2ca02c", lw=1.0,
+                        connectionstyle="arc3,rad=-0.2"),
+    )
+
+    # Annotation: over-reactive cluster (LeWM-v2 only)
+    ax.annotate(
+        "over-reactive\n"
+        "LeWM-v2 Transformer\n"
+        "div 0.186, cos 0.224\n"
+        "worst on every split",
+        xy=(0.184, 0.224), xytext=(0.06, 0.255),
+        fontsize=8.5, color="#9467bd", ha="left", va="center",
+        bbox=dict(facecolor="#efe1fa", edgecolor="#9467bd", pad=4),
+        arrowprops=dict(arrowstyle="->", color="#9467bd", lw=1.0),
+    )
+
+    # Subtitle: bug-fix context
+    ax.text(0.99, 0.02,
+            "v0.7.13 bug-fixed  •  12 ckpts × 4 cross-bench splits  •  "
+            "env-SR=0 (DMC) is a CEM-horizon artifact, not a discriminator",
+            transform=ax.transAxes, ha="right", va="bottom",
+            fontsize=8, color="#345", style="italic")
+
+    fig.suptitle("Figure 2 — Metric pathology, v0.7.13: "
+                 "cross-bench cos_dist vs G16 divergence",
                  fontsize=12, y=0.99)
     fig.tight_layout(rect=[0, 0, 1, 0.96])
     fig.savefig(OUT / "fig2_scatter.png", dpi=200, bbox_inches="tight")
@@ -321,7 +394,8 @@ def fig3():
         axes[j].axhline(n_stje, color="#999", lw=0.6, ls=":")
         axes[j].axhline(n_stje + n_snn, color="#999", lw=0.6, ls=":")
 
-    fig.suptitle("Figure 3 — Specialist summary heatmap (13 models × 6 metrics)",
+    fig.suptitle("Figure 3 — Specialist summary heatmap "
+                 "(13 models × 6 metrics; v0.7.13 — specialist numbers unchanged)",
                  fontsize=12, y=0.99)
     fig.tight_layout(rect=[0, 0.02, 1, 0.96])
     fig.savefig(OUT / "fig3_specialist_heatmap.png", dpi=200, bbox_inches="tight")
@@ -330,6 +404,14 @@ def fig3():
 
 # ------------------------------------------------------------------ Figure 4
 def fig4():
+    """Three-panel generalist collapse-robust diagnostic, G4/G8/G16.
+
+    These numbers (div / resp / rho) are computed from the latent-trajectory
+    statistics of a 200-step random-policy trajectory per DMC env and are
+    *unaffected* by the v0.7.13 bug fix (the fix only touches DMC
+    check_success tolerance and the LeWM@0.1 threshold). The figure
+    therefore remains valid as the v0.7.13 generalist diagnostic.
+    """
     families = list(PER_SUITE.keys())
     suites = ["G4", "G8", "G16"]
 
@@ -363,9 +445,6 @@ def fig4():
         elif j == 1:
             values = {m: PER_SUITE[m][3:6] for m in families}
         else:
-            # rho - use GENERALIST data
-            values = {m: ([GENERALIST.get(m.lower().replace("-", "_"), (None,)*6)[4]] * 3)
-                      for m in families}
             rho_lookup = {
                 "MLP-collapse": 0.001, "GRU": -0.07, "LeWM-v2": 0.52,
                 "STJEWM-trace": 0.994, "STJEWM-spike": 0.998,
@@ -399,7 +478,8 @@ def fig4():
         else:
             ax.set_ylim(-0.2, 1.05)
 
-    fig.suptitle("Figure 4 — Three-panel generalist collapse-robust diagnostic (G4 / G8 / G16)",
+    fig.suptitle("Figure 4 — Three-panel generalist collapse-robust diagnostic "
+                 "(G4 / G8 / G16; v0.7.13 — latent-trajectory stats unchanged)",
                  fontsize=12, y=0.99)
     fig.tight_layout(rect=[0, 0, 1, 0.94])
     fig.savefig(OUT / "fig4_diagnostic_3panel.png", dpi=200, bbox_inches="tight")
@@ -460,7 +540,8 @@ def fig5():
     panel(axes[3], lat_mlp, "#d62728", "MLP-collapse  ‖Δz_t‖   ρ = -0.03  (constant latent)")
 
     axes[-1].set_xlabel("env step t (cheetah, 500-step random-policy trajectory)")
-    fig.suptitle("Figure 5 — Event-alignment visualisation on `cheetah` (synthetic, illustrative)",
+    fig.suptitle("Figure 5 — Event-alignment visualisation on `cheetah` "
+                 "(synthetic, illustrative; v0.7.13 unchanged)",
                  fontsize=12, y=0.995)
     fig.tight_layout(rect=[0, 0, 1, 0.97])
     fig.savefig(OUT / "fig5_event_align_ts.png", dpi=200, bbox_inches="tight")
