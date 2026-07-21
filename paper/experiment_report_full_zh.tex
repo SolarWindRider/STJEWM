@@ -349,6 +349,41 @@ DMC（DeepMind Control）Suite 的 14 个 proprioceptive 任务，按"经典控�
 
 所有 DMC 数据由 250k 步的专家轨迹提取，每个任务取 10K 个 window（每 window = 1 个 history frame + 1 个 goal frame，间隔 25 帧）。"250k 步"指智能体（或人类专家）跑完一整个 episode 的总步数（一个 episode 通常 1000-2000 步，250k 步 = 100-200 个 episode）。
 
+\subsubsection{``DMC$\times$14'' / ``DMC$\times$13'' / ``+ reacher / tworoom / pusht'' 记法说明}
+
+本报告（及 \texttt{paper.md}、\texttt{README.md}）频繁出现 ``DMC$\times$14''、``DMC$\times$13''、``DMC$\times$12 + reacher''、``DMC$\times$14 + reacher + tworoom'' 这样的记法。这里\textbf{统一说明}以避免混淆：
+
+\textbf{记法的含义}：``DMC$\times N$'' = ``N 个 DMC 标准 proprioceptive env 的并集''。``DMC$\times$14'' 是包含 14 个 env 的\textbf{满集}；``DMC$\times$13''、``DMC$\times$12'' 等是\textbf{去除某些 env 后的子集}。``+ reacher''、``+ tworoom''、``+ pusht'' 是\textbf{在 DMC 集合外追加}的 1-3 个跨族 env。
+
+\textbf{``DMC$\times$14'' 包含哪些 env}（按子族分类，共 14 个）：
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{F1 经典控制（4 个）}：\texttt{cartpole\_2d}（5 维小车摆杆）、\texttt{pendulum\_2d}（4 维单摆）、\texttt{finger}（3 维手指旋转）、\texttt{ball\_in\_cup}（6 维球进杯）——低维 proprioception + 简单动力学
+    \item \textbf{F2 运动（9 个）}：\texttt{cheetah, walker, hopper, quadruped, humanoid, humanoid\_CMU, dog, fish, stacker}——\textbf{9 个}，不是 5 个（常有读者误以为 ``5''）。高维 proprioception + 关节动力学 + 接触
+    \item \textbf{F3 稀疏 POMDP（1 个）}：\texttt{reacher} (4D)——2 关节机械臂，target 部分可见
+    \item \textbf{合计}：$4 + 9 + 1 = \mathbf{14}$ 个 env。这是 ``DMC$\times$14'' 的标准定义
+\end{itemize}
+
+\textbf{``DMC$\times$13''、``DMC$\times$12'' 等子集是怎么来的}：在 OOD Path-C 的某些 split 中，\textbf{训练 env 是 DMC 的子集}（不是全集）。例如：
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{\texttt{oodc\_F1}（classic 训练）}：train\_envs = \texttt{cartpole\_2d, pendulum\_2d, finger, ball\_in\_cup, cheetah} = 5 个 env（``DMC classic (4) + locomotion cheetah (1)''）。评测在 \textbf{8 个 held-out env}（walker, humanoid, humanoid\_CMU, hopper, quadruped, dog, delayed\_t\_maze, cheetah\_velhidden）上
+    \item \textbf{\texttt{oodc\_F1F2}（classic + locomotion 训练）}：train\_envs = 10 个 classic + locomotion 全部（缺 cheetah\_velhidden 和 reacher）。评测在 \textbf{2 个 held-out}（delayed\_t\_maze, cheetah\_velhidden）上
+    \item \textbf{``DMC$\times$14 + reacher''}：14 个 DMC env + 1 个 reacher = \textbf{15 个 env}。跨基准族 F1/F2/F3 都用这个 15-16 env 集
+    \item \textbf{``DMC$\times$14 + reacher + tworoom''}：F1 split 的训练集 = $14 + 1 + 1 = \mathbf{16}$ 个 env。评测在 pusht 上（不在训练集）
+    \item \textbf{``DMC$\times$13'' 来自哪里}：跨基准族 F4（DMC held out）里，训练用 pusht + tworoom + reacher（3 个非 DMC env），评测在所有 14 个 DMC env 上。但\textbf{为了避免数据泄露}，\texttt{cheetah\_velhidden}（一个 stress variant of cheetah）有时被\textbf{有意排除}——这时评测 env 集是 13 个。说 ``DMC$\times$13'' 几乎总是指 F4 split 的 14 个 DMC env 中\textbf{去除 stress variant} 后的子集（13 个）
+\end{itemize}
+
+\textbf{为什么 ``14'' 和 ``13'' 重要}：评测 cell 数 = \texttt{models} $\times$ \texttt{envs}。
+\begin{itemize}[leftmargin=2em]
+    \item F1/F2/F3 = 12 models $\times$ 1 env = 12 cells/split
+    \item F4（``DMC$\times$14'' 版本）= 12 models $\times$ 14 envs = 168 cells/split
+    \item F4（``DMC$\times$13'' 版本，去除 stress variant）= 12 models $\times$ 13 envs = 156 cells/split
+    \item \textbf{总 cells}：F1 + F2 + F3 + F4(13) = $12 + 12 + 12 + 156 = \mathbf{192}$（本报告使用此版本）；F1 + F2 + F3 + F4(14) = $12 + 12 + 12 + 168 = 204$
+\end{itemize}
+
+\textbf{本报告 ``192 cells'' 的依据}：F1 = 12，F2 = 12，F3 = 12，F4 = 156，$12 + 12 + 12 + 156 = 192$。这对应 F4 评测 13 个 DMC env（``DMC$\times$13''）的版本。本报告 v0.7.13 final 的实验采用 ``DMC$\times$13'' 版（去除 stress variant \texttt{cheetah\_velhidden}），故 192 cells。
+
+\textbf{``$\times$12 + reacher'' / ``$\times$14 + pusht'' 等其他变体}：当某个 split 排除了 DMC 集合中的部分 env、但又追加了非 DMC env 时，用 ``$\times N$ + $X$'' 表示。例如 ``DMC$\times$12 + reacher'' = 12 个 DMC env + 1 个 reacher = 13 个 env 训练集（用于某个 G16 子集 pilot）。这种记法在 \texttt{paper.md} 和 \texttt{code/scripts/generalist\_v0\_7\_5/} 的注释里出现。
+
 \subsection{跨基准族 4 个 held-out family（用于轴 2 评测）}
 
 跨基准族评测使用 4 个\textbf{范式完全不同}的 family，每个 family 是一个独立的评测单元集：
