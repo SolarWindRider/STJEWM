@@ -1,0 +1,38 @@
+{
+  "_split_name": "oodc_F3",
+  "_train_envs": [
+    "delayed_t_maze",
+    "cheetah_velhidden"
+  ],
+  "_eval_envs": [
+    "cartpole_2d",
+    "pendulum_2d",
+    "finger",
+    "ball_in_cup",
+    "cheetah",
+    "walker",
+    "humanoid",
+    "humanoid_CMU",
+    "hopper",
+    "quadruped",
+    "dog"
+  ],
+  "specs": [
+    {
+      "env_kind": "dmc",
+      "path": "data/delayed_t_maze_30k_3d.npz",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "delayed_t_maze"
+    },
+    {
+      "env_kind": "dmc",
+      "path": "data/dm_control/3d_rollouts_250k/cheetah_250k.npz",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "cheetah"
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "_split_name": "oodc_F2F3",
+  "_train_envs": [
+    "walker",
+    "humanoid",
+    "humanoid_CMU",
+    "hopper",
+    "quadruped",
+    "dog",
+    "delayed_t_maze",
+    "cheetah_velhidden"
+  ],
+  "_eval_envs": [
+    "cartpole_2d",
+    "pendulum_2d",
+    "finger",
+    "ball_in_cup",
+    "cheetah"
+  ],
+  "specs": [
+    {
+      "env_kind": "dmc",
+      "path": "data/dm_control/3d_rollouts_250k/walker_250k.npz",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "walker"
+    },
+    {
+      "env_kind": "dmc",
+      "path": "data/dm_control/3d_rollouts_250k/humanoid_250k.npz",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "humanoid"
+    },
+    {
+      "env_kind": "dmc",
+      "path": "data/dm_control/3d_rollouts_250k/humanoid_CMU_250k.npz",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "humanoid_CMU"
+    },
+    {
+      "env_kind": "dmc",
+      "path": "data/dm_control/3d_rollouts_250k/hopper_250k.npz",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "hopper"
+    },
+    {
+      "env_kind": "dmc",
+      "path": "data/dm_control/3d_rollouts_250k/quadruped_250k.npz",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "quadruped"
+    },
+    {
+      "env_kind": "dmc",
+      "path": "data/dm_control/3d_rollouts_250k/dog_250k.npz",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "dog"
+    },
+    {
+      "env_kind": "dmc",
+      "path": "data/delayed_t_maze_30k_3d.npz",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "delayed_t_maze"
+    },
+    {
+      "env_kind": "dmc",
+      "path": "data/dm_control/3d_rollouts_250k/cheetah_250k.npz",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "cheetah"
+    }
+  ]
+}
