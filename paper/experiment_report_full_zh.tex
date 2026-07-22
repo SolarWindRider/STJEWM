@@ -412,7 +412,7 @@ DMC（DeepMind Control）Suite 的 14 个 proprioceptive 任务，按"经典控�
 \texttt{hopper}          & 7  & 4 & 25 & \texttt{[x\_pos, z\_pos, y\_rot, thigh, leg, foot]}：2D 单腿跳跃器（root 三参数 + 3 个关节）；4D action 控制 4 个扭矩 & \texttt{[−0.0239, −0.2937, +0.1536, −0.1824, −1.0106, +0.0819, −0.2233]} \\
 \texttt{quadruped}       & 30 & 12 & 25 & \texttt{[root\_xyz, root\_quat(4), $\times$4 legs (hip×3 + knee×3)/leg]}：3D 四足机器人，每条腿 3 个关节共 12 个关节；XML qpos 含 root 7 参数（xyz + 四元数）+ 12 关节 = 19；但 obs\_dim=30 因 XML 注册包含额外 root 自由度与脚趾指示变量。12D action = 12 个关节扭矩 & \texttt{[−0.4621, +0.2896, +1.3941, +0.7517, −0.4908, +0.0646, …, +1.0000, +0.0000, +0.0000, +0.0000]} \\
 \texttt{humanoid}        & 28 & 21 & 25 & \texttt{[root\_xyz, root\_quat(4), 21 关节角]}：2D 简化人形 21 关节（MuJoCo humanoid.xml，21 个 actuator 对应 21 个 joint）。\textbf{注意}：XML 注册 obs\_dim=28、act\_dim=21 & \texttt{[−0.0613, −0.0062, +1.1277, +0.9768, −0.1051, −0.1106, …, −0.4508, −0.2026, −0.5048, −0.6437]} \\
-\texttt{humanoid\_CMU}   & 63 & 56 & 25 & \texttt{[root\_xyz, root\_quat(4), cmurange(56)]}：3D 高自由度人形（CMU mocap 标记）；56 维 cmurange 是 mocap 关节角度，56 维 action 控制 56 个 actuator & \texttt{[−0.0004, −0.0002, +0.9503, +0.7367, +0.6759, −0.0203, …, +0.2063, +0.0861, −0.1953, +0.1751]} \\
+\texttt{humanoid\_CMU}   & 63 & 56 & 25 & \parbox[t]{0.38\textwidth}{\raggedright\texttt{[root\_xyz, root\_quat(4), cmurange(56)]}：3D 高自由度人形（CMU mocap 标记）；56 维 cmurange 是 mocap 关节角度，56 维 action 控制 56 个 actuator} & \texttt{[−0.0004, −0.0002, +0.9503, +0.7367, +0.6759, −0.0203, …, +0.2063, +0.0861, −0.1953, +0.1751]} \\
 \texttt{dog}             & 87 & 38 & 25 & \texttt{[root\_xyz, root\_quat(4), 38 关节 + 18 速度辅助变量]}：3D 高自由度四足狗（MuJoCo dog.xml），38 维 actuator；XML 注册 obs\_dim=87（含额外 root state 与速度估计项） & \texttt{[+0.0363, +0.0127, +0.1913, +0.9867, +0.1426, +0.0737, …, +1.0000, −0.0000, +0.0000, +0.0000]} \\
 \texttt{fish}            & 14 & 5 & 25 & \texttt{[root\_quat(4), 5 关节角, 5 速度, 1 尾巴辅助]}：2D 鱼形游泳（MuJoCo fish.xml）；5 维 actuator 控制躯体摆动 + 尾部 & \texttt{[+0.0045, −0.0177, +0.1039, +0.9898, +0.0307, −0.1151, …, −22.0118, +14.5302, +14.8166, +4.2708]} \\
 \texttt{stacker}         & 20 & 5 & 25 & \texttt{[root\_xyz, root\_quat(4), 5 关节, 5 个 cube 指示变量]}：2D 抓取机械臂堆叠 3 个立方体（MuJoCo stacker.xml）；5D action 控制末端 & \texttt{[+0.0032, +0.3956, −0.6476, −1.1333, +0.1196, +0.0730, …, +0.0000, +0.2000, +0.3875, +0.0000]} \\
@@ -737,7 +737,7 @@ STJEWM 的训练损失（\texttt{code/native\_losses.py:stjewm\_loss}）由 3 �
 \textbf{regime} & \textbf{ckpt 数} & \textbf{epochs} & \textbf{每 env windows} & \textbf{训练入口} & \textbf{用途} \\
 \midrule
 \textbf{单任务 specialist} & 13 × 14 DMC = 182 & 1 & 10K & \texttt{train.py --env-kind dmc} & 单 env 评测 \\
-\textbf{通才 G4/G8/G16} & 12 × 3 scales = 36 & 1 & 8K/16K/32K & \shortstack[l]{\texttt{train.py}\\\texttt{--multi-env-spec}} & 跨任务校准性 \\
+\textbf{通才 G4/G8/G16} & 12 × 3 scales = 36 & 1 & 8K/16K/32K & \shortstack[l]{\texttt{train.py --}\\\texttt{multi-env-spec}} & 跨任务校准性 \\
 \textbf{跨基准族 (F1-F4)} & 12 × 4 splits = 48 & 5 & 10K per env & \shortstack[l]{\texttt{cross\_benchmark\_Fx}\\\texttt{\_train\_only.json}} & 轴 2 评测 \\
 \shortstack[l]{\textbf{OOD Path-C}\\\textbf{(F1-F3 单, F1F2/}\\\textbf{F1F3/F2F3 双)}} & 12 × 6 splits = 72 & 1 & 2K & \texttt{oodc\_Fx.json} & 轴 1 评测 \\
 \bottomrule
