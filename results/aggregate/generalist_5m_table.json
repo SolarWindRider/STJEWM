@@ -531,6 +531,17 @@
     {
       "split": "cross_benchmark_F1",
       "model": "stjewm_no_trace",
+      "env": "fish",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.4759158827364445,
+      "mean_phys_dist": 2.5845969176698853
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_no_trace",
       "env": "hopper",
       "success_rate_lewm": 0.6,
       "success_rate_lewm_005": 0.2,
@@ -571,6 +582,39 @@
       "success_rate_env": 0.0,
       "mean_cos_dist": 0.11088846325874328,
       "mean_phys_dist": 0.2983095774950134
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_no_trace",
+      "env": "reacher",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1767655462026596,
+      "mean_phys_dist": 0.17890599071979524
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_no_trace",
+      "env": "stacker",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.09956728219985962,
+      "mean_phys_dist": 0.22764275317223426
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_no_trace",
+      "env": "tworoom",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.07904459834098816,
+      "mean_phys_dist": 111.89637756347656
     },
     {
       "split": "cross_benchmark_F1",
@@ -619,6 +663,17 @@
     {
       "split": "cross_benchmark_F1",
       "model": "stjewm_hidden_leak",
+      "env": "dog",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.23992080092430115,
+      "mean_phys_dist": 0.4773922954610753
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_hidden_leak",
       "env": "finger",
       "success_rate_lewm": 0.4,
       "success_rate_lewm_005": 0.2,
@@ -630,6 +685,39 @@
     {
       "split": "cross_benchmark_F1",
       "model": "stjewm_hidden_leak",
+      "env": "fish",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.388612612336874,
+      "mean_phys_dist": 2.0824960875870375
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_hidden_leak",
+      "env": "hopper",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.06275507807731628,
+      "mean_phys_dist": 0.17779082855082112
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_hidden_leak",
+      "env": "humanoid",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.17969798445701599,
+      "mean_phys_dist": 0.41311746639814323
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_hidden_leak",
       "env": "pendulum_2d",
       "success_rate_lewm": 1.0,
       "success_rate_lewm_005": 0.6,
@@ -637,6 +725,116 @@
       "success_rate_env": 0.0,
       "mean_cos_dist": 0.03069981336593628,
       "mean_phys_dist": 1.2715233147144318
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_hidden_leak",
+      "env": "quadruped",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.08429157733917236,
+      "mean_phys_dist": 0.30052235026210816
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_hidden_leak",
+      "env": "stacker",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.09293553829193116,
+      "mean_phys_dist": 0.2300256748741099
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_hidden_leak",
+      "env": "walker",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.08788303732872009,
+      "mean_phys_dist": 0.20789190966711368
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_membrane_readout",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 2.7132034301757812e-05,
+      "mean_phys_dist": 0.0023742109361051676
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_membrane_readout",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.12583948373794557,
+      "mean_phys_dist": 0.20723414066114354
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_membrane_readout",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.012428897619247436,
+      "mean_phys_dist": 0.05099143157902715
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_membrane_readout",
+      "env": "finger",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1296510636806488,
+      "mean_phys_dist": 0.2127659187428832
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_membrane_readout",
+      "env": "hopper",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.07848404049873352,
+      "mean_phys_dist": 0.22061900826334532
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_membrane_readout",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.07119807600975037,
+      "mean_phys_dist": 2.102351260185242
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_membrane_readout",
+      "env": "walker",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.10817853808403015,
+      "mean_phys_dist": 0.23310490992859006
     },
     {
       "split": "cross_benchmark_F1",
