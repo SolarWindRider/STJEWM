@@ -8,6 +8,7 @@
 \usepackage{geometry}
 \usepackage{rotating}  % for sidewaystable
 \usepackage{adjustbox}  % for max-width boxes
+\setlength{\hfuzz}{5pt}
 \setlength{\emergencystretch}{3em}
 \sloppy
 \geometry{margin=2.4cm}
@@ -729,6 +730,7 @@ STJEWM 的训练损失（\texttt{code/native\_losses.py:stjewm\_loss}）由 3 �
 
 \textbf{总览}：所有训练通过 \texttt{code/train/train.py} 的统一入口；区别在于传入的 \texttt{--multi-env-spec} JSON 配置和 \texttt{--epochs}：
 
+\begingroup\scriptsize
 \begin{adjustbox}{max width=\textwidth}
 \begin{tabular}{@{}p{0.14\textwidth}p{0.09\textwidth}p{0.08\textwidth}p{0.09\textwidth}p{0.21\textwidth}p{0.13\textwidth}@{}}
 \toprule
@@ -741,6 +743,7 @@ STJEWM 的训练损失（\texttt{code/native\_losses.py:stjewm\_loss}）由 3 �
 \bottomrule
 \end{tabular}
 \end{adjustbox}
+\endgroup
 \begin{footnotesize}
 \begin{verbatim}
 python -m code.train.train --env-kind dmc
@@ -925,6 +928,7 @@ lewm_succ_001 = cos_dist < 0.01
 \subsection{评测 cell 计数（按 axis 详细 breakdown）}
 
 \textbf{总览}：
+\begingroup\scriptsize
 \begin{adjustbox}{max width=\textwidth}
 \begin{tabular}{@{}p{0.16\textwidth}p{0.20\textwidth}p{0.14\textwidth}p{0.12\textwidth}p{0.23\textwidth}@{}}
 \textbf{评测轴} & \textbf{splits × models × envs} & \textbf{total cells} & \textbf{目的} & \textbf{配置文件} \\
@@ -935,6 +939,7 @@ lewm_succ_001 = cos_dist < 0.01
 \bottomrule
 \end{tabular}
 \end{adjustbox}
+\endgroup
 \textbf{轴 1 每个 split 的 cell breakdown}：
 \begin{itemize}[leftmargin=2em]
     \item \texttt{oodc\_F1}: 12 models $\times$ 14 DMC envs (其中 8 个 held-out, 6 个 seen) = 168 cells
