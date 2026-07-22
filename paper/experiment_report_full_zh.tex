@@ -288,7 +288,9 @@
 \end{tabular}
 \end{adjustbox}
 
-\textbf{参数量注}：STJEWM 的 6 个 readout 共享同一骨架（仅 readout 不同），trainable=2.70M，total=8.20M（含冻结的 ViT-Tiny 编码器 5.50M）；SNN/Transformer 基线各自独立骨架；MLP 基线是"坍缩对照"——其设计目的就是验证"无记忆能力"会导致 div $\to 0$。
+\textbf{参数量注（v0.7.5 原始设置）}：STJEWM 的 6 个 readout 共享同一骨架（仅 readout 不同），trainable=2.70M，total=8.20M（含冻结的 ViT-Tiny 编码器 5.50M）；SNN/Transformer 基线各自独立骨架；MLP 基线是"坍缩对照"——其设计目的就是验证"无记忆能力"会导致 div $\to 0$。
+
+\textbf{参数量注（v0.7.14 5M-aligned 修正）}：上述参数对比在 STJEWM trainable=2.70M vs 其他基线 0.22-7.42M 范围（33.7×差距）下不公平。v0.7.14 重新训练所有 8 个基线到 \textbf{4.97-5.13M}（range 0.16M，$\pm 3.2\%$），STJEWM 保持 trainable=5.06M（含冻结 ViT 的 total=10.57M）。具体配置：mlp\_baseline hidden=640 num\_layers=12 (5.00M)；lewm\_transformer embed=288 num\_layers=3 (4.97M)；cubifae\_baseline d\_hid=186 num\_layers=2 (4.98M)；gru\_baseline hidden=560 num\_layers=2 (5.13M)；slt\_lif\_mpc\_trace d\_in=672 num\_layers=8 (5.11M)；slt\_lif\_mpc\_free d\_in=640 num\_layers=8 (5.05M)；spikedreamer\_baseline d\_snn=288 d\_tx=288 num\_layers=3 (5.12M)。在 5M-aligned 设置下，trace dynamics 假设的 collapse-robust 区分仍然成立：STJEWM 6 readouts 保持 resp $\approx 0.21$、div $\approx 0.006$（校准），MLP 仍是 div $\to 0$（坍缩），LeWM-v2 仍是 resp $\approx 10$、div $\approx 0.18$（过反应）。
 
 \subsection{跨基准族与 OOD Path-C 的关键区别}
 
