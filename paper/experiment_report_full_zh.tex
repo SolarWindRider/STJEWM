@@ -6,6 +6,10 @@
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{geometry}
+\usepackage{rotating}  % for sidewaystable
+\usepackage{adjustbox}  % for max-width boxes
+\setlength{\emergencystretch}{3em}
+\sloppy
 \geometry{margin=2.4cm}
 \usepackage{xcolor}
 \usepackage{multirow}
@@ -257,30 +261,31 @@
 
 \subsection{4 家族分类法（taxonomy）}
 
-12 个模型按"接口合约 + 动力学本质"分为 4 个家族：
-
-\begin{longtable}{p{0.20\textwidth}p{0.22\textwidth}p{0.42\textwidth}p{0.12\textwidth}}
+\begin{adjustbox}{max width=\textwidth}
+\scriptsize
+\begin{tabular}{p{0.18\textwidth}p{0.20\textwidth}p{0.40\textwidth}p{0.12\textwidth}}
 \toprule
 \textbf{家族} & \textbf{模型} & \textbf{测试什么} & \textbf{参数量} \\
 \midrule
-\multirow{6}{*}{STJEWM 读出口径} & \texttt{stjewm\_trace\_only}    & 默认，膜电位禁止，$z=r_t$ & 2.70M / 8.20M \\
-& \texttt{stjewm\_spike\_only}     & $z=h \cdot s_t$，连续 $\times$ 二值掩码（back-compat spike\_gated） & 2.70M / 8.20M \\
-& \texttt{stjewm\_rate\_only}      & $z=\text{moving\_average}(s_t)$，纯速率编码 & 2.70M / 8.20M \\
-& \texttt{stjewm\_no\_trace}       & ablation，无 trace 分支 & 2.70M / 8.20M \\
-& \texttt{stjewm\_hidden\_leak}    & $z=h + r_t$（隐状态 + 轨迹，混合）& 2.70M / 8.20M \\
-& \texttt{stjewm\_membrane\_readout} & $z=h$，违反协议（规划器可读膜电位）& 2.70M / 8.20M \\
+\multirow{6}{*}{STJEWM 读出口径} & \texttt{stjewm\_trace\_only} & 默认，膜电位禁止，$z=r_t$ & 2.70M / 8.20M \\
+& \texttt{stjewm\_spike\_only} & $z=h \cdot s_t$，连续 $\times$ 二值掩码（back-compat spike\_gated） & 2.70M / 8.20M \\
+& \texttt{stjewm\_rate\_only} & $z=\text{moving\_average}(s_t)$，纯速率编码 & 2.70M / 8.20M \\
+& \texttt{stjewm\_no\_trace} & ablation，无 trace 分支 & 2.70M / 8.20M \\
+& \texttt{stjewm\_hidden\_leak} & $z=h + r_t$（隐状态 + 轨迹，混合） & 2.70M / 8.20M \\
+& \path{stjewm_membrane_readout} & $z=h$，违反协议（规划器可读膜电位） & 2.70M / 8.20M \\
 \midrule
 \multirow{4}{*}{SNN / 神经形态对照} & \texttt{cubifae\_baseline} & ALIF + time-cell readout，$v_t$ 可读 & 5.31M \\
 & \texttt{spikedreamer\_baseline} & 2 层 LIF + AdaLN-zero Transformer & 1.58M \\
 & \texttt{slt\_lif\_mpc\_trace} & DECOLLE LIF，trace-only readout & 0.22M \\
 & \texttt{slt\_lif\_mpc\_free} & DECOLLE LIF，free-access readout & 0.26M \\
 \midrule
-\multirow{2}{*}{非 SNN 循环对照} & \texttt{lewm\_transformer\_baseline} & LeWM-style AdaLN-zero Transformer & 1.58M \\
+\multirow{2}{*}{非 SNN 循环对照} & \path{lewm_transformer_baseline} & LeWM-style AdaLN-zero Transformer & 1.58M \\
 & \texttt{gru\_baseline} & 3 层 GRU h=576 & 7.42M \\
 \midrule
-\textbf{无状态对照} & \texttt{mlp\_baseline} & per-step FFN，no recurrence（坍缩控制）& 1.44M \\
+\textbf{无状态对照} & \texttt{mlp\_baseline} & per-step FFN，no recurrence（坍缩控制） & 1.44M \\
 \bottomrule
-\end{longtable}
+\end{tabular}
+\end{adjustbox}
 
 \textbf{参数量注}：STJEWM 的 6 个 readout 共享同一骨架（仅 readout 不同），trainable=2.70M，total=8.20M（含冻结的 ViT-Tiny 编码器 5.50M）；SNN/Transformer 基线各自独立骨架；MLP 基线是"坍缩对照"——其设计目的就是验证"无记忆能力"会导致 div $\to 0$。
 
@@ -311,26 +316,33 @@
 
 DMC（DeepMind Control）Suite 的 14 个 proprioceptive 任务，按"经典控制 / 运动 / 稀疏 POMDP"三个子族组织：
 
-\begin{longtable}{p{0.13\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.07\textwidth}p{0.18\textwidth}p{0.10\textwidth}}
+\begin{sidewaystable}
+\centering
+\small
+\begin{adjustbox}{max width=\textheight}
+\scriptsize
+\begin{tabular}{p{0.10\textwidth}p{0.06\textwidth}p{0.08\textwidth}p{0.05\textwidth}p{0.50\textwidth}p{0.16\textwidth}}
 \toprule
 \textbf{env} & \textbf{obs × act} & \textbf{子族} & \textbf{goal\_off} & \textbf{数据路径} & \textbf{任务描述} \\
 \midrule
-\texttt{cartpole\_2d}     & 5 × 1   & 经典控制 & 25 & \texttt{data/dm\_control/cartpole\_250k.npz}  & 小车摆杆平衡 \\
-\texttt{pendulum\_2d}     & 4 × 1   & 经典控制 & 25 & \texttt{data/dm\_control/pendulum\_250k.npz}  & 单摆倒立 \\
-\texttt{finger}          & 3 × 1   & 经典控制 & 25 & \texttt{data/dm\_control/3d\_rollouts\_250k/finger\_250k.npz} & 手指旋转定位 \\
-\texttt{ball\_in\_cup}    & 6 × 2   & 经典控制 & 25 & \texttt{data/dm\_control/3d\_rollouts\_250k/ball\_in\_cup\_250k.npz} & 球进杯 \\
-\texttt{reacher} (4D)    & 7 × 2   & 稀疏 POMDP & 25 & \texttt{data/dm\_control/3d\_rollouts\_250k/reacher\_250k.npz} & 2 关节机械臂到点 \\
-\texttt{cheetah}         & 6 × 6   & 运动     & 25 & \texttt{data/dm\_control/3d\_rollouts\_250k/cheetah\_250k.npz}  & 猎豹向前跑 \\
-\texttt{walker}          & 8 × 6   & 运动     & 25 & \texttt{data/dm\_control/3d\_rollouts\_250k/walker\_250k.npz}   & 双足行走 \\
-\texttt{hopper}          & 8 × 3   & 运动     & 25 & \texttt{data/dm\_control/3d\_rollouts\_250k/hopper\_250k.npz}   & 单足跳跃 \\
-\texttt{quadruped}       & 12 × 6  & 运动     & 25 & \texttt{data/dm\_control/3d\_rollouts\_250k/quadruped\_250k.npz} & 四足运动 \\
-\texttt{humanoid}        & 28 × 6  & 运动     & 25 & \texttt{data/dm\_control/3d\_rollouts\_250k/humanoid\_250k.npz}  & 人形行走 \\
-\texttt{humanoid\_CMU}   & 63 × 6  & 运动     & 25 & \texttt{data/dm\_control/3d\_rollouts\_250k/humanoid\_CMU\_250k.npz} & CMU 标记人形 \\
-\texttt{dog}             & 79 × 6  & 运动     & 25 & \texttt{data/dm\_control/3d\_rollouts\_250k/dog\_250k.npz}      & 四足狗步态 \\
-\texttt{fish}            & 13 × 5  & 运动     & 25 & \texttt{data/dm\_control/3d\_rollouts\_250k/fish\_250k.npz}     & 鱼游泳 \\
-\texttt{stacker}         & 11 × 6  & 运动     & 25 & \texttt{data/dm\_control/3d\_rollouts\_250k/stacker\_250k.npz}  & 堆叠方块 \\
+\texttt{cartpole\_2d}     & 5 × 1   & 经典控制 & 25 & \texttt{cartpole\_250k.npz}  & 小车摆杆平衡 \\
+\texttt{pendulum\_2d}     & 4 × 1   & 经典控制 & 25 & \texttt{pendulum\_250k.npz}  & 单摆倒立 \\
+\texttt{finger}          & 3 × 1   & 经典控制 & 25 & \texttt{finger\_250k.npz} & 手指旋转定位 \\
+\texttt{ball\_in\_cup}    & 6 × 2   & 经典控制 & 25 & \texttt{ball\_in\_cup\_250k.npz} & 球进杯 \\
+\texttt{reacher} (4D)    & 7 × 2   & 稀疏 POMDP & 25 & \texttt{reacher\_250k.npz} & 2 关节机械臂到点 \\
+\texttt{cheetah}         & 6 × 6   & 运动     & 25 & \texttt{cheetah\_250k.npz}  & 猎豹向前跑 \\
+\texttt{walker}          & 8 × 6   & 运动     & 25 & \texttt{walker\_250k.npz}   & 双足行走 \\
+\texttt{hopper}          & 8 × 3   & 运动     & 25 & \texttt{hopper\_250k.npz}   & 单足跳跃 \\
+\texttt{quadruped}       & 12 × 6  & 运动     & 25 & \texttt{quadruped\_250k.npz} & 四足运动 \\
+\texttt{humanoid}        & 28 × 6  & 运动     & 25 & \texttt{humanoid\_250k.npz}  & 人形行走 \\
+\texttt{humanoid\_CMU}   & 63 × 6  & 运动     & 25 & \texttt{humanoid\_CMU\_250k.npz} & CMU 标记人形 \\
+\texttt{dog}             & 79 × 6  & 运动     & 25 & \texttt{dog\_250k.npz}      & 四足狗步态 \\
+\texttt{fish}            & 13 × 5  & 运动     & 25 & \texttt{fish\_250k.npz}     & 鱼游泳 \\
+\texttt{stacker}         & 11 × 6  & 运动     & 25 & \texttt{stacker\_250k.npz}  & 堆叠方块 \\
 \bottomrule
-\end{longtable}
+\end{tabular}
+\end{adjustbox}
+\end{sidewaystable}
 
 \textbf{env\_id 字符串与代码路径}：每个 env 在 \texttt{code/core/envs/dmc\_env.py:83-100} 的 \texttt{DMC\_ENVS} 字典中以小写 \texttt{env\_kind} 注册（如 \texttt{"cartpole"}、\texttt{"reacher"}），观测维度由 XML 的 qpos + qvel 自动推断；action\_dim 来自 XML 的 actuator 数。env\_kind 在多 env 训练时通过 \texttt{configs/oodc/*.json} 的 \texttt{train\_specs[].env\_kind} 字段传递（值域为 \texttt{"dmc", "reacher\_4d", "pusht", "tworoom", ...}）。
 
@@ -371,7 +383,8 @@ DMC（DeepMind Control）Suite 的 14 个 proprioceptive 任务，按"经典控�
 
 \textbf{F1 经典控制（4 个 DMC + Reacher，共 5 个）}：
 
-\begin{longtable}{p{0.13\textwidth}p{0.05\textwidth}p{0.05\textwidth}p{0.05\textwidth}p{0.42\textwidth}p{0.21\textwidth}}
+\begingroup\scriptsize
+\begin{longtable}{p{0.11\textwidth}p{0.04\textwidth}p{0.04\textwidth}p{0.04\textwidth}p{0.38\textwidth}p{0.22\textwidth}}
 \toprule
 \textbf{env} & \textbf{obs} & \textbf{act} & \textbf{goal} & \textbf{每维物理含义} & \textbf{样本观测（seed=0, 50 步）} \\
 \midrule
@@ -383,10 +396,12 @@ DMC（DeepMind Control）Suite 的 14 个 proprioceptive 任务，按"经典控�
 \texttt{reacher (4D)}    & 4 & 2 & 25 & \texttt{[shoulder\_q, elbow\_q, target\_x, target\_y]}：两关节角（弧度）+ 目标位置在 2D 平面坐标（米，范围 $\pm 0.21$）。目标 \textbf{在 obs 内} 但每 episode 重置，是 sparse POMDP 的代表 & \texttt{[+0.4303, −0.7232, −0.1836, −0.1934]} \\
 \bottomrule
 \end{longtable}
+\endgroup
 
 \textbf{F2 运动（9 个 DMC）}：
 
-\begin{longtable}{p{0.12\textwidth}p{0.04\textwidth}p{0.04\textwidth}p{0.04\textwidth}p{0.42\textwidth}p{0.26\textwidth}}
+\begingroup\scriptsize
+\begin{longtable}{p{0.10\textwidth}p{0.035\textwidth}p{0.035\textwidth}p{0.035\textwidth}p{0.39\textwidth}p{0.24\textwidth}}
 \toprule
 \textbf{env} & \textbf{obs} & \textbf{act} & \textbf{goal} & \textbf{每维物理含义} & \textbf{样本观测（seed=0, 50 步）} \\
 \midrule
@@ -402,10 +417,12 @@ DMC（DeepMind Control）Suite 的 14 个 proprioceptive 任务，按"经典控�
 \texttt{stacker}         & 20 & 5 & 25 & \texttt{[root\_xyz, root\_quat(4), 5 关节, 5 个 cube 指示变量]}：2D 抓取机械臂堆叠 3 个立方体（MuJoCo stacker.xml）；5D action 控制末端 & \texttt{[+0.0032, +0.3956, −0.6476, −1.1333, +0.1196, +0.0730, …, +0.0000, +0.2000, +0.3875, +0.0000]} \\
 \bottomrule
 \end{longtable}
+\endgroup
 
 \textbf{跨基准族 2 个 2D 几何 env（PushT / TwoRoom）}：
 
-\begin{longtable}{p{0.12\textwidth}p{0.04\textwidth}p{0.04\textwidth}p{0.04\textwidth}p{0.42\textwidth}p{0.26\textwidth}}
+\begingroup\scriptsize
+\begin{longtable}{p{0.10\textwidth}p{0.035\textwidth}p{0.035\textwidth}p{0.035\textwidth}p{0.39\textwidth}p{0.24\textwidth}}
 \toprule
 \textbf{env} & \textbf{obs} & \textbf{act} & \textbf{goal} & \textbf{每维物理含义} & \textbf{样本观测（seed=0, 50 步）} \\
 \midrule
@@ -414,6 +431,7 @@ DMC（DeepMind Control）Suite 的 14 个 proprioceptive 任务，按"经典控�
 \texttt{tworoom}         & 10 & 2 & 100 & \texttt{[agent\_x, agent\_y, target\_x, target\_y, door?, 5 内部状态]}：\texttt{swm/TwoRoom-v1} 的 10D Box 观测。前 4 维是 agent + target 在 2D 平面的位置；第 5 维是 door 状态（开放/关闭）；最后 5 维是环境内部状态（门状态码、agent 是否在房间 A/B、目标房间等）。Goal\_offset=100（典型 LeWM paper 设置）；目标可能在房间 A 或房间 B，agent 不知道——\textbf{需要工作记忆 / 推断} & \texttt{[+149.17, +84.13, +99.83, +81.18, +112.0, +49.0, +0.0, +0.0, +0.0, +0.0]} \\
 \bottomrule
 \end{longtable}
+\endgroup
 
 \textbf{为什么 goal\_offset 在 DMC/Reach/PushT 之间不同}：
 \begin{itemize}[leftmargin=2em]
@@ -468,17 +486,23 @@ DMC（DeepMind Control）Suite 的 14 个 proprioceptive 任务，按"经典控�
 
 跨基准族评测使用 4 个\textbf{范式完全不同}的 family，每个 family 是一个独立的评测单元集：
 
-\begin{longtable}{p{0.10\textwidth}p{0.15\textwidth}p{0.08\textwidth}p{0.08\textwidth}p{0.10\textwidth}p{0.40\textwidth}}
+\begin{sidewaystable}
+\centering
+\small
+\begin{adjustbox}{max width=\textheight}
+\scriptsize
+\begin{tabular}{p{0.10\textwidth}p{0.13\textwidth}p{0.06\textwidth}p{0.07\textwidth}p{0.05\textwidth}p{0.55\textwidth}}
 \toprule
 \textbf{Family} & \textbf{env\_id（实际）} & \textbf{obs\_dim} & \textbf{action\_dim} & \textbf{goal\_off} & \textbf{任务描述} \\
 \midrule
 \textbf{F1 PushT} & \texttt{swm/PushT-v1} & 7  & 2 & 100 & 2D 块推动：7D state = (agent pos+vel, block pos+vel+angle+angvel)；成功判定 block 在目标位置 $\pm 0.07$ m, 角度 $\pm 1.0$ rad \\
 \textbf{F2 TwoRoom} & \texttt{swm/TwoRoom-v1} & 10 & 2 & 100 & 2 房间部分观测导航：10D Box 观测；目标位置在 5×5 unit 房间内；成功判定 dist $\leq 1.0$ \\
 \textbf{F3 Reacher} & \texttt{mujoco/reacher} & 4 & 2 & 25 & 2 关节机械臂到点：4D state = (qpos[0:2], target[0:2])；max\_episode\_steps = 50 \\
-\textbf{F4 DMC} & \texttt{mujoco/<env\_kind>} & 3-87 & 1-6 & 25 & 14 个 proprioceptive DMC 任务（如 §5.1）\\
+\textbf{F4 DMC} & \texttt{mujoco/<env\_kind>} & \textbf{3--87} & 1-6 & 25 & \shortstack[l]{14 个 proprioceptive DMC 任务\\（如 §5.1）} \\
 \bottomrule
-\end{longtable}
-
+\end{tabular}
+\end{adjustbox}
+\end{sidewaystable}
 \textbf{范式差异}：
 \begin{itemize}[leftmargin=2em]
     \item \textbf{PushT}：接触动力学 + 离散块推动事件；obs 包含 agent 与 block 两组耦合状态
@@ -551,6 +575,7 @@ DMC（DeepMind Control）Suite 的 14 个 proprioceptive 任务，按"经典控�
 \texttt{post\_mlp} 是一个 12 倍扩展的 MLP（$\text{hidden} = 12 \times d_\text{hid}$），让单层 SNN 在不增加细胞参数的前提下获得通道混合能力。每层约 0.88M 参数，4 层共约 3.5M。
 
 \textbf{forward pipeline}（\texttt{STJEWM.forward}）：
+\begingroup\scriptsize
 \begin{verbatim}
     pixels/state -> encoder -> z_enc (B, T, 192)       # ViT-Tiny frozen + projector
     action        -> ActionMLP -> a_emb (B, T, 192)     # 1-layer linear
@@ -559,6 +584,7 @@ DMC（DeepMind Control）Suite 的 14 个 proprioceptive 任务，按"经典控�
     trace = GatedSpikeTrace(spike, ctx=[a_emb, h])      # content-aware gated
     z_final = readout(h, spike, trace)                  # per ReadoutMode
 \end{verbatim}
+\endgroup
 
 \textbf{架构参数总结}：
 \begin{itemize}[leftmargin=2em]
@@ -699,21 +725,30 @@ STJEWM 的训练损失（\texttt{code/native\_losses.py:stjewm\_loss}）由 3 �
 \textbf{padding 方案}：obs\_dim pad 到 128（G16 设置），action\_dim pad 到 56。padding 用零填充；模型读 padded obs；env.step 仅取前 \texttt{action\_dim} 维。
 
 \textbf{损失归约}：所有损失分量在 batch 维度上取 mean（PyTorch \texttt{F.mse\_loss} 默认 reduction='mean'）。不进行 per-env 归一或加权——因为不同 env 的样本频率已经由 buffer 大小隐式平衡。
-
 \subsection{三种训练 regime（完整 breakdown）}
 
 \textbf{总览}：所有训练通过 \texttt{code/train/train.py} 的统一入口；区别在于传入的 \texttt{--multi-env-spec} JSON 配置和 \texttt{--epochs}：
 
-\begin{longtable}{p{0.18\textwidth}p{0.12\textwidth}p{0.12\textwidth}p{0.12\textwidth}p{0.18\textwidth}p{0.16\textwidth}}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{@{}p{0.14\textwidth}p{0.09\textwidth}p{0.08\textwidth}p{0.09\textwidth}p{0.21\textwidth}p{0.13\textwidth}@{}}
 \toprule
 \textbf{regime} & \textbf{ckpt 数} & \textbf{epochs} & \textbf{每 env windows} & \textbf{训练入口} & \textbf{用途} \\
 \midrule
 \textbf{单任务 specialist} & 13 × 14 DMC = 182 & 1 & 10K & \texttt{train.py --env-kind dmc} & 单 env 评测 \\
-\textbf{通才 G4/G8/G16} & 12 × 3 scales = 36 & 1 & 8K/16K/32K & \texttt{train.py --multi-env-spec} & 跨任务校准性 \\
-\textbf{跨基准族 (F1-F4)} & 12 × 4 splits = 48 & 5 & 10K per env & \texttt{--multi-env-spec configs/oodc/cross\_benchmark\_Fx\_train\_only.json} & 轴 2 评测 \\
-\textbf{OOD Path-C (F1-F3 单, F1F2/F1F3/F2F3 双)} & 12 × 6 splits = 72 & 1 & 2K & \texttt{--multi-env-spec configs/oodc/oodc\_Fx.json} & 轴 1 评测 \\
+\textbf{通才 G4/G8/G16} & 12 × 3 scales = 36 & 1 & 8K/16K/32K & \shortstack[l]{\texttt{train.py}\\\texttt{--multi-env-spec}} & 跨任务校准性 \\
+\textbf{跨基准族 (F1-F4)} & 12 × 4 splits = 48 & 5 & 10K per env & \shortstack[l]{\texttt{cross\_benchmark\_Fx}\\\texttt{\_train\_only.json}} & 轴 2 评测 \\
+\shortstack[l]{\textbf{OOD Path-C}\\\textbf{(F1-F3 单, F1F2/}\\\textbf{F1F3/F2F3 双)}} & 12 × 6 splits = 72 & 1 & 2K & \texttt{oodc\_Fx.json} & 轴 1 评测 \\
 \bottomrule
-\end{longtable}
+\end{tabular}
+\end{adjustbox}
+\begin{footnotesize}
+\begin{verbatim}
+python -m code.train.train --env-kind dmc
+python -m code.train.train --multi-env-spec configs/generalist_Gx_train.json
+python -m code.train.train --multi-env-spec configs/oodc/cross_benchmark_Fx_train_only.json
+python -m code.train.train --multi-env-spec configs/oodc/oodc_Fx.json
+\end{verbatim}
+\end{footnotesize}
 
 \textbf{Single-task specialist（13 models × 14 DMC envs = 182 ckpts）}：
 \begin{itemize}[leftmargin=2em]
@@ -868,7 +903,7 @@ function CEM.plan(z_init, z_goal):
     \item \textbf{Bug \#2 (LeWM@0.1 阈值被常数 latent 平凡通过)}：原 \texttt{success\_threshold\_cos = 0.1} 让 MLP（输出常数零）也能达到 100\%。修复：保留 \texttt{LeWM@0.05}（v0.7.13 新增，更严）和 \texttt{LeWM@0.01}（最严）作为 thresholded-success；同时以原始 \texttt{mean\_cos\_dist}（raw, threshold-free）为主指标
 \end{enumerate}
 
-\textbf{Bug 修复的代码 diff（核心行）}：
+\textbf{Bug 修复的代码 diff（核心行）}：\par\smallskip
 \begin{verbatim}
 # code/core/envs/dmc_env.py
 "cheetah":      ("cheetah.xml", 9, 6, 200, 0.1),  # was 1.0 (random 90% pass)
@@ -887,21 +922,19 @@ lewm_succ_001 = cos_dist < 0.01
 \end{verbatim}
 
 \textbf{Bug 修复后其他保留的 bug}：Bug \#3 (CEM horizon=5 vs goal\_offset=25/100) \textbf{未修复}。horizon=5 是 planner budget 限制，提升到 25-100 让 CEM planning 计算成本不可行（5 iters × 100 samples × 100 steps）。因此 \textbf{env-SR = 0 是 horizon artifact，不是模型失败}——评测时改用 \texttt{mean\_cos\_dist}（不依赖 horizon 长度）作为主指标
-
 \subsection{评测 cell 计数（按 axis 详细 breakdown）}
 
 \textbf{总览}：
-
-\begin{longtable}{p{0.20\textwidth}p{0.25\textwidth}p{0.18\textwidth}p{0.18\textwidth}p{0.18\textwidth}}
-\toprule
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{@{}p{0.16\textwidth}p{0.20\textwidth}p{0.14\textwidth}p{0.12\textwidth}p{0.23\textwidth}@{}}
 \textbf{评测轴} & \textbf{splits × models × envs} & \textbf{total cells} & \textbf{目的} & \textbf{配置文件} \\
 \midrule
 轴 1 DMC 内部子族 & $6 \times 12 \times 14$ & 1008 & gating experiment & \texttt{configs/oodc/oodc\_F*.json} \\
-轴 2 跨基准族     & $4 \times 12 \times \{1\text{-}13\}$ & 192 & 边界条件 & \texttt{configs/oodc/cross\_benchmark\_F*\_train\_only.json} \\
-\textbf{总计}     & & \textbf{1200} & & \\
+轴 2 跨基准族 & $4 \times 12 \times \{1\text{-}13\}$ & 192 & 边界条件 & \shortstack[l]{\texttt{configs/}\\\texttt{cross\_bench/}\\\texttt{F*\_train.json}} \\
+\textbf{总计} & & \textbf{1200} & & \\
 \bottomrule
-\end{longtable}
-
+\end{tabular}
+\end{adjustbox}
 \textbf{轴 1 每个 split 的 cell breakdown}：
 \begin{itemize}[leftmargin=2em]
     \item \texttt{oodc\_F1}: 12 models $\times$ 14 DMC envs (其中 8 个 held-out, 6 个 seen) = 168 cells
@@ -932,7 +965,7 @@ lewm_succ_001 = cos_dist < 0.01
 
 \subsection{每个 cell 的 JSON 字段}
 
-每个评测 cell 写入一个 JSON 文件（\texttt{results/utility/ood1/<split>/<model>/seed\_0/<env>.json} 或 \texttt{results/cross\_benchmark\_F<x>/eval/<model>\_<env>.json}），字段定义如下：
+每个评测 cell 写入一个 JSON 文件（\path{results/utility/ood1/<split>/<model>/seed\_0/<env>.json} 或 \path{results/cross\_benchmark\_F<x>/eval/<model>\_<env>.json}），字段定义如下：
 
 \begin{itemize}[leftmargin=2em]
     \item \textbf{\texttt{env\_id}}：env 的字符串 ID（如 \texttt{"mujoco/reacher"}）
@@ -998,21 +1031,21 @@ lewm_succ_001 = cos_dist < 0.01
 
 \subsection{判定失败的"四象限"}
 
-将 4 个家族在 (div, \ensuremath{\rho}) 平面上分类：
-
-\begin{longtable}{p{0.18\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.40\textwidth}}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{p{0.18\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.40\textwidth}}
 \toprule
 \textbf{家族 / 模型} & \textbf{div} & \textbf{resp} & \textbf{\ensuremath{\rho}} & \textbf{失败模式} \\
 \midrule
-MLP（无状态对照）         & \textbf{0.0002} ($\times 50$ 太小) & yes & $\sim 0$ & \textbf{坍缩}：常输出 \\
-GRU                       & 0.007 (校准) & yes & $-0.07$ & \textbf{噪声}：latent 跟 obs 不相关 \\
-LeWM Transformer          & 0.186 ($\times 16$ 太大) & yes & $+0.52$ & \textbf{过反应}：latent 放大 30× \\
-STJEWM (6 readouts)        & 0.011 $\pm$ 0.001 & yes & $\geq 0.99$ & \textbf{校准} \\
-CuBiFAE                   & 0.012 & yes & (under measurement) & 校准 (SNN) \\
-SLT-LIF-MPC-trace         & 0.012 & yes & (under measurement) & 校准 (SNN) \\
-SLT-LIF-MPC-free          & 0.010 & yes & (under measurement) & 校准 (SNN) \\
+MLP（无状态对照） & \textbf{0.0002} ($\times 50$ 太小) & yes & $\sim 0$ & \textbf{坍缩}：常输出 \\
+GRU & 0.007 (校准) & yes & $-0.07$ & \textbf{噪声}：latent 跟 obs 不相关 \\
+LeWM Transformer & 0.186 ($\times 16$ 太大) & yes & $+0.52$ & \textbf{过反应}：latent 放大 30× \\
+STJEWM (6 readouts) & 0.011 $\pm$ 0.001 & yes & $\geq 0.99$ & \textbf{校准} \\
+CuBiFAE & 0.012 & yes & (under measurement) & 校准 (SNN) \\
+SLT-LIF-MPC-trace & 0.012 & yes & (under measurement) & 校准 (SNN) \\
+SLT-LIF-MPC-free & 0.010 & yes & (under measurement) & 校准 (SNN) \\
 \bottomrule
-\end{longtable}
+\end{tabular}
+\end{adjustbox}
 
 \textbf{关键观察}：MLP 的 div $= 0.0002$ 正是常数 latent 的预期 —— per-dim 标准差为 0。\textbf{这不是}我们对 GRU 的预期失败模式（resp = 30、div 正常），也不是 LeWM 的预期（resp = 30、div $\approx 0.19$）—— 这两个模型都有正常 div 但把观测变化放大了 30 倍，给出高 LeWM-SR \textbf{靠"很响"而不是靠预测}。
 
@@ -1022,62 +1055,66 @@ SLT-LIF-MPC-free          & 0.010 & yes & (under measurement) & 校准 (SNN) \\
 
 \subsection{轴 1：DMC 内部子族（1008 cells）}
 
-每个 (split, model) 的 (div, resp, \ensuremath{\rho}, env-SR) 均值（节选自 \texttt{results/utility/ood1\_table\_v0\_7\_13.md}）：
-
-\begin{longtable}{p{0.10\textwidth}p{0.16\textwidth}p{0.06\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.10\textwidth}}
+\begin{adjustbox}{max width=\textwidth}
+\scriptsize
+\begin{tabular}{p{0.16\textwidth}p{0.15\textwidth}p{0.06\textwidth}p{0.13\textwidth}p{0.13\textwidth}p{0.13\textwidth}p{0.13\textwidth}}
 \toprule
 \textbf{split} & \textbf{family} & \textbf{n} & \textbf{mean div} & \textbf{mean resp} & \textbf{mean \ensuremath{\rho}} & \textbf{env\_SR} \\
 \midrule
-classic held-out   & SNN-baselines & 24  & 0.0521 & 0.2107 & 0.9710 & 0.8750 \\
-classic held-out   & \textbf{STJEWM}  & 48  & \textbf{0.0485} & \textbf{0.2102} & \textbf{0.9744} & 0.8750 \\
-classic held-out   & non-SNN       & 24  & 0.0656 & 0.9142 & 0.9082 & 0.8750 \\
+classic held-out & SNN-baselines & 24 & 0.0521 & 0.2107 & 0.9710 & 0.8750 \\
+classic held-out & \textbf{STJEWM} & 48 & \textbf{0.0485} & \textbf{0.2102} & \textbf{0.9744} & 0.8750 \\
+classic held-out & non-SNN & 24 & 0.0656 & 0.9142 & 0.9082 & 0.8750 \\
 classic+locomotion held-out & SNN-baselines & 6 & 0.1505 & 0.2204 & 0.9908 & 0.5000 \\
-classic+locomotion held-out & \textbf{STJEWM}  & 12 & \textbf{0.0485} & \textbf{0.2120} & \textbf{0.9922} & 0.5000 \\
-classic+locomotion held-out & non-SNN       & 6  & 0.0612 & 0.3139 & 0.9367 & 0.5000 \\
-classic+sparse held-out & SNN-baselines & 6  & 0.1505 & 0.2204 & 0.9922 & 0.5000 \\
-classic+sparse held-out & \textbf{STJEWM}  & 12 & \textbf{0.0685} & \textbf{0.2225} & \textbf{0.9960} & 0.5000 \\
-classic+sparse held-out & non-SNN       & 6  & 0.0634 & 1.4299 & 0.9115 & 0.5000 \\
-locomotion held-out & SNN-baselines & 6  & 0.1505 & 0.2204 & 0.9908 & 0.5000 \\
-locomotion held-out & \textbf{STJEWM}  & 12 & \textbf{0.0444} & \textbf{0.1983} & \textbf{0.9986} & 0.5000 \\
-locomotion held-out & non-SNN       & 6  & 0.0636 & 1.9017 & 0.9236 & 0.5000 \\
+classic+locomotion held-out & \textbf{STJEWM} & 12 & \textbf{0.0485} & \textbf{0.2120} & \textbf{0.9922} & 0.5000 \\
+classic+locomotion held-out & non-SNN & 6 & 0.0612 & 0.3139 & 0.9367 & 0.5000 \\
+classic+sparse held-out & SNN-baselines & 6 & 0.1505 & 0.2204 & 0.9922 & 0.5000 \\
+classic+sparse held-out & \textbf{STJEWM} & 12 & \textbf{0.0685} & \textbf{0.2225} & \textbf{0.9960} & 0.5000 \\
+classic+sparse held-out & non-SNN & 6 & 0.0634 & 1.4299 & 0.9115 & 0.5000 \\
+locomotion held-out & SNN-baselines & 6 & 0.1505 & 0.2204 & 0.9908 & 0.5000 \\
+locomotion held-out & \textbf{STJEWM} & 12 & \textbf{0.0444} & \textbf{0.1983} & \textbf{0.9986} & 0.5000 \\
+locomotion held-out & non-SNN & 6 & 0.0636 & 1.9017 & 0.9236 & 0.5000 \\
 locomotion+sparse held-out & SNN-baselines & 6 & 0.1505 & 0.2204 & 0.9908 & 0.5000 \\
-locomotion+sparse held-out & \textbf{STJEWM}  & 12 & \textbf{0.0154} & \textbf{0.2053} & \textbf{0.9816} & 0.5000 \\
-locomotion+sparse held-out & non-SNN       & 6 & 0.0640 & 1.4299 & 0.9038 & 0.5000 \\
-sparse held-out   & SNN-baselines & 6  & 0.1505 & 0.2204 & 0.9908 & 0.5000 \\
-sparse held-out   & \textbf{STJEWM}  & 12 & \textbf{0.0660} & \textbf{0.2040} & \textbf{0.9839} & 0.5000 \\
-sparse held-out   & non-SNN       & 6  & 0.0640 & 1.4299 & 0.9038 & 0.5000 \\
+locomotion+sparse held-out & \textbf{STJEWM} & 12 & \textbf{0.0154} & \textbf{0.2053} & \textbf{0.9816} & 0.5000 \\
+locomotion+sparse held-out & non-SNN & 6 & 0.0640 & 1.4299 & 0.9038 & 0.5000 \\
+sparse held-out & SNN-baselines & 6 & 0.1505 & 0.2204 & 0.9908 & 0.5000 \\
+sparse held-out & \textbf{STJEWM} & 12 & \textbf{0.0660} & \textbf{0.2040} & \textbf{0.9839} & 0.5000 \\
+sparse held-out & non-SNN & 6 & 0.0640 & 1.4299 & 0.9038 & 0.5000 \\
 \bottomrule
-\end{longtable}
+\end{tabular}
+\end{adjustbox}
 
 \textbf{关键发现}：STJEWM 6 个读出口径在所有 6 个 split 上都保持 $\rho \geq 0.97$ 和 resp $\in [0.20, 0.22]$。非线性对照家族（LeWM-v2 的 resp $\approx 30$）在抗坍缩诊断上明显偏离。
 
 \subsection{轴 2：跨基准族（192 cells，12 模型 × 4 splits）}
 
-每个 (model, split) 的 \texttt{mean\_cos\_dist}（来自 \texttt{results/cross\_benchmark\_F\{1,2,3,4\}/eval/}）：
+每个 (model, split) 的 \texttt{mean\_cos\_dist}（来自 \path{results/cross\_benchmark\_F\{1,2,3,4\}/eval/}）：
 
-\begin{longtable}{p{0.22\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.10\textwidth}p{0.10\textwidth}}
+\begin{adjustbox}{max width=\textwidth}
+\scriptsize
+\begin{tabular}{p{0.22\textwidth}p{0.11\textwidth}p{0.11\textwidth}p{0.11\textwidth}p{0.11\textwidth}p{0.11\textwidth}}
 \toprule
 \textbf{Model (Family)} & \textbf{F1 PushT} & \textbf{F2 TwoRoom} & \textbf{F3 Reacher} & \textbf{F4 DMC} & \textbf{Mean} \\
 \midrule
 \textbf{STJEWM 6 readouts} & & & & & \\
-\quad trace\_only (default)      & 0.154 & \textbf{0.052} & 0.100 & \textbf{0.107} & 0.103 \\
-\quad rate\_only                 & \textbf{0.108} & 0.055 & 0.087 & 0.116 & 0.092 \\
-\quad spike\_only               & 0.146 & 0.058 & \textbf{0.083} & 0.118 & 0.101 \\
-\quad no\_trace (ablation)       & 0.113 & 0.050 & 0.089 & 0.130 & 0.096 \\
-\quad hidden\_leak              & 0.171 & 0.066 & 0.103 & 0.125 & 0.116 \\
-\quad membrane\_readout (违反)  & 0.188 & 0.055 & 0.121 & 0.119 & 0.121 \\
+\quad trace\_only (default) & 0.154 & \textbf{0.052} & 0.100 & \textbf{0.107} & 0.103 \\
+\quad rate\_only & \textbf{0.108} & 0.055 & 0.087 & 0.116 & 0.092 \\
+\quad spike\_only & 0.146 & 0.058 & \textbf{0.083} & 0.118 & 0.101 \\
+\quad no\_trace (ablation) & 0.113 & 0.050 & 0.089 & 0.130 & 0.096 \\
+\quad hidden\_leak & 0.171 & 0.066 & 0.103 & 0.125 & 0.116 \\
+\quad membrane\_readout (违反) & 0.188 & 0.055 & 0.121 & 0.119 & 0.121 \\
 \midrule
 \textbf{SNN / 神经形态对照} & & & & & \\
-\quad SLT-LIF-MPC-trace          & 0.160 & 0.070 & 0.078 & 0.120 & 0.107 \\
-\quad SLT-LIF-MPC-free           & 0.249 & 0.062 & 0.093 & 0.125 & 0.127 \\
-\quad CuBiFAE baseline          & 0.310 & 0.070 & 0.109 & 0.108 & 0.119 \\
+\quad SLT-LIF-MPC-trace & 0.160 & 0.070 & 0.078 & 0.120 & 0.107 \\
+\quad SLT-LIF-MPC-free & 0.249 & 0.062 & 0.093 & 0.125 & 0.127 \\
+\quad CuBiFAE baseline & 0.310 & 0.070 & 0.109 & 0.108 & 0.119 \\
 \midrule
 \textbf{非 SNN 对照} & & & & & \\
-\quad GRU baseline              & 0.406 & 0.114 & 0.001 & 0.008 & 0.039 \scriptsize{(坍缩 artifact)} \\
-\quad MLP baseline              & 0.155 & 0.046 & 0.000 & 0.001 & 0.014 \scriptsize{(坍缩 artifact)} \\
-\quad LeWM Transformer          & 0.365 & 0.058 & 0.230 & 0.225 & 0.220 \scriptsize{(过反应)} \\
+\quad GRU baseline & 0.406 & 0.114 & 0.001 & 0.008 & 0.039 \scriptsize{(坍缩 artifact)} \\
+\quad MLP baseline & 0.155 & 0.046 & 0.000 & 0.001 & 0.014 \scriptsize{(坍缩 artifact)} \\
+\quad LeWM Transformer & 0.365 & 0.058 & 0.230 & 0.225 & 0.220 \scriptsize{(过反应)} \\
 \bottomrule
-\end{longtable}
+\end{tabular}
+\end{adjustbox}
 
 \textbf{关键发现}：
 
@@ -1211,6 +1248,7 @@ STJEWM 6 个读出口径全部满足这三点（物理层），所以 CEM 规划
 
 \subsection{可复现命令示例}
 
+\begin{scriptsize}
 \begin{verbatim}
 # Train all 12 generalist ckpts (16 DMC envs minus walker/humanoid)
 python -m code.train.train --multi-env-spec configs/generalist_G16_minus_walker_humanoid.json
@@ -1223,6 +1261,7 @@ python -m code.eval.closed_loop --env pusht \
     --eval-budget 50 \
     --out results/cross_benchmark_F1/eval/stjewm_trace_only_pusht.json
 \end{verbatim}
+\end{scriptsize}
 
 \subsection{术语表（glossary）}
 
