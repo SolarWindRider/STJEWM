@@ -76,6 +76,18 @@ def parse_args():
     p.add_argument("--seed", type=int, default=3072)
     p.add_argument("--n-layers", type=int, default=4,
                    help="Number of SNN/Transformer layers (default 4 for STJEWM, 6 for LeWM-style baseline)")
+    p.add_argument("--hidden-dim", type=int, default=None,
+                   help="Per-model override for the main hidden channel width. "
+                        "Used to reach a target parameter count. Applies to "
+                        "all non-STJEWM models; ignored by STJEWM (uses embed_dim).")
+    p.add_argument("--mlp-hidden", type=int, default=None,
+                   help="Override for MLP hidden_dim specifically (default=512 for ~5M).")
+    p.add_argument("--mlp-layers", type=int, default=None,
+                   help="Override for MLP num_layers specifically (default=13 for ~5M).")
+    p.add_argument("--slt-layers", type=int, default=None,
+                   help="Override for SLT-LIF-MPC n_layers specifically (default=8 for ~5M).")
+    p.add_argument("--slt-din", type=int, default=None,
+                   help="Override for SLT-LIF-MPC d_in specifically (default=672 trace / 640 free).")
     p.add_argument("--lambda-sigreg", type=float, default=0.09)
     p.add_argument("--lambda-goal", type=float, default=0.5)
     p.add_argument("--goal-offset", type=int, default=5)
@@ -103,7 +115,15 @@ def parse_args():
 # Model builders
 # ============================================================
 def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int,
-                readout_mode: str = "hidden_leak", embed_dim: Optional[int] = None):
+                readout_mode: str = "hidden_leak", embed_dim: Optional[int] = None,
+                hidden_dim: Optional[int] = None,
+                mlp_hidden: Optional[int] = None, mlp_layers: Optional[int] = None,
+                slt_layers: Optional[int] = None, slt_din: Optional[int] = None):
+    """5M-aligned builders (v0.7.14).
+    All non-STJEWM baselines can be widened/deepened via per-model flags to
+    match STJEWM's 5.06M trainable. STJEWM itself is fixed: 4 layers x 192
+    embed x 3 compartments = 5.06M (the rest of the 10.57M is the frozen ViT).
+    """
     if model_kind == "stjewm":
         from code.stjewm import STJEWM
         return STJEWM(
@@ -116,41 +136,53 @@ def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int,
         )
     if model_kind == "lewm_baseline":
         from code.lewm_transformer_baseline import LeWMTransformerBaseline
-        # 4-layer 256-hidden matches STJEWM (5.03M vs 5.07M = 0.7% delta).
-        # n_layers is configurable via --n-layers (default 4).
+        # 5M: embed_dim=288 num_layers=3 -> 4.97M (CLI n_layers ignored; per-model fixed)
         return LeWMTransformerBaseline(
             state_dim=obs_dim, action_dim=action_dim,
-            embed_dim=(embed_dim or 256), num_layers=n_layers, num_heads=8,
+            embed_dim=(embed_dim or 288), num_layers=3, num_heads=8,
         )
     if model_kind == "gru_baseline":
         from code.gru_baseline import GRUBaseline
-        return GRUBaseline(state_dim=obs_dim, action_dim=action_dim)
+        # 5M: hidden_dim=560 num_layers=2 -> 5.13M
+        return GRUBaseline(state_dim=obs_dim, action_dim=action_dim,
+                           hidden_dim=(hidden_dim or 560), num_layers=2)
     if model_kind == "mlp_baseline":
         from code.mlp_baseline import make_mlp_baseline
-        return make_mlp_baseline(state_dim=obs_dim, action_dim=action_dim)
+        # 5M: hidden=640 num_layers=12 -> 5.00M (no recurrence, still collapse-control)
+        return make_mlp_baseline(
+            state_dim=obs_dim, action_dim=action_dim,
+            hidden_dim=(mlp_hidden if mlp_hidden is not None else (hidden_dim or 640)),
+            num_layers=(mlp_layers if mlp_layers is not None else 12),
+        )
     if model_kind == "slt_lif_mpc_trace":
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
+        # 5M: d_in=672 num_layers=8 -> 5.11M
         return make_slt_lif_mpc_trace(
             state_dim=obs_dim, action_dim=action_dim,
-            d_in=192, embed_dim=192, n_layers=n_layers, trace_beta=0.9, k_avg=4,
+            d_in=(slt_din or 672), embed_dim=(slt_din or 672),
+            n_layers=(slt_layers or 8), trace_beta=0.9, k_avg=4,
         )
     if model_kind == "slt_lif_mpc_free":
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
+        # 5M: d_in=640 num_layers=8 -> 5.05M
         return make_slt_lif_mpc_free(
             state_dim=obs_dim, action_dim=action_dim,
-            d_in=192, embed_dim=192, n_layers=n_layers, trace_beta=0.9,
+            d_in=(slt_din or 640), embed_dim=(slt_din or 640),
+            n_layers=(slt_layers or 8), trace_beta=0.9,
         )
     if model_kind == "spikedreamer_baseline":
         from code.spikedreamer_baseline import make_spikedreamer
+        # 5M: d_snn=288 d_tx=288 num_layers=3 -> 5.12M
         return make_spikedreamer(
             state_dim=obs_dim, action_dim=action_dim,
-            d_snn=128, d_tx=192, num_layers=n_layers, num_heads=8,
+            d_snn=288, d_tx=288, num_layers=3, num_heads=8,
         )
     if model_kind == "cubifae_baseline":
         from code.cubifae_baseline import CubifAEBaseline
+        # 5M: d_hid=186 num_layers=2 -> 4.99M
         return CubifAEBaseline(
             state_dim=obs_dim, action_dim=action_dim,
-            d_hid=192, n_layers=n_layers,
+            d_hid=186, n_layers=2,
         )
 
 # ============================================================
@@ -382,16 +414,19 @@ def main():
     n_layers = args.n_layers
     # Save the actual n_layers used (not the user-provided default)
     args.n_layers = n_layers
-    # Save embed_dim for eval (LeWM-style uses 256, STJEWM uses 192; generalist overrides via --embed-dim)
+    # Save embed_dim for eval (5M-aligned defaults: LeWM=288, others=192; CLI override wins)
     if args.embed_dim is not None:
-        args.embed_dim = args.embed_dim
+        pass  # user-specified wins
     elif args.model == "lewm_baseline":
-        args.embed_dim = 256
+        args.embed_dim = 288
     else:
         args.embed_dim = 192
     model = build_model(
         args.model, obs_dim, action_dim, n_layers, args.readout_mode,
         embed_dim=args.embed_dim,
+        hidden_dim=args.hidden_dim,
+        mlp_hidden=args.mlp_hidden, mlp_layers=args.mlp_layers,
+        slt_layers=args.slt_layers, slt_din=args.slt_din,
     ).to(device)
     assert_model_compatible(model)
 
