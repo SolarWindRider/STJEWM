@@ -161,8 +161,18 @@ def load_multi_env_dataset_from_json(
     action_dim_target: Optional[int] = None,
     seed: int = 3072,
 ) -> Dataset:
-    """Convenience: read env_specs from a JSON file and call load_multi_env_dataset."""
-    specs = json.loads(Path(json_path).read_text())
+    """Convenience: read env_specs from a JSON file and call load_multi_env_dataset.
+
+    Supports two formats:
+    (A) A flat list of env-spec dicts (e.g. configs/generalist_16env.json)
+    (B) A dict with metadata keys + a "specs" key holding the list
+        (e.g. configs/oodc_5m/oodc_F1.json, with _split_name + specs)
+    """
+    raw = json.loads(Path(json_path).read_text())
+    if isinstance(raw, dict):
+        specs = raw.get("specs", [])
+    else:
+        specs = raw
     return load_multi_env_dataset(
         env_specs=specs,
         pad_obs_to=pad_obs_to,
