@@ -1861,6 +1861,83 @@
     },
     {
       "split": "cross_benchmark_F2",
+      "model": "stjewm_trace_only",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 2.03549861907959e-05,
+      "mean_phys_dist": 0.00213496948718024
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_trace_only",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.4,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.06699809432029724,
+      "mean_phys_dist": 0.14188749116221688
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_trace_only",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.00434260368347168,
+      "mean_phys_dist": 0.03766145603232597
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_trace_only",
+      "env": "finger",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0909491240978241,
+      "mean_phys_dist": 0.18508895155085844
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_trace_only",
+      "env": "hopper",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.09022879004478454,
+      "mean_phys_dist": 0.20164934184397715
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_trace_only",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.06078398823738098,
+      "mean_phys_dist": 1.8752132654190063
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_trace_only",
+      "env": "walker",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.08774563074111938,
+      "mean_phys_dist": 0.1947949071475837
+    },
+    {
+      "split": "cross_benchmark_F2",
       "model": "cubifae_baseline",
       "env": "ball_in_cup",
       "success_rate_lewm": 1.0,
@@ -9031,6 +9108,14 @@
     {
       "env": "cheetah",
       "model": "stjewm_no_trace",
+      "target": "k10",
+      "auroc": 0.4916114622198533,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "cheetah",
+      "model": "stjewm_no_trace",
       "target": "k5",
       "auroc": 0.5127932496353549,
       "skipped": false,
@@ -9447,6 +9532,14 @@
     {
       "env": "dog",
       "model": "stjewm_spike_only",
+      "target": "k10",
+      "auroc": 0.513916015625,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "stjewm_spike_only",
       "target": "k5",
       "auroc": 0.5529547252015374,
       "skipped": false,
@@ -9503,8 +9596,24 @@
     {
       "env": "dog",
       "model": "stjewm_no_trace",
+      "target": "contact",
+      "auroc": 0.5003985507246377,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "stjewm_no_trace",
       "target": "k10",
       "auroc": 0.4380154079861111,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "stjewm_no_trace",
+      "target": "k5",
+      "auroc": 0.506458908576265,
       "skipped": false,
       "reason": null
     },
@@ -9521,6 +9630,14 @@
       "model": "stjewm_hidden_leak",
       "target": "contact",
       "auroc": 0.515697463768116,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "stjewm_hidden_leak",
+      "target": "motion",
+      "auroc": 0.6729041353383458,
       "skipped": false,
       "reason": null
     }
