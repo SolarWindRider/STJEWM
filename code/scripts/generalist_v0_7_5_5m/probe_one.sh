@@ -29,7 +29,9 @@ for target in $TARGETS; do
   fi
   echo "[probe] $ENV $MODEL $target"
   /home/lx/miniconda3/envs/snn/bin/python -m code.scripts.probe \
-    --env "$ENV" --model "$CKPT" --probe-target "$target" \
+    --env "$ENV" --model "$MODEL" --ckpt "$CKPT" --probe-target "$target" \
+    --pad-obs-to 128 --action-dim-eval 56 \
+    --max-windows 200 \
     --out "$out" 2>&1 | tail -3
   # Mirror to aggregator dir
   if [[ -f "$out" ]]; then
