@@ -205,8 +205,17 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
                         pass
         return max(indices) + 1 if indices else None
 
+    def _infer_dim_from_state_dict(sd: dict | None, key: str) -> int | None:
+        if sd is None:
+            return None
+        w = sd.get(key)
+        if hasattr(w, "shape") and len(w.shape) >= 1:
+            return int(w.shape[0])
+        return None
+
     if model_name.startswith("lewm"):
-        embed_dim = ck_args.get("embed_dim", 256)
+        embed_dim = (_infer_dim_from_state_dict(ck_state_dict, "state_encoder.proj.0.weight")
+                      or ck_args.get("embed_dim", 256))
         num_layers = ck_args.get("n_layers", 4)
         return LeWMTransformerBaseline(
             state_dim=state_dim, action_dim=action_dim,
@@ -214,7 +223,8 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
         )
     if model_name.startswith("gru"):
         from code.gru_baseline import GRUBaseline
-        hidden_dim = ck_args.get("hidden_dim", 576)
+        hidden_dim = (_infer_dim_from_state_dict(ck_state_dict, "state_proj.0.weight")
+                      or ck_args.get("hidden_dim", 576))
         num_layers = _state_dict_n_layers("gru") or ck_args.get("n_layers", 3)
         return GRUBaseline(
             state_dim=state_dim, action_dim=action_dim,
@@ -222,9 +232,19 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
         )
     if model_name.startswith("mlp"):
         from code.mlp_baseline import MLPBaseline
-        hidden_dim = ck_args.get("hidden_dim", 576)
-        num_layers = _state_dict_n_layers("mlp_cells") or _state_dict_n_layers("mlp") or ck_args.get("n_layers", 4)
-        emb_dim = ck_args.get("emb_dim", 192)
+        hidden_dim = (_infer_dim_from_state_dict(ck_state_dict, "state_proj.0.weight")
+                      or ck_args.get("hidden_dim", 576))
+        # num_layers: count net.X.weight tensors of shape [hidden, hidden]
+        if ck_state_dict is not None:
+            n_hidden_layers = sum(1 for k, v in ck_state_dict.items()
+                                  if k.startswith("net.") and k.endswith(".weight")
+                                  and hasattr(v, "shape") and len(v.shape) == 2
+                                  and v.shape[0] == hidden_dim and v.shape[1] == hidden_dim)
+            num_layers = n_hidden_layers or ck_args.get("n_layers", 4)
+        else:
+            num_layers = ck_args.get("n_layers", 4)
+        emb_dim = (_infer_dim_from_state_dict(ck_state_dict, "state_proj.2.weight")
+                  or ck_args.get("emb_dim", 192))
         return MLPBaseline(
             state_dim=state_dim, action_dim=action_dim,
             hidden_dim=hidden_dim, num_layers=num_layers, emb_dim=emb_dim,
@@ -232,30 +252,37 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
     if model_name.startswith("slt_lif_mpc_trace"):
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
         n_layers = ck_args.get("n_layers", 4)
+        d_in = _infer_dim_from_state_dict(ck_state_dict, "state_projector.proj.0.weight") or 192
         return make_slt_lif_mpc_trace(
             state_dim=state_dim, action_dim=action_dim,
-            d_in=192, embed_dim=192, n_layers=n_layers, trace_beta=0.9, k_avg=4,
+            d_in=d_in, embed_dim=d_in, n_layers=n_layers, trace_beta=0.9, k_avg=4,
         )
     if model_name.startswith("slt_lif_mpc_free"):
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
         n_layers = ck_args.get("n_layers", 4)
+        d_in = _infer_dim_from_state_dict(ck_state_dict, "state_projector.proj.0.weight") or 192
         return make_slt_lif_mpc_free(
             state_dim=state_dim, action_dim=action_dim,
-            d_in=192, embed_dim=192, n_layers=n_layers, trace_beta=0.9,
+            d_in=d_in, embed_dim=d_in, n_layers=n_layers, trace_beta=0.9,
         )
     if model_name.startswith("spikedreamer"):
         from code.spikedreamer_baseline import make_spikedreamer
         n_layers = ck_args.get("n_layers", 4)
+        d_snn = _infer_dim_from_state_dict(ck_state_dict, "state_proj.proj.0.weight") or 128
+        d_tx = d_snn  # SpikeDreamer uses d_snn == d_tx
+        if ck_state_dict is not None and "pos_embed" in ck_state_dict:
+            d_tx = int(ck_state_dict["pos_embed"].shape[2])
         return make_spikedreamer(
             state_dim=state_dim, action_dim=action_dim,
-            d_snn=128, d_tx=192, num_layers=n_layers, num_heads=8,
+            d_snn=d_snn, d_tx=d_tx, num_layers=n_layers, num_heads=8,
         )
     if model_name.startswith("cubifae"):
         from code.cubifae_baseline import CubifAEBaseline
         n_layers = ck_args.get("n_layers", 4)
+        d_hid = _infer_dim_from_state_dict(ck_state_dict, "state_projector.0.weight") or 192
         return CubifAEBaseline(
             state_dim=state_dim, action_dim=action_dim,
-            d_hid=192, n_layers=n_layers,
+            d_hid=d_hid, n_layers=n_layers,
         )
     from code.stjewm import STJEWM
     n_layers = ck_args.get("n_layers", 4)
