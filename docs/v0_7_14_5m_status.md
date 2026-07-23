@@ -1,4 +1,4 @@
-# v0.7.14: 5M-Aligned Re-Training — Final Status (16h+ in)
+# v0.7.14: 5M-Aligned Re-Training — Status (24h+ in)
 
 ## Goal
 Re-train all 8 baselines + 6 STJEWM readouts at 4.97-5.13M parameters
@@ -19,10 +19,10 @@ to enable **fair SOTA comparison** in the paper.
 **Range: 4.97-5.13M (0.16M spread, ±3.2%)** — fair SOTA comparison.
 
 ## Current Progress
-- 102/130 ckpts trained (78%)
-- 736 eval JSONs
-- 145 OK probes + 71 skipped (probe data still being collected)
-- 505 latent stats
+- 104/130 ckpts trained (80%)
+- 780 eval JSONs
+- 192 OK probes + many skipped (probe data still being collected)
+- 520 latent stats
 
 ## Initial Comparison (5M-aligned, 9 splits)
 | Model | oodc_F1 LeWM-SR | cos_dist | div (calib) | resp (calib) |
@@ -56,6 +56,6 @@ collapse (MLP 0,0,0) and over-reaction (LeWM/GRU resp >> 1).
 
 ## Wall Time
 - Started: Thu Jul 22 11:09
-- Now: Thu Jul 23 ~03:30 (16+ hours)
-- 102/130 ckpts done = 78%
-- Estimated to complete: ~14 more hours
+- Now: Thu Jul 23 09:08 (22 hours)
+- 104/130 ckpts done = 80%
+- Remaining: 26 ckpts (mostly F3 STJEWM + G16)
