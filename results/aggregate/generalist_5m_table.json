@@ -2,6 +2,7 @@
   "splits": [
     "cross_benchmark_F1",
     "cross_benchmark_F2",
+    "cross_benchmark_F3",
     "generalist_16env",
     "oodc_F1",
     "oodc_F1F2",
@@ -1895,6 +1896,17 @@
     {
       "split": "cross_benchmark_F2",
       "model": "stjewm_trace_only",
+      "env": "dog",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.18209737539291382,
+      "mean_phys_dist": 0.3795661768277913
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_trace_only",
       "env": "finger",
       "success_rate_lewm": 0.6,
       "success_rate_lewm_005": 0.0,
@@ -1902,6 +1914,17 @@
       "success_rate_env": 0.0,
       "mean_cos_dist": 0.0909491240978241,
       "mean_phys_dist": 0.18508895155085844
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_trace_only",
+      "env": "fish",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.4939184783026576,
+      "mean_phys_dist": 2.5820404921440874
     },
     {
       "split": "cross_benchmark_F2",
@@ -1917,6 +1940,17 @@
     {
       "split": "cross_benchmark_F2",
       "model": "stjewm_trace_only",
+      "env": "humanoid",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.15200663805007936,
+      "mean_phys_dist": 0.3455674352402235
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_trace_only",
       "env": "pendulum_2d",
       "success_rate_lewm": 1.0,
       "success_rate_lewm_005": 0.2,
@@ -1928,6 +1962,50 @@
     {
       "split": "cross_benchmark_F2",
       "model": "stjewm_trace_only",
+      "env": "pusht",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1670263111591339,
+      "mean_phys_dist": 2894.8414175851003
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_trace_only",
+      "env": "quadruped",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.08874920010566711,
+      "mean_phys_dist": 0.28240747461410154
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_trace_only",
+      "env": "reacher",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.08935530185699463,
+      "mean_phys_dist": 0.17890599071979524
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_trace_only",
+      "env": "stacker",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.11484147906303406,
+      "mean_phys_dist": 0.2312297639745328
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_trace_only",
       "env": "walker",
       "success_rate_lewm": 0.6,
       "success_rate_lewm_005": 0.2,
@@ -1935,6 +2013,776 @@
       "success_rate_env": 0.0,
       "mean_cos_dist": 0.08774563074111938,
       "mean_phys_dist": 0.1947949071475837
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_spike_only",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 3.93211841583252e-05,
+      "mean_phys_dist": 0.0031035957682833217
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_spike_only",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.4,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0645852506160736,
+      "mean_phys_dist": 0.14233373646247635
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_spike_only",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 0.8,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.008291792869567872,
+      "mean_phys_dist": 0.05070012573301001
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_spike_only",
+      "env": "dog",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.19372935593128204,
+      "mean_phys_dist": 0.40046473802345145
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_spike_only",
+      "env": "finger",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.12527260482311248,
+      "mean_phys_dist": 0.2124649944592003
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_spike_only",
+      "env": "fish",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.47381801083683966,
+      "mean_phys_dist": 2.5801047716856793
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_spike_only",
+      "env": "hopper",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.07348884344100952,
+      "mean_phys_dist": 0.18743300753637976
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_spike_only",
+      "env": "humanoid",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.18420053124427796,
+      "mean_phys_dist": 0.389043287681157
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_spike_only",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.07048619389533997,
+      "mean_phys_dist": 1.8627789258956908
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_spike_only",
+      "env": "pusht",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.195718851685524,
+      "mean_phys_dist": 1361.5049416678291
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_spike_only",
+      "env": "quadruped",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0895530104637146,
+      "mean_phys_dist": 0.284764446501349
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_spike_only",
+      "env": "reacher",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1368709310889244,
+      "mean_phys_dist": 0.17890599071979524
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_spike_only",
+      "env": "stacker",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.09961403608322143,
+      "mean_phys_dist": 0.23140074952425663
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_spike_only",
+      "env": "walker",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.07506312131881714,
+      "mean_phys_dist": 0.20642715284536303
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_rate_only",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 2.7394294738769533e-05,
+      "mean_phys_dist": 0.002786491968001565
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_rate_only",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.4,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0631801962852478,
+      "mean_phys_dist": 0.1475318395250621
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_rate_only",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0056650757789611815,
+      "mean_phys_dist": 0.04316923253750993
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_rate_only",
+      "env": "dog",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.17664525508880616,
+      "mean_phys_dist": 0.39138227340080245
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_rate_only",
+      "env": "finger",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0741663932800293,
+      "mean_phys_dist": 0.17642671208128727
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_rate_only",
+      "env": "fish",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.4418246826156974,
+      "mean_phys_dist": 2.5806569628361293
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_rate_only",
+      "env": "hopper",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0836452603340149,
+      "mean_phys_dist": 0.1897079216169189
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_rate_only",
+      "env": "humanoid",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.17954171299934388,
+      "mean_phys_dist": 0.37426889116711165
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_rate_only",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 0.8,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.030021744966506957,
+      "mean_phys_dist": 1.0415911555290223
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_rate_only",
+      "env": "pusht",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.14255785346031188,
+      "mean_phys_dist": 4250.836072649274
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_rate_only",
+      "env": "quadruped",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.09656398296356201,
+      "mean_phys_dist": 0.2806468700965711
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_rate_only",
+      "env": "reacher",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.08599034547805787,
+      "mean_phys_dist": 0.17890599071979524
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_rate_only",
+      "env": "stacker",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1002095639705658,
+      "mean_phys_dist": 0.23030345421593307
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_rate_only",
+      "env": "walker",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0842149555683136,
+      "mean_phys_dist": 0.1924264144192958
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_no_trace",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 6.574988365173339e-05,
+      "mean_phys_dist": 0.003767265201336064
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_no_trace",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.05550528764724731,
+      "mean_phys_dist": 0.16200556516335116
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_no_trace",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.01960853934288025,
+      "mean_phys_dist": 0.07149843959581581
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_no_trace",
+      "env": "dog",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.17159566283226013,
+      "mean_phys_dist": 0.4157451032391853
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_no_trace",
+      "env": "finger",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.17417060136795043,
+      "mean_phys_dist": 0.24320596588832463
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_no_trace",
+      "env": "fish",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.4042264178395271,
+      "mean_phys_dist": 2.0899775483244256
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_no_trace",
+      "env": "hopper",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.09623308181762695,
+      "mean_phys_dist": 0.21262948939425347
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_no_trace",
+      "env": "humanoid",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1948721617460251,
+      "mean_phys_dist": 0.4479736181837076
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_no_trace",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.6,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.029491811990737915,
+      "mean_phys_dist": 0.940273569477722
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_no_trace",
+      "env": "pusht",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.19186665415763854,
+      "mean_phys_dist": 3942.928052629743
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_no_trace",
+      "env": "quadruped",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0831090271472931,
+      "mean_phys_dist": 0.2965251600080744
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_no_trace",
+      "env": "reacher",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.15974518209695815,
+      "mean_phys_dist": 0.17890599071979524
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_no_trace",
+      "env": "stacker",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1109052836894989,
+      "mean_phys_dist": 0.23077630392406162
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_no_trace",
+      "env": "walker",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.131979900598526,
+      "mean_phys_dist": 0.2510440237352653
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_hidden_leak",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 9.182691574096679e-05,
+      "mean_phys_dist": 0.004631697706375395
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_hidden_leak",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.08253084421157837,
+      "mean_phys_dist": 0.17286770996716666
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_hidden_leak",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.016127842664718627,
+      "mean_phys_dist": 0.06407722145634638
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_hidden_leak",
+      "env": "dog",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.2636301726102829,
+      "mean_phys_dist": 0.4875407339615771
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_hidden_leak",
+      "env": "finger",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1131121814250946,
+      "mean_phys_dist": 0.19032643504818597
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_hidden_leak",
+      "env": "fish",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.4392690874636173,
+      "mean_phys_dist": 2.5839753022305683
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_hidden_leak",
+      "env": "hopper",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.08805831670761108,
+      "mean_phys_dist": 0.2134386309139929
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_hidden_leak",
+      "env": "humanoid",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.19410590529441835,
+      "mean_phys_dist": 0.39802311629831233
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_hidden_leak",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 0.6,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.01228434443473816,
+      "mean_phys_dist": 0.5623881205916405
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_hidden_leak",
+      "env": "pusht",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.2855087906122208,
+      "mean_phys_dist": 4127.805524553571
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_hidden_leak",
+      "env": "quadruped",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.09175971150398254,
+      "mean_phys_dist": 0.30697873747711013
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_hidden_leak",
+      "env": "reacher",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.14764292240142823,
+      "mean_phys_dist": 0.17890599071979524
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_hidden_leak",
+      "env": "stacker",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1085541307926178,
+      "mean_phys_dist": 0.22894037666621495
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_hidden_leak",
+      "env": "walker",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.10083559155464172,
+      "mean_phys_dist": 0.22009487848463355
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_membrane_readout",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 4.487037658691406e-05,
+      "mean_phys_dist": 0.0032814223442105433
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_membrane_readout",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.09562122821807861,
+      "mean_phys_dist": 0.17293514913946895
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_membrane_readout",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 0.6,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.012191319465637207,
+      "mean_phys_dist": 0.06035894113334707
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_membrane_readout",
+      "env": "dog",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.23137834072113037,
+      "mean_phys_dist": 0.46518873448033393
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_membrane_readout",
+      "env": "finger",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.12376847863197327,
+      "mean_phys_dist": 0.2047265812451803
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_membrane_readout",
+      "env": "fish",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.3829605892300606,
+      "mean_phys_dist": 2.092848123288134
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_membrane_readout",
+      "env": "hopper",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.09623857736587524,
+      "mean_phys_dist": 0.1948678907378076
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_membrane_readout",
+      "env": "humanoid",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.20908280909061433,
+      "mean_phys_dist": 0.4251220352483253
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_membrane_readout",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.4,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.05319172143936157,
+      "mean_phys_dist": 1.504701429605484
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_membrane_readout",
+      "env": "pusht",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.5158680483698845,
+      "mean_phys_dist": 5383.657313755581
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_membrane_readout",
+      "env": "quadruped",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.10520187020301819,
+      "mean_phys_dist": 0.30187061108723223
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_membrane_readout",
+      "env": "reacher",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.09014678597450257,
+      "mean_phys_dist": 0.17890599071979524
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_membrane_readout",
+      "env": "stacker",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.08847399353981018,
+      "mean_phys_dist": 0.23062313806188822
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_membrane_readout",
+      "env": "walker",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.10405104160308838,
+      "mean_phys_dist": 0.22725856778931805
     },
     {
       "split": "cross_benchmark_F2",
@@ -2705,6 +3553,1425 @@
       "success_rate_env": 0.0,
       "mean_cos_dist": 0.0,
       "mean_phys_dist": 0.2291298077841896
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_trace_only",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 9.769201278686524e-06,
+      "mean_phys_dist": 0.001666707949188654
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_trace_only",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.10286479890346527,
+      "mean_phys_dist": 0.18015278772733645
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_trace_only",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 0.6,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.007583045959472656,
+      "mean_phys_dist": 0.0456799635038236
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_trace_only",
+      "env": "dog",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.2037196636199951,
+      "mean_phys_dist": 0.3625962624664317
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_trace_only",
+      "env": "finger",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.10038769245147705,
+      "mean_phys_dist": 0.20120272644170417
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_trace_only",
+      "env": "fish",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.33108198940753936,
+      "mean_phys_dist": 2.085204658494439
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_trace_only",
+      "env": "hopper",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.07010127305984497,
+      "mean_phys_dist": 0.19650598279608658
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_trace_only",
+      "env": "humanoid",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1325185179710388,
+      "mean_phys_dist": 0.34727584510055803
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_trace_only",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 0.8,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.021645444631576537,
+      "mean_phys_dist": 0.9990389101207257
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_trace_only",
+      "env": "pusht",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.2099166065454483,
+      "mean_phys_dist": 4942.751988002232
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_trace_only",
+      "env": "quadruped",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.08804551362991334,
+      "mean_phys_dist": 0.28036653033370096
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_trace_only",
+      "env": "stacker",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.08975536227226258,
+      "mean_phys_dist": 0.22861799752929754
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_trace_only",
+      "env": "tworoom",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.10925553441047668,
+      "mean_phys_dist": 113.81194915771485
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_trace_only",
+      "env": "walker",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.09528234004974365,
+      "mean_phys_dist": 0.20287237595280566
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_spike_only",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 1.7267465591430663e-05,
+      "mean_phys_dist": 0.0022180536025769907
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_spike_only",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.06691088676452636,
+      "mean_phys_dist": 0.16008949672673223
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_spike_only",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.00349581241607666,
+      "mean_phys_dist": 0.03224763117450008
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_spike_only",
+      "env": "dog",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.16215317249298095,
+      "mean_phys_dist": 0.37302910368600006
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_spike_only",
+      "env": "finger",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.17454646825790404,
+      "mean_phys_dist": 0.21717474462226835
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_spike_only",
+      "env": "fish",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.4687384940683842,
+      "mean_phys_dist": 2.5817934441768555
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_spike_only",
+      "env": "hopper",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.08827932476997376,
+      "mean_phys_dist": 0.20623841925773126
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_spike_only",
+      "env": "humanoid",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.15850400924682617,
+      "mean_phys_dist": 0.3526566616003014
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_spike_only",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0935369074344635,
+      "mean_phys_dist": 2.2525503873825072
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_spike_only",
+      "env": "pusht",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.09388250708580018,
+      "mean_phys_dist": 2021.8524932861328
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_spike_only",
+      "env": "quadruped",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.07147428393363953,
+      "mean_phys_dist": 0.28296012516520064
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_spike_only",
+      "env": "stacker",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.10252402424812317,
+      "mean_phys_dist": 0.22934066846728957
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_spike_only",
+      "env": "tworoom",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.05574237704277039,
+      "mean_phys_dist": 113.3702896118164
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_spike_only",
+      "env": "walker",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.08668707013130188,
+      "mean_phys_dist": 0.19772935829438804
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_rate_only",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 3.282427787780762e-05,
+      "mean_phys_dist": 0.002678426773411512
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_rate_only",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.10344973802566529,
+      "mean_phys_dist": 0.18450200847988626
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_rate_only",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 0.8,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.007021117210388184,
+      "mean_phys_dist": 0.043171251898389204
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_rate_only",
+      "env": "dog",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.15969316363334657,
+      "mean_phys_dist": 0.3636831538252003
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_rate_only",
+      "env": "finger",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.10953116416931152,
+      "mean_phys_dist": 0.1921153938580521
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_rate_only",
+      "env": "fish",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.3542259116657078,
+      "mean_phys_dist": 2.0854612018832226
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_rate_only",
+      "env": "hopper",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.07589949369430542,
+      "mean_phys_dist": 0.18798933540001142
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_rate_only",
+      "env": "humanoid",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.20592039823532104,
+      "mean_phys_dist": 0.3788273636468197
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_rate_only",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 0.8,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.02738458514213562,
+      "mean_phys_dist": 0.9633752286434174
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_rate_only",
+      "env": "pusht",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1882513463497162,
+      "mean_phys_dist": 3885.4494367327
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_rate_only",
+      "env": "quadruped",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.09716569185256958,
+      "mean_phys_dist": 0.2833343955020046
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_rate_only",
+      "env": "stacker",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.11755814552307128,
+      "mean_phys_dist": 0.22946135175331567
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_rate_only",
+      "env": "tworoom",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.052585935592651366,
+      "mean_phys_dist": 113.07556762695313
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_rate_only",
+      "env": "walker",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0657759964466095,
+      "mean_phys_dist": 0.1936850267902948
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_no_trace",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 2.2214651107788085e-05,
+      "mean_phys_dist": 0.0026230838948043712
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_no_trace",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.04312707781791687,
+      "mean_phys_dist": 0.14527460552063767
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_no_trace",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 0.4,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.010493570566177368,
+      "mean_phys_dist": 0.051948770374336185
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_no_trace",
+      "env": "dog",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.2490103006362915,
+      "mean_phys_dist": 0.47492191694119723
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_no_trace",
+      "env": "finger",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.18431096971035005,
+      "mean_phys_dist": 0.23221448083579888
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_no_trace",
+      "env": "fish",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.3788792023435235,
+      "mean_phys_dist": 2.089752503646295
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_no_trace",
+      "env": "hopper",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.09829100370407104,
+      "mean_phys_dist": 0.21834098585272846
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_no_trace",
+      "env": "humanoid",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.2402048349380493,
+      "mean_phys_dist": 0.4345136090726382
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_no_trace",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 0.8,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.03749629259109497,
+      "mean_phys_dist": 1.3125298142433166
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_no_trace",
+      "env": "quadruped",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.08549547791481019,
+      "mean_phys_dist": 0.30860780168043805
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_no_trace",
+      "env": "walker",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.11870411038398743,
+      "mean_phys_dist": 0.24056791456101562
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_hidden_leak",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 7.345080375671386e-05,
+      "mean_phys_dist": 0.0045632476188625214
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_hidden_leak",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.05443848967552185,
+      "mean_phys_dist": 0.15807776126602086
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_hidden_leak",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.01676546335220337,
+      "mean_phys_dist": 0.06808761104966257
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_hidden_leak",
+      "env": "finger",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.13308211863040925,
+      "mean_phys_dist": 0.22652762763964818
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_hidden_leak",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 0.4,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.020542019605636598,
+      "mean_phys_dist": 0.96810382604599
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_hidden_leak",
+      "env": "walker",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.08033118844032287,
+      "mean_phys_dist": 0.2008711677211811
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "cubifae_baseline",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 2.7352571487426756e-05,
+      "mean_phys_dist": 0.0026012238391341386
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "cubifae_baseline",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.11203851699829101,
+      "mean_phys_dist": 0.1980971295871517
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "cubifae_baseline",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 0.8,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.00708734393119812,
+      "mean_phys_dist": 0.04098869157281393
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "cubifae_baseline",
+      "env": "dog",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.23634549379348754,
+      "mean_phys_dist": 0.42196949312655896
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "cubifae_baseline",
+      "env": "finger",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.08175061345100403,
+      "mean_phys_dist": 0.15780089861815277
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "cubifae_baseline",
+      "env": "fish",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.3357136145234108,
+      "mean_phys_dist": 2.0873917345914146
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "cubifae_baseline",
+      "env": "hopper",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.05314365029335022,
+      "mean_phys_dist": 0.16676509391552422
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "cubifae_baseline",
+      "env": "humanoid",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.20496223270893096,
+      "mean_phys_dist": 0.4015477813749511
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "cubifae_baseline",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 0.8,
+      "success_rate_lewm_001": 0.6,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.022930783033370972,
+      "mean_phys_dist": 0.7445443361997605
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "cubifae_baseline",
+      "env": "pusht",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.10150842070579529,
+      "mean_phys_dist": 3851.890106201171
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "cubifae_baseline",
+      "env": "quadruped",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.072577565908432,
+      "mean_phys_dist": 0.2906660399980051
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "cubifae_baseline",
+      "env": "stacker",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.11184349060058593,
+      "mean_phys_dist": 0.22822783150857764
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "cubifae_baseline",
+      "env": "tworoom",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.8,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.04941526651382446,
+      "mean_phys_dist": 111.51858367919922
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "cubifae_baseline",
+      "env": "walker",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1231673002243042,
+      "mean_phys_dist": 0.21668800542021302
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "gru_baseline",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 1.3709068298339843e-07,
+      "mean_phys_dist": 0.002649579774538548
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "gru_baseline",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0009317696094512939,
+      "mean_phys_dist": 0.15049523831280381
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "gru_baseline",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 3.126263618469238e-05,
+      "mean_phys_dist": 0.03679604688931769
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "gru_baseline",
+      "env": "dog",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0036689817905426027,
+      "mean_phys_dist": 0.4060241433643901
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "gru_baseline",
+      "env": "finger",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.001032102108001709,
+      "mean_phys_dist": 0.21438767468267939
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "gru_baseline",
+      "env": "fish",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.14998812675476075,
+      "mean_phys_dist": 2.585372992879626
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "gru_baseline",
+      "env": "hopper",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0007567703723907471,
+      "mean_phys_dist": 0.16760376667834403
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "gru_baseline",
+      "env": "humanoid",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.002642148733139038,
+      "mean_phys_dist": 0.37347024210530905
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "gru_baseline",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0002870798110961914,
+      "mean_phys_dist": 1.311090886592865
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "gru_baseline",
+      "env": "pusht",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.323525869846344,
+      "mean_phys_dist": 4412.915649414062
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "gru_baseline",
+      "env": "quadruped",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.002001750469207764,
+      "mean_phys_dist": 0.2867962322715682
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "gru_baseline",
+      "env": "stacker",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0011319518089294434,
+      "mean_phys_dist": 0.2325753632261734
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "gru_baseline",
+      "env": "tworoom",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1393647313117981,
+      "mean_phys_dist": 110.36441650390626
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "gru_baseline",
+      "env": "walker",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0015998542308807372,
+      "mean_phys_dist": 0.20701962795362006
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "lewm_baseline_v2",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.00016821026802062988,
+      "mean_phys_dist": 0.002005727032329444
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "lewm_baseline_v2",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.21381282806396484,
+      "mean_phys_dist": 0.18318336200615945
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "lewm_baseline_v2",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.04833395481109619,
+      "mean_phys_dist": 0.043378287228151235
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "lewm_baseline_v2",
+      "env": "dog",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.27935303151607516,
+      "mean_phys_dist": 0.38324299202755435
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "lewm_baseline_v2",
+      "env": "finger",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1940205931663513,
+      "mean_phys_dist": 0.1292468217911375
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "lewm_baseline_v2",
+      "env": "fish",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.2830993071198463,
+      "mean_phys_dist": 2.076075417718806
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "lewm_baseline_v2",
+      "env": "hopper",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.15744041800498962,
+      "mean_phys_dist": 0.20982648373124252
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "lewm_baseline_v2",
+      "env": "humanoid",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.27705656588077543,
+      "mean_phys_dist": 0.4020114978610073
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "lewm_baseline_v2",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.4,
+      "success_rate_lewm_001": 0.2,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.18325945287942885,
+      "mean_phys_dist": 1.1915569245815276
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "lewm_baseline_v2",
+      "env": "pusht",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1297236680984497,
+      "mean_phys_dist": 3640.2910661969863
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "lewm_baseline_v2",
+      "env": "quadruped",
+      "success_rate_lewm": 0.6,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1186400294303894,
+      "mean_phys_dist": 0.28510378342276477
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "lewm_baseline_v2",
+      "env": "stacker",
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.19276442527770996,
+      "mean_phys_dist": 0.22980922762623973
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "lewm_baseline_v2",
+      "env": "tworoom",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.6,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.06098836660385132,
+      "mean_phys_dist": 114.26406555175781
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "lewm_baseline_v2",
+      "env": "walker",
+      "success_rate_lewm": 0.0,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.2195446312427521,
+      "mean_phys_dist": 0.19793148193579174
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "mlp_baseline",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": -1.1920928955078126e-08,
+      "mean_phys_dist": 0.001975337047210664
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "mlp_baseline",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 5.233287811279297e-06,
+      "mean_phys_dist": 0.16389398842836056
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "mlp_baseline",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 2.4437904357910154e-07,
+      "mean_phys_dist": 0.037659293108743955
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "mlp_baseline",
+      "env": "dog",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 2.192854881286621e-05,
+      "mean_phys_dist": 0.37980524218191486
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "mlp_baseline",
+      "env": "finger",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 4.953145980834961e-06,
+      "mean_phys_dist": 0.18120726262782635
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "mlp_baseline",
+      "env": "fish",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.001639556884765625,
+      "mean_phys_dist": 2.0884387903294774
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "mlp_baseline",
+      "env": "hopper",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 5.1140785217285155e-06,
+      "mean_phys_dist": 0.18391492369013596
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "mlp_baseline",
+      "env": "humanoid",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 1.3220310211181641e-05,
+      "mean_phys_dist": 0.3310359773756798
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "mlp_baseline",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 2.592802047729492e-06,
+      "mean_phys_dist": 1.7803548932075501
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "mlp_baseline",
+      "env": "pusht",
+      "success_rate_lewm": 0.4,
+      "success_rate_lewm_005": 0.0,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.1262696325778961,
+      "mean_phys_dist": 3126.6186305454794
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "mlp_baseline",
+      "env": "quadruped",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 1.4400482177734375e-05,
+      "mean_phys_dist": 0.28102875636890107
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "mlp_baseline",
+      "env": "stacker",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 8.243322372436524e-06,
+      "mean_phys_dist": 0.22899073372081577
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "mlp_baseline",
+      "env": "tworoom",
+      "success_rate_lewm": 0.8,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.06816109418869018,
+      "mean_phys_dist": 115.02693328857421
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "mlp_baseline",
+      "env": "walker",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 6.145238876342773e-06,
+      "mean_phys_dist": 0.21291073109968178
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "spikedreamer_baseline",
+      "env": "ball_in_cup",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": -5.960464477539063e-08,
+      "mean_phys_dist": 0.003056710033492984
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "spikedreamer_baseline",
+      "env": "cartpole_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": -5.960464477539063e-08,
+      "mean_phys_dist": 0.1727022406496595
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "spikedreamer_baseline",
+      "env": "cheetah",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0,
+      "mean_phys_dist": 0.04378606536319263
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "spikedreamer_baseline",
+      "env": "dog",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 2.9802322387695312e-08,
+      "mean_phys_dist": 0.4326178859734666
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "spikedreamer_baseline",
+      "env": "finger",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0,
+      "mean_phys_dist": 0.1856868298850946
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "spikedreamer_baseline",
+      "env": "fish",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0,
+      "mean_phys_dist": 2.089850256412553
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "spikedreamer_baseline",
+      "env": "hopper",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": -5.960464477539063e-08,
+      "mean_phys_dist": 0.1691558338577986
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "spikedreamer_baseline",
+      "env": "humanoid",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 2.9802322387695312e-08,
+      "mean_phys_dist": 0.3933633480828933
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "spikedreamer_baseline",
+      "env": "pendulum_2d",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 5.960464477539063e-08,
+      "mean_phys_dist": 2.0156084299087524
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "spikedreamer_baseline",
+      "env": "pusht",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 2.9802322387695312e-08,
+      "mean_phys_dist": 3562.8866686139786
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "spikedreamer_baseline",
+      "env": "quadruped",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 5.960464477539063e-08,
+      "mean_phys_dist": 0.28861143381665966
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "spikedreamer_baseline",
+      "env": "stacker",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0,
+      "mean_phys_dist": 0.22853566155338906
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "spikedreamer_baseline",
+      "env": "tworoom",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0,
+      "mean_phys_dist": 112.9882568359375
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "spikedreamer_baseline",
+      "env": "walker",
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 0.0,
+      "mean_cos_dist": 0.0,
+      "mean_phys_dist": 0.22448856100134873
     },
     {
       "split": "generalist_16env",
@@ -9028,6 +11295,14 @@
     {
       "env": "cheetah",
       "model": "stjewm_spike_only",
+      "target": "contact",
+      "auroc": 0.4868614130434783,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "cheetah",
+      "model": "stjewm_spike_only",
       "target": "k10",
       "auroc": 0.5020178177111094,
       "skipped": false,
@@ -9206,6 +11481,14 @@
       "model": "stjewm_membrane_readout",
       "target": "motion",
       "auroc": 0.44153900375939853,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "cheetah",
+      "model": "stjewm_membrane_readout",
+      "target": "motion",
+      "auroc": 0.4705991541353383,
       "skipped": false,
       "reason": null
     },
@@ -9523,6 +11806,14 @@
     },
     {
       "env": "dog",
+      "model": "stjewm_trace_only",
+      "target": "motion",
+      "auroc": 0.6431062030075189,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
       "model": "stjewm_spike_only",
       "target": "contact",
       "auroc": 0.4857336956521739,
@@ -9589,6 +11880,14 @@
       "env": "dog",
       "model": "stjewm_rate_only",
       "target": "motion",
+      "auroc": 0.488374060150376,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "stjewm_rate_only",
+      "target": "motion",
       "auroc": 0.6323073308270677,
       "skipped": false,
       "reason": null
@@ -9621,6 +11920,14 @@
       "env": "dog",
       "model": "stjewm_no_trace",
       "target": "motion",
+      "auroc": 0.5386983082706767,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "stjewm_no_trace",
+      "target": "motion",
       "auroc": 0.6883035714285715,
       "skipped": false,
       "reason": null
@@ -9636,10 +11943,2434 @@
     {
       "env": "dog",
       "model": "stjewm_hidden_leak",
+      "target": "k10",
+      "auroc": 0.4651421440972222,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "stjewm_hidden_leak",
+      "target": "k5",
+      "auroc": 0.6722815001873153,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "stjewm_hidden_leak",
+      "target": "motion",
+      "auroc": 0.5592363721804512,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "stjewm_hidden_leak",
       "target": "motion",
       "auroc": 0.6729041353383458,
       "skipped": false,
       "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "stjewm_membrane_readout",
+      "target": "contact",
+      "auroc": 0.48557971014492746,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "stjewm_membrane_readout",
+      "target": "k10",
+      "auroc": 0.439453125,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "stjewm_membrane_readout",
+      "target": "k5",
+      "auroc": 0.5188772182986222,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "stjewm_membrane_readout",
+      "target": "motion",
+      "auroc": 0.4704534774436091,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "stjewm_membrane_readout",
+      "target": "motion",
+      "auroc": 0.6213956766917293,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "cubifae_baseline",
+      "target": "contact",
+      "auroc": 0.5185326086956522,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "cubifae_baseline",
+      "target": "k10",
+      "auroc": 0.6763373480902778,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "cubifae_baseline",
+      "target": "k5",
+      "auroc": 0.4576181820704583,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "cubifae_baseline",
+      "target": "motion",
+      "auroc": 0.580140977443609,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "cubifae_baseline",
+      "target": "motion",
+      "auroc": 0.5909868421052632,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "gru_baseline",
+      "target": "contact",
+      "auroc": 0.3247282608695652,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "gru_baseline",
+      "target": "k10",
+      "auroc": 0.45659722222222227,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "gru_baseline",
+      "target": "k5",
+      "auroc": 0.490627298081059,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "gru_baseline",
+      "target": "motion",
+      "auroc": 0.5554417293233083,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "gru_baseline",
+      "target": "motion",
+      "auroc": 0.46661654135338343,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "dog",
+      "model": "lewm_baseline_v2",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "dog",
+      "model": "lewm_baseline_v2",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "dog",
+      "model": "lewm_baseline_v2",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "dog",
+      "model": "lewm_baseline_v2",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "dog",
+      "model": "lewm_baseline_v2",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "dog",
+      "model": "slt_lif_mpc_trace",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "dog",
+      "model": "slt_lif_mpc_trace",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "dog",
+      "model": "slt_lif_mpc_trace",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "dog",
+      "model": "slt_lif_mpc_trace",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "dog",
+      "model": "slt_lif_mpc_trace",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "dog",
+      "model": "slt_lif_mpc_free",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "dog",
+      "model": "slt_lif_mpc_free",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "dog",
+      "model": "slt_lif_mpc_free",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "dog",
+      "model": "slt_lif_mpc_free",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "dog",
+      "model": "slt_lif_mpc_free",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "dog",
+      "model": "mlp_baseline",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "dog",
+      "model": "mlp_baseline",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "dog",
+      "model": "mlp_baseline",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "dog",
+      "model": "mlp_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "dog",
+      "model": "mlp_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "dog",
+      "model": "spikedreamer_baseline",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "dog",
+      "model": "spikedreamer_baseline",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "dog",
+      "model": "spikedreamer_baseline",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "dog",
+      "model": "spikedreamer_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "dog",
+      "model": "spikedreamer_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_trace_only",
+      "target": "contact",
+      "auroc": 0.48994565217391306,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_trace_only",
+      "target": "k10",
+      "auroc": 0.5013198183929891,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_trace_only",
+      "target": "k5",
+      "auroc": 0.5536392846139174,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_trace_only",
+      "target": "motion",
+      "auroc": 0.625375939849624,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_trace_only",
+      "target": "motion",
+      "auroc": 0.5172485902255639,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_spike_only",
+      "target": "contact",
+      "auroc": 0.484759963768116,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_spike_only",
+      "target": "k10",
+      "auroc": 0.49849540703199235,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_spike_only",
+      "target": "k5",
+      "auroc": 0.45620534338825397,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_spike_only",
+      "target": "motion",
+      "auroc": 0.6010596804511279,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_spike_only",
+      "target": "motion",
+      "auroc": 0.5191611842105263,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_rate_only",
+      "target": "contact",
+      "auroc": 0.5001992753623188,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_rate_only",
+      "target": "k10",
+      "auroc": 0.5157850279801499,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_rate_only",
+      "target": "k5",
+      "auroc": 0.48672955882568697,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_rate_only",
+      "target": "motion",
+      "auroc": 0.6031766917293233,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_rate_only",
+      "target": "motion",
+      "auroc": 0.5468609022556391,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_no_trace",
+      "target": "contact",
+      "auroc": 0.5018161231884058,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_no_trace",
+      "target": "k10",
+      "auroc": 0.5012406292894098,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_no_trace",
+      "target": "k5",
+      "auroc": 0.46317434234657195,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_no_trace",
+      "target": "motion",
+      "auroc": 0.6262899436090226,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_no_trace",
+      "target": "motion",
+      "auroc": 0.5080474624060152,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_hidden_leak",
+      "target": "contact",
+      "auroc": 0.5288088768115944,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_hidden_leak",
+      "target": "k10",
+      "auroc": 0.5962147608489072,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_hidden_leak",
+      "target": "k5",
+      "auroc": 0.4578779031382503,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_hidden_leak",
+      "target": "motion",
+      "auroc": 0.6055662593984962,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_hidden_leak",
+      "target": "motion",
+      "auroc": 0.5560032894736842,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_membrane_readout",
+      "target": "contact",
+      "auroc": 0.5653260869565218,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_membrane_readout",
+      "target": "k10",
+      "auroc": 0.48197128075176854,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_membrane_readout",
+      "target": "k5",
+      "auroc": 0.4444020598893763,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_membrane_readout",
+      "target": "motion",
+      "auroc": 0.6339990601503759,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "stjewm_membrane_readout",
+      "target": "motion",
+      "auroc": 0.5218773496240602,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "cubifae_baseline",
+      "target": "contact",
+      "auroc": 0.4644474637681159,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "cubifae_baseline",
+      "target": "k10",
+      "auroc": 0.44570267131242736,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "cubifae_baseline",
+      "target": "k5",
+      "auroc": 0.49198198330374565,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "cubifae_baseline",
+      "target": "motion",
+      "auroc": 0.558935620300752,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "cubifae_baseline",
+      "target": "motion",
+      "auroc": 0.5146381578947369,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "gru_baseline",
+      "target": "contact",
+      "auroc": 0.556802536231884,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "gru_baseline",
+      "target": "k10",
+      "auroc": 0.6254355400696864,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "gru_baseline",
+      "target": "k5",
+      "auroc": 0.5486142695755513,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "gru_baseline",
+      "target": "motion",
+      "auroc": 0.6235949248120302,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "gru_baseline",
+      "target": "motion",
+      "auroc": 0.4759163533834587,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "finger",
+      "model": "lewm_baseline_v2",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "finger",
+      "model": "lewm_baseline_v2",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "finger",
+      "model": "lewm_baseline_v2",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "finger",
+      "model": "lewm_baseline_v2",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "finger",
+      "model": "lewm_baseline_v2",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "finger",
+      "model": "slt_lif_mpc_trace",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "finger",
+      "model": "slt_lif_mpc_trace",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "finger",
+      "model": "slt_lif_mpc_trace",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "finger",
+      "model": "slt_lif_mpc_trace",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "finger",
+      "model": "slt_lif_mpc_trace",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "finger",
+      "model": "slt_lif_mpc_free",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "finger",
+      "model": "slt_lif_mpc_free",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "finger",
+      "model": "slt_lif_mpc_free",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "finger",
+      "model": "slt_lif_mpc_free",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "finger",
+      "model": "slt_lif_mpc_free",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "finger",
+      "model": "mlp_baseline",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "finger",
+      "model": "mlp_baseline",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "finger",
+      "model": "mlp_baseline",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "finger",
+      "model": "mlp_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "finger",
+      "model": "mlp_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "finger",
+      "model": "spikedreamer_baseline",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "finger",
+      "model": "spikedreamer_baseline",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "finger",
+      "model": "spikedreamer_baseline",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "finger",
+      "model": "spikedreamer_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "finger",
+      "model": "spikedreamer_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_trace_only",
+      "target": "contact",
+      "auroc": 0.5533605072463768,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_trace_only",
+      "target": "k10",
+      "auroc": 0.6551672371344502,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_trace_only",
+      "target": "k5",
+      "auroc": 0.6382150215855572,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_trace_only",
+      "target": "motion",
+      "auroc": 0.6011184210526316,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_trace_only",
+      "target": "motion",
+      "auroc": 0.6041376879699247,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_spike_only",
+      "target": "contact",
+      "auroc": 0.645018115942029,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_spike_only",
+      "target": "k10",
+      "auroc": 0.6628935727296382,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_spike_only",
+      "target": "k5",
+      "auroc": 0.6192295427786499,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_spike_only",
+      "target": "motion",
+      "auroc": 0.548984962406015,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_spike_only",
+      "target": "motion",
+      "auroc": 0.6059915413533834,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_rate_only",
+      "target": "contact",
+      "auroc": 0.657409420289855,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_rate_only",
+      "target": "k10",
+      "auroc": 0.584709461758642,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_rate_only",
+      "target": "k5",
+      "auroc": 0.5613348704866562,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_rate_only",
+      "target": "motion",
+      "auroc": 0.6004041353383458,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_rate_only",
+      "target": "motion",
+      "auroc": 0.635232612781955,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_no_trace",
+      "target": "contact",
+      "auroc": 0.6223278985507246,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_no_trace",
+      "target": "k10",
+      "auroc": 0.6090694369382894,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_no_trace",
+      "target": "k5",
+      "auroc": 0.5487330749607535,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_no_trace",
+      "target": "motion",
+      "auroc": 0.5549624060150375,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_no_trace",
+      "target": "motion",
+      "auroc": 0.5451104323308271,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_hidden_leak",
+      "target": "contact",
+      "auroc": 0.6047192028985506,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_hidden_leak",
+      "target": "k10",
+      "auroc": 0.5928161092095519,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_hidden_leak",
+      "target": "k5",
+      "auroc": 0.633799793956044,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_hidden_leak",
+      "target": "motion",
+      "auroc": 0.5150610902255639,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_hidden_leak",
+      "target": "motion",
+      "auroc": 0.5403242481203008,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_membrane_readout",
+      "target": "contact",
+      "auroc": 0.6465307971014493,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_membrane_readout",
+      "target": "k10",
+      "auroc": 0.6314377789787626,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_membrane_readout",
+      "target": "k5",
+      "auroc": 0.6203946722919937,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_membrane_readout",
+      "target": "motion",
+      "auroc": 0.6004558270676692,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "stjewm_membrane_readout",
+      "target": "motion",
+      "auroc": 0.5825117481203007,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "cubifae_baseline",
+      "target": "contact",
+      "auroc": 0.4969293478260869,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "cubifae_baseline",
+      "target": "k10",
+      "auroc": 0.6967513360955984,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "cubifae_baseline",
+      "target": "k5",
+      "auroc": 0.6502526491365777,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "cubifae_baseline",
+      "target": "motion",
+      "auroc": 0.4469125939849624,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "cubifae_baseline",
+      "target": "motion",
+      "auroc": 0.5781578947368421,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "gru_baseline",
+      "target": "contact",
+      "auroc": 0.5973641304347826,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "gru_baseline",
+      "target": "k10",
+      "auroc": 0.4693848956144038,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "gru_baseline",
+      "target": "k5",
+      "auroc": 0.6296237244897959,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "gru_baseline",
+      "target": "motion",
+      "auroc": 0.7252631578947369,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "gru_baseline",
+      "target": "motion",
+      "auroc": 0.7059562969924813,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "fish",
+      "model": "lewm_baseline_v2",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "fish",
+      "model": "lewm_baseline_v2",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "fish",
+      "model": "lewm_baseline_v2",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "fish",
+      "model": "lewm_baseline_v2",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "fish",
+      "model": "lewm_baseline_v2",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "fish",
+      "model": "slt_lif_mpc_trace",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "fish",
+      "model": "slt_lif_mpc_trace",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "fish",
+      "model": "slt_lif_mpc_trace",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "fish",
+      "model": "slt_lif_mpc_trace",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "fish",
+      "model": "slt_lif_mpc_trace",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "fish",
+      "model": "slt_lif_mpc_free",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "fish",
+      "model": "slt_lif_mpc_free",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "fish",
+      "model": "slt_lif_mpc_free",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "fish",
+      "model": "slt_lif_mpc_free",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "fish",
+      "model": "slt_lif_mpc_free",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "fish",
+      "model": "mlp_baseline",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "fish",
+      "model": "mlp_baseline",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "fish",
+      "model": "mlp_baseline",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "fish",
+      "model": "mlp_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "fish",
+      "model": "mlp_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "fish",
+      "model": "spikedreamer_baseline",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "fish",
+      "model": "spikedreamer_baseline",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "fish",
+      "model": "spikedreamer_baseline",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "fish",
+      "model": "spikedreamer_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "fish",
+      "model": "spikedreamer_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_trace_only",
+      "target": "contact",
+      "auroc": 0.5704755434782609,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_trace_only",
+      "target": "k10",
+      "auroc": 0.49353471118177,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_trace_only",
+      "target": "k5",
+      "auroc": 0.5325183438500349,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_trace_only",
+      "target": "motion",
+      "auroc": 0.6029769736842105,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_trace_only",
+      "target": "motion",
+      "auroc": 0.5544478383458646,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_spike_only",
+      "target": "contact",
+      "auroc": 0.5434148550724638,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_spike_only",
+      "target": "k10",
+      "auroc": 0.4679491255961844,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_spike_only",
+      "target": "k5",
+      "auroc": 0.5411468693601718,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_spike_only",
+      "target": "motion",
+      "auroc": 0.5890484022556391,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_spike_only",
+      "target": "motion",
+      "auroc": 0.5626433270676692,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_rate_only",
+      "target": "contact",
+      "auroc": 0.5478985507246378,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_rate_only",
+      "target": "k10",
+      "auroc": 0.47483836777954425,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_rate_only",
+      "target": "k5",
+      "auroc": 0.534362608844568,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_rate_only",
+      "target": "motion",
+      "auroc": 0.588202537593985,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_rate_only",
+      "target": "motion",
+      "auroc": 0.54828242481203,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_no_trace",
+      "target": "contact",
+      "auroc": 0.5754528985507246,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_no_trace",
+      "target": "k10",
+      "auroc": 0.48193958664546904,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_no_trace",
+      "target": "k5",
+      "auroc": 0.5261819762616748,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_no_trace",
+      "target": "motion",
+      "auroc": 0.563202537593985,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_no_trace",
+      "target": "motion",
+      "auroc": 0.532610432330827,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_hidden_leak",
+      "target": "contact",
+      "auroc": 0.5679076086956522,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_hidden_leak",
+      "target": "k10",
+      "auroc": 0.480731319554849,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_hidden_leak",
+      "target": "k5",
+      "auroc": 0.5165654516473238,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_hidden_leak",
+      "target": "motion",
+      "auroc": 0.5849506578947368,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_hidden_leak",
+      "target": "motion",
+      "auroc": 0.560486372180451,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_membrane_readout",
+      "target": "contact",
+      "auroc": 0.5723731884057971,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_membrane_readout",
+      "target": "k10",
+      "auroc": 0.5043031266560679,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_membrane_readout",
+      "target": "k5",
+      "auroc": 0.5284609608620621,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_membrane_readout",
+      "target": "motion",
+      "auroc": 0.5682542293233083,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "stjewm_membrane_readout",
+      "target": "motion",
+      "auroc": 0.5654934210526317,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "cubifae_baseline",
+      "target": "contact",
+      "auroc": 0.5673278985507246,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "cubifae_baseline",
+      "target": "k10",
+      "auroc": 0.5173926868044515,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "cubifae_baseline",
+      "target": "k5",
+      "auroc": 0.5566979752605024,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "cubifae_baseline",
+      "target": "motion",
+      "auroc": 0.5910667293233083,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "cubifae_baseline",
+      "target": "motion",
+      "auroc": 0.519187030075188,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "gru_baseline",
+      "target": "contact",
+      "auroc": 0.7271014492753624,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "gru_baseline",
+      "target": "k10",
+      "auroc": 0.43103338632750393,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "gru_baseline",
+      "target": "k5",
+      "auroc": 0.49123315461527317,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "gru_baseline",
+      "target": "motion",
+      "auroc": 0.8170300751879698,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "gru_baseline",
+      "target": "motion",
+      "auroc": 0.6289708646616542,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "hopper",
+      "model": "lewm_baseline_v2",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "hopper",
+      "model": "lewm_baseline_v2",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "hopper",
+      "model": "lewm_baseline_v2",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "hopper",
+      "model": "lewm_baseline_v2",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "hopper",
+      "model": "lewm_baseline_v2",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "hopper",
+      "model": "slt_lif_mpc_trace",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "hopper",
+      "model": "slt_lif_mpc_trace",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "hopper",
+      "model": "slt_lif_mpc_trace",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "hopper",
+      "model": "slt_lif_mpc_trace",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "hopper",
+      "model": "slt_lif_mpc_trace",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "hopper",
+      "model": "slt_lif_mpc_free",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "hopper",
+      "model": "slt_lif_mpc_free",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "hopper",
+      "model": "slt_lif_mpc_free",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "hopper",
+      "model": "slt_lif_mpc_free",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "hopper",
+      "model": "slt_lif_mpc_free",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "hopper",
+      "model": "mlp_baseline",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "hopper",
+      "model": "mlp_baseline",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "hopper",
+      "model": "mlp_baseline",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "hopper",
+      "model": "mlp_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "hopper",
+      "model": "mlp_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "hopper",
+      "model": "spikedreamer_baseline",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "hopper",
+      "model": "spikedreamer_baseline",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "hopper",
+      "model": "spikedreamer_baseline",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "hopper",
+      "model": "spikedreamer_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "hopper",
+      "model": "spikedreamer_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_trace_only",
+      "target": "contact",
+      "auroc": 0.3933423913043478,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_trace_only",
+      "target": "k10",
+      "auroc": 0.48270750988142297,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_trace_only",
+      "target": "k5",
+      "auroc": 0.4526484962653634,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_trace_only",
+      "target": "motion",
+      "auroc": 0.4156625939849624,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_trace_only",
+      "target": "motion",
+      "auroc": 0.5393538533834586,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_spike_only",
+      "target": "contact",
+      "auroc": 0.3803442028985507,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_spike_only",
+      "target": "k10",
+      "auroc": 0.5124752964426877,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_spike_only",
+      "target": "k5",
+      "auroc": 0.3975313195716036,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_spike_only",
+      "target": "motion",
+      "auroc": 0.39219454887218047,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_spike_only",
+      "target": "motion",
+      "auroc": 0.45134398496240596,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_rate_only",
+      "target": "contact",
+      "auroc": 0.3823641304347826,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_rate_only",
+      "target": "k10",
+      "auroc": 0.3865694993412384,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_rate_only",
+      "target": "k5",
+      "auroc": 0.5488335023909579,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_rate_only",
+      "target": "motion",
+      "auroc": 0.3838298872180451,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_rate_only",
+      "target": "motion",
+      "auroc": 0.5093585526315789,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_no_trace",
+      "target": "contact",
+      "auroc": 0.3460688405797101,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_no_trace",
+      "target": "k10",
+      "auroc": 0.5863389328063241,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_no_trace",
+      "target": "k5",
+      "auroc": 0.4682457087905574,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_no_trace",
+      "target": "motion",
+      "auroc": 0.36063439849624057,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_no_trace",
+      "target": "motion",
+      "auroc": 0.5029440789473685,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_hidden_leak",
+      "target": "contact",
+      "auroc": 0.40846014492753624,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_hidden_leak",
+      "target": "k10",
+      "auroc": 0.4720849802371541,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_hidden_leak",
+      "target": "k5",
+      "auroc": 0.3892189537748152,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_hidden_leak",
+      "target": "motion",
+      "auroc": 0.4091306390977444,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_hidden_leak",
+      "target": "motion",
+      "auroc": 0.5481531954887218,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_membrane_readout",
+      "target": "contact",
+      "auroc": 0.37398550724637686,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_membrane_readout",
+      "target": "k10",
+      "auroc": 0.48516757246376807,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_membrane_readout",
+      "target": "k5",
+      "auroc": 0.425379720989053,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_membrane_readout",
+      "target": "motion",
+      "auroc": 0.3888228383458646,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "stjewm_membrane_readout",
+      "target": "motion",
+      "auroc": 0.48848214285714286,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "cubifae_baseline",
+      "target": "contact",
+      "auroc": 0.38754528985507253,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "cubifae_baseline",
+      "target": "k10",
+      "auroc": 0.3681035902503294,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "cubifae_baseline",
+      "target": "k5",
+      "auroc": 0.364782442597252,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "cubifae_baseline",
+      "target": "motion",
+      "auroc": 0.43781015037593984,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "cubifae_baseline",
+      "target": "motion",
+      "auroc": 0.49627584586466167,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "gru_baseline",
+      "target": "contact",
+      "auroc": 0.3158423913043478,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "gru_baseline",
+      "target": "k10",
+      "auroc": 0.2774003623188405,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "gru_baseline",
+      "target": "k5",
+      "auroc": 0.5845397900172571,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "gru_baseline",
+      "target": "motion",
+      "auroc": 0.4009445488721804,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "gru_baseline",
+      "target": "motion",
+      "auroc": 0.37396616541353384,
+      "skipped": false,
+      "reason": null
+    },
+    {
+      "env": "humanoid",
+      "model": "lewm_baseline_v2",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "humanoid",
+      "model": "lewm_baseline_v2",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "humanoid",
+      "model": "lewm_baseline_v2",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "humanoid",
+      "model": "lewm_baseline_v2",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "humanoid",
+      "model": "lewm_baseline_v2",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: name 'LeWMTransformerBaseline' is not defined"
+    },
+    {
+      "env": "humanoid",
+      "model": "slt_lif_mpc_trace",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "humanoid",
+      "model": "slt_lif_mpc_trace",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "humanoid",
+      "model": "slt_lif_mpc_trace",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "humanoid",
+      "model": "slt_lif_mpc_trace",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "humanoid",
+      "model": "slt_lif_mpc_trace",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_TraceOnly:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "humanoid",
+      "model": "slt_lif_mpc_free",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "humanoid",
+      "model": "slt_lif_mpc_free",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "humanoid",
+      "model": "slt_lif_mpc_free",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "humanoid",
+      "model": "slt_lif_mpc_free",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "humanoid",
+      "model": "slt_lif_mpc_free",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SLT_LIF_MPC_FreeAccess:\n\tUnexpected key(s) in state_dict: \"stack.cells.2.decay\", \"stack.cells.2.w_in.weight\", \"stack.cells.2.w_in.bias\", \"stack.cells.3.decay\", \"stack.cells.3.w_in.weight\", \"stack.cells.3.w_in.bias\", \"stack.cells.4.decay\", \"stack.cells.4.w_in.weight\", \"stack.cells.4.w_in.bias\", \"stack.cells.5.decay\", \"stack.cells.5.w_in.weight\", \"stack.cells.5.w_in.bias\", \"stack.cells.6.decay\", \"stack.cells.6.w_in.weight\", \"stack.cells.6.w_in.bias\", \"stack.cells.7.decay\", \"stack.cells.7.w_in.weight\", \"stack.cells.7.w_in.bias\", \"stack.norms.2.weight\", \"stack.norms.2.bias\", \"stack.norms.3.weight\", \"stack.norms.3.bias\", \"stack.norms.4.weight\", \"stack.norms.4.bias\", \"stack.norms.5.weight\", \"stack.norms.5.bias\", \"stack.norms.6.weight\", \"stack.norms.6.bias\", \"stack.norms.7.weight\", \"stack.norms.7.bias\". "
+    },
+    {
+      "env": "humanoid",
+      "model": "mlp_baseline",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "humanoid",
+      "model": "mlp_baseline",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "humanoid",
+      "model": "mlp_baseline",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "humanoid",
+      "model": "mlp_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "humanoid",
+      "model": "mlp_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for MLPBaseline:\n\tUnexpected key(s) in state_dict: \"net.24.weight\", \"net.24.bias\". \n\tsize mismatch for net.22.weight: copying a param with shape torch.Size([640, 640]) from checkpoint, the shape in current model is torch.Size([192, 640]).\n\tsize mismatch for net.22.bias: copying a param with shape torch.Size([640]) from checkpoint, the shape in current model is torch.Size([192])."
+    },
+    {
+      "env": "humanoid",
+      "model": "spikedreamer_baseline",
+      "target": "contact",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "humanoid",
+      "model": "spikedreamer_baseline",
+      "target": "k10",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "humanoid",
+      "model": "spikedreamer_baseline",
+      "target": "k5",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "humanoid",
+      "model": "spikedreamer_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
+    },
+    {
+      "env": "humanoid",
+      "model": "spikedreamer_baseline",
+      "target": "motion",
+      "auroc": null,
+      "skipped": true,
+      "reason": "model build/load failed: Error(s) in loading state_dict for SpikeDreamerBaseline:\n\tUnexpected key(s) in state_dict: \"blocks.2.attn.in_proj_weight\", \"blocks.2.attn.in_proj_bias\", \"blocks.2.attn.out_proj.weight\", \"blocks.2.attn.out_proj.bias\", \"blocks.2.mlp.0.weight\", \"blocks.2.mlp.0.bias\", \"blocks.2.mlp.2.weight\", \"blocks.2.mlp.2.bias\", \"blocks.2.adaLN.1.weight\", \"blocks.2.adaLN.1.bias\". "
     }
   ]
 }
