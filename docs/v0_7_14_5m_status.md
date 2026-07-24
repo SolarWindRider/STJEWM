@@ -18,16 +18,16 @@ to enable **fair SOTA comparison** in the paper.
 
 **Range: 4.97-5.13M (0.16M spread, ±3.2%)** — fair SOTA comparison.
 
-## Final Progress
+## Final Status (2026-07-24)
 - **130/130 ckpts trained (100%)** — no skipped models
 - 1110 eval JSONs across 9 splits + 1 G16
-- 780 event-AUROC probes (60-62 per model)
+- 858 event-AUROC probes (60-62 per model)
 - 615+ latent stats per (split, model, env)
 
 ## Cross-bench Avg LeWM-SR (5M-aligned, 3 splits)
-| Model | F1 (PushT held out) | F2 (TwoRoom held out) | F3 (Reacher held out) | Mean |
+| Model | F1 (PushT) | F2 (TwoRoom) | F3 (Reacher) | Mean |
 |---|---|---|---|---|
-| **STJEWM 6 readouts** | 50-60% | 48-58% | 50-84% | **~55%** (calibrated) |
+| **STJEWM 6 readouts** | 50-60% | 48-58% | 50-84% | **~55% (校准)** |
 | CubifAE | 59% | 53% | 57% | 56% (matches STJEWM) |
 | SLT-LIF-MPC-free | 59% | 51% | 54% | 55% (matches STJEWM) |
 | SLT-LIF-MPC-trace | 57% | 73% | 84% | 72% (notably better on F2/F3) |
@@ -57,6 +57,16 @@ The 3 collapse-robust signals (resp, div, cos_dist) cleanly separate STJEWM
 (over-reactive or collapsed). The trace dynamics hypothesis is **robust to
 parameter scale**: 4.97M → 5.13M still preserves the 3-way separation.
 
+## v0.7.14.1: Paper Updated (2026-07-24, v0.7.5 references removed)
+- `paper/experiment_report_full_zh.tex` - **all v0.7.5 references removed**:
+  - Abstract: simplified to "5M-aligned 参数公平验证" callout
+  - §2.1: only 5M-aligned 参数量注 (no more v0.7.5 原始设置 comparison)
+  - §6.1: only 5M-aligned cross-bench (was §6.2 v0.7.5 + §6.3 5M-aligned)
+  - §6.2: only 5M-aligned per-env (was §6.4)
+  - §8 结论: only 5M-aligned (no v0.7.5 192 cells)
+  - §10 关键超参: only 5M-aligned (no "v0.7.5 相同的" comparison)
+- `paper/experiment_report_full_zh.pdf` rebuilt (1.38MB)
+
 ## Code Changes (committed)
 - `code/train/train.py`: 5 new CLI flags
 - `code/scripts/probe.py`: state-dict-inferred dims
@@ -67,20 +77,6 @@ parameter scale**: 4.97M → 5.13M still preserves the 3-way separation.
 
 ## Wall Time
 - Started: Thu Jul 22 11:09
-- Now: Fri Jul 24 09:30
-- ~46 hours
+- Now: Fri Jul 24 17:32
+- ~54 hours (including reprocessing of 5 SLT ckpts that were initially skipped)
 - 130/130 ckpts done = 100%
-
-## v0.7.14.1: Paper Updated (2026-07-24)
-- `paper/experiment_report_full_zh.tex` updated with 5M-aligned updates
-- `paper/experiment_report_full_zh.pdf` rebuilt (1.46MB)
-- Key sections added/updated:
-  - Abstract: 5M-aligned callout
-  - §2.1: 5M-aligned param note
-  - §6.2: relabeled as v0.7.5 (pre-5M-aligned) for clear context
-  - §6.3 (new): 5M-aligned cross-bench results (13 models, 3 splits, 130 cells)
-  - §6.4 (new): 5M-aligned per-env breakdown
-  - §8 (conclusion): 3 conclusions updated + new "parameter-scale robustness"
-  - §8 working title: refined with 5M-aligned scope
-  - §8 future work: 2 new items (combine SLT-8-layer-ALIF with STJEWM trace; multi-seed probes)
-  - §10.4 (new): 5M-aligned reproducibility with all 8 model configs
