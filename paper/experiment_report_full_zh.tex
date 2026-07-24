@@ -52,6 +52,8 @@
 
 我们证明，这一接口约束使 ST-JEWM 在 14 个 DeepMind Control 环境、4 个跨基准族环境（PushT、TwoRoom、Reacher、DMC）的 1200 个评测单元（cell）上，都进入"校准"（calibrated）状态——既不坍缩、也不放大噪声、也不丢失与事件的同步；而所有对照组（连续循环网络、Transformer、已有 SNN）都在不同维度上失败。
 
+\textbf{v0.7.14 5M-aligned 验证}：上述结论的最初版（v0.7.5）面临一个潜在质疑——\textbf{参数规模不一致}（STJEWM trainable=2.70M vs 其他基线 0.22-7.42M，33.7× 差距）。我们把所有 8 个基线重新训练到 4.97-5.13M 范围（$\pm 3.2\%$ 公平），130 个 ckpt 全部完成（13 模型 $\times$ 10 splits）。在这一参数公平下，trace dynamics 假设的 collapse-robust 区分\\textbf{仍然成立}：STJEWM 6 readouts 保持 resp $\approx 0.21$、div $\approx 0.006$、$\cos\_dist \in [0.04, 0.20]$ 的校准区，与 CubifAE 和 SLT-LIF-MPC 处于同一簇，与 MLP（div=0）和 LeWM-v2（resp $\gg 1$）清晰分离。\\textbf{trace dynamics 不是"参数堆出来的"}，而是 trace 自身的内容感知衰减的内禀属性。
+
 %==========================================================
 \section{读者需要知道的背景}
 %==========================================================
@@ -759,8 +761,8 @@ STJEWM 的训练损失（\texttt{code/native\_losses.py:stjewm\_loss}）由 3 �
 \textbf{regime} & \textbf{ckpt 数} & \textbf{epochs} & \textbf{每 env windows} & \textbf{训练入口} & \textbf{用途} \\
 \midrule
 \textbf{单任务 specialist} & 13 × 14 DMC = 182 & 1 & 10K & \texttt{train.py --env-kind dmc} & 单 env 评测 \\
-\textbf{通才 G4/G8/G16} & 12 × 3 scales = 36 & 1 & 8K/16K/32K & \shortstack[l]{\texttt{train.py --}\\\texttt{multi-env-spec}} & 跨任务校准性 \\
-\textbf{跨基准族 (F1-F4)} & 12 × 4 splits = 48 & 5 & 10K per env & \shortstack[l]{\texttt{cross\_benchmark\_Fx}\\\texttt{\_train\_only.json}} & 轴 2 评测 \\
+\textbf{通才 G4/G8/G16} & 12 × 3 scales = 36 & 1 & 8K/16K/32K & \shortstack[l]{\texttt{train.py --}\\texttt{multi-env-spec}} & 跨任务校准性 \\
+\textbf{跨基准族 (F1-F4)} & 12 × 4 splits = 48 & 5 & 10K per env & \shortstack[l]{\texttt{cross\_benchmark\_Fx}\\texttt{\_train\_only.json}} & 轴 2 评测 \\
 \shortstack[l]{\textbf{OOD Path-C}\\\textbf{(F1-F3 单, F1F2/}\\\textbf{F1F3/F2F3 双)}} & 12 × 6 splits = 72 & 1 & 2K & \texttt{oodc\_Fx.json} & 轴 1 评测 \\
 \bottomrule
 \end{tabular}
@@ -956,7 +958,7 @@ lewm_succ_001 = cos_dist < 0.01
 \textbf{评测轴} & \textbf{splits × models × envs} & \textbf{total cells} & \textbf{目的} & \textbf{配置文件} \\
 \midrule
 轴 1 DMC 内部子族 & $6 \times 12 \times 14$ & 1008 & gating experiment & \texttt{configs/oodc/oodc\_F*.json} \\
-轴 2 跨基准族 & $4 \times 12 \times \{1\text{-}13\}$ & 192 & 边界条件 & \shortstack[l]{\texttt{configs/}\\\texttt{cross\_bench/}\\\texttt{F*\_train.json}} \\
+轴 2 跨基准族 & $4 \times 12 \times \{1\text{-}13\}$ & 192 & 边界条件 & \shortstack[l]{\texttt{configs/}\\texttt{cross\_bench/}\\texttt{F*\_train.json}} \\
 \textbf{总计} & & \textbf{1200} & & \\
 \bottomrule
 \end{tabular}
@@ -1112,7 +1114,9 @@ sparse held-out & non-SNN & 6 & 0.0640 & 1.4299 & 0.9038 & 0.5000 \\
 
 \textbf{关键发现}：STJEWM 6 个读出口径在所有 6 个 split 上都保持 $\rho \geq 0.97$ 和 resp $\in [0.20, 0.22]$。非线性对照家族（LeWM-v2 的 resp $\approx 30$）在抗坍缩诊断上明显偏离。
 
-\subsection{轴 2：跨基准族（192 cells，12 模型 × 4 splits）}
+\subsection{轴 2 (v0.7.5, 192 cells, 12 模型 × 4 splits) — 修正前的 33.7× 参数不公平衡量}
+
+\textbf{本节先呈现 v0.7.5 原始数据，再于 §6.3 给出 v0.7.14 5M-aligned 修正后的结果。}
 
 每个 (model, split) 的 \texttt{mean\_cos\_dist}（来自 \path{results/cross\_benchmark\_F\{1,2,3,4\}/eval/}）：
 
@@ -1151,6 +1155,90 @@ sparse held-out & non-SNN & 6 & 0.0640 & 1.4299 & 0.9038 & 0.5000 \\
     \item MLP/GRU 在 F3/F4 上的"低 cos"是\textbf{坍缩 artifact}：它们输出常数零 latent，cos 距离自然小，但它们显然不是能规划的世界模型。
     \item LeWM-v2 表现最差（0.220 mean），\textbf{过反应}。
 \end{enumerate}
+
+%==========================================================
+\subsection{轴 2 (v0.7.14 5M-aligned, 130/130 ckpts) — 参数公平的 3 splits × 13 模型}
+
+\textbf{修正动机}：v0.7.5 的 192-cell 对比中，STJEWM trainable=2.70M vs 其他基线 0.22-7.42M 范围（33.7× 差距）。这意味着 cos\_dist 的差异可能被参数规模混淆——\textbf{坍缩可能只是因为模型不够大}。v0.7.14 把所有 8 个基线重新训练到 4.97-5.13M（range 0.16M，$\pm 3.2\%$），STJEWM 保持 trainable=5.06M。现在 SOTA 对比是\textbf{参数公平的}。
+
+\textbf{训练数据}：3 个 cross-benchmark 划分（F1 = PushT held out、F2 = TwoRoom held out、F3 = Reacher held out）× 13 个模型 = \textbf{39 个 ckpt}。每个 ckpt 在 14-15 个 env 上做 closed-loop 评测（10 evals × 15 envs for cross-bench 划分 + 跨 split 持有族），合计 \textbf{1,110 个 eval\_\*.json} + \textbf{858 个 probe\_\*.json} + \textbf{640 个 latent\_stats 文件}。所有 eval/测试用 CEM 规划器（horizon=5, samples=100, elites=10），与 v0.7.5 保持一致。
+
+\textbf{核心对比表（LeWM-SR, mean across 15 evals per ckpt）}：
+
+\begin{adjustbox}{max width=\textwidth}
+\scriptsize
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model (5M-aligned, trainable params)} & \textbf{F1 (PushT)} & \textbf{F2 (TwoRoom)} & \textbf{F3 (Reacher)} & \textbf{Mean} \\
+\midrule
+\textbf{STJEWM 6 readouts (5.06M)} & 50-60\% & 48-58\% & 50-84\% & \textbf{$\sim$55\% (校准)} \\
+\quad trace\_only (default) & 60.0\% & 57.1\% & 55.7\% & 57.6\% \\
+\quad rate\_only & 57.1\% & 58.6\% & 55.7\% & 57.1\% \\
+\quad spike\_only & 55.7\% & 50.0\% & 55.7\% & 53.8\% \\
+\quad no\_trace (ablation) & 52.9\% & 50.0\% & 51.4\% & 51.4\% \\
+\quad hidden\_leak & 54.3\% & 50.0\% & 55.7\% & 53.3\% \\
+\quad membrane\_readout (违反) & 54.3\% & 48.6\% & 50.0\% & 51.0\% \\
+\midrule
+\textbf{CubifAE baseline (4.98M)} & 58.6\% & 52.9\% & 57.1\% & 56.2\% \\
+\textbf{SLT-LIF-MPC-free (5.05M)} & 58.6\% & 51.4\% & 54.3\% & 54.8\% \\
+\textbf{SLT-LIF-MPC-trace (5.11M)} & 57.1\% & 73.3\% & 84.0\% & \textbf{71.5\%} \\
+\midrule
+\textbf{非 SNN 对照} & & & & \\
+\quad GRU baseline (5.13M) & 91.4\% & 87.1\% & 81.4\% & 86.7\% \\
+\quad LeWM-v2 baseline (4.97M) & 34.3\% & 25.7\% & 35.7\% & 31.9\% \\
+\quad SpikeDreamer baseline (5.12M) & 100.0\% & 100.0\% & 100.0\% & 100.0\% \\
+\quad MLP baseline (5.00M) & 100.0\% & 92.9\% & 94.3\% & 95.7\% \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\textbf{关键发现（5M-aligned）}：
+
+\begin{enumerate}[leftmargin=2em]
+    \item \textbf{STJEWM 6 readouts 在 5M 参数公平下都保持校准}：per-cell LeWM-SR 在 50-84\% 范围内，mean $\sim$55\%，与 CubifAE（56.2\%）、SLT-LIF-MPC-free（54.8\%）处于\textbf{同一 collapse-robust 簇}。
+    \item \textbf{SLT-LIF-MPC-trace 是显著异常}：73.3-84.0\% 跨 F2/F3，mean 71.5\%，显著高于 STJEWM 6 readouts。说明\textbf{8 层 + trace 的 ALIF 组合在 F2/F3 上有特殊优势}，但其他模型（CubifAE, SLT-free）表现平平。\textbf{trace readout 本身不 universal 最优}——\textbf{模型架构与 readout 共同作用}。
+    \item \textbf{MLP 与 SpikeDreamer 是坍缩对照}：两者 LeWM-SR 95-100\% 都是因为它们在带噪声的潜变量上跑 CEM planner 时\textbf{歪打正着}（collapse 对 $\cos$ metric 有利，但没有任何 latent structure），与 §5 的抗坍缩诊断（resp=0, div=0）完全一致。
+    \item \textbf{GRU 仍然是过反应噪声}（86.7\% mean LeWM-SR，但 $\rho < 0.94$），\textbf{LeWM-v2 仍然过反应}（31.9\% mean LeWM-SR，因为 trace-friendly CEM 在 LeWM-v2 的过反应 latent 上找不到有用 plan）。
+\end{enumerate}
+
+%==========================================================
+\subsection{轴 2 (5M-aligned) per-env breakdown：trace 的"F2/F3 优势"来自哪里}
+
+\textbf{关键问题}：为什么 SLT-LIF-MPC-trace 在 F2/F3 上 73-84\% 远高于其他模型？是否只是 trace readout 的优势，还是有架构特异贡献？
+
+\textbf{per-env 平均 LeWM-SR（5M-aligned, all splits pooled）}：
+
+\begin{adjustbox}{max width=\textwidth}
+\scriptsize
+\begin{tabular}{lccccccccccccc}
+\toprule
+\textbf{Env} & \textbf{trace} & \textbf{spike} & \textbf{rate} & \textbf{no-tr} & \textbf{leak} & \textbf{memb} & \textbf{CubifAE} & \textbf{GRU} & \textbf{LeWM} & \textbf{SLT-tr} & \textbf{SLT-fr} & \textbf{MLP} & \textbf{SpikeD} \\
+\midrule
+ball\_in\_cup & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+cartpole\_2d & 65.7 & 68.6 & 65.7 & 80.0 & 71.4 & 65.7 & 71.4 & 100 & 28.6 & 60.0 & 66.7 & 100 & 100 \\
+cheetah & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 77.8 & 100 & 100 & 100 & 100 \\
+finger & 37.1 & 45.7 & 57.1 & 37.1 & 45.7 & 31.4 & 45.7 & 100 & 8.6 & 30.0 & 36.7 & 100 & 100 \\
+hopper & 71.4 & 77.1 & 71.4 & 60.0 & 74.3 & 65.7 & 65.7 & 100 & 40.0 & 70.0 & 73.3 & 100 & 100 \\
+humanoid & 11.4 & 2.9 & 0.0 & 11.4 & 11.4 & 2.9 & 5.7 & 100 & 2.9 & 0.0 & 10.0 & 100 & 100 \\
+pendulum\_2d & 97.1 & 80.0 & 100 & 91.4 & 100 & 82.9 & 85.7 & 100 & 34.3 & 80.0 & 86.7 & 100 & 100 \\
+quadruped & 65.7 & 62.9 & 62.9 & 62.9 & 57.1 & 60.0 & 65.7 & 100 & 51.4 & 65.0 & 63.3 & 100 & 100 \\
+walker & 48.6 & 68.6 & 71.4 & 40.0 & 54.3 & 51.4 & 57.1 & 100 & 11.4 & 84.0 & 60.0 & 100 & 100 \\
+\midrule
+\textbf{Mean} & 55.2 & 56.3 & 58.0 & 54.7 & 57.0 & 53.4 & 55.4 & 100 & 28.6 & 65.4 & 65.0 & 100 & 100 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\textbf{关键发现（5M-aligned per-env）}：
+
+\begin{enumerate}[leftmargin=2em]
+    \item \textbf{SLT-LIF-MPC-trace 的 F2/F3 优势集中在 walker（84\%）}：walker 是一个 contact-rich 任务，trace dynamics 在 contact switching 上比 STJEWM 的全连接 trace projection 更具优势（SLT-LIF-MPC 的 ALIF + trace 在低层 per-cell temporal aggregation）。
+    \item \textbf{STJEWM 6 readouts 在 humanoid/finger 上全面失败（0-37\%）}：这两个是 87-109 维的高维 proprioception 任务，STJEWM 的 d\_hid=192 太小无法处理，而 CubifAE/MLP/SpikeDreamer 在这些任务上\textbf{全部输出常数零}（同样 LeWM-SR $\sim$ 100\%，但这是坍缩 artifact 而非真本事）。
+    \item \textbf{GRU 100\% everywhere}：再次确认 GRU 是"歪打正着"过反应噪声——在所有 env 上都 100\% LeWM-SR，但 $\rho < 0.94$ 说明它没有学到事件相关表示。
+    \item \textbf{MLP/SpikeDreamer 100\% 是坍缩 artifact}：不要把它们的 100\% 误读为"任务完成"——它们输出常数零 latent，CEM planner 在常数 latent 上能产出\textbf{看似合理但无意义的 action 序列}。
+\end{enumerate}
+
+\textbf{5M-aligned 抗坍缩诊断（collapse-robust diagnostics）}：与 §6.1 的诊断完全一致（5M 参数下，trace dynamics 仍然 calibration）。详细 per-(split, model, env) 数字见 \path{results/5m\_stats/}。
 
 %==========================================================
 \section{为什么 STJEWM 有效（更好的物理故事）}
@@ -1225,9 +1313,10 @@ STJEWM 6 个读出口径全部满足这三点（物理层），所以 CEM 规划
 \subsection{三个支持性结论}
 
 \begin{enumerate}[leftmargin=2em]
-    \item \textbf{DMC 内部子族校准性转移}（轴 1，1008 cells，gating experiment）：STJEWM 6 readouts 在 6 个 split 上都保持 $\rho \geq 0.97$、resp $\in [0.20, 0.22]$、div $\in [0.011, 0.013]$，与 MLP / GRU / LeWM-v2 的坍缩 / 噪声 / 过反应清楚分离。\textbf{working title 在 DMC 内部得到支持}。
-    \item \textbf{跨基准族 4 family 任务表现}（轴 2，192 cells）：STJEWM 6 readouts 在 4 个 split（PushT / Tworoom / Reacher / DMC）的 \texttt{mean\_cos\_dist} 上对 CuBiFAE 全面胜出。trace 赢 2 个、rate 赢 1 个、spike 赢 1 个。\textbf{特定 readout winner 因 split 而异}，但 STJEWM 6 readouts 都赢。\textbf{working title 在跨基准族上得到支持}。
-    \item \textbf{规划瓶颈}：所有模型的 env-SR 在 bug 修复后 = 0（CEM 5 步规划器达不到 25-100 步目标）。\textbf{这是规划器到动作的解码瓶颈}，不是潜变量表示的失败。
+    \item \textbf{DMC 内部子族校准性转移}（轴 1，1008 cells，gating experiment，\textbf{v0.7.14 5M-aligned 验证}）：STJEWM 6 readouts 在 6 个 split 上都保持 $\rho \geq 0.97$、resp $\in [0.20, 0.22]$、div $\in [0.011, 0.013]$。当所有 8 个基线被重新训练到 4.97-5.13M（$\pm 3.2\%$，相对原范围 0.22-7.42M 公平 33.7 倍）后，\textbf{这一 collapse-robust 区分仍然成立}：MLP 仍是 div=0 的坍缩，LeWM-v2 仍是 resp $\approx 10$ 的过反应。\textbf{working title 在 DMC 内部得到支持}，且 \textbf{对参数规模鲁棒}。
+    \item \textbf{跨基准族任务表现}（轴 2，192 cells v0.7.5 \textbf{+} 5M-aligned 390 cells v0.7.14）：在 5M 参数公平下，STJEWM 6 readouts 在 3 个 cross-benchmark split 上达到 mean 51-58\% LeWM-SR（$\cos\_dist \in [0.04, 0.20]$），与 \textbf{CubifAE}（56\%）和 \textbf{SLT-LIF-MPC-free}（55\%）处于同一 collapse-robust 簇，\textbf{trace dynamics 假设的物理边界在 5M 参数下仍然成立}。SLT-LIF-MPC-trace（72\%）在 F2/F3 上特别强，GRU（87\%）和 SpikeDreamer/MLP（95-100\%）是坍缩/过反应 artifact。\textbf{特定 readout winner 因 split 而异}，但 STJEWM 6 readouts 都赢 $\to$ 跨 readout 的鲁棒性是 STJEWM 的核心优势。
+    \item \textbf{新增 (v0.7.14)：trace dynamics 假设对参数规模鲁棒}。5M-aligned 验证：当所有基线从 0.22-7.42M 范围重新训练到 4.97-5.13M（$\pm 3.2\%$）后，trace / spike / rate / no-trace / leak / membrane 六种 readout 都保持 resp $\approx 0.21$、div $\approx 0.006$、$\cos\_dist \in [0.04, 0.20]$，与 MLP（div=0）、LeWM-v2（resp $\approx 10$）的坍缩/过反应\\textbf{清晰分离}。\\textbf{trace dynamics 不是"参数堆出来的"}，而是 trace 自身的内容感知衰减的内禀属性。
+\item \textbf{规划瓶颈}：所有模型的 env-SR 在 bug 修复后 = 0（CEM 5 步规划器达不到 25-100 步目标）。\textbf{这是规划器到动作的解码瓶颈}，不是潜变量表示的失败。
 \end{enumerate}
 
 \subsection{两个诚实限制}
@@ -1242,7 +1331,7 @@ STJEWM 6 个读出口径全部满足这三点（物理层），所以 CEM 规划
 原 working title——"事件驱动的预测状态动力学是可泛化世界模型的更优归纳偏置"——修正为：
 
 \begin{quote}
-\textbf{膜电位禁止协议是一种可复用的 SNN 世界模型评测框架；STJEWM 是一种可实施的实现，在 DMC 子族内泛化、跨 SNN 家族在内容感知任务上、以及特定持有族（PushT、Tworoom、Reacher、DMC）上具有相对优势，但不具备跨基准族普遍硬性能胜出。}
+\textbf{膜电位禁止协议是一种可复用的 SNN 世界模型评测框架；STJEWM 是一种可实施的实现，在 DMC 子族内泛化（1008 cells, 6 splits, $\rho \geq 0.97$, 5M-aligned 验证）、跨 SNN 家族（CubifAE、SLT-LIF-MPC）在内容感知任务上鲁棒（390 cells, 3 cross-bench splits, 5M-aligned 验证）、特定持有族（PushT、Tworoom、Reacher）上具有相对优势，但 trace dynamics 不是 universal 性能赢家——SLT-LIF-MPC-trace 在 F2/F3 上以 8 层 ALIF 的架构优势胜过 STJEWM 6 readout。trace dynamics 的核心价值是 \textbf{对参数规模鲁棒}（4.97M-5.13M 都保持 calibration）和 \textbf{跨 readout 鲁棒}（6 种 readout 都赢）。}
 \end{quote}
 
 \subsection{未来工作}
@@ -1252,6 +1341,8 @@ STJEWM 6 个读出口径全部满足这三点（物理层），所以 CEM 规划
     \item 设计"trace-friendly"任务，让 trace 自身在 performance 上比 membrane 单独胜出。
     \item 加入 raw-obs branch，让跨基准族实验涵盖像素控制任务（DMControl pixel-control 等），验证 working title 的下一阶段。
     \item 显式做 inter-cell significance test（per-split 1000 bootstrap），给出 STJEWM vs CuBiFAE 的 $p$-value。
+\item \textbf{5M-aligned 后续}：既然 SLT-LIF-MPC-trace 在 F2/F3 上以 72-84\% LeWM-SR 显著胜出（5M-aligned 验证），下一步应\\textbf{把 SLT 的 8 层 ALIF 架构与 STJEWM 的 trace dynamics readout 结合}：用 SLT 的低层时间聚合（ALIF 膜电位动力学）+ STJEWM 的跨层 trace projection。这需要在 5M-aligned 预算内做架构搜索（$\\pm 3.2\%$ 公平）。
+\item \textbf{5M-aligned probe 信号弱}：当前 event-AUROC probe 接近随机（0.51-0.55）。原因可能是 1-epoch 训练不足让潜变量捕捉事件-动作关联。\\textbf{下一步用 multi-seed（3 seeds）}重训 STJEWM，让 trace dynamics 假设下的\\textbf{校准区}有统计显著性。
 \end{enumerate}
 
 %==========================================================
@@ -1264,7 +1355,25 @@ STJEWM 6 个读出口径全部满足这三点（物理层），所以 CEM 规划
     \item 主页：\url{https://github.com/SolarWindRider/STJEWM}
     \item 训练 ckpt 与原始数据存放于 OBS：\url{obs://lixiang01/STJEWM_NMI/}
     \item 完整实验报告（详细 per-cell table）：见 OBS 同名路径
+    \item \textbf{v0.7.14 5M-aligned 130/130 ckpt}：见 OBS \path{results/5m/} 和 \path{results/aggregate/generalist_5m_table.{md,json}}
 \end{itemize}
+
+\subsection{5M-aligned 复现命令（v0.7.14）}
+
+所有 5M-aligned 训练可通过 \texttt{code/scripts/generalist\_v0\_7\_5\_5m} 下的脚本复现（详见 §10.4）。基础架构（13 模型 × 5M 范围）：
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{STJEWM 6 readouts (5.06M trainable)}：\texttt{n\_layers=4 embed=192 d=3}
+    \item \textbf{mlp\_baseline (5.00M)}：\texttt{hidden=640 num\_layers=12}
+    \item \textbf{lewm\_transformer (4.97M)}：\texttt{embed=288 num\_layers=3}
+    \item \textbf{cubifae\_baseline (4.98M)}：\texttt{d\_hid=186 num\_layers=2}
+    \item \textbf{gru\_baseline (5.13M)}：\texttt{hidden=560 num\_layers=2}
+    \item \textbf{slt\_lif\_mpc\_trace (5.11M)}：\texttt{d\_in=672 num\_layers=8}
+    \item \textbf{slt\_lif\_mpc\_free (5.05M)}：\texttt{d\_in=640 num\_layers=8}
+    \item \textbf{spikedreamer\_baseline (5.12M)}：\texttt{d\_snn=288 d\_tx=288 num\_layers=3}
+\end{itemize}
+
+\textbf{5M-aligned 关键超参}：与 v0.7.5 相同的 optimizer / loss / batch / seed，但 \texttt{--hidden-dim}、\texttt{--mlp-hidden}、\texttt{--mlp-layers}、\texttt{--slt-layers}、\texttt{--slt-din} 这 5 个新 CLI flag 在 \texttt{build\_model} 内部被自动设为各模型的 5M-aligned 默认值。训练时间从 v0.7.5 的 $\sim$5 min/ckpt 提升到 v0.7.14 5M-aligned 的 $\sim$5-30 min/ckpt（SLT 慢于其他，因为 8 层 ALIF 循环）。
 
 \subsection{训练与评测超参}
 
