@@ -292,6 +292,26 @@
 
 \textbf{参数量注（v0.7.14 5M-aligned 修正）}：上述参数对比在 STJEWM trainable=2.70M vs 其他基线 0.22-7.42M 范围（33.7×差距）下不公平。v0.7.14 重新训练所有 8 个基线到 \textbf{4.97-5.13M}（range 0.16M，$\pm 3.2\%$），STJEWM 保持 trainable=5.06M（含冻结 ViT 的 total=10.57M）。具体配置：mlp\_baseline hidden=640 num\_layers=12 (5.00M)；lewm\_transformer embed=288 num\_layers=3 (4.97M)；cubifae\_baseline d\_hid=186 num\_layers=2 (4.98M)；gru\_baseline hidden=560 num\_layers=2 (5.13M)；slt\_lif\_mpc\_trace d\_in=672 num\_layers=8 (5.11M)；slt\_lif\_mpc\_free d\_in=640 num\_layers=8 (5.05M)；spikedreamer\_baseline d\_snn=288 d\_tx=288 num\_layers=3 (5.12M)。在 5M-aligned 设置下，trace dynamics 假设的 collapse-robust 区分仍然成立：STJEWM 6 readouts 保持 resp $\approx 0.21$、div $\approx 0.006$（校准），MLP 仍是 div $\to 0$（坍缩），LeWM-v2 仍是 resp $\approx 10$、div $\approx 0.18$（过反应）。
 
+
+\textbf{5M-aligned 跨基准族结果（v0.7.14 final, 130/130 ckpts）}：所有 130 个 ckpt（13 模型 × 10 splits）都完成了 5M-aligned 训练。在 5M 参数公平下，trace dynamics 假设的 collapse-robust 三分法清晰呈现：
+
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{F1 (PushT)} & \textbf{F2 (TwoRoom)} & \textbf{F3 (Reacher)} & \textbf{Mean} \\
+\midrule
+\textbf{STJEWM 6 readouts} & 50-60\% & 48-58\% & 50-84\% & \textbf{$\sim$55\% (校准)} \\
+CubifA\_baseline & 58.6\% & 52.9\% & 57.1\% & 56.2\% (matches STJEWM) \\
+SLT-LIF-MPC-free & 58.6\% & 51.4\% & 54.3\% & 54.8\% (matches STJEWM) \\
+SLT-LIF-MPC-trace & 57.1\% & 73.3\% & 84.0\% & 71.5\% (notably better on F2/F3) \\
+gru\_baseline & 91.4\% & 87.1\% & 81.4\% & 86.7\% (过反应噪声) \\
+lewm\_baseline\_v2 & 34.3\% & 25.7\% & 35.7\% & 31.9\% (过反应) \\
+mlp\_baseline & 100.0\% & 92.9\% & 94.3\% & 95.7\% (\textbf{坍缩对照}) \\
+spikedreamer\_baseline & 100.0\% & 100.0\% & 100.0\% & 100.0\% (\textbf{坍缩对照}) \\
+\bottomrule
+\end{tabular}
+
+\textbf{关键结论}：三分法在 4.97M $\to$ 5.13M 范围内依然成立。STJEWM 6 readouts 都保持 \textbf{resp $\approx$ 0.21}、\textbf{div $\approx$ 0.006}（校准），与 \textbf{CubifAE} 和 \textbf{SLT-LIF-MPC} 处于同一 collapse-robust 簇。\textbf{MLP} 和 \textbf{SpikeDreamer} 是坍缩对照（resp=0, div=0, cos\_dist$\approx$0），\textbf{GRU} 和 \textbf{LeWM-v2} 是过反应（resp $\gg$ 1, div $\gg$ 0.005）。这验证了 trace dynamics 假设 \textbf{对参数规模鲁棒}：从 1.44M（MLP 原始）到 5.13M（GRU 5M）都呈现相同的 collapse-robust 区分。
+
 \subsection{跨基准族与 OOD Path-C 的关键区别}
 
 两个看似都是"跨 env 转移"的评测轴，在数据流上有\textbf{本质不同}：
