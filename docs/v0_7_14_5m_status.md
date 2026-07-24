@@ -70,3 +70,17 @@ parameter scale**: 4.97M → 5.13M still preserves the 3-way separation.
 - Now: Fri Jul 24 09:30
 - ~46 hours
 - 130/130 ckpts done = 100%
+
+## v0.7.14.1: Paper Updated (2026-07-24)
+- `paper/experiment_report_full_zh.tex` updated with 5M-aligned updates
+- `paper/experiment_report_full_zh.pdf` rebuilt (1.46MB)
+- Key sections added/updated:
+  - Abstract: 5M-aligned callout
+  - §2.1: 5M-aligned param note
+  - §6.2: relabeled as v0.7.5 (pre-5M-aligned) for clear context
+  - §6.3 (new): 5M-aligned cross-bench results (13 models, 3 splits, 130 cells)
+  - §6.4 (new): 5M-aligned per-env breakdown
+  - §8 (conclusion): 3 conclusions updated + new "parameter-scale robustness"
+  - §8 working title: refined with 5M-aligned scope
+  - §8 future work: 2 new items (combine SLT-8-layer-ALIF with STJEWM trace; multi-seed probes)
+  - §10.4 (new): 5M-aligned reproducibility with all 8 model configs
