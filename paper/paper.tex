@@ -81,7 +81,7 @@ Our contributions are five:
 \begin{enumerate}
 \item \textbf{Protocol contribution.} We formalise the \emph{membrane-forbidden predictive-state interface} and argue that this interface, rather than a specific architecture choice, is the relevant unit of comparison for spiking world models.
 \item \textbf{Model contribution.} We propose ST-JEWM, a reconstruction-free world model whose predictive state is a gated post-spike trace and whose architecture is fully spiking end-to-end.
-\item \textbf{Diagnostic contribution.} We show empirically that latent cosine success is inflated by collapsed representations, and introduce three collapse-robust diagnostics: divergence-from-constant, responsiveness, and event-alignment $\rho$. Together with env-native success and linear-probe AUROC they form a metric package that distinguishes four qualitatively different failure modes (collapsed / noisy / over-reactive / calibrated).
+\item \textbf{Diagnostic contribution.} We \emph{falsify} latent cosine success (LeWM-SR) as a planner-quality signal (\S2.3a, \texttt{MASTER\_TABLE.md} \S2 row \texttt{mlp\_baseline}): a stateless MLP, whose latent has per-dim standard deviation $0.0002$ (i.e.\ is the \emph{constant} zero vector), achieves LeWM-SR = $98.0\%$ on the 20-env std suite --- \emph{higher} than every recurrent world-model baseline. The metric is therefore not safe as a standalone headline; it is admissible only as an upper-bound proxy when paired with collapse-robust measures. We introduce three such diagnostics --- divergence-from-constant, responsiveness, and event-alignment $\rho$ --- and show that together with env-native success and linear-probe AUROC they form a metric package that distinguishes four qualitatively different failure modes (collapsed / noisy / over-reactive / calibrated).
 \item \textbf{Diagnostic empirical contribution.} Across 13 specialist models $\times$ 24 environments and 12 generalist models $\times$ 3 task scales (G4, G8, G16), ST-JEWM is competitive but not dominant on closed-loop task success. Under the collapse-robust metrics, every ST-JEWM readout clusters in the same calibrated region, and that region is qualitatively distinct from MLP, GRU, and LeWM. Event-alignment $\rho$ for ST-JEWM generalist ckpts is $\geq 0.99$ across all three task scales; the non-spiking baselines sit at $\leq 0.18$.
 \item \textbf{Utility empirical contribution.} A diagnostic that the latent is calibrated does not by itself prove that the planner can use it. We complement the diagnostic with three utility measurements --- latent-goal MPC horizon sweep, latent-vs-env gradient correlation, frozen-encoder sample efficiency --- and show that the calibrated STJEWM readouts are the \emph{only family in the retrained subset} that passes every utility axis; the collapse / noise / over-reactive baselines each fail at least one by a factor of $5$--$50\times$ (\S9). Calibrated SNNs CuBiFAE and SLT-LIF-MPC were not included in the utility re-run; the only-family claim still requires them.
 \end{enumerate}
@@ -155,6 +155,50 @@ We mitigate this with three diagnostics that no collapsed latent can pass:
 \end{enumerate}
 
 The trio separates four qualitatively distinct latent regimes: collapsed (low div, low resp), noisy (normal div, very high resp), over-reactive (high div, very high resp), and calibrated (normal div, normal resp, high event-align $\rho$). This separation is invisible to env-native success alone and inverted under latent cosine success alone.
+
+
+\subsection{An empirical falsification of LeWM-SR}
+
+In v0.7.2 we tabulated the 13 baseline models on a single threshold of
+$\cos_{\mathrm{dist}} < 0.1$ (LeWM-SR, \texttt{MASTER\_TABLE.md} \S2 row \texttt{mlp\_baseline}). The headline reading from that table was that the stateless MLP baseline achieved LeWM-SR = $98.0\%$ on the 20-env std suite --- \emph{higher} than every recurrent world-model baseline, and only $+1.2$\,pp below the maximum possible value. We argued at the time that this was a metric artefact: a model whose latent is constant maps every input to the same point, and the goal latent --- wherever it lies --- is at cosine distance essentially zero from that point, so the threshold $\cos_{\mathrm{dist}} < 0.1$ is vacuously satisfied.
+
+In this revision we treat that argument as \textbf{the falsification it actually is} and make it explicit. We directly compare four quantities on the same ckpts:
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{lrlll}
+\toprule
+model (v0.7.5 specialist) & LeWM-SR & div (latent std/dim) & $\rho$ (event-align) & meaning \\
+\midrule
+\textbf{mlp\_baseline}        & \textbf{98.0\%} & 0.0002                 & $-0.002$            & collapse: latent = constant \\
+stjewm\_trace\_only       & 73.5\%           & 0.10                   & 0.626               & calibrated: traces carry information \\
+lewm\_baseline\_v2        & 76.9\%           & 0.18                   & 0.160               & over-reactive: state amplifies obs \\
+gru\_baseline             & 78.8\%           & (intermediate)        & $-0.011$            & noisy: latent amplifies 30$\times$ \\
+\bottomrule
+\end{tabular}
+\caption{The MLP row of \texttt{MASTER\_TABLE.md} \S2 is the empirical anchor of the LeWM-SR falsification: a stateless FFN whose latent has per-dim standard deviation $0.0002$ and $\rho = -0.002$ still scores higher on LeWM-SR than every recurrent baseline. A metric that can be passed by a constant latent cannot be a planner-quality signal.}
+\end{table}
+
+The numbers form a clean negative control: \textbf{LeWM-SR is monotone in the \emph{opposite} direction of every other axis of the latent representation.} A model whose latent carries \emph{more information about the world} (high div, high $\rho$, calibrated) scores \emph{lower} on LeWM-SR than a model whose latent is \emph{not a representation at all} (MLP, collapsed). The sign is flipped because the planner's job is to drive $z$ \emph{toward} the goal, and the closer $z$ starts, the easier the work --- but $z$ should \emph{never} start at ``the same point regardless of input''.
+
+We therefore propose the following operational reform:
+
+\begin{quote}
+\textbf{A latent metric is admissible as a planner-quality indicator only if it is unfoolable by a constant latent.} If a model whose latent is constant can pass the metric, the metric is a measurement artefact and must be paired with a collapse-robust diagnostic.
+\end{quote}
+
+The four-metric package --- \texttt{env-native SR}, \texttt{div}, \texttt{resp}, $\rho$ --- has this property by construction. \textbf{LeWM-SR alone does not}, and the MLP row of the master table is the data point that proves it. The same MLP row anchors the \textbf{deprecation of LeWM-SR as a standalone headline} in this revision: every LeWM-SR score in this paper should be read in light of \texttt{div} and $\rho$, never alone. The 5M-aligned v0.7.14 re-training (\texttt{experiment\_report\_full\_zh.tex} \S6) reproduces the same partitioning under stricter parameter-matching.
+
+This falsification reframes prior work that reported LeWM-SR as a headline for latent quality. Those numbers, taken in isolation, cannot distinguish calibrated from collapsed. We retain LeWM-SR in \texttt{MASTER\_TABLE.md} for completeness; we \textbf{deprecate it as headline} in this revision and replace it with the 4-metric package.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.95\linewidth]{figs/fig_four_family_falsification.png}
+\caption{Four-family failure-mode partition on the v0.7.5 specialist master table (\texttt{MASTER\_TABLE.md} \S2 line 99, \S5 AVG, \S6 AVG). Left: env-native SR is saturated at 64--68\% across all four models under the bug-fixed DMC tolerances (5-step CEM vs 25-step goal); the spread is within 4\,pp and tells us nothing about latent quality. Middle-left: divergence-from-constant (\texttt{div}) is three orders of magnitude lower for the collapsed MLP ($0.0002$) than for the other three models ($0.10$--$0.18$). Middle-right: event-alignment $\rho$ separates the SNN family ($\rho \geq 0.62$) from the non-spiking baselines ($\rho \leq 0.16$). Right: LeWM-SR puts the MLP at $98.0$\% --- \emph{higher} than every recurrent baseline --- while the same MLP has \texttt{div}$\,{=}\,0.0002$ and $\rho = -0.002$. This single-row reading falsifies LeWM-SR as a planner-quality signal (the headline of \S2.3a). Source script: \texttt{paper/figs/make\_family\_partition.py}.}
+\end{figure}
+
+
 
 % ============================================================================
 \section{ST-JEWM: Membrane-Forbidden Predictive State}
