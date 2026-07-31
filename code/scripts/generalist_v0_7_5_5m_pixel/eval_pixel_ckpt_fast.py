@@ -53,7 +53,18 @@ def make_goal_state_for(env_kind: str):
 def encode_obs(model, obs_pixel_np, device="cpu"):
     x = torch.from_numpy(obs_pixel_np).float().unsqueeze(0).unsqueeze(0).to(device)
     with torch.no_grad():
-        z = model._encode_obs(x)
+        # STJEWM has _encode_obs; baselines have encode(obs, action) returning a dict
+        if hasattr(model, "_encode_obs"):
+            z = model._encode_obs(x)
+        else:
+            action_dim = getattr(model, "action_dim", 56)
+            a = torch.zeros(1, 1, action_dim, device=device)
+            out = model.encode(x, a)
+            # encode() may return a dict with 'emb' or a tensor directly
+            if isinstance(out, dict):
+                z = out["emb"]
+            else:
+                z = out
     return z[0, 0]
 
 
@@ -141,6 +152,9 @@ def main():
             print(f"  {env_kind}: env_sr={env_sr:.3f} mean_cos_dist={mean_cos:.4f}")
             env.close()
         except Exception as e:
+            import traceback
+            tb = traceback.format_exc().strip().splitlines()[-1] if hasattr(e, '__traceback__') else str(e)
+            results_per_env[env_kind] = {"error": f"{type(e).__name__}: {e}", "traceback": tb[:200]}
             print(f"  {env_kind}: ERROR {e}")
             results_per_env[env_kind] = {"error": str(e)}
 
