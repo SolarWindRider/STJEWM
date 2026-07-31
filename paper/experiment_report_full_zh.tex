@@ -1300,6 +1300,35 @@ STJEWM 6 个读出口径全部满足这三点（物理层），所以 CEM 规划
 \textbf{膜电位禁止协议是一种可复用的 SNN 世界模型评测框架；STJEWM 是一种可实施的实现，在 DMC 子族内泛化（1008 cells, 6 splits, $\rho \geq 0.97$, 5M-aligned 验证）、跨 SNN 家族（CubifAE、SLT-LIF-MPC）在内容感知任务上鲁棒（390 cells, 3 cross-bench splits, 5M-aligned 验证）、特定持有族（PushT、Tworoom、Reacher）上具有相对优势，但 trace dynamics 不是 universal 性能赢家——SLT-LIF-MPC-trace 在 F2/F3 上以 8 层 ALIF 的架构优势胜过 STJEWM 6 readout。trace dynamics 的核心价值是 \textbf{对参数规模鲁棒}（4.97M-5.13M 都保持 calibration）和 \textbf{跨 readout 鲁棒}（6 种 readout 都赢）。}
 \end{quote}
 
+\subsection{v0.7.15 新增：跨模态鲁棒性（state $\to$ pixel，130 ckpts）}
+
+v0.7.14 全部在低维 proprioceptive 状态（$\le 21168$-dim）上训练。v0.7.15 引入 \textbf{像素观测}：
+\begin{itemize}[leftmargin=2em]
+\item 把 state\_projector 换成 \textbf{5.5M 冻结的 ViT-Tiny 像素编码器}（192-dim 输出，image\_size 84）外加 0.07M 可训练投影
+\item 13 个模型 × 10 个 split × 1 seed = 130 ckpt，4-GPU 并行训练（wall ~16-32 h）
+\item 训练预算与 v0.7.14 5M-aligned 保持一致（所有模型 4.83-5.21M 训练参数，$\pm 3.2\%$）
+\item 训练 split 完全是 v0.7.14 的 10 个 split（不引入新 split）—— 这样是严格的"只换观测模态"对照实验
+\end{itemize}
+
+\textbf{评估。} 闭环 CEM 规划器与 v0.7.14 §9.7 相同（horizon=5，$N_{\text{samples}}=300$，$N_{\text{elites}}=30$，10 次迭代），每个 split × 模型都过 13 个 DMC 环境，5 episodes/env。
+
+\textbf{核心问题：} trace dynamics 的校准/坍缩/过激 4-族划分在 state $\to$ pixel 之后是否仍然保持？
+\begin{itemize}[leftmargin=2em]
+\item 若 \textbf{保持} —— trace dynamics 假设是\textbf{架构内禀}的，不依赖于低维状态表示。
+\item 若 \textbf{不保持} —— 之前的校准信号可能由 state\_projector 的特定投影承担，不是 trace 自身的功劳。
+\end{itemize}
+
+\textbf{跨模态皮尔逊 $\rho$（13 个模型，state vs pixel）。} 由
+\texttt{code/scripts/generalist\_v0\_7\_5\_5m\_pixel/cross\_modality\_table.py}
+读取 \texttt{generalist\_5m\_table.md} 与 \texttt{generalist\_5m\_pixel\_table.md}，
+输出每模型的 env-SR / LeWM-SR / cos\_dist 横向对比，外加 STJEWM 族、SNN 基线族、非 SNN 族的子相关。
+
+\textbf{诚实范围。} v0.7.15 1 seed/（split，模型）；多 seed std bar 尚未做（计算预算不足）。其余尚未做：
+像素编码器微调（当前 ViT 冻结）、Atari 100k 等像素控制 benchmark 上的多任务联合训练、自监督像素预训练。
+
+% (跨模态 ρ 表在数据备齐后由 \texttt{cross\_modality\_table.py} 输出到
+% \texttt{results/aggregate/cross\_modality\_table.md}。)
+
 \subsection{未来工作}
 
 \begin{enumerate}[leftmargin=2em]
