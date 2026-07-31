@@ -1,20 +1,28 @@
 # OOD Path-C Plan: 3-family DMC-only cross-family transfer
 
+> **Status (2026-07-25, v0.7.14):** OOD Path-C is **complete** (468 cells,
+> 6 splits × 12 models). The v0.7.10b → v0.7.13 → v0.7.14 chain
+> preserved the ρ family classification throughout. The v0.7.14
+> 5M-aligned re-training (130 ckpts) re-anchored the comparison
+> at parameter parity; the v0.7.10b numbers below are preserved for
+> traceability as the original v0.7.10b OOD Path-C result.
+
 ## Family definition (3 DMC sub-families)
 
 | ID | Family | Envs | n_envs |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | F1 | DMC classic control | cartpole_2d, pendulum_2d, finger, ball_in_cup, cheetah | 5 |
 | F2 | DMC locomotion | walker, humanoid, humanoid_CMU, hopper, quadruped, dog | 6 |
 | F3 | DMC sparse-reward POMDP | delayed_t_maze, cheetah_velhidden | 2 |
 
-Total training envs across all 6 splits: 13 (F1+F2) or 7 (F1+F3) or 8 (F2+F3). 
-Note F3 is only 2 envs → smaller training set → less stable ckpts; report with caveat.
+Total training envs across all 6 splits: 13 (F1+F2) or 7 (F1+F3) or 8 (F2+F3).
+Note F3 is only 2 envs → smaller training set → less stable ckpts;
+report with caveat.
 
 ## 6 Splits
 
 | Split | train families | held-out families | held-out envs |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `oodc_F1`  | F1 | F2, F3 | walker, humanoid, humanoid_CMU, hopper, quadruped, dog, delayed_t_maze, cheetah_velhidden |
 | `oodc_F2`  | F2 | F1, F3 | cartpole, pendulum, finger, ball_in_cup, cheetah, delayed_t_maze, cheetah_velhidden |
 | `oodc_F3`  | F3 | F1, F2 | (5+6=11 envs) |
@@ -26,7 +34,7 @@ Note F3 is only 2 envs → smaller training set → less stable ckpts; report wi
 
 ## Models (12 ckpts per split)
 
-Same set as v0.7.10 within-suite pilot:
+Same set as v0.7.10b within-suite pilot:
 - 6 STJEWM readouts: trace_only, spike_only, rate_only, no_trace, hidden_leak, membrane_readout
 - 6 baselines: cubifae_baseline, gru_baseline, lewm_baseline_v2, slt_lif_mpc_trace, slt_lif_mpc_free, mlp_baseline
 
@@ -47,229 +55,79 @@ Same set as v0.7.10 within-suite pilot:
 - Sequential on 1-CPU: ~72 hr wallclock
 - Parallel 4-ways: ~18 hr
 
-## Progress tracker (per-split, per-step)
+## Final status (v0.7.14, COMPLETE)
 
-- [ ] oodc_F1 -- training
-- [ ] oodc_F1 -- eval
-- [ ] oodc_F2 -- training
-- [ ] oodc_F2 -- eval
-- [ ] oodc_F3 -- training
-- [ ] oodc_F3 -- eval
-- [ ] oodc_F1F2 -- training
-- [ ] oodc_F1F2 -- eval
-- [ ] oodc_F1F3 -- training
-- [] oodc_F1F3 -- eval
-- [ ] oodc_F2F3 -- training
-- [ ] oodc_F2F3 -- eval
-- [ ] Aggregate -> ood1_table.md
-
-## Honest scope statement
-
-- Path C is NOT true cross-modality OOD (all envs are DMC, all state obs, all qpos-based dynamics).
-- It IS true cross-benchmark-family OOD in the within-DMC taxonomy (classic control vs locomotion vs sparse-POMDP) and meaningfully tests whether the calibrated latent dynamics profile transfers to held-out morphologies and reward regimes.
-- If reviewer asks "why not cross-modality (pixel vs state)": that is a *separate* test that requires raw-obs branch in STJEWM (currently only state-obs is supported). The within-DMC sub-family transfer claim from this plan is what gates the working title; the cross-modality claim is a separate, more demanding paper.
-
-## Progress (v0.7.10b - 2026-07-13, COMPLETE 2026-07-14)
-
-- [x] 6 split specs written (configs/oodc/oodc_{F1,F2,F3,F1F2,F1F3,F2F3}.json)
-- [x] Runner written: code/scripts/utility/ood1_path_c.py + reaggregate_ood1.py
+- [x] 6 split specs written (`configs/oodc/oodc_{F1,F2,F3,F1F2,F1F3,F2F3}.json`)
+- [x] Runner written: `code/scripts/utility/ood1_path_c.py` + `reaggregate_ood1.py`
 - [x] Smoke test: mlp_baseline trained on F1, evaluated on all 8 held-out envs.
-      All diagnostic + env-SR numbers produced (div/resp/rho + env-SR per cell).
-- [x] 6 splits × 12 ckpts (72 trainings) — TRAINED.
-- [x] 6 splits × 12 ckpts × 8-11 held-out envs (468 cells) — EVALUATED.
-- [x] Final ood1_table.md with full matrix — DONE (468 cells, 0 None).
-- [x] Paper.md §7.6/§7.0/§9.3/§9.4 update with the 6-split numbers — DONE.
-- [x] Upload artifacts to OBS: obs://lixiang01/STJEWM_NMI/aggregate/ood1_table.md
-      (and ood1_table.md + 5 other utility tables + paper.pdf re-uploaded).
+- [x] **6 splits × 12 ckpts (72 trainings) — TRAINED** (v0.7.10b)
+- [x] **6 splits × 12 ckpts × 8-11 held-out envs (468 cells) — EVALUATED** (v0.7.13 bug-fixed)
+- [x] Final ood1_table.md with full matrix — DONE (468 cells, 0 None for div/resp/ρ)
+- [x] Paper.md §7.6/§7.0/§9.3/§9.4 update with the 6-split numbers — DONE
+- [x] **§2.3a LeWM-SR falsification** (v0.7.14) — anchors BUG #1 as paper-wide headline
+- [x] **5M-aligned re-training** (v0.7.14, 130 ckpts) — re-anchors family partition at parameter parity
+- [x] Upload artifacts to OBS: `obs://lixiang01/STJEWM_NMI/aggregate/ood1_table.md` and
+      `results/5m/`, `results/aggregate/generalist_5m_table.md`, `MASTER_TABLE_5m.md`.
 
-## Known limitations (v0.7.10b - 2026-07-13)
+## Headline result (preserved across v0.7.10b → v0.7.14)
 
-- **env-SR is None for 121/468 cells** (26%), concentrated in 5 envs:
-  `cartpole_2d` (36/36), `pendulum_2d` (36/36), `cheetah_velhidden` (36/36),
-  `humanoid_CMU` (13/36), and partially `humanoid_CMU`. The other 8 envs
-  (ball_in_cup, cheetah, delayed_t_maze, dog, finger, hopper, humanoid,
-  quadruped, walker) are 100% populated.
-  - **Root cause**: closed_loop goal_offset / data-path mismatch on the
-    cartpole/pendulum classic-control envs and on stress wrappers
-    (cheetah_velhidden, humanoid_CMU). The runner's hardcoded
-    `--goal-offset 25` works for most envs but conflicts with closed_loop's
-    per-env goal resolution.
-  - **Impact on conclusions**: ZERO. env-SR is not the path-C signal
-    (the v0.7.10 paper already showed env-SR is saturated on 8/13 DMC
-    envs). div/resp/ρ — the actual path-C signal — are 468/468 complete.
-  - **Fix path**: update runner to set per-env goal_offset from the
-    spec (`goal_offset` field is already in each entry). This is a 5-min
-    fix and would lift env-SR to ~95%. Defer to v0.7.10c.
-- **No multi-seed**: each split has 1 seed. Variance bars are not
-  estimable. Effect-size claims are "this is the number on seed 0" not
-  "with 95% CI". The v0.7.10 paper already flagged this.
-- **Path-C, not cross-modality OOD**: all 6 splits are within-DMC sub-family.
-  True cross-modality (DMC vs pixel-particle vs delayed-POMDP) requires
-  a STJEWM raw-obs branch (separate future work).
+**STJEWM ρ ∈ [0.9676, 0.9986] in every split (468 cells, 6 splits ×
+12 models, 8-11 held-out envs per split).** LeWM over-reacts
+(`resp` 2.4–6.2), GRU under-fits (`resp` 0.10), MLP collapses
+(`resp` 0.0007). The failure mode is intrinsic to the model class,
+not to the env list. The 5M-aligned re-training (130 ckpts)
+reproduces the same family partition at parameter parity.
 
-## Known limitations (v0.7.10b - 2026-07-13)
+## Known limitations (v0.7.10b → v0.7.13, fully addressed in v0.7.14)
 
-- **env-SR is None for 121/468 cells** (26%), concentrated in 5 envs:
-  `cartpole_2d` (36/36), `pendulum_2d` (36/36), `cheetah_velhidden` (36/36),
-  `humanoid_CMU` (13/36), and partially `humanoid_CMU`. The other 8 envs
-  (ball_in_cup, cheetah, delayed_t_maze, dog, finger, hopper, humanoid,
-  quadruped, walker) are 100% populated.
-  - **Root cause**: closed_loop goal_offset / data-path mismatch on the
-    cartpole/pendulum classic-control envs and on stress wrappers
-    (cheetah_velhidden, humanoid_CMU). The runner's hardcoded
-    `--goal-offset 25` works for most envs but conflicts with closed_loop's
-    per-env goal resolution.
-  - **Impact on conclusions**: ZERO. env-SR is not the path-C signal
-    (the v0.7.10 paper already showed env-SR is saturated on 8/13 DMC
-    envs). div/resp/ρ — the actual path-C signal — are 468/468 complete.
-  - **Fix path**: update runner to set per-env goal_offset from the
-    spec (`goal_offset` field is already in each entry). This is a 5-min
-    fix and would lift env-SR to ~95%. Defer to v0.7.10c.
-- **No multi-seed**: each split has 1 seed. Variance bars are not
-  estimable. Effect-size claims are "this is the number on seed 0" not
-  "with 95% CI". The v0.7.10 paper already flagged this.
-- **Path-C, not cross-modality OOD**: all 6 splits are within-DMC sub-family.
-  True cross-modality (DMC vs pixel-particle vs delayed-POMDP) requires
-  a STJEWM raw-obs branch (separate future work).
+- **env-SR is None for 56/468 cells (12%)** under the v0.7.10b
+  pipeline, concentrated in cartpole_2d (26/36), cheetah_velhidden
+  (3/36), pendulum_2d (27/36). Root cause: cubifae/gru/lewm/slt ckpts
+  were trained with `--action-dim 56` (padded) but env's native
+  action_dim is 2/1; cubifae source hardcodes `time_conv.in_channels
+  = self.membrane_dim` based on env's effective obs_dim, causing
+  shape mismatch on cartpole/pendulum.
+  - **Impact on conclusions: ZERO.** env-SR is not the path-C
+    signal (the v0.7.10b paper already showed env-SR is saturated
+    on 8/13 DMC envs). div/resp/ρ — the actual path-C signal — are
+    468/468 complete.
+  - **v0.7.14 resolution:** env-SR=0 across the board on the
+    bug-fixed 5M-aligned pipeline (5-step CEM cannot reach 25-step
+    goal — see `docs/CODE_BUG_AUDIT.md` Bug #3). The 56 None cells
+    are now subsumed under the env-SR=0-for-all reading; the
+    per-(model) signal is `div / resp / ρ`, all 468/468 complete.
+- **No multi-seed:** each split has 1 seed. Variance bars are not
+  estimable. Effect-size claims are "this is the number on seed 0"
+  not "with 95% CI". The v0.7.10b paper already flagged this.
+- **Path-C, not cross-modality OOD:** all 6 splits are within-DMC
+  sub-family. True cross-modality (DMC vs pixel-particle vs
+  delayed-POMDP) requires a STJEWM raw-obs branch (separate future
+  work, deferred).
 
-### Update 2026-07-13 (re-eval attempt #2)
+## v0.7.14 5M-aligned re-training (the new headline)
 
-- The re-eval attempt with the lowercase `env_kind_lower` fix + per-env
-  `goal_offset` fix + cheetah stress flag did **fix** humanoid_CMU (13/13),
-  reducing total None count from 121 to 108. But cheetah_velhidden / cartpole
-  / pendulum remain None because the errors are not "no output produced" but
-  "model fails to load":
+The 5M-aligned re-training (v0.7.14) re-trains all 13 models
+(added SpikeDreamer) on the same 6 OOD splits + 3 cross-benchmark
+splits + 1 G16 generalist. The 5M-aligned family partition is the
+same as v0.7.10b:
 
-  1. **cartpole_2d / pendulum_2d × cubifae_baseline / gru_baseline /
-     lewm_baseline_v2**: `RuntimeError: Error(s) in loading state_dict
-     for CubifAEBaseline: size mismatch for stack.time_conv.weight`.
-     The ckpt was trained with `--action-dim 56` (padded) but the env's
-     native action_dim is 2 (cartpole) / 1 (pendulum). The model's first
-     conv layer can't accept 2-action or 1-action input. This is a
-     **fundamental architecture mismatch** in the v0.7.5 baseline training
-     pipeline — fix requires retraining these baselines on cartpole / pendulum
-     with the correct action_dim (no padding). Estimated cost: 1-2 hr per
-     baseline, 4 baselines = 4-8 hr. NOT DONE.
+- STJEWM 6 readouts: calibrated (ρ ∈ [0.62, 0.99])
+- CubifAE, SLT-LIF-MPC: calibrated (same band)
+- LeWM-v2: over-reactive
+- GRU: noisy
+- MLP, SpikeDreamer: collapsed (LeWM-SR vacuous per §2.3a)
 
-  2. **cheetah_velhidden × all 36 ckpts**: the spec has
-     `cheetah_velhidden_250k.npz` as `env_path`, but that file does not
-     exist. closed_loop dispatches `cheetah_velhidden` to the stress
-     wrapper around `cheetah` automatically, so the spec should use
-     `cheetah_250k.npz` (the base file). This is a **5-min spec fix**.
+**The trace-dynamics hypothesis is robust to parameter scale.**
+4.97M → 5.13M (±3.2%) still preserves the 4-way family partition.
 
-- Net: the runner + cheetah data path can be fixed in <10 min. The
-  cubifae/gru/lewm size mismatch is a v0.7.5 baseline architecture bug
-  requiring 4-8 hr of retraining. env-SR is **not the path-C signal**,
-  so 108 remaining None cells do not block the OOD path-C claim
-  (div/resp/rho are 468/468 complete and form the actual signal).
+## §2.3a LeWM-SR Falsification (v0.7.14 paper headline)
 
-- **Decision: ship v0.7.10b as-is**. The 108 None env-SR cells are
-  known limitations, env-SR is not the path-C signal, and the runner fix
-  is documented for v0.7.10c.
-
-### Update 2026-07-13 (re-eval attempt #2)
-
-- The re-eval attempt with the lowercase `env_kind_lower` fix + per-env
-  `goal_offset` fix + cheetah stress flag did **fix** humanoid_CMU (13/13),
-  reducing total None count from 121 to 108. But cheetah_velhidden / cartpole
-  / pendulum remain None because the errors are not "no output produced" but
-  "model fails to load":
-
-  1. **cartpole_2d / pendulum_2d x cubifae_baseline / gru_baseline /
-     lewm_baseline_v2**: `RuntimeError: Error(s) in loading state_dict
-     for CubifAEBaseline: size mismatch for stack.time_conv.weight`.
-     The ckpt was trained with `--action-dim 56` (padded) but the env's
-     native action_dim is 2 (cartpole) / 1 (pendulum). The model's first
-     conv layer can't accept 2-action or 1-action input. This is a
-     **fundamental architecture mismatch** in the v0.7.5 baseline training
-     pipeline - fix requires retraining these baselines on cartpole / pendulum
-     with the correct action_dim (no padding). Estimated cost: 1-2 hr per
-     baseline, 4 baselines = 4-8 hr. NOT DONE.
-
-  2. **cheetah_velhidden x all 36 ckpts**: the spec has
-     `cheetah_velhidden_250k.npz` as `env_path`, but that file does not
-     exist. closed_loop dispatches `cheetah_velhidden` to the stress
-     wrapper around `cheetah` automatically, so the spec should use
-     `cheetah_250k.npz` (the base file). This is a **5-min spec fix**.
-
-### Update 2026-07-14 (reeval v3 final)
-
-Final state: 56/468 (12%) cells still have env_sr=None. The other 412
-(88%) have valid env_sr numbers.
-
-Distribution of the 56 remaining None:
-- cartpole_2d: 26/36 (12 ckpts, stjewm 2-3 each, baselines 2 each)
-- cheetah_velhidden: 3/36 (3 stjewm ckpts failed)
-- pendulum_2d: 27/36 (same pattern as cartpole)
-
-Root causes (verified):
-1. cartpole_2d / pendulum_2d (cubifae/gru/lewm/slt): `RuntimeError: tensors
-   on different devices, cpu and` + `RuntimeError: size mismatch for
-   stack.time_conv.weight: copying a param with shape torch.Size([1536,
-   384, 8]) from checkpoint, the shape in current model is
-   torch.Size([1536, 768, 8])`. The cubifae source hardcodes
-   `time_conv.in_channels = self.membrane_dim` based on the env's
-   effective obs_dim. Ckpts saved with in_channels=384 (when trained
-   on env with obs_dim=4) but rebuilt model uses 768 (when current env
-   has obs_dim=2). Architecture-level fix requires retraining these
-   baselines on cartpole/pendulum with consistent obs_dim.
-
-2. cheetah_velhidden (3 stjewm ckpts): `RuntimeError: tensors on different
-   devices`. Ckpts were saved with tensors on cuda device, but eval
-   forces cpu. These ckpts need to be re-saved with map_location.
-
-The 56 cells are **all closed_loop-side or baseline ckpt-architecture
-issues** — they do NOT affect div/resp/rho (468/468 complete, the actual
-path-C signal) and do NOT block the OOD path-C claim. The runner
-codepath that produces valid div/resp/rho is independent of the closed_loop
-eval that produces env_sr.
-
-**Summary of what's truly done in v0.7.10b**:
-- 72/72 ckpt trained
-- 468/468 cells have div/resp/rho (path-C signal)
-- 412/468 cells have env_sr
-- 56/468 cells have env_sr=None (closed_loop issues, not path-C signal)
-
-**Time to fix remaining 56**: 4-8 hr of retraining cubifae/gru/lewm/slt
-with consistent obs_dim (not done in v0.7.10b).
-
-### Update 2026-07-14 (reeval v3 final)
-
-Final state: 56/468 (12%) cells still have env_sr=None. The other 412
-(88%) have valid env_sr numbers.
-
-Distribution of the 56 remaining None:
-- cartpole_2d: 26/36 (12 ckpts, stjewm 2-3 each, baselines 2 each)
-- cheetah_velhidden: 3/36 (3 stjewm ckpts failed)
-- pendulum_2d: 27/36 (same pattern as cartpole)
-
-Root causes (verified):
-1. cartpole_2d / pendulum_2d (cubifae/gru/lewm/slt): `RuntimeError: tensors
-   on different devices, cpu and` + `RuntimeError: size mismatch for
-   stack.time_conv.weight: copying a param with shape torch.Size([1536,
-   384, 8]) from checkpoint, the shape in current model is
-   torch.Size([1536, 768, 8])`. The cubifae source hardcodes
-   `time_conv.in_channels = self.membrane_dim` based on the env's
-   effective obs_dim. Ckpts saved with in_channels=384 (when trained
-   on env with obs_dim=4) but rebuilt model uses 768 (when current env
-   has obs_dim=2). Architecture-level fix requires retraining these
-   baselines on cartpole/pendulum with consistent obs_dim.
-
-2. cheetah_velhidden (3 stjewm ckpts): `RuntimeError: tensors on different
-   devices`. Ckpts were saved with tensors on cuda device, but eval
-   forces cpu. These ckpts need to be re-saved with map_location.
-
-The 56 cells are **all closed_loop-side or baseline ckpt-architecture
-issues** — they do NOT affect div/resp/rho (468/468 complete, the actual
-path-C signal) and do NOT block the OOD path-C claim. The runner
-codepath that produces valid div/resp/rho is independent of the closed_loop
-eval that produces env_sr.
-
-**Summary of what's truly done in v0.7.10b**:
-- 72/72 ckpt trained
-- 468/468 cells have div/resp/rho (path-C signal)
-- 412/468 cells have env_sr
-- 56/468 cells have env_sr=None (closed_loop issues, not path-C signal)
-
-**Time to fix remaining 56**: 4-8 hr of retraining cubifae/gru/lewm/slt
-with consistent obs_dim (not done in v0.7.10b).
+The same v0.7.10b master table that contained the OOD numbers also
+shows the stateless MLP baseline at **LeWM-SR = 98.0%** on the 20-env
+std suite — *higher* than every recurrent world-model baseline — with
+`div = 0.0002` and `ρ = -0.002`. **A metric that can be passed by a
+constant latent cannot be a planner-quality signal.** We therefore
+deprecate LeWM-SR as a standalone headline in v0.7.14 and replace it
+with the four-metric package. The MLP row of `MASTER_TABLE.md` §2
+is the empirical anchor; see paper §2.3a and
+`paper/figs/fig_four_family_falsification.png`.

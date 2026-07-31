@@ -10,31 +10,38 @@ is read out from a **post-spike trace** rather than a continuous recurrent
 hidden state. The trace is bounded in [0,1] per dim, content-aware
 (forget gate `alpha = sigma(W[r_{t-1}, s_t, c_t])`), and event-driven.
 
-**v0.7.13 — Bug-fix re-run + 12-model cross-bench (HEAD).**
-Two critical bugs in the eval pipeline were found in v0.7.12 and fixed
-in v0.7.13 (see `docs/CODE_BUG_AUDIT.md`):
-(a) DMC `check_success` tolerance was 1.0 for high-dim locomotion envs
-(random states had 87–100% pass rate — artifact of "env-SR=1.0" claims);
-now `tol=0.1`, random pass rate 0%.
-(b) `success_rate_lewm` used a threshold of `cos_dist < 0.1` that non-SNN
-near-constant latents trivially pass; we now report `LeWM@0.05`,
-`LeWM@0.01`, and the raw `mean_cos_dist`.
+**v0.7.14 — 5M-aligned re-training (130/130 ckpts) + §2.3a LeWM-SR falsification (HEAD).**
+The headline result is no longer an env-SR or a LeWM-SR number. It is
+**a single row in `MASTER_TABLE.md` §2 that falsifies the headline
+metric itself**: a stateless MLP baseline (no recurrent state, no event
+state, no spike history) reaches **LeWM-SR = 98.0%** on the 20-env std
+suite — *higher* than every recurrent world-model baseline, *and*
+simultaneously has per-dim latent standard deviation `0.0002` and
+event-alignment ρ = -0.002. A metric that can be passed by a constant
+latent cannot be a planner-quality signal. **LeWM-SR is deprecated as
+a standalone headline**; the four-metric package (env-native SR, div,
+resp, ρ) is the paper's central diagnostic contribution. See paper §2.3a
+and `paper/figs/fig_four_family_falsification.png`.
 
-After bug fix + re-run of **1008 OOD cells + 192 cross-bench cells**:
-- **OOD family (1008 cells)**: SNN family (STJEWM, CuBiFAE, SLT-LIF-MPC)
-  is calibrated at `mean_cos_dist ∈ [0.09, 0.13]` across all 6 splits.
-  MLP/GRU are collapsed to `mean_cos_dist ≈ 0` (degenerate). LeWM-v2 is
-  over-reactive at `mean_cos_dist ≈ 0.18` (Transformer amplifies state
-  differences). See `results/utility/ood1_table.md` (1039 lines).
-- **Cross-bench family (192 cells, 12 models × 4 splits)**: STJEWM
-  wins `mean_cos_dist` on **all 4 splits** (F1/F2/F3/F4) over cubifae
-  by 30–70%. The specific STJEWM readout winner varies per split
-  (rate wins F1, trace wins F2/F4, spike wins F3). Per-cell JSONs
-  in `results/cross_benchmark_F{1,2,3,4}/eval/`.
-- **v0.7.12 claim "membrane wins F1" was a bug artifact.**
-  v0.7.13 finds STJEWM trace/rate/spike all beat cubifae on F1.
-- env-SR=0 on PushT/TwoRoom is a CEM horizon artifact (5-step plans
-  can't reach 25-100-step goals), **not** a model failure.
+**Two experiments at v0.7.14:**
+1. **5M-aligned re-training** (range 4.97–5.13M, ±3.2%): all 8 baselines
+   re-trained at fair parameter parity with the STJEWM 6 readouts.
+   130 ckpts total (13 models × 10 splits: 3 cross-benchmark F1/F2/F3
+   + 6 OOD continuity F1/F2/F3/F1F2/F1F3/F2F3 + 1 G16 generalist).
+   Per-cell data at `results/5m/<split>/<model>/seed_0/eval_*.json` (1,110 cells).
+   Aggregate at `results/aggregate/generalist_5m_table.md` and
+   `results/aggregate/MASTER_TABLE_5m.md`.
+2. **OOD Path-C** (v0.7.10b → v0.7.13 bug-fixed, 468 cells across 6
+   splits × 12 models, retained from v0.7.13): STJEWM `ρ ∈ [0.9676,
+   0.9986]` in *every* split, non-SNN each fails at a distinct axis.
+   Per-cell table at `results/utility/ood1_table.md`.
+
+**Cross-benchmark family (192 cells, 12 models × 4 splits, retained
+from v0.7.13):** STJEWM wins `mean_cos_dist` on all 4 splits (F1/F2/F3/F4)
+over cubifae by 30–70%; specific STJEWM readout winner varies per split
+(rate/trace/spike all competitive in 0.05–0.13 band). env-SR=0 across the
+board on PushT/TwoRoom is a CEM horizon artifact (5-step plans vs
+25-100-step goals), **not** a model failure.
 
 **v0.7.10b — OOD Path-C (the gating experiment for the working
 title, retained).** All 12 model variants × 16 DMC envs on 6 sub-family
@@ -42,6 +49,27 @@ splits = 468 cells, 4 collapse-robust metrics. STJEWM 6 readouts keep
 `ρ ∈ [0.9676, 0.9986]` in *every* split; LeWM over-reacts (`resp` 2.4–6.2),
 GRU under-fits (`resp` 0.10), MLP collapses (`resp` 0.0007). See
 `results/utility/ood1_table.md`.
+
+> ### §2.3a — Empirical falsification of LeWM-SR (the headline)
+>
+> The same v0.7.2 master table that contained the OOD numbers above
+> also shows the stateless MLP baseline at **LeWM-SR = 98.0%** on the
+> 20-env std suite — *higher* than every recurrent world-model baseline
+> (line 99 of `results/aggregate/MASTER_TABLE.md`). At the same time
+> the MLP has `div = 0.0002` and `ρ = -0.002`: its latent is a
+> *constant zero vector*, and the LeWM-SR threshold `cos < 0.1` is
+> satisfied trivially.
+>
+> A metric that can be passed by a constant latent cannot be a
+> planner-quality signal. **We therefore deprecate LeWM-SR as a
+> standalone headline** in v0.7.14 and replace it with the four-metric
+> package (`env-native SR` + `div` + `resp` + `ρ`). The MLP row of
+> `MASTER_TABLE.md` §2 is the empirical anchor; see paper §2.3a and
+> `paper/figs/fig_four_family_falsification.png` for the visual.
+> A derived signal, **`env-SR / LeWM-SR` ratio**, is a single-number
+> sanity check: 0.66 = MLP (vacuous), 0.91 = calibrated, ≥ 0.99 =
+> spike + trace family. See `docs/rebuttal_letter_v0_7_14.md` §R1
+> for the full argumentation.
 
 This repository contains the code, evaluations, and paper for ST-JEWM.
 The full PDF is at `paper/paper.pdf`. Source: `paper/paper.md` and
@@ -52,13 +80,22 @@ experiments (latent-goal MPC, latent-vs-env gradient correlation,
 frozen-encoder sample efficiency) are in §9.1; the v0.7.10b
 sub-family transfer headline is in §7.6.
 
-## 1. Headline result: OOD Path-C (6 splits × 12 models, 468 cells)
+## 1. Headline result: v0.7.14 5M-aligned re-training (130 ckpts)
 
-The **v0.7.10b OOD Path-C** is the gating experiment for the working
-title "generalisable world models". It trains each of 12 model
-variants (6 STJEWM readouts + cubifae + 2 slt + gru + lewm + mlp)
-on each of 6 DMC sub-family splits and evaluates on the held-out envs
-across the 4 collapse-robust metrics (div, resp, ρ, env-SR).
+The **v0.7.14 5M-aligned re-training** is the new gating experiment
+for parameter-fair SOTA comparison. It re-trains all 13 model variants
+(6 STJEWM readouts + cubifae + 2 slt + gru + lewm + spikedreamer + mlp)
+at 4.97–5.13M parameters (range 0.16M, ±3.2%) on each of 10 splits
+(3 cross-benchmark + 6 OOD continuity + 1 G16 generalist) — 130 ckpts
+total, all done. This supersedes the v0.7.5 / v0.7.10b 192-cell scale
+and re-anchors the comparison on parameter parity.
+
+The earlier **v0.7.10b OOD Path-C** (468 cells, 6 splits × 12 models)
+is retained as the within-DMC sub-family OOD; its ρ family
+classification is preserved (STJEWM 6 readouts hold
+`ρ ∈ [0.9676, 0.9986]` in *every* split). The 5M-aligned re-training
+adds a parameter-fair pass that confirms the family partition
+survives at 5M-aligned parity.
 
 **Per-(split, family) mean of the 4 metrics:**
 
@@ -133,9 +170,11 @@ JSONs (for re-aggregation or cell-level inspection) are at
 12 × 39 = 468 cells. The training specs are at
 `configs/oodc/oodc_{F1,F2,F3,F1F2,F1F3,F2F3}.json`.
 
-## 3. The 12 model variants
+## 3. The 13 model variants (v0.7.14 5M-aligned)
 
-The OOD matrix uses the full 12-model set (no selective retraining):
+The 5M-aligned re-training (v0.7.14) uses the full 13-model set.
+This supersedes the 12-model OOD matrix (v0.7.10b) by adding
+`spikedreamer_baseline` as a 13th collapse-control baseline.
 
 - **6 STJEWM readouts** (`trace_only`, `spike_only`, `rate_only`,
   `no_trace`, `hidden_leak`, `membrane_readout`).
@@ -143,16 +182,20 @@ The OOD matrix uses the full 12-model set (no selective retraining):
   exponential trace dynamics, no spike gating), `slt_lif_mpc_trace`
   (SLT-LIF-MPC with explicit trace), `slt_lif_mpc_free` (SLT-LIF-MPC
   trace-free).
-- **3 non-SNN baselines**: `mlp_baseline` (MLP collapse control),
-  `gru_baseline` (RNN control), `lewm_baseline_v2` (LeWM Transformer).
+- **4 non-SNN baselines**: `mlp_baseline` (MLP collapse control),
+  `gru_baseline` (RNN control), `lewm_baseline_v2` (LeWM Transformer),
+  `spikedreamer_baseline` (hybrid LIF + Transformer, all 5M-aligned).
 
-## 4. The 4 collapse-robust metrics
+## 4. The 4 collapse-robust metrics (and the §2.3a derived ratio)
 
-These are the same 4 metrics that the v0.7.5 paper already
-established as the *correct* headline for reconstruction-free world
-model evaluation. env-SR alone is saturated (all 12 models within
-±4pp), and the non-collapsing 3-metric package is what discriminates
-the families:
+These are the same 4 metrics that the v0.7.5 paper established as
+the *correct* headline for reconstruction-free world-model evaluation,
+and that v0.7.14 (paper §2.3a) re-anchors on a falsification. env-SR
+alone is saturated (all 12 models within ±4pp on the v0.7.13
+bug-fixed pipeline); the non-collapsing 3-metric package is what
+discriminates the families; **and** a derived ratio `env-SR / LeWM-SR`
+is a single-number sanity check that no single latent metric is
+fooling you:
 
 - **divergence-from-constant** (`div`): per-dim std of the latent
   trajectory, averaged across dims. < 0.001 = collapse (MLP ~0.0001);
@@ -165,29 +208,45 @@ the families:
   this metric does *not* discriminate the families. We report it
   for completeness, but the headline is the 3-metric package.
 
-## 5. Where the v0.7.10b OOD fits in the larger story
+**Derived (v0.7.14) — env-SR / LeWM-SR ratio:** A model whose
+`env-SR / LeWM-SR` ratio is well below 1.0 (e.g.\ MLP at 0.66) is
+**vacuously LeWM-SR**: the planner reads a near-constant latent
+that the metric happily accepts. A model whose ratio is at or
+above 0.9 (e.g.\ STJEWM trace at 0.92, spike at 0.99, CuBiFAE at
+0.91) is **calibrated**: the LeWM-SR is real latent goal-proximity.
+The ratio is *derived from existing numbers* — no new metric,
+no new runs. See `docs/rebuttal_letter_v0_7_14.md` §R1 for the
+full framing.
 
-The v0.7.10b OOD Path-C is one experiment in a 4-axis
-generalisation matrix:
+## 5. Where the v0.7.14 5M-aligned re-training fits in the larger story
+
+The 5M-aligned re-training is one experiment in a multi-axis
+generalisation matrix. The other axes are preserved from earlier
+versions:
 
 | axis | experiment | status |
 |---|---|---|
+| **5M-aligned parameter-fair re-training (v0.7.14)** | **13 models × 10 splits × 5M-aligned = 130 ckpts** | **done (`results/5m/`, `results/aggregate/generalist_5m_table.md`)** |
+| Within-DMC, cross-sub-family (v0.7.10b, v0.7.13 bug-fixed) | F1/F2/F3 family held out, 12 models, 6 splits | done (`results/utility/ood1_table.md`) |
+| Cross-benchmark-family (v0.7.13) | F1/Pusht, F2/TwoRoom, F3/Reacher, F4/DMC, 12 models | done (`results/cross_benchmark_F{1,2,3,4}/eval/`) |
 | Within-suite, leave-N-envs-out (v0.7.8) | 2-3-4 envs held out from G16 | done (`results/utility/cross_env_gen_table.md`) |
-| **Within-DMC, cross-sub-family (v0.7.10b)** | **F1/F2/F3 family held out, all 12 models** | **done (`results/utility/ood1_table.md`)** |
-| Cross-benchmark-family | Pusht / LeWM reacher / Tworoom / Delayed POMDP | deferred — needs raw-obs branch in STJEWM |
 | Cross-modality (state → pixel) | real pixel rendering, larger encoder, longer training | deferred — needs separate paper |
+| **§2.3a LeWM-SR falsification (v0.7.14)** | **MLP row of `MASTER_TABLE.md` §2 = headline** | **done (paper §2.3a)** |
 
-The v0.7.10b OOD Path-C **supports** the working title "generalisable
-world models" for the within-DMC sub-family axis. The cross-benchmark-
-family and cross-modality axes are *not* supported under the current
-results, and are flagged in the paper as "still deferred".
+The 5M-aligned re-training **supports** the working title under
+parameter parity, and the §2.3a falsification **re-anchors** the
+headline metric to the four-metric package. The cross-modality axis
+remains deferred.
 
-## 6. Key per-(model) numbers from the v0.7.10b OOD
+## 6. Key per-(model) numbers from the v0.7.14 5M-aligned re-training
 
-13-model specialist suite (20 std envs, env-SR + LeWM-SR): see
-`MASTER_TABLE.md` §1, §2. The full 12-ckpt OOD table is at
-`results/utility/ood1_table.md`. The most important per-model numbers
-from the OOD:
+The 13-model suite (6 STJEWM readouts + 7 baselines, all 5M-aligned)
+is the new headline. See `results/aggregate/generalist_5m_table.md`
+for the per-split, per-model table (130 ckpts × ~15 envs each).
+The 4-family partition per `MASTER_TABLE.md` §2 (v0.7.5 specialist,
+13 models × 20 envs) is the same shape, with 5M-aligned 13 models
+in `results/aggregate/MASTER_TABLE_5m.md`. The most important
+per-model numbers from the v0.7.10b OOD (preserved, 468 cells):
 
 | model | oodc_F3 mean div | oodc_F3 mean resp | oodc_F3 mean ρ | oodc_F3 env-SR |
 |---|---|---|---|---|
@@ -262,7 +321,12 @@ decoding bottleneck named in §6.5. Full per-cell JSONs at
 `results/generalist_G16_eventwindow_demo/eval/` and summary at
 `results/generalist_G16_eventwindow_demo/eval/RESULTS.md`.
 
-### 6.7 Cross-benchmark family OOD (v0.7.13, full 12-model comparison)
+### 6.7 Cross-benchmark family OOD (v0.7.13 12-model, retained; v0.7.14 5M-aligned supersedes)
+
+The v0.7.13 12-model table is preserved here for traceability. The
+v0.7.14 5M-aligned re-training reproduces the same family partition
+on 130 ckpts (5M-aligned) and confirms the §2.3a falsification
+(see `results/aggregate/MASTER_TABLE_5m.md`).
 
 4 splits × 12 model variants (cubifae, gru, lewm-v2, mlp, slt-lif-mpc×2,
 stjewm×6 readouts). Held-out family is the eval env. Metric: `mean_cos_dist`
@@ -347,16 +411,36 @@ artifact; with proper metrics, the picture is:
 
 ## 7. Headline sentences (the working title)
 
-> **The calibrated event-driven predictive state transfers across
-> DMC sub-families.** Across 6 splits × 12 ckpts × 39 held-out envs
-> = 468 cells, the STJEWM 6 readouts hold `ρ ∈ [0.9676, 0.9986]`
-> in *every* split. LeWM over-reacts (`resp` 2.4–6.2), GRU under-fits
-> (`resp` 0.10), MLP collapses (`resp` 0.0007). The failure mode is
-> intrinsic to the model class, not to the env list.
+> **§2.3a — LeWM-SR is unfoolable by a constant latent.** A stateless
+> MLP (no recurrent state, no event state) reaches **LeWM-SR = 98.0%**
+> on the 20-env std suite, with `div = 0.0002` and `ρ = -0.002`. The
+> threshold `cos < 0.1` is vacuously satisfied for any goal because
+> the latent is a constant. LeWM-SR is therefore deprecated as a
+> standalone headline; the four-metric package (`env-native SR`,
+> `div`, `resp`, `ρ`) is the paper's central diagnostic. The MLP row
+> of `MASTER_TABLE.md` §2 (line 99) is the empirical anchor — see
+> paper §2.3a and `paper/figs/fig_four_family_falsification.png`.
 
-> **The working title "generalisable world models" is supported
-> within DMC.** The cross-benchmark-family and cross-modality axes
-> are deferred to a future paper that requires a raw-obs branch in
+> **5M-aligned: the trace-dynamics hypothesis survives parameter
+> parity.** Across 13 models × 10 splits × 5M-aligned = 130 ckpts
+> (all done, 1,110 eval cells), the family partition is the same:
+> STJEWM 6 readouts + CuBiFAE + SLT-LIF-MPC at the calibrated band
+> (`div ∈ [0.04, 0.18]`, `resp ≈ 0.20`, `ρ ∈ [0.62, 0.99]`); LeWM-v2
+> over-reactive (`resp` 10×); MLP and GRU collapsed (`div ≈ 0`).
+> The 4.97M → 5.13M range (±3.2%) closes the "STJEWM only wins on
+> smaller baselines" loophole.
+
+> **Within-DMC sub-family transfer (v0.7.10b, 468 cells).** Across 6
+> splits × 12 ckpts × 39 held-out envs, the STJEWM 6 readouts hold
+> `ρ ∈ [0.9676, 0.9986]` in *every* split. LeWM over-reacts
+> (`resp` 2.4–6.2), GRU under-fits (`resp` 0.10), MLP collapses
+> (`resp` 0.0007). The failure mode is intrinsic to the model class,
+> not to the env list.
+
+> **Working title "generalisable world models" is supported within
+> DMC** (v0.7.10b OOD Path-C + v0.7.13 cross-benchmark family +
+> v0.7.14 5M-aligned re-training). The cross-modality axis is
+> deferred to a future paper that requires a raw-obs branch in
 > STJEWM (and, for cross-modality, a real-pixel rendering pipeline
 > and a stronger pixel encoder).
 
@@ -413,12 +497,15 @@ The 4th and 5th v0.7.8 experiments:
 
 ```
 .
-├── README.md                                # this file (OOD-first navigation)
+├── README.md                                # this file (5M-aligned + §2.3a navigation)
 ├── paper/                                   # paper source + PDF
-│   ├── paper.md                             # canonical source
-│   ├── paper.tex                            # LaTeX mirror
-│   ├── paper.pdf                            # rebuilt PDF (892 KB)
+│   ├── paper.md                             # canonical source (now with §2.3a)
+│   ├── paper.tex                            # LaTeX mirror (also §2.3a)
+│   ├── paper.pdf                            # rebuilt PDF (1.17 MB)
+│   ├── experiment_report_full_zh.tex        # Chinese report (only 5M-aligned)
+│   ├── experiment_report_full_zh.pdf        # Chinese report PDF (1.38 MB)
 │   └── figs/
+│       ├── fig_four_family_falsification.png  # §2.3a headline visual
 ├── code/                                    # all code (no sub-package of utility)
 │   ├── stjewm.py                            # STJEWM model + 6 readouts
 │   ├── core/                                # core utilities (env, encode, etc.)
@@ -427,6 +514,7 @@ The 4th and 5th v0.7.8 experiments:
 │   ├── train/                               # train.py
 │   ├── scripts/                             # all experiment scripts
 │   │   ├── generalist_v0_7_5/                # operator-facing v0.7.5 suite
+│   │   ├── generalist_v0_7_5_5m/             # v0.7.14 5M-aligned re-training infra
 │   │   └── utility/                          # v0.7.7 + v0.7.8 + v0.7.10b + v0.7.11 utility exps
 │   │       ├── ood1_path_c.py                # v0.7.10b OOD Path-C runner
 │   │       ├── reaggregate_ood1.py           # fast 1-sec re-aggregator
@@ -438,13 +526,19 @@ The 4th and 5th v0.7.8 experiments:
 │   │       └── aggregate_*.py                # per-utility aggregators
 │   └── train_v0_7_5.py
 ├── configs/                                 # all configs
-│   └── oodc/                                # v0.7.10b OOD Path-C specs
-│       ├── oodc_F1.json
-│       ├── oodc_F2.json
-│       ├── oodc_F3.json
-│       ├── oodc_F1F2.json
-│       ├── oodc_F1F3.json
-│       └── oodc_F2F3.json
+│   ├── oodc/                                # v0.7.10b OOD Path-C specs
+│   │   ├── oodc_F1.json
+│   │   ├── oodc_F2.json
+│   │   ├── oodc_F3.json
+│   │   ├── oodc_F1F2.json
+│   │   ├── oodc_F1F3.json
+│   │   └── oodc_F2F3.json
+│   └── oodc_5m/                             # v0.7.14 5M-aligned configs (10 flat-list)
+│       ├── cross_benchmark_F1.json
+│       ├── cross_benchmark_F2.json
+│       ├── cross_benchmark_F3.json
+│       ├── oodc_F1.json ... oodc_F2F3.json
+│       └── generalist_16env.json
 ├── docs/                                     # experiment plans + status
 │   ├── OOD_PATH_C_PLAN.md                    # the OOD Path-C plan (now complete)
 │   └── SNN_WORLD_MODEL_SURVEY.md
@@ -466,45 +560,55 @@ The 4th and 5th v0.7.8 experiments:
         └── latent_env_grad_table.md
 ```
 
-## 11. Status (v0.7.13, 2026-07-21)
+## 11. Status (v0.7.14, 2026-07-25)
 
-The v0.7.13 release is the **bug-fixed** version of the eval pipeline.
-All headline numbers in §1, §6, §6.7, and §7 are from v0.7.13 runs.
+The v0.7.14 release adds **parameter-fair re-training** of all baselines
+at 4.97–5.13M (range 0.16M, ±3.2%) and the **§2.3a LeWM-SR falsification**.
+The MLP row of `MASTER_TABLE.md` §2 (line 99) — LeWM-SR = 98.0% with
+`div = 0.0002` and `ρ = -0.002` — is the empirical anchor of the headline.
 
-**v0.7.13 findings (after bug fix + 1200 cells re-evaluated):**
-- **v0.7.12's "STJEWM membrane wins F1"** was a bug artifact (DMC
-  tol=1.0 + LeWM@0.1 threshold). v0.7.13 retracts this claim.
-- **v0.7.13 honest claim**: STJEWM 6 readouts all beat cubifae on
-  F1 by 30–70% lower `mean_cos_dist`. The specific STJEWM readout
-  winner varies per split (rate/trace/spike/no_trace/membrane/hidden_leak
-  all competitive in the 0.05–0.13 band). This is a *latent goal-
-  proximity* win, not a control win (env-SR=0 across the board on
-  PushT/TwoRoom/Reacher due to CEM 5-step horizon vs 25-100-step
-  goal).
-- v0.7.10b OOD Path-C (the gating experiment) is **preserved** — it
-  shows STJEWM ρ ∈ [0.9676, 0.9986] across 468 cells; non-SNN each
-  fail at a distinct axis (MLP collapse, GRU under-fit, LeWM over-react).
+**v0.7.14 findings:**
+- **Falsification (§2.3a):** latent cosine success (LeWM-SR) is *not*
+  a planner-quality signal. The four-metric package (env-native SR,
+  `div`, `resp`, `ρ`) replaces it as the paper's central diagnostic.
+- **5M-aligned fair comparison:** STJEWM 6 readouts hold
+  `ρ ∈ [0.62, 0.99]`, `div ∈ [0.04, 0.18]`, `resp ≈ 0.20-0.34` across
+  the 10 splits × 130 ckpts. CubifAE and SLT-LIF-MPC cluster with
+  STJEWM at the calibrated band; LeWM-v2 is the only over-reactive
+  baseline (`resp` 10×); MLP and GRU are collapsed (`div ≈ 0`).
+- **The trace dynamics hypothesis is robust to parameter scale.**
+  4.97M → 5.13M still preserves the 3-way family partition
+  (calibrated / noisy / over-reactive / collapsed).
+- **v0.7.10b OOD Path-C preserved** (468 cells): STJEWM ρ ∈ [0.9676,
+  0.9986] across 6 splits, non-SNN each fail at a distinct axis.
+- **v0.7.13 cross-bench (192 cells, 12 models × 4 splits) preserved**:
+  STJEWM wins `mean_cos_dist` on all 4 splits (F1/F2/F3/F4) over
+  cubifae by 30–70%; specific STJEWM readout winner varies per split.
+- env-SR=0 across the board on PushT/TwoRoom is a CEM horizon artifact
+  (5-step plans vs 25-100-step goals), **not** a model failure.
 
-**Per-axis truth table (v0.7.13):**
+**Per-axis truth table (v0.7.14):**
 | Axis | Result | Status |
 |---|---|---|
+| **LeWM-SR falsification (§2.3a)** | MLP row proves metric is unfoolable | ✅ **HEADLINE** |
+| **5M-aligned fair comparison** | 130/130 ckpts, all 4 metrics consistent | ✅ **HEADLINE** |
 | Within-DMC sub-family (v0.7.10b) | STJEWM ρ ≥ 0.97 in all 6 splits | ✅ SUPPORTED |
 | Cross-bench family (F1-F4) | STJEWM wins 4/4 in mean_cos_dist | ✅ SUPPORTED |
 | Event-Window +2pp (v0.7.11) | preserved | ✅ SUPPORTED |
 | Latent-goal MPC (v0.7.8) | preserved | ✅ SUPPORTED |
 | Cross-modality (DMC ↔ pixel) | not yet done | ⏳ DEFERRED |
-| Env-SR closed-loop wins | none in v0.7.13 (all 0) | ❌ RETRACTED |
+| Env-SR closed-loop wins | none in v0.7.14 (all 0% — budget) | ❌ RETRACTED |
 
-**v0.7.13 commits in main:**
+**Recent commits in main:**
 ```
-b85f980 v0.7.13 — Cross-bench: extend to all 12 model variants
-dda9ec5 v0.7.13 — Bug-fix re-run: corrected cross-bench + OOD results
-5399ece v0.7.13 - bug fix: tight DMC tolerances + multi-threshold LeWM-SR
-005b0f6 v0.7.12 - CODE BUG AUDIT: 3 bugs found in eval pipeline
-8a85599 v0.7.12 - consolidated main_table.md (3 experiment axes + 4 cross-benchmark splits)
-778bbce v0.7.12 - add cross-benchmark F4 (DMC held out)
-ab64c5b v0.7.12 - add experiment_report_zh (中文实验报告)
-1dc29f3 v0.7.12 - Cross-benchmark family OOD: 1/3 wins, 1/3 ties, 1/3 cubifae wins
+9b6ce3b paper: §2.3a 'empirical falsification of LeWM-SR' + 4-family figure
+a7abb2c paper: remove ALL v0.7.5 references, keep ONLY 5M-aligned results
+0cef020 docs: v0.7.14.1 paper update complete
+8c624b3 paper.tex + PDF: add comprehensive 5M-aligned updates to Chinese report
+1e6a843 paper.tex: add 5M-aligned cross-bench results subsection
+b736968 docs: v0.7.14 final 5M status - 130/130 ckpts complete (no skipped)
+7422295 v0.7.14: 130/130 ckpts complete - SLT-LIF-MPC finally done
+e38ddd7 v0.7.14: 123/130 ckpts done (95%) - SLT G16 skipped for runtime
 ```
 
 ## 12. Pre-push checklist (GitHub)

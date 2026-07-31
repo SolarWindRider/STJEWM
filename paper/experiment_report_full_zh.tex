@@ -8,6 +8,7 @@
 \usepackage{geometry}
 \usepackage{rotating}  % for sidewaystable
 \usepackage{adjustbox}  % for max-width boxes
+\usepackage{float}
 \setlength{\hfuzz}{5pt}
 \setlength{\emergencystretch}{3em}
 \sloppy
@@ -313,6 +314,45 @@ spikedreamer\_baseline & 100.0\% & 100.0\% & 100.0\% & 100.0\% (\textbf{坍缩�
 \end{tabular}
 
 \textbf{关键结论}：三分法在 4.97M $\to$ 5.13M 范围内依然成立。STJEWM 6 readouts 都保持 \textbf{resp $\approx$ 0.21}、\textbf{div $\approx$ 0.006}（校准），与 \textbf{CubifAE} 和 \textbf{SLT-LIF-MPC} 处于同一 collapse-robust 簇。\textbf{MLP} 和 \textbf{SpikeDreamer} 是坍缩对照（resp=0, div=0, cos\_dist$\approx$0），\textbf{GRU} 和 \textbf{LeWM-v2} 是过反应（resp $\gg$ 1, div $\gg$ 0.005）。这验证了 trace dynamics 假设 \textbf{对参数规模鲁棒}：从 1.44M（MLP 原始）到 5.13M（GRU 5M）都呈现相同的 collapse-robust 区分。
+
+
+
+\subsubsection{§2.3a  --  LeWM-SR 的实验性证伪（v0.7.14 头条）}
+
+\textbf{本节是本文新的头条。} 在 v0.7.2 时代，我们曾将 13 个 baseline 模型在阈值 $\cos_{\mathrm{dist}} < 0.1$ 下制表（LeWM-SR，\texttt{MASTER\_TABLE.md} §2 第 99 行）。当时该表的关键读数是：\textbf{无状态 MLP baseline 在 20-env 标准套件上达到 LeWM-SR = 98.0\%}，高于每个循环世界模型基线，并仅比最大值低 +1.2 pp。我们当时声称这是"指标人为产物"：如果模型的潜状态是常数，则它把每个输入映射到同一点，目标潜状态与该常数的余弦距离本质上为零，因此阈值 $\cos_{\mathrm{dist}} < 0.1$ 空洞地成立。
+
+在 v0.7.14 修订版中，我们\textbf{把这个论点作为它实际是的"证伪"对待}，并明确化。我们在相同 ckpt 上直接比较三个量：
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lrll}
+\toprule
+model (v0.7.5 specialist) & LeWM-SR & div (latent std/dim) & $\rho$ (event-align) \\
+\midrule
+\textbf{mlp\_baseline}     & \textbf{98.0\%} & 0.0002 & $-0.002$ \\
+stjewm\_trace\_only     & 73.5\%   & 0.10   & 0.626 \\
+lewm\_baseline\_v2      & 76.9\%   & 0.18   & 0.160 \\
+gru\_baseline          & 78.8\%   & (intermediate) & $-0.011$ \\
+\bottomrule
+\end{tabular}
+\caption{MASTER\_TABLE.md §2 第 99 行的 MLP 行就是 §2.3a LeWM-SR 证伪的实证锚点：一个无状态 FFN，per-dim 潜状态标准差 $0.0002$，$\rho=-0.002$，却在 LeWM-SR 上得分最高。被常数潜状态能通过的指标，不能作为规划器质量信号。}
+\end{table}
+
+这些数字构成一个清晰的负对照：\textbf{LeWM-SR 与潜状态表征的每个其他轴方向相反}。携带"更多世界信息"（高 div、高 $\rho$、校准）的模型，在 LeWM-SR 上得分\textbf{更低}，而"根本不是表征"的模型（MLP、坍缩）反而最高。方向反转是因为规划器的任务是把 $z$ 推向 $z_{\mathrm{goal}}$，$z$ 越接近 $z_{\mathrm{goal}}$ 越容易，但 $z$ 绝不应该从"无论输入什么都相同"开始。
+
+\textbf{操作性改革：} 一个潜状态指标作为规划器质量指标被允许的\textbf{唯一}条件是它"不能被常数潜状态欺骗"。如果常数潜状态的模型能通过该指标，则该指标是测量人为产物，必须配以 collapse-robust 诊断。
+
+四指标包（\texttt{env-native SR}、\texttt{div}、\texttt{resp}、$\rho$）按构造就具有该性质。\textbf{LeWM-SR 单独没有}，而 master table 的 MLP 行就是证明它的数据点。同一个 MLP 行锚定了 \textbf{§2.3a 中 LeWM-SR 作为独立头条的弃用}：本论文中每个 LeWM-SR 分数都应在 \texttt{div} 和 $\rho$ 的背景中读，\textbf{绝不}单独读。v0.7.14 5M-aligned 重新训练（full report 见 §6.1）以更严格的参数匹配复现相同的 partition。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{fig_four_family_falsification.png}
+\caption{§2.3a 头条视觉。\textbf{左}：env-native SR 在 20-env 标准套件上为 64--68\%（4pp 范围），\textbf{不区分}潜状态质量。\textbf{中左}：div (log)，MLP 3 个数量级低于其他。\textbf{中右}：$\rho$ 区分 SNN 族（$\rho \geq 0.62$）与非 SNN 基线（$\rho \leq 0.16$）。\textbf{右}：LeWM-SR 把 MLP 放在 98.0\%——\textbf{最高}——尽管其 \texttt{div}=0.0002 且 $\rho=-0.002$。这一行证伪了 LeWM-SR。}
+\end{figure}
+
+\textbf{派生单数字 sanity check（v0.7.14 新增）}：env-SR / LeWM-SR 的比值无需新实验即可从现有数据中算出来——它是免费诊断。MLP：0.66 = vacuous（潜状态坍缩）。STJEWM trace：0.92。STJEWM spike：0.99。CubifAE：0.91。规则：比值 $\geq 0.9$ = 校准，$< 0.85$ = 顶部偏界 / vacuous。详见 \texttt{docs/rebuttal\_letter\_v0\_7\_14.md} §R1。
+
 
 \subsection{跨基准族与 OOD Path-C 的关键区别}
 
