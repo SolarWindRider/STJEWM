@@ -225,18 +225,31 @@ class CubifAEBaseline(nn.Module):
         v_thresh: float = 0.3,
         tau_m: float = 20.0,
         tau_b: float = 200.0,
+        image_size: int = 0,
     ):
         super().__init__()
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.d_hid = d_hid
         self.n_layers = n_layers
-        # State projector (same shape as STJEWM.StateProjector)
-        self.state_projector = nn.Sequential(
-            nn.Linear(state_dim, d_hid),
-            nn.SiLU(),
-            nn.Linear(d_hid, d_hid),
-        )
+        # Pixel mode: use frozen ViT-Tiny preprocessor (5.5M frozen + 0.07M proj).
+        # The preprocessor's projector outputs `d_hid` so it is a drop-in
+        # replacement for the (state_dim -> d_hid) MLP.
+        if state_dim >= 100 and image_size > 0:
+            from code.core.pixel_pre import FrozenPixelPreprocessor
+            self.pixel_pre = FrozenPixelPreprocessor(
+                image_size=image_size, embed_dim=d_hid,
+            )
+            self.state_projector = None
+        else:
+            self.pixel_pre = None
+            # State projector (same shape as STJEWM.StateProjector)
+            self.state_projector = nn.Sequential(
+                nn.Linear(state_dim, d_hid),
+                nn.SiLU(),
+                nn.Linear(d_hid, d_hid),
+            )
+
         # Action encoder (1-layer MLP per LeWM/STJEWM spec)
         self.action_encoder = nn.Sequential(
             nn.Linear(action_dim, d_hid),
@@ -263,8 +276,12 @@ class CubifAEBaseline(nn.Module):
         (the state-only encoding) so the trainer's SIGReg term can fire
         on the pre-cell embedding just like for STJEWM.
         """
-        s_emb = self.state_projector(obs)  # (B, T, d_hid)
-        a_emb = self.action_encoder(action)  # (B, T, d_hid)
+        if self.pixel_pre is not None:
+            # Pixel mode: state is (B, T, 3, H, W)
+            s_emb = self.pixel_pre(obs)            # (B, T, d_hid)
+        else:
+            s_emb = self.state_projector(obs)       # (B, T, d_hid)
+        a_emb = self.action_encoder(action)         # (B, T, d_hid)
         return {"emb": s_emb, "emb_pre_cell": s_emb, "act_emb": a_emb}
 
     def forward(self, obs: torch.Tensor, action: torch.Tensor) -> dict:
@@ -373,11 +390,17 @@ def make_cubifae_baseline(
     action_dim: int,
     n_layers: int = 4,
     d_hid: int = 192,
+    image_size: int = 0,
 ) -> CubifAEBaseline:
-    """Build a CubifAEBaseline with the default config."""
+    """Build a CubifAEBaseline with the default config.
+
+    Set `image_size>0` to use the frozen ViT-Tiny pixel preprocessor
+    instead of the low-dim state projector.
+    """
     return CubifAEBaseline(
         state_dim=state_dim, action_dim=action_dim,
         d_hid=d_hid, n_layers=n_layers,
+        image_size=image_size,
     )
 
 

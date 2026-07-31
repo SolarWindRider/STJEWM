@@ -209,6 +209,93 @@ class DMCStateEnv(BaseEnv):
 
 
 # ============================================================
+# DMC Pixel env (v0.7.15 cross-modality, frozen ViT-Tiny)
+# ============================================================
+class DMCPixelEnv(DMCStateEnv):
+    """Same DMC env, but obs = (3, H, W) pixel image rendered by mujoco.
+
+    Used for the v0.7.15 cross-modality experiment: replace the
+    state_projector in STJEWM with a frozen 5.5M ViT-Tiny pixel
+    encoder. The state side (check_success, get_state, qpos) is
+    preserved so the closed-loop success metric is comparable to
+    the state version.
+
+    Args:
+        env_kind: same as DMCStateEnv ("cartpole", "cheetah", ...).
+        image_size: pixel render size (default 224, matching ViT-Tiny).
+        camera_id: 0 = default fixed camera; mujoco may have multiple cameras.
+        normalize: if True, scale pixel values to [0, 1] (default).
+            The ViT-Tiny encoder (LeWM src.encoder) expects
+            ImageNet-normalised inputs but applies normalisation
+            internally if image is in [0, 1] range.
+    """
+
+    def __init__(self, env_kind: str, image_size: int = 224,
+                 camera_id: int = 0, normalize: bool = True, **kwargs):
+        # Extract kwargs that DMCStateEnv doesn't accept
+        success_tol = kwargs.pop("success_tol", 1.0)
+        max_episode_steps = kwargs.pop("max_episode_steps", 200)
+        # Init parent (sets up mujoco model, qpos, etc.)
+        # We compute obs_dim differently because pixel obs is huge.
+        if env_kind not in DMC_ENVS:
+            raise ValueError(f"Unknown DMC env_kind: {env_kind}")
+        xml_name, _state_obs_dim, action_dim, default_max_steps, default_tol = DMC_ENVS[env_kind]
+        from pathlib import Path
+        # Replicate DMCStateEnv.__init__ setup without calling it
+        # (so we can override obs_dim and add renderer).
+        self._env_kind = env_kind
+        self._model = mujoco.MjModel.from_xml_path(str(Path(DMC_XML_DIR) / xml_name))
+        self._data = mujoco.MjData(self._model)
+        self._rng = np.random.default_rng(42)
+        self._expand_pendulum = (env_kind == "pendulum")
+        if self._expand_pendulum:
+            obs_dim = 2
+            self._nq = 1
+        else:
+            obs_dim = DMC_ENVS[env_kind][1]
+            self._nq = obs_dim
+        self.spec = EnvSpec(
+            env_id=f"mujoco/{env_kind}_pixel",
+            obs_dim=3 * image_size * image_size,  # 3*224*224 = 150,528
+            action_dim=action_dim,
+            action_low=np.full(action_dim, -1.0, dtype=np.float32),
+            action_high=np.full(action_dim, 1.0, dtype=np.float32),
+            obs_keys=("pixel",),
+            max_episode_steps=default_max_steps,
+        )
+        self._success_tol = default_tol
+        # Pixel-specific
+        self._image_size = image_size
+        self._camera_id = camera_id
+        self._normalize = normalize
+        # Renderer: mujoco.Renderer for off-screen rendering
+        self._renderer = mujoco.Renderer(
+            self._model, height=image_size, width=image_size
+        )
+
+    def _render(self) -> np.ndarray:
+        """Render current state to (3, H, W) pixel tensor."""
+        self._renderer.update_scene(self._data, camera=self._camera_id)
+        img = self._renderer.render()  # (H, W, 3) uint8
+        img = img.transpose(2, 0, 1).astype(np.float32)  # (3, H, W)
+        if self._normalize:
+            img = img / 255.0
+        return img
+
+    def _current_obs_dict(self) -> dict:
+        return {"pixel": self._render(), "state": self.get_state()}
+
+    def close(self):
+        # Renderer holds GL context; free it.
+        if hasattr(self, "_renderer") and self._renderer is not None:
+            try:
+                del self._renderer
+            except Exception:
+                pass
+        super().close()
+
+
+# ============================================================
 # OGBench Scene env
 # ============================================================
 class OGBenchSceneEnv(BaseEnv):

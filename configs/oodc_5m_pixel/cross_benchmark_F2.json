@@ -1,0 +1,168 @@
+{
+  "_split_name": "cross_benchmark_F2",
+  "_train_envs": [
+    "cartpole_2d",
+    "pendulum_2d",
+    "finger",
+    "ball_in_cup",
+    "cheetah",
+    "walker",
+    "hopper",
+    "quadruped",
+    "humanoid",
+    "humanoid_CMU",
+    "dog",
+    "fish",
+    "stacker",
+    "reacher",
+    "pusht"
+  ],
+  "_eval_envs": [
+    "tworoom"
+  ],
+  "specs": [
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 10000,
+      "env_id": "cartpole_2d",
+      "data": "cartpole",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 10000,
+      "env_id": "pendulum_2d",
+      "data": "pendulum",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 10000,
+      "env_id": "finger",
+      "data": "finger",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 10000,
+      "env_id": "ball_in_cup",
+      "data": "ball_in_cup",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 10000,
+      "env_id": "cheetah",
+      "data": "cheetah",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 10000,
+      "env_id": "walker",
+      "data": "walker",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 10000,
+      "env_id": "hopper",
+      "data": "hopper",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 10000,
+      "env_id": "quadruped",
+      "data": "quadruped",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 10000,
+      "env_id": "humanoid",
+      "data": "humanoid",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 10000,
+      "env_id": "humanoid_CMU",
+      "data": "humanoid_CMU",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 10000,
+      "env_id": "dog",
+      "data": "dog",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 10000,
+      "env_id": "fish",
+      "data": "fish",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 10000,
+      "env_id": "stacker",
+      "data": "stacker",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    }
+  ]
+}

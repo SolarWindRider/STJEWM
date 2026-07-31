@@ -1,0 +1,110 @@
+{
+  "_split_name": "oodc_F2F3",
+  "_train_envs": [
+    "walker",
+    "humanoid",
+    "humanoid_CMU",
+    "hopper",
+    "quadruped",
+    "dog",
+    "delayed_t_maze",
+    "cheetah_velhidden"
+  ],
+  "_eval_envs": [
+    "cartpole_2d",
+    "pendulum_2d",
+    "finger",
+    "ball_in_cup",
+    "cheetah"
+  ],
+  "specs": [
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "walker",
+      "data": "walker",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "humanoid",
+      "data": "humanoid",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "humanoid_CMU",
+      "data": "humanoid_CMU",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "hopper",
+      "data": "hopper",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "quadruped",
+      "data": "quadruped",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "dog",
+      "data": "dog",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "delayed_t_maze",
+      "data": "delayed_t_maze",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    },
+    {
+      "env_kind": "dmc_pixel",
+      "history_size": 1,
+      "goal_offset": 25,
+      "max_windows": 2000,
+      "env_id": "cheetah",
+      "data": "cheetah",
+      "n_episodes": 50,
+      "max_episode_steps": 200,
+      "image_size": 84
+    }
+  ]
+}

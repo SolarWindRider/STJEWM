@@ -63,11 +63,20 @@ class _ActionPaddedDataset(Dataset):
     def __getitem__(self, idx: int) -> Dict[str, torch.Tensor]:
         item = self._base[idx]
         # ---- state window: pad time axis ----
-        state = item["state"]  # (T, D_obs)
-        T, D = state.shape
-        if T < self._time_target:
-            pad = torch.zeros((self._time_target - T, D), dtype=state.dtype)
-            state = torch.cat([state, pad], dim=0)
+        # state is (T, D_obs) for state mode or (T, 3, H, W) for pixel mode.
+        state = item["state"]
+        if state.ndim == 4:
+            # Pixel mode: (T, 3, H, W)
+            T = state.shape[0]
+            if T < self._time_target:
+                pad = torch.zeros((self._time_target - T, *state.shape[1:]), dtype=state.dtype)
+                state = torch.cat([state, pad], dim=0)
+        else:
+            # State mode: (T, D)
+            T, D = state.shape
+            if T < self._time_target:
+                pad = torch.zeros((self._time_target - T, D), dtype=state.dtype)
+                state = torch.cat([state, pad], dim=0)
         # ---- action window: pad action dim AND time axis ----
         action = item["action"]  # (T, action_dim_native)
         W, native = action.shape
@@ -84,18 +93,29 @@ class _ActionPaddedDataset(Dataset):
                 "raise action_dim_target in the spec"
             )
         # ---- init_state / goal_state: pad last dim if needed ----
+        # In state mode: vec is (D,) or (T, D). In pixel mode: (3, H, W) or (T, 3, H, W).
         init = item["init_state"]
         goal = item["goal_state"]
         if self._obs_dim_target is not None:
             for tag, vec in (("init", init), ("goal", goal)):
-                d = vec.shape[-1]
-                if d < self._obs_dim_target:
-                    pad = torch.zeros(self._obs_dim_target - d, dtype=vec.dtype)
-                    vec = torch.cat([vec, pad], dim=-1)
-                    if tag == "init":
-                        init = vec
-                    else:
-                        goal = vec
+                # Only pad the LAST dim of vec if vec is flat (D,). For 3D pixel
+                # vec (3, H, W), the last dim is W. Pad along channels (axis -3) instead.
+                if vec.ndim == 1:
+                    d = vec.shape[0]
+                    if d < self._obs_dim_target:
+                        pad = torch.zeros(self._obs_dim_target - d, dtype=vec.dtype)
+                        vec = torch.cat([vec, pad], dim=-1)
+                elif vec.ndim == 3:
+                    # pixel init/goal: (3, H, W) — pad channels
+                    c = vec.shape[0]
+                    if c < 3:
+                        # shouldn't happen for pixel, but be safe
+                        pad = torch.zeros((3 - c, *vec.shape[1:]), dtype=vec.dtype)
+                        vec = torch.cat([vec, pad], dim=0)
+                if tag == "init":
+                    init = vec
+                else:
+                    goal = vec
         return {**item, "state": state, "action": action,
                 "init_state": init, "goal_state": goal}
 

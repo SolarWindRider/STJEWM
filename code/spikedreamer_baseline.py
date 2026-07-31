@@ -155,6 +155,7 @@ class SpikeDreamerBaseline(nn.Module):
         alpha_surr: float = 2.0,
         max_T: int = 256,
         history_size: int = 3,
+        image_size: int = 0,
     ):
         super().__init__()
         self.state_dim = state_dim
@@ -169,8 +170,19 @@ class SpikeDreamerBaseline(nn.Module):
         # required by closed_loop / encode.py compatibility checks
         self.readout_mode = None
 
-        # Encoders
-        self.state_proj = StateProjector(state_dim, d_snn)
+        # Pixel mode: use frozen ViT-Tiny preprocessor (5.5M frozen + 0.07M proj).
+        # The preprocessor outputs `d_snn` so it is a drop-in replacement
+        # for the (state_dim -> d_snn) StateProjector. The SNN stack still
+        # runs, preserving the architectural role of SpikeDreamer's LIF encoder.
+        if state_dim >= 100 and image_size > 0:
+            from code.core.pixel_pre import FrozenPixelPreprocessor
+            self.pixel_pre = FrozenPixelPreprocessor(
+                image_size=image_size, embed_dim=d_snn,
+            )
+            self.state_proj = None
+        else:
+            self.pixel_pre = None
+            self.state_proj = StateProjector(state_dim, d_snn)
         self.lif_stack = _LIFStack2(
             d_in=d_snn, d_hid=d_snn,
             v_thresh=v_thresh, beta=beta, alpha_surr=alpha_surr,
@@ -202,7 +214,11 @@ class SpikeDreamerBaseline(nn.Module):
 
         h_tx is None here; computed after the Transformer pass.
         """
-        x = self.state_proj(obs)  # (B,T,d_snn)
+        if self.pixel_pre is not None:
+            # Pixel mode: obs is (B, T, 3, H, W); pixel_pre outputs (B,T,d_snn)
+            x = self.pixel_pre(obs)                # (B,T,d_snn)
+        else:
+            x = self.state_proj(obs)               # (B,T,d_snn)
         lif_out = self.lif_stack(x)
         spike = lif_out["spike"]  # (B,T,d_snn)
         s_proj = self.spike_proj(spike)  # (B,T,d_tx)
@@ -225,7 +241,7 @@ class SpikeDreamerBaseline(nn.Module):
             spike_layers  list of (B,T,d_snn)
             h             (B,T,d_tx)            — final Transformer hidden (h_tx)
         """
-        B, T, _ = obs.shape
+        B, T = obs.shape[:2]
         s_proj, spike, lif_out = self._encode_obs(obs)  # s_proj: (B,T,d_tx)
         act_emb = self.action_encoder(action)  # (B,T,d_tx)
 

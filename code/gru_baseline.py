@@ -7,17 +7,24 @@ import torch.nn.functional as F
 
 class GRUBaseline(nn.Module):
     def __init__(self, state_dim, action_dim, hidden_dim=576, num_layers=3,
-                 history_size=3):
+                 history_size=3, image_size: int = 0):
         super().__init__()
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.hidden_dim = hidden_dim
         self.history_size = history_size
 
-        self.state_proj = nn.Sequential(
-            nn.Linear(state_dim, hidden_dim), nn.SiLU(),
-            nn.Linear(hidden_dim, hidden_dim),
-        )
+        if state_dim >= 100 and image_size > 0:
+            # Pixel mode: use frozen ViT-Tiny preprocessor (5.5M frozen + 0.07M proj).
+            from code.core.pixel_pre import FrozenPixelPreprocessor
+            self.pixel_pre = FrozenPixelPreprocessor(image_size=image_size, embed_dim=hidden_dim)
+            self.state_proj = None
+        else:
+            self.pixel_pre = None
+            self.state_proj = nn.Sequential(
+                nn.Linear(state_dim, hidden_dim), nn.SiLU(),
+                nn.Linear(hidden_dim, hidden_dim),
+            )
         self.action_proj = nn.Sequential(
             nn.Linear(action_dim, hidden_dim), nn.SiLU(),
             nn.Linear(hidden_dim, hidden_dim),
@@ -41,8 +48,11 @@ class GRUBaseline(nn.Module):
         return self.forward(state, action)
 
     def forward(self, state, action):
-        B, T, _ = state.shape
-        s_emb = self.state_proj(state)
+        B, T = state.shape[:2]
+        if self.pixel_pre is not None:
+            s_emb = self.pixel_pre(state)  # (B, T, hidden_dim)
+        else:
+            s_emb = self.state_proj(state)
         a_emb = self.action_proj(action)
         x = s_emb + a_emb
         h, _ = self.gru(x)

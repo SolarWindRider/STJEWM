@@ -83,7 +83,7 @@ class AdaLNZeroBlock(nn.Module):
 
 class LeWMTransformerBaseline(nn.Module):
     """LeWM-style Transformer world model for state input."""
-    def __init__(self, state_dim, action_dim, embed_dim=192, num_layers=6, num_heads=8, history_size=3):
+    def __init__(self, state_dim, action_dim, embed_dim=192, num_layers=6, num_heads=8, history_size=3, image_size: int = 0):
         super().__init__()
         self.state_dim = state_dim
         self.action_dim = action_dim
@@ -92,7 +92,18 @@ class LeWMTransformerBaseline(nn.Module):
         self.num_layers = num_layers
 
         # Encoders
-        self.state_encoder = StateEncoder(state_dim, embed_dim)
+        # Pixel mode: use frozen ViT-Tiny preprocessor (5.5M frozen + 0.07M proj).
+        # The preprocessor outputs `embed_dim` so it is a drop-in replacement
+        # for the (state_dim -> embed_dim) StateEncoder.
+        if state_dim >= 100 and image_size > 0:
+            from code.core.pixel_pre import FrozenPixelPreprocessor
+            self.pixel_pre = FrozenPixelPreprocessor(
+                image_size=image_size, embed_dim=embed_dim,
+            )
+            self.state_encoder = None
+        else:
+            self.pixel_pre = None
+            self.state_encoder = StateEncoder(state_dim, embed_dim)
         self.action_encoder = ActionEncoder(action_dim, embed_dim)
         # LeWM-style baseline uses 6 layers by default (LeWM paper)
         # pos_embed size must be >= max(goal_offset + history + 1) across all envs.
@@ -123,8 +134,12 @@ class LeWMTransformerBaseline(nn.Module):
         action: (B, T, action_dim)
         returns: dict with 'emb' = (B, T, embed_dim)
         """
-        B, T, _ = state.shape
-        s_emb = self.state_encoder(state)  # (B, T, D)
+        B, T = state.shape[:2]
+        if self.pixel_pre is not None:
+            # Pixel mode: state is (B, T, 3, H, W)
+            s_emb = self.pixel_pre(state)             # (B, T, D)
+        else:
+            s_emb = self.state_encoder(state)         # (B, T, D)
         a_emb = self.action_encoder(action)  # (B, T, D)
         x = s_emb + a_emb + self.pos_embed[:, :T]
         # Condition is the state embedding

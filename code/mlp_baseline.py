@@ -23,7 +23,7 @@ class MLPBaseline(nn.Module):
     """Per-step FFN world model. No recurrence. (obs, action) -> latent."""
 
     def __init__(self, state_dim, action_dim, hidden_dim=576, num_layers=4,
-                 emb_dim=192, history_size=3):
+                 emb_dim=192, history_size=3, image_size: int = 0):
         super().__init__()
         self.state_dim = state_dim
         self.action_dim = action_dim
@@ -32,13 +32,24 @@ class MLPBaseline(nn.Module):
         self.emb_dim = emb_dim
         self.history_size = history_size
 
-        # State projector: raw state -> emb_dim token. Used by forward() to
-        # produce a (B, T, emb_dim) token stream that the FFN consumes.
-        # Also produces the 'emb_pre_cell' tensor that train.py feeds to SIGReg.
-        self.state_proj = nn.Sequential(
-            nn.Linear(state_dim, hidden_dim), nn.SiLU(),
-            nn.Linear(hidden_dim, emb_dim),
-        )
+        # If obs_dim is large (pixel), use the frozen ViT-Tiny preprocessor.
+        # The state projector is replaced by `pixel_pre` (5.5M frozen + 0.07M proj).
+        if state_dim >= 100 and image_size > 0:
+            from code.core.pixel_pre import FrozenPixelPreprocessor
+            self.pixel_pre = FrozenPixelPreprocessor(image_size=image_size, embed_dim=emb_dim)
+            # The "state projector" is now the pixel preprocessor (no Linear).
+            # We still need `state_proj` as an attribute name to keep the
+            # public API consistent; alias to a Linear that simply passes
+            # through (the real preprocessor is pixel_pre). But state_proj
+            # is never called in pixel mode — see forward().
+            self.state_proj = None
+        else:
+            self.pixel_pre = None
+            # State projector: raw state -> emb_dim token.
+            self.state_proj = nn.Sequential(
+                nn.Linear(state_dim, hidden_dim), nn.SiLU(),
+                nn.Linear(hidden_dim, emb_dim),
+            )
 
         # Per-step FFN. Input is a (B, T, emb_dim + action_dim) token stream;
         # the FFN is a stack of Linear+SiLU that maps each position
@@ -84,13 +95,17 @@ class MLPBaseline(nn.Module):
     def forward(self, state, action):
         """Encode (state, action) over a window.
 
-        state:  (B, T, state_dim)
+        state:  (B, T, state_dim)        [or (B, T, 3, H, W) in pixel mode]
         action: (B, T, action_dim)
         Returns: dict with 'emb' (B, T, emb_dim) and 'emb_pre_cell' (B, T, emb_dim).
         """
-        # 'emb_pre_cell' is the state-only projection (used by SIGReg in train.py).
-        emb_pre_cell = self.state_proj(state)
-        # The per-step FFN consumes the state token and the action.
+        # 'emb_pre_cell' is the obs-only projection (used by SIGReg in train.py).
+        if self.pixel_pre is not None:
+            # Pixel mode: state is (B, T, 3, H, W)
+            emb_pre_cell = self.pixel_pre(state)
+        else:
+            emb_pre_cell = self.state_proj(state)
+        # The per-step FFN consumes the obs token and the action.
         emb = self._ffn(emb_pre_cell, action)
         return {"emb": emb, "emb_pre_cell": emb_pre_cell}
 
@@ -169,12 +184,12 @@ class MLPBaseline(nn.Module):
 
 
 def make_mlp_baseline(state_dim, action_dim, hidden_dim=576, num_layers=4,
-                      emb_dim=192):
-    """Factory: parameter-matched MLP baseline."""
+                      emb_dim=192, image_size: int = 0):
+    """Factory: parameter-matched MLP baseline. Set `image_size>0` for pixel obs."""
     return MLPBaseline(
         state_dim=state_dim, action_dim=action_dim,
         hidden_dim=hidden_dim, num_layers=num_layers,
-        emb_dim=emb_dim,
+        emb_dim=emb_dim, image_size=image_size,
     )
 
 

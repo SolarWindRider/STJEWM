@@ -48,8 +48,11 @@ def parse_args():
                    help="Which model architecture to train")
     p.add_argument("--env-kind", required=False, default=None,
                    help="Loader kind: pusht, tworoom, reacher_4d, reacher_lewm, "
-                        "reacher_full, ogb_cube, dmc, mujoco_3d, gym_live. "
+                        "reacher_full, ogb_cube, dmc, mujoco_3d, dmc_pixel, gym_live. "
                         "Required unless --multi-env-spec is set.")
+    p.add_argument("--image-size", type=int, default=84,
+                   help="For dmc_pixel: pixel render size (default 84 for speed; "
+                        "use 224 for ViT-Tiny default, 56 for fastest).")
     p.add_argument("--multi-env-spec", default=None,
                    help="Path to a JSON file with shape "
                         "[{env_kind, path, history_size, goal_offset, max_windows, env_id}, ...]. "
@@ -118,7 +121,8 @@ def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int,
                 readout_mode: str = "hidden_leak", embed_dim: Optional[int] = None,
                 hidden_dim: Optional[int] = None,
                 mlp_hidden: Optional[int] = None, mlp_layers: Optional[int] = None,
-                slt_layers: Optional[int] = None, slt_din: Optional[int] = None):
+                slt_layers: Optional[int] = None, slt_din: Optional[int] = None,
+                image_size: int = 0):
     """5M-aligned builders (v0.7.14).
     All non-STJEWM baselines can be widened/deepened via per-model flags to
     match STJEWM's 5.06M trainable. STJEWM itself is fixed: 4 layers x 192
@@ -126,12 +130,18 @@ def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int,
     """
     if model_kind == "stjewm":
         from code.stjewm import STJEWM
+        # In pixel mode (image_size > 0), force state_dim=None so the
+        # state_dim heuristic inside STJEWM doesn't double-treat pixel as
+        # state. In state mode, pass state_dim=obs_dim.
+        stjewm_state_dim = None if image_size > 0 else obs_dim
         return STJEWM(
             d_hid=192, embed_dim=192,
             action_dim=action_dim, action_emb_dim=192,
-            state_dim=obs_dim,
+            state_dim=stjewm_state_dim,
             cell_n_layers=n_layers, n_d=3,
             trace_beta=0.9, freeze_encoder=True,
+            image_size=image_size if image_size > 0 else 84,
+            patch_size=14,
             readout_mode=readout_mode,
         )
     if model_kind == "lewm_baseline":
@@ -140,12 +150,14 @@ def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int,
         return LeWMTransformerBaseline(
             state_dim=obs_dim, action_dim=action_dim,
             embed_dim=(embed_dim or 288), num_layers=3, num_heads=8,
+            image_size=image_size,
         )
     if model_kind == "gru_baseline":
         from code.gru_baseline import GRUBaseline
         # 5M: hidden_dim=560 num_layers=2 -> 5.13M
         return GRUBaseline(state_dim=obs_dim, action_dim=action_dim,
-                           hidden_dim=(hidden_dim or 560), num_layers=2)
+                           hidden_dim=(hidden_dim or 560), num_layers=2,
+                           image_size=image_size)
     if model_kind == "mlp_baseline":
         from code.mlp_baseline import make_mlp_baseline
         # 5M: hidden=640 num_layers=12 -> 5.00M (no recurrence, still collapse-control)
@@ -153,6 +165,7 @@ def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int,
             state_dim=obs_dim, action_dim=action_dim,
             hidden_dim=(mlp_hidden if mlp_hidden is not None else (hidden_dim or 640)),
             num_layers=(mlp_layers if mlp_layers is not None else 12),
+            image_size=image_size,
         )
     if model_kind == "slt_lif_mpc_trace":
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
@@ -161,14 +174,15 @@ def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int,
             state_dim=obs_dim, action_dim=action_dim,
             d_in=(slt_din or 672), embed_dim=(slt_din or 672),
             n_layers=(slt_layers or 8), trace_beta=0.9, k_avg=4,
+            image_size=image_size,
         )
     if model_kind == "slt_lif_mpc_free":
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
-        # 5M: d_in=640 num_layers=8 -> 5.05M
         return make_slt_lif_mpc_free(
             state_dim=obs_dim, action_dim=action_dim,
             d_in=(slt_din or 640), embed_dim=(slt_din or 640),
             n_layers=(slt_layers or 8), trace_beta=0.9,
+            image_size=image_size,
         )
     if model_kind == "spikedreamer_baseline":
         from code.spikedreamer_baseline import make_spikedreamer
@@ -176,13 +190,14 @@ def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int,
         return make_spikedreamer(
             state_dim=obs_dim, action_dim=action_dim,
             d_snn=288, d_tx=288, num_layers=3, num_heads=8,
+            image_size=image_size,
         )
     if model_kind == "cubifae_baseline":
         from code.cubifae_baseline import CubifAEBaseline
-        # 5M: d_hid=186 num_layers=2 -> 4.99M
         return CubifAEBaseline(
             state_dim=obs_dim, action_dim=action_dim,
             d_hid=186, n_layers=2,
+            image_size=image_size,
         )
 
 # ============================================================
@@ -387,6 +402,18 @@ def main():
                           history_size=args.history_size,
                           goal_offset=args.goal_offset,
                           seed=args.seed)
+    elif args.env_kind == "dmc_pixel":
+        # v0.7.15 cross-modality: --data is the DMC env name (cartpole, cheetah, ...).
+        # obs_dim is auto-set to 3*image_size*image_size, and STJEWM's
+        # state_dim heuristic routes to the frozen pixel encoder.
+        image_size = getattr(args, "image_size", 84)
+        ds = load_dataset("dmc_pixel", path=args.data,
+                          n_episodes=args.n_episodes,
+                          max_episode_steps=args.max_steps_per_ep,
+                          history_size=args.history_size,
+                          goal_offset=args.goal_offset,
+                          image_size=image_size,
+                          seed=args.seed)
     else:
         ds = load_dataset(args.env_kind, path=args.data, history_size=args.history_size,
                           goal_offset=args.goal_offset, max_windows=args.max_windows)
@@ -396,9 +423,16 @@ def main():
         num_workers=args.num_workers, drop_last=True,
     )
 
-    # Determine obs_dim / action_dim from first batch
+    # Determine obs_dim / action_dim from first batch.
+    # For pixel obs, sample["state"] is (W, 3, H, W) 4D — total obs_dim
+    # is 3 * H * W. For state obs, sample["state"] is (W, D) 2D.
     sample = ds[0]
-    obs_dim = sample["state"].shape[-1]
+    state_shape = sample["state"].shape  # 2D (state) or 4D (pixel)
+    if len(state_shape) == 4:
+        # pixel: (W, 3, H, W) — flatten channels × spatial
+        obs_dim = 3 * state_shape[-1] * state_shape[-1]
+    else:
+        obs_dim = state_shape[-1]
     sample_action_dim = sample["action"].shape[-1]
     # In generalist mode, --action-dim overrides whatever the data layer produced
     action_dim = args.action_dim if args.action_dim is not None else sample_action_dim
@@ -421,12 +455,18 @@ def main():
         args.embed_dim = 288
     else:
         args.embed_dim = 192
+    # Detect pixel obs from sample shape. Per-sample state is (W, 3, H, W) for
+    # pixel and (W, D) for state. Batched is (B, T, 3, H, W) and (B, T, D).
+    obs_first = sample["state"]
+    is_pixel_obs = (obs_first.ndim == 4 and obs_first.shape[-3] == 3)
+    image_size = obs_first.shape[-1] if is_pixel_obs else 0
     model = build_model(
         args.model, obs_dim, action_dim, n_layers, args.readout_mode,
         embed_dim=args.embed_dim,
         hidden_dim=args.hidden_dim,
         mlp_hidden=args.mlp_hidden, mlp_layers=args.mlp_layers,
         slt_layers=args.slt_layers, slt_din=args.slt_din,
+        image_size=image_size,
     ).to(device)
     assert_model_compatible(model)
 

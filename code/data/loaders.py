@@ -427,6 +427,138 @@ def load_gym_live(
 
 
 # ============================================================
+# DMC Pixel live dataset (v0.7.15 cross-modality, frozen ViT-Tiny)
+# ============================================================
+class DMCPixelLiveDataset(Dataset):
+    """Live DMC pixel-rollout dataset for the v0.7.15 cross-modality
+    experiment. Uses DMCPixelEnv (DMC XML + mujoco.Renderer) to
+    collect random-policy trajectories and emit (pixel-window,
+    action-window) pairs.
+
+    The returned `obs_dim` is `3 * image_size * image_size` (e.g. 150,528
+    for image_size=224), matching the ViT-Tiny input convention. The
+    world model (STJEWM / baselines) is responsible for converting the
+    pixel window into a latent via the frozen ViT-Tiny encoder.
+
+    This dataset is OBSERVATION-only: it returns the raw pixel tensor;
+    the encoder is a separate component of the model.
+    """
+
+    def __init__(
+        self,
+        env_kind: str,
+        n_episodes: int = 50,
+        max_episode_steps: int = 200,
+        history_size: int = 1,
+        goal_offset: int = 25,
+        image_size: int = 224,
+        camera_id: int = 0,
+        seed: int = 42,
+    ):
+        # Late import (only used here for the pixel pipeline)
+        from code.core.envs.dmc_env import DMCPixelEnv
+        self._env_kind = env_kind
+        self._image_size = image_size
+
+        # First, do one reset to learn obs_dim / action_dim
+        env_tmp = DMCPixelEnv(env_kind, image_size=image_size,
+                               camera_id=camera_id, success_tol=0.1,
+                               max_episode_steps=max_episode_steps)
+        env_tmp.reset(seed=seed)
+        obs_dim = env_tmp.spec.obs_dim  # 3 * 224 * 224 = 150,528
+        action_dim = env_tmp.spec.action_dim
+        env_tmp.close()
+
+        self.spec = WindowSpec(
+            obs_dim=obs_dim,
+            action_dim=action_dim,
+            history_size=history_size,
+            goal_offset=goal_offset,
+            env_id=f"mujoco/{env_kind}_pixel",
+        )
+
+        rng = np.random.default_rng(seed)
+        env = DMCPixelEnv(env_kind, image_size=image_size,
+                          camera_id=camera_id, success_tol=0.1,
+                          max_episode_steps=max_episode_steps)
+
+        all_pixels, all_act = [], []
+        for ep in range(n_episodes):
+            obs = env.reset(seed=seed + ep)
+            for t in range(max_episode_steps):
+                a = rng.uniform(-1.0, 1.0, size=action_dim).astype(np.float32)
+                all_act.append(a)
+                all_pixels.append(obs["pixel"].astype(np.float32))  # (3, H, W)
+                obs, _r, done, _info = env.step(a)
+                if done:
+                    break
+        env.close()
+
+        # Stack: (N, 3, H, W)  -- large but fine for in-memory storage
+        self.pixels = np.stack(all_pixels, axis=0)
+        self.actions = np.stack(all_act, axis=0)
+        N = len(self.pixels)
+        window = history_size + goal_offset + 1
+        self._max_starts = max(0, N - window)
+
+    def __len__(self):
+        return self._max_starts
+
+    def __getitem__(self, idx):
+        spec = self.spec
+        window = spec.history_size + spec.goal_offset + 1
+        s = idx
+        e = s + window
+        pixel_window = self.pixels[s:e]  # (W, 3, H, W)
+        action_window = self.actions[s:e - 1]  # (W, A)
+        if action_window.shape[0] < window:
+            pad = np.zeros((window - action_window.shape[0], self.actions.shape[1]), dtype=np.float32)
+            action_window = np.concatenate([action_window, pad], axis=0)
+        # Pad pixel window if too short
+        if pixel_window.shape[0] < window:
+            ppad = np.zeros((window - pixel_window.shape[0], *pixel_window.shape[1:]), dtype=np.float32)
+            pixel_window = np.concatenate([pixel_window, ppad], axis=0)
+        return {
+            "state": torch.from_numpy(pixel_window).float(),
+            "action": torch.from_numpy(action_window).float(),
+            "init_state": torch.from_numpy(self.pixels[s]).float(),
+            "goal_state": torch.from_numpy(self.pixels[s + spec.goal_offset]).float(),
+        }
+
+
+def load_dmc_pixel(
+    env_kind: str,
+    n_episodes: int = 50,
+    image_size: int = 224,
+    max_episode_steps: int = 200,
+    history_size: int = 1,
+    goal_offset: int = 25,
+    seed: int = 42,
+    **kwargs,  # ignore unknown kwargs (max_windows, pad_obs_to, etc. from multi_env)
+) -> DMCPixelLiveDataset:
+    """Wrapper for `DMCPixelLiveDataset`. Used for v0.7.15 cross-modality.
+
+    Args:
+        env_kind: DMC env name (e.g. "cartpole", "cheetah", "walker").
+        n_episodes: number of random-policy episodes to collect.
+        image_size: pixel render size (default 224, matches ViT-Tiny).
+        max_episode_steps: per-episode step budget.
+        history_size: window size for the obs history.
+        goal_offset: planning horizon offset.
+        seed: random seed.
+    """
+    return DMCPixelLiveDataset(
+        env_kind,
+        n_episodes=n_episodes,
+        max_episode_steps=max_episode_steps,
+        history_size=history_size,
+        goal_offset=goal_offset,
+        image_size=image_size,
+        seed=seed,
+    )
+
+
+# ============================================================
 # 3D mujoco rollouts loader (manipulator, finger, cheetah, walker, etc.)
 # ============================================================
 def load_mujoco_3d(
@@ -515,6 +647,11 @@ def load_dataset(
     if env_kind == "gym_live":
         assert path is not None  # env_id
         return load_gym_live(path, **kwargs)
+    if env_kind == "dmc_pixel":
+        # path is the DMC env name (e.g. "cartpole", "cheetah"); use
+        # kwargs to override defaults (n_episodes, image_size, ...).
+        env_name = path or kwargs.pop("env_name", "cartpole")
+        return load_dmc_pixel(env_name, **kwargs)
     raise ValueError(f"Unknown env_kind: {env_kind}")
 
 

@@ -143,6 +143,7 @@ class SLT_LIF_MPCBase(nn.Module):
         embed_dim: int = 192,
         n_layers: int = 4,
         trace_beta: float = 0.9,
+        image_size: int = 0,
     ):
         super().__init__()
         self.state_dim = state_dim
@@ -150,8 +151,17 @@ class SLT_LIF_MPCBase(nn.Module):
         self.d_in = d_in
         self.embed_dim = embed_dim
         self.n_layers = n_layers
-
-        self.state_projector = StateProjector(state_dim, d_in=d_in)
+        # Pixel mode: use frozen ViT-Tiny preprocessor (5.5M frozen + 0.07M proj).
+        # Output dim = d_in so the rest of the architecture is unchanged.
+        if state_dim >= 100 and image_size > 0:
+            from code.core.pixel_pre import FrozenPixelPreprocessor
+            self.pixel_pre = FrozenPixelPreprocessor(
+                image_size=image_size, embed_dim=d_in,
+            )
+            self.state_projector = None
+        else:
+            self.pixel_pre = None
+            self.state_projector = StateProjector(state_dim, d_in=d_in)
         self.action_encoder = ActionMLP(action_dim=action_dim, emb_dim=d_in)
         self.stack = LIFStack(d_in=d_in, n_layers=n_layers, trace_beta=trace_beta)
 
@@ -179,8 +189,12 @@ class SLT_LIF_MPCBase(nn.Module):
         `emb` here is the pre-stack state embedding (matches STJEWM's
         `emb_pre_cell`); the post-stack readout goes into `forward`.
         """
-        emb_pre = self.state_projector(x)        # (B, T, D)
-        act_emb = self.action_encoder(a)          # (B, T, D)
+        if self.pixel_pre is not None:
+            # Pixel mode: x is (B, T, 3, H, W)
+            emb_pre = self.pixel_pre(x)             # (B, T, D)
+        else:
+            emb_pre = self.state_projector(x)       # (B, T, D)
+        act_emb = self.action_encoder(a)           # (B, T, D)
         return {"emb": emb_pre, "act_emb": act_emb}
 
     # ============== Forward ==============
@@ -290,6 +304,7 @@ class SLT_LIF_MPC_TraceOnly(SLT_LIF_MPCBase):
         n_layers: int = 4,
         trace_beta: float = 0.9,
         k_avg: int = 4,
+        image_size: int = 0,
     ):
         self._readout_name = "trace_only"
         self.k_avg = k_avg
@@ -297,6 +312,7 @@ class SLT_LIF_MPC_TraceOnly(SLT_LIF_MPCBase):
             state_dim=state_dim, action_dim=action_dim,
             d_in=d_in, embed_dim=embed_dim,
             n_layers=n_layers, trace_beta=trace_beta,
+            image_size=image_size,
         )
 
     @property
@@ -329,7 +345,6 @@ class SLT_LIF_MPC_FreeAccess(SLT_LIF_MPCBase):
     'h' = v_t (the membrane potential)
     'trace' = s_t (raw spike rate; for probe.py compatibility)
     """
-
     def __init__(
         self,
         state_dim: int,
@@ -338,12 +353,14 @@ class SLT_LIF_MPC_FreeAccess(SLT_LIF_MPCBase):
         embed_dim: int = 192,
         n_layers: int = 4,
         trace_beta: float = 0.9,
+        image_size: int = 0,
     ):
         self._readout_name = "free_access"
         super().__init__(
             state_dim=state_dim, action_dim=action_dim,
             d_in=d_in, embed_dim=embed_dim,
             n_layers=n_layers, trace_beta=trace_beta,
+            image_size=image_size,
         )
 
     @property
@@ -368,23 +385,26 @@ def make_slt_lif_mpc_trace(
     state_dim: int, action_dim: int,
     d_in: int = 192, embed_dim: int = 192,
     n_layers: int = 4, trace_beta: float = 0.9, k_avg: int = 4,
+    image_size: int = 0,
 ) -> SLT_LIF_MPC_TraceOnly:
     return SLT_LIF_MPC_TraceOnly(
         state_dim=state_dim, action_dim=action_dim,
         d_in=d_in, embed_dim=embed_dim,
         n_layers=n_layers, trace_beta=trace_beta, k_avg=k_avg,
+        image_size=image_size,
     )
-
 
 def make_slt_lif_mpc_free(
     state_dim: int, action_dim: int,
     d_in: int = 192, embed_dim: int = 192,
     n_layers: int = 4, trace_beta: float = 0.9,
+    image_size: int = 0,
 ) -> SLT_LIF_MPC_FreeAccess:
     return SLT_LIF_MPC_FreeAccess(
         state_dim=state_dim, action_dim=action_dim,
         d_in=d_in, embed_dim=embed_dim,
         n_layers=n_layers, trace_beta=trace_beta,
+        image_size=image_size,
     )
 
 
