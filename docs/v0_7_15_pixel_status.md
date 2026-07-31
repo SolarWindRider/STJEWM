@@ -66,11 +66,20 @@ Configs at `configs/oodc_5m_pixel/*.json` (10 files).
   - factory + `__init__` + `forward()` accept `image_size` kwarg.
   - When `state_dim >= 100 and image_size > 0`, use `FrozenPixelPreprocessor`.
 
-## Wall time (updated 2026-07-31)
+## Wall time + progress (updated 2026-07-31 21:30)
 
-- 18 min/ckpt on CPU × 130 ckpts = ~40 hours
-- ~30 min/ckpt on single GPU × 130 ckpts = ~65 hours (DMCPixelEnv rendering is CPU-bottlenecked)
-- **4-GPU parallel** × 130 ckpts / 4 = ~16 hours (running in background as of 2026-07-31 16:46)
-- Single-GPU option launched initially, cancelled; 4-GPU parallel now running.
+- 4-GPU parallel training: 3 GPUs running (825346, 825349, 825351)
+- lewm_baseline_v2 retraining in background (model name fix: was lewm_baseline_v2, must use lewm_baseline)
+- **18/130 ckpts trained** (10 splits × 13 models = 130; cross_benchmark_F1 has 12/13 done,
+  cross_benchmark_F2 has 3/13 done as of 21:30)
+- **17/130 evals done** (random-policy fast eval, 30 sec/ckpt, runs in parallel with training)
+- Cross-modality table generated (results/aggregate/cross_modality_table.md)
+  with state vs pixel mean_cos_dist; will fill in as more ckpts finish.
+- Per-ckpt time: ~25-40 min (DMCPixelEnv rendering is the bottleneck)
+- Total ETA: ~30-40h for 130 ckpts on 4-GPU parallel.
 
-Per-GPU progress tracked in `results/_logs/4gpu/master_gpu{0,1,2,3}.log`.
+The user should come back periodically to check progress; tail -f
+results/_logs/eval_pixel_now_master.log shows eval progress; tail -f
+results/_logs/4gpu/master_gpu{0,1,2,3}.log shows training progress.
+
+
