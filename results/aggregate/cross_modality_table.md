@@ -13,19 +13,19 @@
 
 | Model | state cos_dist | pixel cos_dist | n_state | n_pixel |
 |---|---|---|---|---|
-| STJEWM-trace | 0.1048 | 1.2100 | 89 | 22 |
-| STJEWM-leak | 0.1187 | 1.2218 | 89 | 11 |
-| STJEWM-spike | 0.1083 | 1.2869 | 89 | 11 |
-| STJEWM-rate | 0.1029 | 1.2063 | 89 | 11 |
-| STJEWM-no-trace | 0.1192 | 1.1991 | 89 | 11 |
-| STJEWM-membrane | 0.1237 | 1.2216 | 89 | 11 |
-| CubifAE | 0.1048 | 1.2388 | 89 | 11 |
-| SLT-trace | 0.0852 | 1.1990 | 57 | 11 |
-| SLT-free | 0.1053 | 1.1798 | 74 | 11 |
-| GRU | 0.0202 | 1.2136 | 89 | 11 |
-| LeWM-v2 | 0.1832 | — | 89 | 0 |
+| STJEWM-trace | 0.1048 | 1.2428 | 89 | 110 |
+| STJEWM-leak | 0.1187 | 1.1389 | 89 | 110 |
+| STJEWM-spike | 0.1083 | 1.1353 | 89 | 110 |
+| STJEWM-rate | 0.1029 | 1.0498 | 89 | 110 |
+| STJEWM-no-trace | 0.1192 | 1.0575 | 89 | 110 |
+| STJEWM-membrane | 0.1237 | 1.0546 | 89 | 110 |
+| CubifAE | 0.1048 | 1.1494 | 89 | 110 |
+| SLT-trace | 0.0852 | 1.0847 | 57 | 110 |
+| SLT-free | 0.1053 | 0.9990 | 74 | 110 |
+| GRU | 0.0202 | 1.1933 | 89 | 110 |
+| LeWM-v2 | 0.1832 | 1.2516 | 89 | 110 |
 | SpikeDreamer | 0.0000 | — | 89 | 0 |
-| MLP | 0.0068 | — | 89 | 0 |
+| MLP | 0.0068 | 1.0185 | 89 | 110 |
 
 ## Per-model summary (mean LeWM-SR @0.05, state-only)
 
