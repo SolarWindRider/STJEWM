@@ -88,8 +88,7 @@ def main():
         lines.append(row)
     lines.append("")
     lines.append("**Cross-modality comparison (state vs pixel):** see cross_modality_table.md.")
-    OUT.write_text("
-".join(lines))
+    OUT.write_text("\n".join(lines))
     print(f"Wrote {OUT} ({len(lines)} lines)")
 
 

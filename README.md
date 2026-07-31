@@ -10,7 +10,13 @@ is read out from a **post-spike trace** rather than a continuous recurrent
 hidden state. The trace is bounded in [0,1] per dim, content-aware
 (forget gate `alpha = sigma(W[r_{t-1}, s_t, c_t])`), and event-driven.
 
-**v0.7.14 — 5M-aligned re-training (130/130 ckpts) + §2.3a LeWM-SR falsification (HEAD).**
+**v0.7.15 — 5M-aligned pixel cross-modality (frozen ViT-Tiny) in progress (HEAD).**
+Same 130 ckpts as v0.7.14, but obs is **pixel (3×84×84)** instead of state
+(1-87 D). The **state_projector is replaced by a frozen 5.5M ViT-Tiny
+encoder**. Trainable budget: 4.97–5.13M (5M-aligned ±3.2%). Goal: test
+whether the trace-dynamics hypothesis (paper §6) survives obs-space change.
+Status: code ready, training in background, target 130/130 by morning.
+See `docs/v0_7_15_pixel_status.md` for the plan.
 The headline result is no longer an env-SR or a LeWM-SR number. It is
 **a single row in `MASTER_TABLE.md` §2 that falsifies the headline
 metric itself**: a stateless MLP baseline (no recurrent state, no event
@@ -227,6 +233,7 @@ versions:
 | axis | experiment | status |
 |---|---|---|
 | **5M-aligned parameter-fair re-training (v0.7.14)** | **13 models × 10 splits × 5M-aligned = 130 ckpts** | **done (`results/5m/`, `results/aggregate/generalist_5m_table.md`)** |
+| **5M-aligned pixel cross-modality (v0.7.15, in progress)** | **Same 130 ckpts but obs = pixel (3×84×84), frozen ViT-Tiny 5.5M** | **in progress (`results/5m_pixel/`, `docs/v0_7_15_pixel_status.md`)** |
 | Within-DMC, cross-sub-family (v0.7.10b, v0.7.13 bug-fixed) | F1/F2/F3 family held out, 12 models, 6 splits | done (`results/utility/ood1_table.md`) |
 | Cross-benchmark-family (v0.7.13) | F1/Pusht, F2/TwoRoom, F3/Reacher, F4/DMC, 12 models | done (`results/cross_benchmark_F{1,2,3,4}/eval/`) |
 | Within-suite, leave-N-envs-out (v0.7.8) | 2-3-4 envs held out from G16 | done (`results/utility/cross_env_gen_table.md`) |
