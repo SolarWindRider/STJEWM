@@ -12,17 +12,17 @@ Other settings: 1 epoch, batch 32, AdamW lr=3e-4, 1 seed.
 
 | Model | cross_benchmark_F1 | cross_benchmark_F2 | cross_benchmark_F3 | oodc_F1 | oodc_F1F2 | oodc_F1F3 | oodc_F2 | oodc_F2F3 | oodc_F3 | generalist_16env |
 |---|---|---|---|---|---|---|---|---|---|---|
-| STJEWM-trace | - | - | - | - | - | - | - | - | - | - |
-| STJEWM-leak | - | - | - | - | - | - | - | - | - | - |
-| STJEWM-spike | - | - | - | - | - | - | - | - | - | - |
-| STJEWM-rate | - | - | - | - | - | - | - | - | - | - |
-| STJEWM-no-trace | - | - | - | - | - | - | - | - | - | - |
-| STJEWM-membrane | - | - | - | - | - | - | - | - | - | - |
-| CubifAE | - | - | - | - | - | - | - | - | - | - |
-| SLT-trace | - | - | - | - | - | - | - | - | - | - |
-| SLT-free | - | - | - | - | - | - | - | - | - | - |
-| GRU | - | - | - | - | - | - | - | - | - | - |
-| LeWM-v2 | - | - | - | - | - | - | - | - | - | - |
+| STJEWM-trace | 0.27 / - | 0.18 / - | - | - | - | - | - | - | - | - |
+| STJEWM-leak | 0.23 / - | 0.18 / - | - | - | - | - | - | - | - | - |
+| STJEWM-spike | 0.18 / - | 0.32 / - | - | - | - | - | - | - | - | - |
+| STJEWM-rate | 0.23 / - | - | - | - | - | - | - | - | - | - |
+| STJEWM-no-trace | 0.23 / - | - | - | - | - | - | - | - | - | - |
+| STJEWM-membrane | 0.23 / - | - | - | - | - | - | - | - | - | - |
+| CubifAE | 0.27 / - | 0.23 / - | - | - | - | - | - | - | - | - |
+| SLT-trace | 0.27 / - | - | - | - | - | - | - | - | - | - |
+| SLT-free | 0.32 / - | - | - | - | - | - | - | - | - | - |
+| GRU | 0.27 / - | - | - | - | - | - | - | - | - | - |
+| LeWM-v2 | 0.27 / - | - | - | - | - | - | - | - | - | - |
 | SpikeDreamer | - | - | - | - | - | - | - | - | - | - |
 | MLP | - | - | - | - | - | - | - | - | - | - |
 
