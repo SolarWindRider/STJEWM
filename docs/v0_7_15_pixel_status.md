@@ -66,9 +66,11 @@ Configs at `configs/oodc_5m_pixel/*.json` (10 files).
   - factory + `__init__` + `forward()` accept `image_size` kwarg.
   - When `state_dim >= 100 and image_size > 0`, use `FrozenPixelPreprocessor`.
 
-## Wall time (estimated)
+## Wall time (updated 2026-07-31)
 
 - 18 min/ckpt on CPU × 130 ckpts = ~40 hours
-- ~3 min/ckpt on GPU × 130 ckpts = ~6.5 hours
-- 4 in parallel on GPU: ~1.5 hours
-- Running in background as sub-agent (target: 130/130 done by morning)
+- ~30 min/ckpt on single GPU × 130 ckpts = ~65 hours (DMCPixelEnv rendering is CPU-bottlenecked)
+- **4-GPU parallel** × 130 ckpts / 4 = ~16 hours (running in background as of 2026-07-31 16:46)
+- Single-GPU option launched initially, cancelled; 4-GPU parallel now running.
+
+Per-GPU progress tracked in `results/_logs/4gpu/master_gpu{0,1,2,3}.log`.
