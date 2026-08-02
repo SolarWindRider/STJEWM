@@ -17,19 +17,19 @@ pixel should expose the same family partition as state eval.
 
 | Model | state cos_dist | pixel cos_dist (CEM) | n_state | n_pixel |
 |---|---|---|---|---|
-| STJEWM-trace | 0.1048 | 1.2096 | 89 | 110 |
-| STJEWM-leak | 0.1187 | 1.2654 | 89 | 110 |
-| STJEWM-spike | 0.1083 | 1.1571 | 89 | 110 |
-| STJEWM-rate | 0.1029 | 1.1775 | 89 | 110 |
-| STJEWM-no-trace | 0.1192 | 1.2900 | 89 | 110 |
-| STJEWM-membrane | 0.1237 | 1.2369 | 89 | 110 |
-| CubifAE | 0.1048 | 1.1016 | 89 | 110 |
-| SLT-trace | 0.0852 | 1.1844 | 57 | 110 |
-| SLT-free | 0.1053 | 1.1749 | 74 | 110 |
-| GRU | 0.0202 | 1.2546 | 89 | 110 |
-| LeWM-v2 | 0.1832 | 1.2293 | 89 | 110 |
-| SpikeDreamer | 0.0000 | — | 89 | 0 |
-| MLP | 0.0068 | 1.1437 | 89 | 110 |
+| STJEWM-trace | 0.1048 | 0.7663 | 89 | 130 |
+| STJEWM-leak | 0.1187 | 0.8625 | 89 | 130 |
+| STJEWM-spike | 0.1083 | 0.7432 | 89 | 130 |
+| STJEWM-rate | 0.1029 | 0.7910 | 89 | 130 |
+| STJEWM-no-trace | 0.1192 | 0.8213 | 89 | 130 |
+| STJEWM-membrane | 0.1237 | 0.8954 | 89 | 130 |
+| CubifAE | 0.1048 | 0.8468 | 89 | 130 |
+| SLT-trace | 0.0852 | 0.7426 | 57 | 130 |
+| SLT-free | 0.1053 | 0.6841 | 74 | 130 |
+| GRU | 0.0202 | 0.7552 | 89 | 130 |
+| LeWM-v2 | 0.1832 | 0.9639 | 89 | 130 |
+| SpikeDreamer | 0.0000 | 0.7876 | 89 | 130 |
+| MLP | 0.0068 | 0.7549 | 89 | 130 |
 
 ## Per-model summary (mean env-SR across splits, CEM-planned)
 
@@ -37,19 +37,19 @@ pixel should expose the same family partition as state eval.
 
 | Model | state env-SR | pixel env-SR (CEM) | n_state | n_pixel |
 |---|---|---|---|---|
-| STJEWM-trace | 0.0000 | 0.2364 | 89 | 110 |
-| STJEWM-leak | 0.0000 | 0.2303 | 89 | 110 |
-| STJEWM-spike | 0.0000 | 0.2545 | 89 | 110 |
-| STJEWM-rate | 0.0000 | 0.2364 | 89 | 110 |
-| STJEWM-no-trace | 0.0000 | 0.2455 | 89 | 110 |
-| STJEWM-membrane | 0.0000 | 0.2364 | 89 | 110 |
-| CubifAE | 0.0000 | 0.2455 | 89 | 110 |
-| SLT-trace | 0.0000 | 0.2424 | 57 | 110 |
-| SLT-free | 0.0000 | 0.2515 | 74 | 110 |
-| GRU | 0.0000 | 0.2394 | 89 | 110 |
-| LeWM-v2 | 0.0000 | 0.2364 | 89 | 110 |
-| SpikeDreamer | 0.0000 | — | 89 | 0 |
-| MLP | 0.0000 | 0.2364 | 89 | 110 |
+| STJEWM-trace | 0.0000 | 0.1708 | 89 | 130 |
+| STJEWM-leak | 0.0000 | 0.1446 | 89 | 130 |
+| STJEWM-spike | 0.0000 | 0.1677 | 89 | 130 |
+| STJEWM-rate | 0.0000 | 0.1446 | 89 | 130 |
+| STJEWM-no-trace | 0.0000 | 0.1492 | 89 | 130 |
+| STJEWM-membrane | 0.0000 | 0.1308 | 89 | 130 |
+| CubifAE | 0.0000 | 0.1615 | 89 | 130 |
+| SLT-trace | 0.0000 | 0.1785 | 57 | 130 |
+| SLT-free | 0.0000 | 0.1538 | 74 | 130 |
+| GRU | 0.0000 | 0.1538 | 89 | 130 |
+| LeWM-v2 | 0.0000 | 0.0908 | 89 | 130 |
+| SpikeDreamer | 0.0000 | 0.1662 | 89 | 130 |
+| MLP | 0.0000 | 0.1723 | 89 | 130 |
 
 **Interpretation.**
 - If the family partition (calibrated / collapse / over-react) holds in BOTH
