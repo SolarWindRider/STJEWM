@@ -95,7 +95,17 @@ def main():
     p.add_argument("--goal_offset", type=int, default=25)
     p.add_argument("--history_size", type=int, default=1)
     p.add_argument("--device", default="cuda")
+    p.add_argument("--envs", default=None,
+                   help="Comma-separated env subset (default: all 13)")
     args = p.parse_args()
+
+    global DMC_ENVS
+    if args.envs:
+        subset = [e.strip() for e in args.envs.split(",") if e.strip()]
+        bad = [e for e in subset if e not in DMC_ENVS]
+        if bad:
+            p.error(f"unknown envs: {bad}")
+        DMC_ENVS = subset
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
