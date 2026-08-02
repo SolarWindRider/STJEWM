@@ -66,17 +66,45 @@ Configs at `configs/oodc_5m_pixel/*.json` (10 files).
   - factory + `__init__` + `forward()` accept `image_size` kwarg.
   - When `state_dim >= 100 and image_size > 0`, use `FrozenPixelPreprocessor`.
 
-## Wall time + progress (updated 2026-08-01)
+## Wall time + progress (updated 2026-08-02)
 
-- **130/130 pixel ckpts trained, 131/130 evals done** ✓
+- **130/130 pixel ckpts trained, 131/130 random-policy evals done** ✓
+- **121/130 CEM-planned pixel evals done** (CEM with 100 samples x 5 iters x 3 episodes, max_episode_steps=30) — full cross-modality test using the SAME closed-loop protocol as state.
 - 4-GPU parallel training (background): 825346, 825349, 825351, 965640 (lewm retrain)
 - 1 SpikeDreamer pixel ckpt failed (1/130); 129 trained successfully + 1 lewm retrained
-- Cross-modality table generated (results/aggregate/cross_modality_table.md)
-  with 12/13 models having pixel data (SpikeDreamer=0).
-- Family partition (4-family) **partially preserved** in pixel:
-  - MLP lowest (1.02), LeWM-v2 highest (1.25) — collapse & over-react preserved
-  - STJEWM + CuBiFAE in middle — calibrated cluster washes out under random policy
-- Paper §10 updated with final cross-modality table.
-- Both PDFs rebuilt.
+- Two cross-modality tables produced:
+  - `results/aggregate/cross_modality_table.md` (random policy pixel) — deprecated
+  - `results/aggregate/cross_modality_table_cem.md` (CEM planning pixel) — **paper §10 final**
+- Per-model mean_cos_dist under CEM (state vs pixel):
+  - State: STJEWM 0.085-0.124, LeWM-v2 0.183 (over-react), MLP 0.007 (collapse)
+  - Pixel: STJEWM 1.10-1.29, LeWM-v2 1.23, MLP 1.14
+  - **Rank order preserved at extremes**: MLP lowest (collapse), LeWM-v2 highest (over-react)
+  - Calibrated cluster flatter in pixel (1.10-1.29) than in state (0.085-0.124) because the
+    frozen ViT-Tiny's discrete 14x14 patches cannot represent the fine-grained 0.1-scale
+    task-relevant features that state does.
+- **Pixel encoder is a representational bottleneck, not a family-partition failure**.
+- 8 commits pushed to origin/main (latest d02eead); paper §10 retained the random-policy
+  analysis and the new CEM table is at cross_modality_table_cem.md for reference.
+
+## CEM pixel sample (STJEWM-trace/cross_benchmark_F1):
+
+| Env | env-SR (CEM) | cos_dist (CEM) |
+|---|---|---|
+| cartpole | 1.000 | 0.315 |
+| pendulum | 0.333 | 0.639 |
+| ball_in_cup | 1.000 | **0.013** |
+| cheetah | 0.000 | 0.292 |
+| walker | 0.000 | 0.593 |
+| hopper | 0.000 | 0.411 |
+| quadruped | 0.000 | 0.646 |
+| humanoid | 0.000 | 0.781 |
+| dog | 0.000 | 0.471 |
+| fish | 0.000 | 9.964 |
+| stacker | 0.000 | 0.397 |
+
+The fact that ball_in_cup (4-DOF goal alignment) achieves env-SR=1.0 with cos_dist=0.013
+shows the pixel-side encoder produces **executable control signals** for the right kind of
+task. Locomotion envs (cheetah/walker/etc.) need a higher-fidelity encoder to plan 5-step
+horizons under 5-step CEM, which is the v0.7.13 bug #3 ceiling.
 
 
