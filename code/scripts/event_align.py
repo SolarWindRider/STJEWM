@@ -36,12 +36,9 @@ ENV_DATA = {
     # adversarial-mask settings are implemented for.
     "pusht_ood":        "/home/lx/LeWM/data/pusht_expert_train.h5",
     "tworoom_long":     "/home/lx/LeWM/data/tworoom_extract/tworoom.h5",
-    "cartpole_flicker": "/home/lx/snn/data/dm_control/cartpole_250k.npz",
-    "cheetah_velhidden":"/home/lx/snn/data/dm_control/3d_rollouts_250k/cheetah_250k.npz",
 }
 
-# Map our event_align env names to the env_kind expected by make_env.
-# All DMC envs in DMC_ENVS use their env_kind as the key in make_env.
+
 ENV_KIND_MAP = {
     "cartpole_2d":      "cartpole",
     "pendulum_2d":      "pendulum",
@@ -86,22 +83,112 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
-def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict):
+import re as _re
+
+
+def _gru_arch(state_dict):
+    """Infer (num_layers, hidden_dim) of GRUBaseline from a state_dict."""
+    idxs, hidden = [], None
+    for k, v in state_dict.items():
+        m = _re.match(r"^gru\.weight_hh_l(\d+)$", k)
+        if m:
+            idxs.append(int(m.group(1)))
+            # weight_hh_l{i} shape (3*hidden, hidden)
+            hidden = int(v.shape[1])
+    return (max(idxs) + 1) if idxs else None, hidden
+
+
+def _mlp_arch(state_dict):
+    """Infer (num_layers, hidden_dim) of MLPBaseline from a state_dict.
+    Factory: `num_layers` hidden Linear+SiLU pairs + 1 final Linear at index 2*num_layers.
+    So num_layers = max_weight_index // 2.
+    """
+    idxs, hidden = [], None
+    for k, v in state_dict.items():
+        m = _re.match(r"^net\.(\d+)\.weight$", k)
+        if m:
+            idxs.append(int(m.group(1)))
+            if hidden is None:
+                hidden = int(v.shape[0])
+    return (max(idxs) // 2) if idxs else None, hidden
+
+
+def _slt_arch(state_dict):
+    """Infer (n_layers, d_in) of SLT_LIF_MPC_* from a state_dict."""
+    idxs, d_in = [], None
+    for k, v in state_dict.items():
+        m = _re.match(r"^stack\.cells\.(\d+)\.", k)
+        if m:
+            idxs.append(int(m.group(1)))
+    # d_in from state_projector.proj.0.weight (Linear): shape (d_in, state_dim_padded)
+    w = state_dict.get("state_projector.proj.0.weight")
+    if w is not None:
+        d_in = int(w.shape[0])
+    elif idxs:
+        # fallback: cells.0.w_in.weight shape (d_in, d_in)
+        w = state_dict.get(f"stack.cells.0.w_in.weight")
+        if w is not None:
+            d_in = int(w.shape[0])
+    return (max(idxs) + 1) if idxs else None, d_in
+
+
+def _lewm_arch(state_dict):
+    """Infer (num_layers, embed_dim) of LeWMTransformerBaseline from a state_dict."""
+    idxs, embed = [], None
+    for k, v in state_dict.items():
+        m = _re.match(r"^blocks\.(\d+)\.", k)
+        if m:
+            idxs.append(int(m.group(1)))
+    w = state_dict.get("state_encoder.proj.0.weight")
+    if w is not None:
+        embed = int(w.shape[0])
+    return (max(idxs) + 1) if idxs else None, embed
+
+
+def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
+                state_dict: dict | None = None):
     m = ck_args.get("model", model_name)
+
+    # Helper: prefer state_dict-inferred value over ck_args when state_dict is given
+    # and disagrees with ck_args. Returns the inferred value, or ck_args fallback.
+    def _resolve(inferred, ck_value, default):
+        return inferred if inferred is not None else (ck_value if ck_value is not None else default)
+
     if m == "lewm_baseline" or model_name.startswith("lewm"):
         from code.lewm_transformer_baseline import LeWMTransformerBaseline
+        n_layers_inf, embed_inf = (None, None)
+        if state_dict is not None:
+            n_layers_inf, embed_inf = _lewm_arch(state_dict)
+        embed_dim = _resolve(embed_inf, ck_args.get("embed_dim"), 256)
+        num_layers = _resolve(n_layers_inf, ck_args.get("n_layers"), 4)
         return LeWMTransformerBaseline(
             state_dim=state_dim, action_dim=action_dim,
-            embed_dim=ck_args.get("embed_dim", 256),
-            num_layers=ck_args.get("n_layers", 4),
+            embed_dim=embed_dim,
+            num_layers=num_layers,
             num_heads=8,
         )
     if m == "gru_baseline" or model_name.startswith("gru"):
         from code.gru_baseline import GRUBaseline
-        return GRUBaseline(state_dim=state_dim, action_dim=action_dim)
+        n_layers_inf, hidden_inf = (None, None)
+        if state_dict is not None:
+            n_layers_inf, hidden_inf = _gru_arch(state_dict)
+        hidden_dim = _resolve(hidden_inf, ck_args.get("hidden_dim"), 560)
+        num_layers = _resolve(n_layers_inf, ck_args.get("gru_layers"), 2)
+        return GRUBaseline(
+            state_dim=state_dim, action_dim=action_dim,
+            hidden_dim=hidden_dim, num_layers=num_layers,
+        )
     if m == "mlp_baseline" or model_name.startswith("mlp"):
         from code.mlp_baseline import make_mlp_baseline
-        return make_mlp_baseline(state_dim=state_dim, action_dim=action_dim)
+        n_layers_inf, hidden_inf = (None, None)
+        if state_dict is not None:
+            n_layers_inf, hidden_inf = _mlp_arch(state_dict)
+        hidden_dim = _resolve(hidden_inf, ck_args.get("mlp_hidden"), 640)
+        num_layers = _resolve(n_layers_inf, ck_args.get("mlp_layers"), 12)
+        return make_mlp_baseline(
+            state_dim=state_dim, action_dim=action_dim,
+            hidden_dim=hidden_dim, num_layers=num_layers,
+        )
     if m == "cubifae_baseline" or model_name.startswith("cubifae"):
         from code.cubifae_baseline import make_cubifae_baseline
         return make_cubifae_baseline(
@@ -110,16 +197,26 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict)
         )
     if m == "slt_lif_mpc_trace" or model_name.startswith("slt_lif_mpc_trace"):
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
+        n_layers_inf, d_in_inf = (None, None)
+        if state_dict is not None:
+            n_layers_inf, d_in_inf = _slt_arch(state_dict)
+        d_in = _resolve(d_in_inf, ck_args.get("slt_d_in"), 672)
+        n_layers = _resolve(n_layers_inf, ck_args.get("n_layers"), 8)
         return make_slt_lif_mpc_trace(
             state_dim=state_dim, action_dim=action_dim,
-            d_in=192, embed_dim=192, n_layers=ck_args.get("n_layers", 4),
+            d_in=d_in, embed_dim=d_in, n_layers=n_layers,
             trace_beta=0.9, k_avg=4,
         )
     if m == "slt_lif_mpc_free" or model_name.startswith("slt_lif_mpc_free"):
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
+        n_layers_inf, d_in_inf = (None, None)
+        if state_dict is not None:
+            n_layers_inf, d_in_inf = _slt_arch(state_dict)
+        d_in = _resolve(d_in_inf, ck_args.get("slt_d_in"), 672)
+        n_layers = _resolve(n_layers_inf, ck_args.get("n_layers"), 8)
         return make_slt_lif_mpc_free(
             state_dim=state_dim, action_dim=action_dim,
-            d_in=192, embed_dim=192, n_layers=ck_args.get("n_layers", 4),
+            d_in=d_in, embed_dim=d_in, n_layers=n_layers,
             trace_beta=0.9,
         )
     if m == "spikedreamer_baseline" or model_name.startswith("spikedreamer"):
@@ -193,7 +290,7 @@ def main() -> int:
 
     # Build model
     try:
-        model = build_model(model_name, state_dim, action_dim, ck_args)
+        model = build_model(model_name, state_dim, action_dim, ck_args, state_dict=ck["model"])
         model.load_state_dict(ck["model"])
     except Exception as e:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)

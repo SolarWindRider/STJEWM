@@ -14,6 +14,8 @@ Bug fixes vs. the 9 originals:
 """
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import torch
 
 
@@ -39,6 +41,7 @@ class CEM:
         history_size: int = 3,
         sigma_init: float = 1.0,
         device: str | torch.device = "cuda",
+        predict_hook: Callable[[object, torch.Tensor, torch.Tensor], torch.Tensor] | None = None,
     ):
         self.model = model
         self.action_dim = action_dim
@@ -49,6 +52,9 @@ class CEM:
         self.history_size = history_size
         self.sigma_init = sigma_init
         self.device = device
+        # Optional experiment-only hook.  The default path remains the direct
+        # model.predict call, so non-ablation planning is byte-for-byte unchanged.
+        self.predict_hook = predict_hook
 
     @torch.no_grad()
     def _rollout_cost(self, z_init: torch.Tensor, z_goal: torch.Tensor, actions: torch.Tensor) -> torch.Tensor:
@@ -74,7 +80,10 @@ class CEM:
                 pad = torch.zeros(N, self.history_size - avail, A, device=actions.device, dtype=actions.dtype)
                 a_window = torch.cat([a_partial, pad], dim=1)
             h_in = h[:, -self.history_size:]
-            nxt = self.model.predict(h_in, a_window)  # (N, history_size, D)
+            if self.predict_hook is None:
+                nxt = self.model.predict(h_in, a_window)  # (N, history_size, D)
+            else:
+                nxt = self.predict_hook(self.model, h_in, a_window)
             # Take only the last step as the next latent
             nxt = nxt[:, -1]  # (N, D)
             h = torch.cat([h[:, 1:], nxt.unsqueeze(1)], dim=1)

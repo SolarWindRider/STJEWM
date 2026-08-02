@@ -154,6 +154,8 @@ def eval_closed_loop(
     split: str = "in_dist",
     pad_obs_to: Optional[int] = None,
     model_action_dim: Optional[int] = None,
+    history_predict_hook=None,
+    cem_predict_hook=None,
 ) -> ClosedLoopResult:
     action_dim = env.spec.action_dim
     action_low = env.spec.action_low
@@ -179,6 +181,7 @@ def eval_closed_loop(
         model, action_dim=model_action_dim, horizon=horizon,
         n_samples=cem_samples, n_elites=cem_elites, n_iters=cem_iters,
         history_size=history_size, device=device,
+        predict_hook=cem_predict_hook,
     )
     # Load dataset for sampling init/goal pairs (pads to pad_obs_to if set)
     ds, state_dim = _load_eval_dataset(
@@ -259,7 +262,10 @@ def eval_closed_loop(
                 try:
                     with torch.no_grad():
                         a_window = seq[:history_size].unsqueeze(0)
-                        nxt = model.predict(z_history.unsqueeze(0), a_window)
+                        if history_predict_hook is None:
+                            nxt = model.predict(z_history.unsqueeze(0), a_window)
+                        else:
+                            nxt = history_predict_hook(model, z_history.unsqueeze(0), a_window, actions_taken)
                         z_history = torch.cat([z_history[1:], nxt[0:1, -1]], dim=0)
                         z_init = z_history[-1]
                 except Exception:

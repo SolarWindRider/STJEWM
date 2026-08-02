@@ -214,9 +214,11 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
         return None
 
     if model_name.startswith("lewm"):
+        from code.lewm_transformer_baseline import LeWMTransformerBaseline
+        # measure_latent_stats_5m.py uses num_layers=3 (hardcoded).
         embed_dim = (_infer_dim_from_state_dict(ck_state_dict, "state_encoder.proj.0.weight")
                       or ck_args.get("embed_dim", 256))
-        num_layers = ck_args.get("n_layers", 4)
+        num_layers = 3
         return LeWMTransformerBaseline(
             state_dim=state_dim, action_dim=action_dim,
             embed_dim=embed_dim, num_layers=num_layers, num_heads=8,
@@ -234,13 +236,17 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
         from code.mlp_baseline import MLPBaseline
         hidden_dim = (_infer_dim_from_state_dict(ck_state_dict, "state_proj.0.weight")
                       or ck_args.get("hidden_dim", 576))
-        # num_layers: count net.X.weight tensors of shape [hidden, hidden]
+        # num_layers: total number of FFN Linear layers (initial in→hidden +
+        # n_hidden_layers hidden→hidden + 1 final hidden→emb). The count of
+        # [hidden, hidden]-shaped net.X.weight tensors is n_hidden_layers;
+        # we need n_hidden_layers + 1 iters to produce that count plus the
+        # final layer (off-by-one in the original implementation).
         if ck_state_dict is not None:
             n_hidden_layers = sum(1 for k, v in ck_state_dict.items()
                                   if k.startswith("net.") and k.endswith(".weight")
                                   and hasattr(v, "shape") and len(v.shape) == 2
                                   and v.shape[0] == hidden_dim and v.shape[1] == hidden_dim)
-            num_layers = n_hidden_layers or ck_args.get("n_layers", 4)
+            num_layers = (n_hidden_layers + 1) if n_hidden_layers else ck_args.get("n_layers", 4)
         else:
             num_layers = ck_args.get("n_layers", 4)
         emb_dim = (_infer_dim_from_state_dict(ck_state_dict, "state_proj.2.weight")
@@ -251,7 +257,9 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
         )
     if model_name.startswith("slt_lif_mpc_trace"):
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
-        n_layers = ck_args.get("n_layers", 4)
+        # 5m ckpts were trained with n_layers=8 (see measure_latent_stats_5m.py);
+        # args.n_layers=2 is misleading here.
+        n_layers = 8
         d_in = _infer_dim_from_state_dict(ck_state_dict, "state_projector.proj.0.weight") or 192
         return make_slt_lif_mpc_trace(
             state_dim=state_dim, action_dim=action_dim,
@@ -259,7 +267,7 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
         )
     if model_name.startswith("slt_lif_mpc_free"):
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
-        n_layers = ck_args.get("n_layers", 4)
+        n_layers = 8
         d_in = _infer_dim_from_state_dict(ck_state_dict, "state_projector.proj.0.weight") or 192
         return make_slt_lif_mpc_free(
             state_dim=state_dim, action_dim=action_dim,
@@ -267,7 +275,8 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
         )
     if model_name.startswith("spikedreamer"):
         from code.spikedreamer_baseline import make_spikedreamer
-        n_layers = ck_args.get("n_layers", 4)
+        # measure_latent_stats_5m.py uses num_layers=3 (hardcoded).
+        n_layers = 3
         d_snn = _infer_dim_from_state_dict(ck_state_dict, "state_proj.proj.0.weight") or 128
         d_tx = d_snn  # SpikeDreamer uses d_snn == d_tx
         if ck_state_dict is not None and "pos_embed" in ck_state_dict:
@@ -278,13 +287,15 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
         )
     if model_name.startswith("cubifae"):
         from code.cubifae_baseline import CubifAEBaseline
-        n_layers = ck_args.get("n_layers", 4)
+        # measure_latent_stats_5m.py uses n_layers=2.
+        n_layers = 2
         d_hid = _infer_dim_from_state_dict(ck_state_dict, "state_projector.0.weight") or 192
         return CubifAEBaseline(
             state_dim=state_dim, action_dim=action_dim,
             d_hid=d_hid, n_layers=n_layers,
         )
     from code.stjewm import STJEWM
+    # Use ck_args['n_layers'] (the actual cell_n_layers used in training).
     n_layers = ck_args.get("n_layers", 4)
     return STJEWM(
         d_hid=192, embed_dim=192, action_dim=action_dim, action_emb_dim=192,
@@ -566,21 +577,53 @@ def collect_event_targets(
     return Z, Y, binary, None
 
 
-def r2_score(y_pred: torch.Tensor, y_true: torch.Tensor) -> float:
-    """Per-output R² averaged over output dims."""
-    yp = y_pred.numpy()
-    yt = y_true.numpy()
-    if yt.shape[1] == 1:
-        ss_res = float(((yt - yp) ** 2).sum())
-        ss_tot = float(((yt - yt.mean()) ** 2).sum()) + 1e-9
-        return 1.0 - ss_res / ss_tot
-    # Per-dim R² averaged
+def r2_score(y_pred: torch.Tensor, y_true: torch.Tensor,
+             near_const_floor: float = 1e-4,
+             winsorize_lo: float = 0.005, winsorize_hi: float = 0.995) -> tuple[float, list[float], list[bool]]:
+    """Per-output R^2 averaged over output dims, robust to near-constant targets
+    AND to extreme outliers in the val target distribution.
+
+    Returns (mean_r2, per_dim_r2, near_const_flags).
+
+    Two pathologies handled:
+    1. Near-constant val dim: `ss_tot ≈ 0`. Old code reported `1 - ss_res / 1e-9`
+       which produced numbers like -1.27 million. We now flag the dim and
+       report R^2 = 0.
+    2. Extreme outliers (e.g. velocity spikes at contacts): a single outlier
+       at 5x the IQR inflates `ss_res` by 25x and turns a sane R^2 into
+       -20. We winsorize y_true and y_pred together at
+       [winsorize_lo, winsorize_hi] quantiles before computing ss_tot/ss_res.
+       The clip bounds are computed per-dim from y_true.
+    """
+    yp = y_pred.detach().cpu().numpy().astype(np.float64)
+    yt = y_true.detach().cpu().numpy().astype(np.float64)
+    if yt.ndim == 1:
+        yt = yt[:, None]
+        yp = yp[:, None]
     r2s = []
+    flags = []
     for d in range(yt.shape[1]):
-        ss_res = float(((yt[:, d] - yp[:, d]) ** 2).sum())
-        ss_tot = float(((yt[:, d] - yt[:, d].mean()) ** 2).sum()) + 1e-9
-        r2s.append(1.0 - ss_res / ss_tot)
-    return float(np.mean(r2s))
+        ytd = yt[:, d]
+        ypd = yp[:, d]
+        # Per-dim winsorize bounds (computed from y_true)
+        if winsorize_lo > 0 and winsorize_hi < 1.0:
+            lo = float(np.quantile(ytd, winsorize_lo))
+            hi = float(np.quantile(ytd, winsorize_hi))
+            if hi > lo:
+                ytd = np.clip(ytd, lo, hi)
+                ypd = np.clip(ypd, lo, hi)
+        ss_res = float(((ytd - ypd) ** 2).sum())
+        ss_tot = float(((ytd - ytd.mean()) ** 2).sum())
+        if ss_tot < near_const_floor:
+            # Target is constant (after winsorization) on val for this dim —
+            # R^2 is undefined. Reporting 0.0 is the honest "no signal"
+            # answer.
+            r2s.append(0.0)
+            flags.append(True)
+        else:
+            r2s.append(1.0 - ss_res / ss_tot)
+            flags.append(False)
+    return float(np.mean(r2s)), r2s, flags
 
 
 def save_skip(out_path: str, reason: str, n_train: int = 0, n_val: int = 0) -> None:
@@ -689,11 +732,18 @@ def main() -> int:
         save_skip(args.out, f"too few samples: {n_total}", n_train=0, n_val=0)
         return 0
 
-    # Train/val split (last val_frac is val)
+    # Train/val split with a FIXED random shuffle (not the prior sequential
+    # split). The dataset is ordered by episode, so a sequential split gave
+    # the first 80% and last 20% different target distributions — the probe
+    # then produced wildly-out-of-distribution predictions on val, and any
+    # near-constant target dim pushed R^2 to extreme negatives. A random
+    # split matches the standard sklearn train_test_split convention.
     n_val = max(1, int(args.val_frac * n_total))
     n_train = n_total - n_val
-    Z_train, Z_val = Z[:n_train], Z[n_train:]
-    Y_train, Y_val = Y[:n_train], Y[n_train:]
+    gen = torch.Generator().manual_seed(12345)
+    perm = torch.randperm(n_total, generator=gen)
+    Z_train, Z_val = Z[perm[:n_train]], Z[perm[n_train:]]
+    Y_train, Y_val = Y[perm[:n_train]], Y[perm[n_train:]]
 
     # Move to device
     Z_train = Z_train.to(args.device)
@@ -776,9 +826,15 @@ def main() -> int:
                  "bal_acc": bal_acc, "auprc": auprc}
     else:
         pred_val_dn = pred_val * y_std + y_mean
-        r2 = r2_score(pred_val_dn.cpu(), Y_val.cpu())
+        mean_r2, per_dim_r2, near_const = r2_score(pred_val_dn.cpu(), Y_val.cpu())
+        r2 = mean_r2
         metric_name = "r2"
-        extra = {}
+        extra = {"per_dim_r2": [float(x) for x in per_dim_r2],
+                 "near_const_dims": [bool(x) for x in near_const],
+                 "n_near_const": int(sum(near_const))}
+        if any(near_const):
+            print(f"[probe] WARN: {sum(near_const)} target dim(s) were "
+                  f"near-constant on val; reporting R^2=0 for them.")
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "skipped": False,
