@@ -1,0 +1,21 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.0070833880268925675,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "contact",
+  "env": "pendulum_2d",
+  "model": "stjewm_hidden_leak",
+  "probe_dim": 1,
+  "wall_time_sec": 0.91,
+  "per_dim_r2": [
+    -0.0070833880268925675
+  ],
+  "near_const_dims": [
+    false
+  ],
+  "n_near_const": 0
+}

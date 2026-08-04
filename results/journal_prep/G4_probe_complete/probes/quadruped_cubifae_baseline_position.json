@@ -1,0 +1,43 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.016499218206003603,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "position",
+  "env": "quadruped",
+  "model": "cubifae_baseline",
+  "probe_dim": 12,
+  "wall_time_sec": 0.41,
+  "per_dim_r2": [
+    0.003709509157082347,
+    -0.12507811188248352,
+    0.01977840617730342,
+    -0.028258892197533303,
+    0.01356542313781095,
+    0.05744082883651558,
+    -0.18320405625602598,
+    -0.01583204852417408,
+    0.029771096304491707,
+    0.008342731866677888,
+    0.013236466340449726,
+    0.008538028567842026
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

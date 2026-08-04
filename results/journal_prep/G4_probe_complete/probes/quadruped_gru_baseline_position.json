@@ -1,0 +1,43 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": 0.11323269398835607,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "position",
+  "env": "quadruped",
+  "model": "gru_baseline",
+  "probe_dim": 12,
+  "wall_time_sec": 1.07,
+  "per_dim_r2": [
+    0.15602834908077667,
+    0.22255597147716866,
+    0.09456744752097979,
+    0.16573436494746896,
+    0.19527081931740997,
+    0.12441450523343489,
+    0.0015439858774479731,
+    0.057718506272589565,
+    0.0625468211787843,
+    0.18985664412866476,
+    0.0978017363860505,
+    -0.009246823560502992
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

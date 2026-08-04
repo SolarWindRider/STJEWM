@@ -1,0 +1,43 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": 0.022136247097809675,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "goal_direction",
+  "env": "quadruped",
+  "model": "slt_lif_mpc_trace",
+  "probe_dim": 12,
+  "wall_time_sec": 1.97,
+  "per_dim_r2": [
+    0.02428125349850896,
+    -0.03721533287554846,
+    0.09796661350141322,
+    -0.02869845122086745,
+    0.034848046627367846,
+    0.049411409492775005,
+    0.19378385099745432,
+    -0.08791078768000671,
+    0.011904843282405597,
+    0.005717554825003579,
+    -0.008515591849378001,
+    0.010061556574588182
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

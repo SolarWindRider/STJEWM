@@ -1,0 +1,25 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.11160816546427528,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "goal_direction",
+  "env": "finger",
+  "model": "spikedreamer_baseline",
+  "probe_dim": 3,
+  "wall_time_sec": 0.29,
+  "per_dim_r2": [
+    0.01931198551530644,
+    -0.09690315986786957,
+    -0.2572333220402627
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

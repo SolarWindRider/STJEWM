@@ -1,0 +1,25 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.02443478757069084,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "position",
+  "env": "finger",
+  "model": "stjewm_no_trace",
+  "probe_dim": 3,
+  "wall_time_sec": 0.09,
+  "per_dim_r2": [
+    0.0015868199864624843,
+    -0.0014815671770169736,
+    -0.07340961552151803
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

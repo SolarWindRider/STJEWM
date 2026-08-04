@@ -1,0 +1,10 @@
+{
+  "skipped": false,
+  "reason": null,
+  "env": "ball_in_cup",
+  "model": "stjewm_no_trace",
+  "corr_obs_latent": 0.9999512434005737,
+  "corr_obs_rate": -0.07089927792549133,
+  "n_steps": 199,
+  "n_resets": 1
+}

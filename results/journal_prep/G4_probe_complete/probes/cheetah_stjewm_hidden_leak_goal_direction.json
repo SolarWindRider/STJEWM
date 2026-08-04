@@ -1,0 +1,37 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.02115715877328972,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "goal_direction",
+  "env": "cheetah",
+  "model": "stjewm_hidden_leak",
+  "probe_dim": 9,
+  "wall_time_sec": 0.25,
+  "per_dim_r2": [
+    -0.08906297952430009,
+    -0.004097930507260594,
+    -0.022987157583048923,
+    -0.004971118678167352,
+    -0.024120955686530277,
+    -0.009594819703585333,
+    -0.00045158004964918064,
+    -0.0335303833417715,
+    -0.001597503885294227
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

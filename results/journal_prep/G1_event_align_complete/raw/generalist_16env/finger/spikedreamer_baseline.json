@@ -1,0 +1,10 @@
+{
+  "skipped": false,
+  "reason": null,
+  "env": "finger",
+  "model": "spikedreamer_baseline",
+  "corr_obs_latent": 0.028446342796087265,
+  "corr_obs_rate": 0.0,
+  "n_steps": 199,
+  "n_resets": 1
+}

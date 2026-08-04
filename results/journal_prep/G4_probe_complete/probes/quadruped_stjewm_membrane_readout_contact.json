@@ -1,0 +1,21 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.2626097312862532,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "contact",
+  "env": "quadruped",
+  "model": "stjewm_membrane_readout",
+  "probe_dim": 1,
+  "wall_time_sec": 1.36,
+  "per_dim_r2": [
+    -0.2626097312862532
+  ],
+  "near_const_dims": [
+    false
+  ],
+  "n_near_const": 0
+}

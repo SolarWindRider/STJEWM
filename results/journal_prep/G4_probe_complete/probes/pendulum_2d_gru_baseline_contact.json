@@ -1,0 +1,21 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.002255628789412878,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "contact",
+  "env": "pendulum_2d",
+  "model": "gru_baseline",
+  "probe_dim": 1,
+  "wall_time_sec": 0.51,
+  "per_dim_r2": [
+    -0.002255628789412878
+  ],
+  "near_const_dims": [
+    false
+  ],
+  "n_near_const": 0
+}

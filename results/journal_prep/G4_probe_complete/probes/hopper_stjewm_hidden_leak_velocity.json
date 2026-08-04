@@ -1,0 +1,25 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.6760919269429518,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "velocity",
+  "env": "hopper",
+  "model": "stjewm_hidden_leak",
+  "probe_dim": 3,
+  "wall_time_sec": 0.3,
+  "per_dim_r2": [
+    -0.5739461974544451,
+    -1.4476436907194663,
+    -0.006685892654944237
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

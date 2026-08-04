@@ -1,0 +1,1 @@
+[probe] pendulum_2d/gru_baseline/position: R^2=0.0382  (n_train=160, n_val=40, 0.6s)

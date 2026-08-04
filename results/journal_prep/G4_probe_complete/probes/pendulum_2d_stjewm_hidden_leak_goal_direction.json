@@ -1,0 +1,23 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.05541918803022272,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "goal_direction",
+  "env": "pendulum_2d",
+  "model": "stjewm_hidden_leak",
+  "probe_dim": 2,
+  "wall_time_sec": 0.53,
+  "per_dim_r2": [
+    -0.052879508765113714,
+    -0.05795886729533173
+  ],
+  "near_const_dims": [
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

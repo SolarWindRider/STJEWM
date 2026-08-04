@@ -1,0 +1,25 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.07350004316964316,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "goal_direction",
+  "env": "finger",
+  "model": "stjewm_rate_only",
+  "probe_dim": 3,
+  "wall_time_sec": 0.02,
+  "per_dim_r2": [
+    -0.0011996096278521495,
+    -0.07553410821710638,
+    -0.14376641166397097
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

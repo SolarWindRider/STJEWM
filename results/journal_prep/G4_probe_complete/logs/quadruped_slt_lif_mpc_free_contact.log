@@ -1,0 +1,1 @@
+[probe] quadruped/slt_lif_mpc_free/contact: R^2=-0.0983  (n_train=160, n_val=40, 0.2s)

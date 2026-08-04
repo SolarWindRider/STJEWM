@@ -1,0 +1,10 @@
+{
+  "skipped": false,
+  "reason": null,
+  "env": "pendulum_2d",
+  "model": "mlp_baseline",
+  "corr_obs_latent": -0.0010892123682424426,
+  "corr_obs_rate": 0.11510491371154785,
+  "n_steps": 199,
+  "n_resets": 0
+}

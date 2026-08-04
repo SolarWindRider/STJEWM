@@ -1,0 +1,37 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.013585108235189066,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "goal_direction",
+  "env": "cheetah",
+  "model": "slt_lif_mpc_trace",
+  "probe_dim": 9,
+  "wall_time_sec": 1.2,
+  "per_dim_r2": [
+    -0.10395037736017487,
+    0.004709909082972641,
+    -0.006886018761251167,
+    0.008206133425716411,
+    -0.017678013295182593,
+    -0.0027826326043480787,
+    0.002647637842191908,
+    -0.020659635895116768,
+    0.014127023448490927
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

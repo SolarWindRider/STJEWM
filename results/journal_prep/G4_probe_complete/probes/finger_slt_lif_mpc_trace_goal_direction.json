@@ -1,0 +1,25 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.06244454285366093,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "goal_direction",
+  "env": "finger",
+  "model": "slt_lif_mpc_trace",
+  "probe_dim": 3,
+  "wall_time_sec": 0.62,
+  "per_dim_r2": [
+    0.02194524850895818,
+    -0.04956042412887918,
+    -0.1597184529410618
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

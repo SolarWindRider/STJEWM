@@ -1,0 +1,2 @@
+[probe] WARN: 3 target dim(s) were near-constant on val; reporting R^2=0 for them.
+[probe] fish/slt_lif_mpc_trace/velocity: R^2=0.0000  (n_train=160, n_val=40, 1.7s)

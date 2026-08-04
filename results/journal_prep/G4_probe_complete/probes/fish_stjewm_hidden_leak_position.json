@@ -1,0 +1,33 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.117048165542961,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "position",
+  "env": "fish",
+  "model": "stjewm_hidden_leak",
+  "probe_dim": 7,
+  "wall_time_sec": 0.18,
+  "per_dim_r2": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    -0.819337158800727
+  ],
+  "near_const_dims": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false
+  ],
+  "n_near_const": 6
+}

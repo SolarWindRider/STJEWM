@@ -1,0 +1,10 @@
+{
+  "skipped": false,
+  "reason": null,
+  "env": "pendulum_2d",
+  "model": "slt_lif_mpc_free",
+  "corr_obs_latent": 0.9999678730964661,
+  "corr_obs_rate": 0.13695555925369263,
+  "n_steps": 199,
+  "n_resets": 0
+}

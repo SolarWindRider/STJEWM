@@ -1,0 +1,10 @@
+{
+  "skipped": false,
+  "reason": null,
+  "env": "pendulum_2d",
+  "model": "gru_baseline",
+  "corr_obs_latent": -0.14951325953006744,
+  "corr_obs_rate": 0.5718937516212463,
+  "n_steps": 199,
+  "n_resets": 0
+}

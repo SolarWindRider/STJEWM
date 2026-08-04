@@ -145,6 +145,32 @@ def _lewm_arch(state_dict):
     return (max(idxs) + 1) if idxs else None, embed
 
 
+def _cubifae_arch(state_dict):
+    """Infer (n_layers, d_hid) of CubifAEBaseline from a state dict."""
+    idxs = []
+    for key in state_dict:
+        match = _re.match(r"^stack\.cells\.(\d+)\.", key)
+        if match:
+            idxs.append(int(match.group(1)))
+    weight = state_dict.get("state_projector.0.weight")
+    d_hid = int(weight.shape[0]) if weight is not None else None
+    return (max(idxs) + 1) if idxs else None, d_hid
+
+
+def _spikedreamer_arch(state_dict):
+    """Infer (num_layers, d_snn, d_tx) of SpikeDreamer from a state dict."""
+    idxs = []
+    for key in state_dict:
+        match = _re.match(r"^blocks\.(\d+)\.", key)
+        if match:
+            idxs.append(int(match.group(1)))
+    state_weight = state_dict.get("state_proj.proj.0.weight")
+    pos_embed = state_dict.get("pos_embed")
+    d_snn = int(state_weight.shape[0]) if state_weight is not None else None
+    d_tx = int(pos_embed.shape[-1]) if pos_embed is not None else None
+    return (max(idxs) + 1) if idxs else None, d_snn, d_tx
+
+
 def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
                 state_dict: dict | None = None):
     m = ck_args.get("model", model_name)
@@ -191,9 +217,11 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
         )
     if m == "cubifae_baseline" or model_name.startswith("cubifae"):
         from code.cubifae_baseline import make_cubifae_baseline
+        n_layers_inf, d_hid_inf = _cubifae_arch(state_dict or {})
         return make_cubifae_baseline(
             state_dim=state_dim, action_dim=action_dim,
-            n_layers=ck_args.get("n_layers", 4),
+            n_layers=_resolve(n_layers_inf, ck_args.get("n_layers"), 4),
+            d_hid=_resolve(d_hid_inf, None, 192),
         )
     if m == "slt_lif_mpc_trace" or model_name.startswith("slt_lif_mpc_trace"):
         from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
@@ -221,7 +249,13 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
         )
     if m == "spikedreamer_baseline" or model_name.startswith("spikedreamer"):
         from code.spikedreamer_baseline import make_spikedreamer
-        return make_spikedreamer(state_dim=state_dim, action_dim=action_dim)
+        n_layers_inf, d_snn_inf, d_tx_inf = _spikedreamer_arch(state_dict or {})
+        return make_spikedreamer(
+            state_dim=state_dim, action_dim=action_dim,
+            num_layers=_resolve(n_layers_inf, ck_args.get("n_layers"), 4),
+            d_snn=_resolve(d_snn_inf, None, 128),
+            d_tx=_resolve(d_tx_inf, None, 192),
+        )
     # default: STJEWM
     n_layers = ck_args.get("n_layers", 4)
     from code.stjewm import STJEWM

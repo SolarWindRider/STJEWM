@@ -1,0 +1,43 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.04775644647524346,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "goal_direction",
+  "env": "quadruped",
+  "model": "stjewm_no_trace",
+  "probe_dim": 12,
+  "wall_time_sec": 0.68,
+  "per_dim_r2": [
+    -0.09969733405316838,
+    -0.20243403846762154,
+    -0.029659831823174,
+    -0.16687216152717,
+    -0.02844987346278116,
+    -0.0015469682026549858,
+    0.05320930399174362,
+    -0.044488218487716,
+    -0.0022111299181577504,
+    -0.05146664740679108,
+    0.007965154065000202,
+    -0.007425612410430382
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

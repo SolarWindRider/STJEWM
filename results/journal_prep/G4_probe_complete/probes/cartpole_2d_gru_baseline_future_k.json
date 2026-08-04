@@ -1,0 +1,23 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": 0.14513827059601753,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "future_k",
+  "env": "cartpole_2d",
+  "model": "gru_baseline",
+  "probe_dim": 2,
+  "wall_time_sec": 0.42,
+  "per_dim_r2": [
+    0.054312828228294974,
+    0.23596371296374008
+  ],
+  "near_const_dims": [
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

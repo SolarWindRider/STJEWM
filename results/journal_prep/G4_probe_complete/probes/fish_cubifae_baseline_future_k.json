@@ -1,0 +1,33 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.029963637646011603,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "future_k",
+  "env": "fish",
+  "model": "cubifae_baseline",
+  "probe_dim": 7,
+  "wall_time_sec": 1.39,
+  "per_dim_r2": [
+    -0.05416715749736167,
+    -0.026121059697651328,
+    -0.027288877778247844,
+    -0.025646226165569885,
+    -0.03770848339246102,
+    -0.018950049664667956,
+    -0.019863609326121523
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

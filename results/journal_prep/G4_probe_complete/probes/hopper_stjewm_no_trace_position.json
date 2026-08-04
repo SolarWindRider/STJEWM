@@ -1,0 +1,33 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.07185736894570646,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "position",
+  "env": "hopper",
+  "model": "stjewm_no_trace",
+  "probe_dim": 7,
+  "wall_time_sec": 0.52,
+  "per_dim_r2": [
+    -0.1711916862537799,
+    -0.06920804509152556,
+    -0.09698030262132917,
+    -0.0008323385206288059,
+    -0.16140767860532224,
+    -0.006881415008528569,
+    0.0034998834811690305
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

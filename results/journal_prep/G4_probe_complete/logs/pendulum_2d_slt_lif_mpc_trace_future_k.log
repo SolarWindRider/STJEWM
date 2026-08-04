@@ -1,0 +1,1 @@
+[probe] pendulum_2d/slt_lif_mpc_trace/future_k: R^2=0.0305  (n_train=160, n_val=40, 0.6s)

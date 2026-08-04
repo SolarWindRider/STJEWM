@@ -1,0 +1,7 @@
+/home/lx/miniconda3/envs/snn/lib/python3.10/runpy.py:126: RuntimeWarning: 'code.train.train' found in sys.modules after import of package 'code.train', but prior to execution of 'code.train.train'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[train/gru_baseline] cmd: {'model': 'gru_baseline', 'env_kind': None, 'image_size': 0, 'multi_env_spec': 'configs/oodc_5m/oodc_F2.json', 'pad_obs_to': 128, 'action_dim': 56, 'embed_dim': 192, 'data': None, 'out': '/home/lx/snn/results/5m_seed2/oodc_F2/gru_baseline/seed_0', 'epochs': 1, 'batch': 32, 'lr': 0.0003, 'num_workers': 0, 'save_every': 2000, 'log_every': 200, 'seed': 2, 'n_layers': 2, 'hidden_dim': None, 'mlp_hidden': None, 'mlp_layers': None, 'slt_layers': None, 'slt_din': None, 'lambda_sigreg': 0.09, 'lambda_goal': 0.5, 'goal_offset': 25, 'history_size': 1, 't_pred': 3, 'max_windows': None, 'n_episodes': 50, 'max_steps_per_ep': 200, 'readout_mode': 'hidden_leak'}
+[train/gru_baseline] GRUBaseline params total=5.13M trainable=5.13M, 12000 windows/epoch, batch=32, epochs=1, lr=0.0003, lambda_sigreg=0.09, lambda_goal=0.5, goal_offset=25, history=1
+[train/gru_baseline] ep 1/1 step 200 pred=0.0240 sigreg=10.7307 goal=0.0097 total=0.9946 speed=59.42/s ETA=0.0h
+[train/gru_baseline] final saved /home/lx/snn/results/5m_seed2/oodc_F2/gru_baseline/seed_0/final.pt
+[train/gru_baseline] loss log saved /home/lx/snn/results/5m_seed2/oodc_F2/gru_baseline/seed_0/loss_log.json

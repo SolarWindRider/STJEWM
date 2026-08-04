@@ -1,0 +1,1 @@
+[probe] humanoid/slt_lif_mpc_trace/contact: R^2=0.0233  (n_train=160, n_val=40, 0.7s)

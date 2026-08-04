@@ -1,0 +1,33 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.02484320208692257,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "position",
+  "env": "hopper",
+  "model": "slt_lif_mpc_free",
+  "probe_dim": 7,
+  "wall_time_sec": 1.56,
+  "per_dim_r2": [
+    -0.1526449715954561,
+    -0.06648147887996614,
+    -0.014373841509785823,
+    0.05414096915187461,
+    -0.09427128412812569,
+    0.0228416282317927,
+    0.07688656412120842
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

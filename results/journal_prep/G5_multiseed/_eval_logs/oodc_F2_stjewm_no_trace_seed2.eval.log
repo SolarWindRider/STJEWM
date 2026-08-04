@@ -1,0 +1,72 @@
+[eval 1/6] walker -> /home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/eval_walker.json
+/home/lx/miniconda3/envs/snn/lib/python3.10/runpy.py:126: RuntimeWarning: 'code.eval.closed_loop' found in sys.modules after import of package 'code.eval', but prior to execution of 'code.eval.closed_loop'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[closed_loop/walker] ckpt=/home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/final.pt, data=data/dm_control/3d_rollouts_250k/walker_250k.npz
+
+=== FINAL (closed_loop/walker) ===
+  LeWM SR: 0.800 ± 0.000
+  Env-native SR: 0.000 ± 0.000
+  Mean cos_dist: 0.0826
+  Mean phys_dist: 0.1874
+  Saved to /home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/eval_walker.json
+[eval 2/6] humanoid -> /home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/eval_humanoid.json
+/home/lx/miniconda3/envs/snn/lib/python3.10/runpy.py:126: RuntimeWarning: 'code.eval.closed_loop' found in sys.modules after import of package 'code.eval', but prior to execution of 'code.eval.closed_loop'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[closed_loop/humanoid] ckpt=/home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/final.pt, data=data/dm_control/3d_rollouts_250k/humanoid_250k.npz
+
+=== FINAL (closed_loop/humanoid) ===
+  LeWM SR: 0.000 ± 0.000
+  Env-native SR: 0.000 ± 0.000
+  Mean cos_dist: 0.2119
+  Mean phys_dist: 0.3808
+  Saved to /home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/eval_humanoid.json
+[eval 3/6] humanoid_CMU -> /home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/eval_humanoid_CMU.json
+/home/lx/miniconda3/envs/snn/lib/python3.10/runpy.py:126: RuntimeWarning: 'code.eval.closed_loop' found in sys.modules after import of package 'code.eval', but prior to execution of 'code.eval.closed_loop'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[closed_loop/humanoid_CMU] ckpt=/home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/final.pt, data=data/dm_control/3d_rollouts_250k/humanoid_CMU_250k.npz
+Traceback (most recent call last):
+  File "/home/lx/miniconda3/envs/snn/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/home/lx/miniconda3/envs/snn/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/home/lx/snn/code/eval/closed_loop.py", line 701, in <module>
+    main()
+  File "/home/lx/snn/code/eval/closed_loop.py", line 551, in main
+    env = make_env(args.env, args.data, flicker_mask_ratio=args.flicker_mask_ratio,
+  File "/home/lx/snn/code/eval/closed_loop.py", line 101, in make_env
+    raise ValueError(f"Unknown env_kind: {env_kind}")
+ValueError: Unknown env_kind: humanoid_CMU
+[WARN] eval for humanoid_CMU exited rc=1
+[eval 4/6] hopper -> /home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/eval_hopper.json
+/home/lx/miniconda3/envs/snn/lib/python3.10/runpy.py:126: RuntimeWarning: 'code.eval.closed_loop' found in sys.modules after import of package 'code.eval', but prior to execution of 'code.eval.closed_loop'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[closed_loop/hopper] ckpt=/home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/final.pt, data=data/dm_control/3d_rollouts_250k/hopper_250k.npz
+
+=== FINAL (closed_loop/hopper) ===
+  LeWM SR: 0.800 ± 0.000
+  Env-native SR: 0.000 ± 0.000
+  Mean cos_dist: 0.0456
+  Mean phys_dist: 0.1500
+  Saved to /home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/eval_hopper.json
+[eval 5/6] quadruped -> /home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/eval_quadruped.json
+/home/lx/miniconda3/envs/snn/lib/python3.10/runpy.py:126: RuntimeWarning: 'code.eval.closed_loop' found in sys.modules after import of package 'code.eval', but prior to execution of 'code.eval.closed_loop'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[closed_loop/quadruped] ckpt=/home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/final.pt, data=data/dm_control/3d_rollouts_250k/quadruped_250k.npz
+
+=== FINAL (closed_loop/quadruped) ===
+  LeWM SR: 0.600 ± 0.000
+  Env-native SR: 0.000 ± 0.000
+  Mean cos_dist: 0.1101
+  Mean phys_dist: 0.3078
+  Saved to /home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/eval_quadruped.json
+[eval 6/6] dog -> /home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/eval_dog.json
+/home/lx/miniconda3/envs/snn/lib/python3.10/runpy.py:126: RuntimeWarning: 'code.eval.closed_loop' found in sys.modules after import of package 'code.eval', but prior to execution of 'code.eval.closed_loop'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[closed_loop/dog] ckpt=/home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/final.pt, data=data/dm_control/3d_rollouts_250k/dog_250k.npz
+
+=== FINAL (closed_loop/dog) ===
+  LeWM SR: 0.000 ± 0.000
+  Env-native SR: 0.000 ± 0.000
+  Mean cos_dist: 0.2465
+  Mean phys_dist: 0.5076
+  Saved to /home/lx/snn/results/5m_seed2/oodc_F2/stjewm_no_trace/seed_0/eval_dog.json

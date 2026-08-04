@@ -1,0 +1,23 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.00704273765420127,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "goal_direction",
+  "env": "pendulum_2d",
+  "model": "slt_lif_mpc_free",
+  "probe_dim": 2,
+  "wall_time_sec": 0.83,
+  "per_dim_r2": [
+    -0.014887253931352928,
+    0.0008017786229503887
+  ],
+  "near_const_dims": [
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

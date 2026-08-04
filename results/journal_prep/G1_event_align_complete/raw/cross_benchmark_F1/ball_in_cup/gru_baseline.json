@@ -1,0 +1,10 @@
+{
+  "skipped": false,
+  "reason": null,
+  "env": "ball_in_cup",
+  "model": "gru_baseline",
+  "corr_obs_latent": 0.06308121979236603,
+  "corr_obs_rate": -0.10667343437671661,
+  "n_steps": 199,
+  "n_resets": 1
+}

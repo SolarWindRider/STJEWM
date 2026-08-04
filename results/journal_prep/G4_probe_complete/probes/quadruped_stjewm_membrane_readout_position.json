@@ -1,0 +1,43 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": 0.01711015965194652,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "position",
+  "env": "quadruped",
+  "model": "stjewm_membrane_readout",
+  "probe_dim": 12,
+  "wall_time_sec": 0.33,
+  "per_dim_r2": [
+    0.06476355512652177,
+    0.0072685445062283804,
+    0.04581845624525893,
+    -0.018521513700357373,
+    0.0037792533715244048,
+    0.030159499718178773,
+    -0.06999472929615713,
+    -0.004573595725124724,
+    0.023616922641282012,
+    0.053405762233810106,
+    0.0675664989880348,
+    0.0020332617141582965
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

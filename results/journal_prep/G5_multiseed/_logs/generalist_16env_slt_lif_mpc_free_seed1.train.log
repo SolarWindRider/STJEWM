@@ -1,0 +1,33 @@
+/home/lx/miniconda3/envs/snn/lib/python3.10/runpy.py:126: RuntimeWarning: 'code.train.train' found in sys.modules after import of package 'code.train', but prior to execution of 'code.train.train'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[train/slt_lif_mpc_free] cmd: {'model': 'slt_lif_mpc_free', 'env_kind': None, 'image_size': 0, 'multi_env_spec': 'configs/oodc_5m/generalist_16env.json', 'pad_obs_to': 128, 'action_dim': 56, 'embed_dim': 192, 'data': None, 'out': '/home/lx/snn/results/5m_seed1/generalist_16env/slt_lif_mpc_free/seed_0', 'epochs': 1, 'batch': 32, 'lr': 0.0003, 'num_workers': 0, 'save_every': 2000, 'log_every': 200, 'seed': 1, 'n_layers': 2, 'hidden_dim': None, 'mlp_hidden': None, 'mlp_layers': None, 'slt_layers': None, 'slt_din': None, 'lambda_sigreg': 0.09, 'lambda_goal': 0.5, 'goal_offset': 25, 'history_size': 1, 't_pred': 3, 'max_windows': None, 'n_episodes': 50, 'max_steps_per_ep': 200, 'readout_mode': 'hidden_leak'}
+[train/slt_lif_mpc_free] SLT_LIF_MPC_FreeAccess params total=5.05M trainable=5.05M, 160000 windows/epoch, batch=32, epochs=1, lr=0.0003, lambda_sigreg=0.09, lambda_goal=0.5, goal_offset=25, history=1
+[train/slt_lif_mpc_free] ep 1/1 step 200 pred=0.0046 sparse=0.0258 action=0.0000 total=0.0046 speed=2.83/s ETA=0.5h sparsity=0.974
+[train/slt_lif_mpc_free] ep 1/1 step 400 pred=0.0039 sparse=0.0234 action=0.0000 total=0.0039 speed=2.84/s ETA=0.4h sparsity=0.977
+[train/slt_lif_mpc_free] ep 1/1 step 600 pred=0.0047 sparse=0.0258 action=0.0000 total=0.0047 speed=2.85/s ETA=0.4h sparsity=0.974
+[train/slt_lif_mpc_free] ep 1/1 step 800 pred=0.0042 sparse=0.0247 action=0.0000 total=0.0042 speed=2.85/s ETA=0.4h sparsity=0.975
+[train/slt_lif_mpc_free] ep 1/1 step 1000 pred=0.0044 sparse=0.0260 action=0.0000 total=0.0044 speed=2.85/s ETA=0.4h sparsity=0.974
+[train/slt_lif_mpc_free] ep 1/1 step 1200 pred=0.0043 sparse=0.0230 action=0.0000 total=0.0043 speed=2.85/s ETA=0.4h sparsity=0.977
+[train/slt_lif_mpc_free] ep 1/1 step 1400 pred=0.0051 sparse=0.0275 action=0.0000 total=0.0051 speed=2.85/s ETA=0.4h sparsity=0.973
+[train/slt_lif_mpc_free] ep 1/1 step 1600 pred=0.0048 sparse=0.0252 action=0.0000 total=0.0048 speed=2.85/s ETA=0.3h sparsity=0.975
+[train/slt_lif_mpc_free] ep 1/1 step 1800 pred=0.0048 sparse=0.0250 action=0.0000 total=0.0048 speed=2.85/s ETA=0.3h sparsity=0.975
+[train/slt_lif_mpc_free] ep 1/1 step 2000 pred=0.0049 sparse=0.0273 action=0.0000 total=0.0049 speed=2.84/s ETA=0.3h sparsity=0.973
+[train/slt_lif_mpc_free] saved /home/lx/snn/results/5m_seed1/generalist_16env/slt_lif_mpc_free/seed_0/step2000.pt
+[train/slt_lif_mpc_free] ep 1/1 step 2200 pred=0.0042 sparse=0.0248 action=0.0000 total=0.0042 speed=2.83/s ETA=0.3h sparsity=0.975
+[train/slt_lif_mpc_free] ep 1/1 step 2400 pred=0.0037 sparse=0.0225 action=0.0000 total=0.0037 speed=2.82/s ETA=0.3h sparsity=0.978
+[train/slt_lif_mpc_free] ep 1/1 step 2600 pred=0.0045 sparse=0.0259 action=0.0000 total=0.0045 speed=2.81/s ETA=0.2h sparsity=0.974
+[train/slt_lif_mpc_free] ep 1/1 step 2800 pred=0.0041 sparse=0.0246 action=0.0000 total=0.0041 speed=2.80/s ETA=0.2h sparsity=0.975
+[train/slt_lif_mpc_free] ep 1/1 step 3000 pred=0.0041 sparse=0.0242 action=0.0000 total=0.0041 speed=2.78/s ETA=0.2h sparsity=0.976
+[train/slt_lif_mpc_free] ep 1/1 step 3200 pred=0.0040 sparse=0.0224 action=0.0000 total=0.0040 speed=2.73/s ETA=0.2h sparsity=0.978
+[train/slt_lif_mpc_free] ep 1/1 step 3400 pred=0.0040 sparse=0.0226 action=0.0000 total=0.0040 speed=2.71/s ETA=0.2h sparsity=0.977
+[train/slt_lif_mpc_free] ep 1/1 step 3600 pred=0.0052 sparse=0.0288 action=0.0000 total=0.0052 speed=2.64/s ETA=0.1h sparsity=0.971
+[train/slt_lif_mpc_free] ep 1/1 step 3800 pred=0.0042 sparse=0.0247 action=0.0000 total=0.0043 speed=2.64/s ETA=0.1h sparsity=0.975
+[train/slt_lif_mpc_free] ep 1/1 step 4000 pred=0.0040 sparse=0.0233 action=0.0000 total=0.0040 speed=2.63/s ETA=0.1h sparsity=0.977
+[train/slt_lif_mpc_free] saved /home/lx/snn/results/5m_seed1/generalist_16env/slt_lif_mpc_free/seed_0/step4000.pt
+[train/slt_lif_mpc_free] ep 1/1 step 4200 pred=0.0040 sparse=0.0234 action=0.0000 total=0.0040 speed=2.63/s ETA=0.1h sparsity=0.977
+[train/slt_lif_mpc_free] ep 1/1 step 4400 pred=0.0048 sparse=0.0251 action=0.0000 total=0.0048 speed=2.63/s ETA=0.1h sparsity=0.975
+[train/slt_lif_mpc_free] ep 1/1 step 4600 pred=0.0044 sparse=0.0246 action=0.0000 total=0.0044 speed=2.63/s ETA=0.0h sparsity=0.975
+[train/slt_lif_mpc_free] ep 1/1 step 4800 pred=0.0053 sparse=0.0267 action=0.0000 total=0.0053 speed=2.64/s ETA=0.0h sparsity=0.973
+[train/slt_lif_mpc_free] ep 1/1 step 5000 pred=0.0044 sparse=0.0251 action=0.0000 total=0.0044 speed=2.64/s ETA=0.0h sparsity=0.975
+[train/slt_lif_mpc_free] final saved /home/lx/snn/results/5m_seed1/generalist_16env/slt_lif_mpc_free/seed_0/final.pt
+[train/slt_lif_mpc_free] loss log saved /home/lx/snn/results/5m_seed1/generalist_16env/slt_lif_mpc_free/seed_0/loss_log.json

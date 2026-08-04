@@ -1,0 +1,39 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.05101926624808896,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "future_k",
+  "env": "stacker",
+  "model": "stjewm_hidden_leak",
+  "probe_dim": 10,
+  "wall_time_sec": 0.85,
+  "per_dim_r2": [
+    -0.08362240081157823,
+    -0.050030456082887476,
+    -0.03831031080148595,
+    -0.06118704652653095,
+    -0.1341754888637059,
+    0.003250897938870012,
+    -0.06137529724748836,
+    -0.007952967499140096,
+    0.0,
+    -0.07678959258694262
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    false
+  ],
+  "n_near_const": 1
+}

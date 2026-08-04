@@ -1,0 +1,23 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.007849005587080848,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "future_k",
+  "env": "pendulum_2d",
+  "model": "cubifae_baseline",
+  "probe_dim": 2,
+  "wall_time_sec": 0.3,
+  "per_dim_r2": [
+    -0.03479231889686796,
+    0.01909430772270626
+  ],
+  "near_const_dims": [
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

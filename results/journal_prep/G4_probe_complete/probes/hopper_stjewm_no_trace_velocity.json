@@ -1,0 +1,25 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.7372218918605894,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "velocity",
+  "env": "hopper",
+  "model": "stjewm_no_trace",
+  "probe_dim": 3,
+  "wall_time_sec": 0.54,
+  "per_dim_r2": [
+    -1.0845340065616362,
+    -1.1056871177499885,
+    -0.021444551270143775
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

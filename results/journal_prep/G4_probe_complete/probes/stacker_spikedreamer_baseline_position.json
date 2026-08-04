@@ -1,0 +1,39 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.02967527002412681,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "position",
+  "env": "stacker",
+  "model": "spikedreamer_baseline",
+  "probe_dim": 10,
+  "wall_time_sec": 0.56,
+  "per_dim_r2": [
+    0.006560268938360481,
+    0.016812825719208724,
+    0.014936729222297607,
+    -0.011996607443257812,
+    -0.11551562804887094,
+    -0.018149959236928526,
+    -0.08296197048341902,
+    -0.0172872896966747,
+    0.0,
+    -0.0891510692119839
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    false
+  ],
+  "n_near_const": 1
+}

@@ -1,0 +1,37 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.012922071837616586,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "goal_direction",
+  "env": "walker",
+  "model": "gru_baseline",
+  "probe_dim": 9,
+  "wall_time_sec": 0.48,
+  "per_dim_r2": [
+    -0.08706992138515735,
+    0.004797751650352011,
+    0.009491993163176837,
+    0.0021164669609367026,
+    -0.05748213165211591,
+    0.0058574612703605755,
+    0.034276011882108604,
+    -0.05510124504053149,
+    0.026814966612320745
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

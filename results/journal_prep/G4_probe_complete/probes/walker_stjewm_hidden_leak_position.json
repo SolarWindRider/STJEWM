@@ -1,0 +1,37 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.06548905760904658,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "position",
+  "env": "walker",
+  "model": "stjewm_hidden_leak",
+  "probe_dim": 9,
+  "wall_time_sec": 0.71,
+  "per_dim_r2": [
+    -0.05647423228802273,
+    -0.12615560858648234,
+    -0.0916952997284377,
+    -0.07433567009161868,
+    -0.10694690462676126,
+    -0.03943701859075932,
+    -0.07965007290370929,
+    -0.02096621323457737,
+    0.006259501568949499
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

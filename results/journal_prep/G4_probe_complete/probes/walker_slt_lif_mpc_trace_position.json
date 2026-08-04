@@ -1,0 +1,37 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.00838713912174522,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "position",
+  "env": "walker",
+  "model": "slt_lif_mpc_trace",
+  "probe_dim": 9,
+  "wall_time_sec": 1.26,
+  "per_dim_r2": [
+    -0.04990802315502818,
+    -0.047521727101945466,
+    -0.03662007112331844,
+    0.04512045865178371,
+    -0.04896010563976971,
+    0.00838285060154631,
+    -0.011537651471777544,
+    0.005398475630706723,
+    0.06016154151209563
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

@@ -1,0 +1,10 @@
+{
+  "skipped": false,
+  "reason": null,
+  "env": "cheetah",
+  "model": "stjewm_hidden_leak",
+  "corr_obs_latent": 0.9978055953979492,
+  "corr_obs_rate": 0.06456286460161209,
+  "n_steps": 199,
+  "n_resets": 0
+}

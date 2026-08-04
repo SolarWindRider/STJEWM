@@ -1,0 +1,23 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.04414283072707437,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "goal_direction",
+  "env": "pendulum_2d",
+  "model": "stjewm_membrane_readout",
+  "probe_dim": 2,
+  "wall_time_sec": 0.83,
+  "per_dim_r2": [
+    -0.038437489014658155,
+    -0.04984817243949058
+  ],
+  "near_const_dims": [
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

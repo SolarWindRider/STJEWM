@@ -1,0 +1,31 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.48713394291091366,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "velocity",
+  "env": "humanoid",
+  "model": "gru_baseline",
+  "probe_dim": 6,
+  "wall_time_sec": 0.98,
+  "per_dim_r2": [
+    0.0,
+    -0.352739941859026,
+    -1.5860619747197453,
+    -0.2528950170146831,
+    -0.0603285084917804,
+    -0.6707782153802473
+  ],
+  "near_const_dims": [
+    true,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 1
+}

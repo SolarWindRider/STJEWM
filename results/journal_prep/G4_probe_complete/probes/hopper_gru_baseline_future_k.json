@@ -1,0 +1,33 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.003949831966616484,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "future_k",
+  "env": "hopper",
+  "model": "gru_baseline",
+  "probe_dim": 7,
+  "wall_time_sec": 0.98,
+  "per_dim_r2": [
+    -0.06295026561214478,
+    -0.0007783939266394757,
+    -0.020300732599100924,
+    0.011238182969018129,
+    -0.04433121190327949,
+    0.047032583646742565,
+    0.04244101365908859
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

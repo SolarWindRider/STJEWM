@@ -1,0 +1,31 @@
+/home/lx/miniconda3/envs/snn/lib/python3.10/runpy.py:126: RuntimeWarning: 'code.train.train' found in sys.modules after import of package 'code.train', but prior to execution of 'code.train.train'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[train/gru_baseline] cmd: {'model': 'gru_baseline', 'env_kind': None, 'image_size': 0, 'multi_env_spec': 'configs/oodc_5m/cross_benchmark_F1.json', 'pad_obs_to': 128, 'action_dim': 56, 'embed_dim': 192, 'data': None, 'out': '/home/lx/snn/results/5m_seed1/cross_benchmark_F1/gru_baseline/seed_0', 'epochs': 1, 'batch': 32, 'lr': 0.0003, 'num_workers': 0, 'save_every': 2000, 'log_every': 200, 'seed': 1, 'n_layers': 2, 'hidden_dim': None, 'mlp_hidden': None, 'mlp_layers': None, 'slt_layers': None, 'slt_din': None, 'lambda_sigreg': 0.09, 'lambda_goal': 0.5, 'goal_offset': 25, 'history_size': 1, 't_pred': 3, 'max_windows': None, 'n_episodes': 50, 'max_steps_per_ep': 200, 'readout_mode': 'hidden_leak'}
+[train/gru_baseline] GRUBaseline params total=5.13M trainable=5.13M, 150000 windows/epoch, batch=32, epochs=1, lr=0.0003, lambda_sigreg=0.09, lambda_goal=0.5, goal_offset=25, history=1
+[train/gru_baseline] ep 1/1 step 200 pred=0.0266 sigreg=27.1447 goal=0.0100 total=2.4746 speed=20.06/s ETA=0.1h
+[train/gru_baseline] ep 1/1 step 400 pred=0.0253 sigreg=29.5956 goal=nan total=nan speed=22.22/s ETA=0.1h
+[train/gru_baseline] ep 1/1 step 600 pred=0.0231 sigreg=33.2470 goal=0.0080 total=3.0193 speed=22.38/s ETA=0.1h
+[train/gru_baseline] ep 1/1 step 800 pred=0.0226 sigreg=36.5805 goal=0.0080 total=3.3188 speed=22.93/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 1000 pred=0.0255 sigreg=30.1988 goal=0.0084 total=2.7476 speed=23.31/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 1200 pred=0.0250 sigreg=30.0719 goal=nan total=nan speed=23.61/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 1400 pred=0.0259 sigreg=30.0346 goal=0.0098 total=2.7339 speed=23.69/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 1600 pred=0.0238 sigreg=33.1253 goal=nan total=nan speed=23.82/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 1800 pred=0.0214 sigreg=41.0013 goal=0.0083 total=3.7157 speed=23.93/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 2000 pred=0.0218 sigreg=36.6713 goal=0.0081 total=3.3262 speed=24.04/s ETA=0.0h
+[train/gru_baseline] saved /home/lx/snn/results/5m_seed1/cross_benchmark_F1/gru_baseline/seed_0/step2000.pt
+[train/gru_baseline] ep 1/1 step 2200 pred=0.0247 sigreg=32.9376 goal=0.0084 total=2.9933 speed=23.80/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 2400 pred=nan sigreg=30.3186 goal=nan total=nan speed=23.87/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 2600 pred=0.0298 sigreg=23.1209 goal=nan total=nan speed=23.94/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 2800 pred=0.0249 sigreg=30.1122 goal=nan total=nan speed=23.99/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 3000 pred=0.0253 sigreg=29.9018 goal=0.0086 total=2.7208 speed=24.07/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 3200 pred=0.0226 sigreg=36.7706 goal=0.0082 total=3.3361 speed=24.13/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 3400 pred=0.0239 sigreg=33.1989 goal=0.0082 total=3.0159 speed=24.19/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 3600 pred=0.0231 sigreg=36.8551 goal=0.0083 total=3.3442 speed=24.27/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 3800 pred=0.0280 sigreg=27.4051 goal=nan total=nan speed=24.31/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 4000 pred=0.0304 sigreg=23.4706 goal=nan total=nan speed=24.35/s ETA=0.0h
+[train/gru_baseline] saved /home/lx/snn/results/5m_seed1/cross_benchmark_F1/gru_baseline/seed_0/step4000.pt
+[train/gru_baseline] ep 1/1 step 4200 pred=0.0229 sigreg=33.2255 goal=nan total=nan speed=24.32/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 4400 pred=0.0266 sigreg=29.9067 goal=nan total=nan speed=24.37/s ETA=0.0h
+[train/gru_baseline] ep 1/1 step 4600 pred=nan sigreg=32.7283 goal=nan total=nan speed=24.37/s ETA=0.0h
+[train/gru_baseline] final saved /home/lx/snn/results/5m_seed1/cross_benchmark_F1/gru_baseline/seed_0/final.pt
+[train/gru_baseline] loss log saved /home/lx/snn/results/5m_seed1/cross_benchmark_F1/gru_baseline/seed_0/loss_log.json

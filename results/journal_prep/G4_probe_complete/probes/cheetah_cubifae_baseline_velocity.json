@@ -1,0 +1,25 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.13890203990923297,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "velocity",
+  "env": "cheetah",
+  "model": "cubifae_baseline",
+  "probe_dim": 3,
+  "wall_time_sec": 0.53,
+  "per_dim_r2": [
+    -0.1759470545765709,
+    -0.24068480028180939,
+    -7.426486931860765e-05
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

@@ -1,0 +1,10 @@
+{
+  "skipped": false,
+  "reason": null,
+  "env": "finger",
+  "model": "stjewm_hidden_leak",
+  "corr_obs_latent": 0.9998104572296143,
+  "corr_obs_rate": 0.05128464475274086,
+  "n_steps": 199,
+  "n_resets": 1
+}

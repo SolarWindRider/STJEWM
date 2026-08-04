@@ -1,0 +1,37 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.05608649194561884,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "future_k",
+  "env": "cheetah",
+  "model": "stjewm_membrane_readout",
+  "probe_dim": 9,
+  "wall_time_sec": 0.38,
+  "per_dim_r2": [
+    0.0028167154820193385,
+    -0.15382980326080364,
+    -0.014355382784492665,
+    -0.07036353284146002,
+    -0.021603020676938645,
+    -0.0378912802045146,
+    -0.10301921498682653,
+    -0.0007021588559519287,
+    -0.10583074938160086
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

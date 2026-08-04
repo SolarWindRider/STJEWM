@@ -1,0 +1,39 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.06477676955615205,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "goal_direction",
+  "env": "stacker",
+  "model": "stjewm_membrane_readout",
+  "probe_dim": 10,
+  "wall_time_sec": 0.16,
+  "per_dim_r2": [
+    -0.0004965327200951997,
+    -0.12264710009098034,
+    -0.2501399987844046,
+    -0.11173250957457936,
+    -0.012701187818360493,
+    -0.07051211376787148,
+    0.008722320074504353,
+    -0.08552518578757473,
+    0.0,
+    -0.002735387092158703
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    false
+  ],
+  "n_near_const": 1
+}

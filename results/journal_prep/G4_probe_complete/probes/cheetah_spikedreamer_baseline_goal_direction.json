@@ -1,0 +1,37 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.04127277132791469,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "goal_direction",
+  "env": "cheetah",
+  "model": "spikedreamer_baseline",
+  "probe_dim": 9,
+  "wall_time_sec": 1.11,
+  "per_dim_r2": [
+    -0.12100462556963643,
+    0.007134639153836608,
+    -0.08319661937762257,
+    -0.013119267152064351,
+    -0.06140559027479098,
+    -0.027759572389274734,
+    -0.01515685593223548,
+    -0.03664108966940405,
+    -0.020305960740040208
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

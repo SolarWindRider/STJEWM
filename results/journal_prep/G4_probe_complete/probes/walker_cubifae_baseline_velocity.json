@@ -1,0 +1,25 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.5623094397888523,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "velocity",
+  "env": "walker",
+  "model": "cubifae_baseline",
+  "probe_dim": 3,
+  "wall_time_sec": 0.3,
+  "per_dim_r2": [
+    -1.527393583549284,
+    0.0,
+    -0.15953473581727273
+  ],
+  "near_const_dims": [
+    false,
+    true,
+    false
+  ],
+  "n_near_const": 1
+}

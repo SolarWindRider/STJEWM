@@ -1,0 +1,25 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": 0.019242184247953653,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "future_k",
+  "env": "finger",
+  "model": "stjewm_membrane_readout",
+  "probe_dim": 3,
+  "wall_time_sec": 0.06,
+  "per_dim_r2": [
+    0.04037005879818656,
+    0.02821497683375529,
+    -0.01085848288808089
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

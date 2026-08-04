@@ -1,0 +1,1 @@
+[probe] cartpole_2d/gru_baseline/position: R^2=0.1767  (n_train=160, n_val=40, 0.4s)

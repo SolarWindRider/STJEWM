@@ -1,0 +1,31 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.024489801855189102,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "velocity",
+  "env": "quadruped",
+  "model": "slt_lif_mpc_free",
+  "probe_dim": 6,
+  "wall_time_sec": 1.35,
+  "per_dim_r2": [
+    0.04956774420589516,
+    0.0,
+    0.283769233081381,
+    -0.6933045108638485,
+    0.07567702077593408,
+    0.1373517016695036
+  ],
+  "near_const_dims": [
+    false,
+    true,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 1
+}

@@ -1,0 +1,37 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.001176033732340012,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "future_k",
+  "env": "walker",
+  "model": "slt_lif_mpc_free",
+  "probe_dim": 9,
+  "wall_time_sec": 0.37,
+  "per_dim_r2": [
+    -0.0076616667293119,
+    -0.06390267356683754,
+    -0.04753668337199923,
+    0.027563766101662446,
+    -0.008236275124658743,
+    0.043470630631476825,
+    -0.030172749179740777,
+    0.053930585998950176,
+    0.02196076164939864
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

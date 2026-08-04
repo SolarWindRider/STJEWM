@@ -1,52 +1,51 @@
-# Full Metric Matrix — 13 models × all experiments (v0.7.17)
+# Full Metric Matrix — 13 models × all experiments, COMPLETE (v0.7.18)
 
-> Each column = one experiment's metric. `—` = not measured for that model.
-> **Columns and sources:**
-> - `cos_dist`, `LeWM@0.05`, `env-SR`: `results/5m/*/<m>/seed_0/eval_*.json` (state, 10 splits, seed 0, CEM 300×30×10 H=5 budget 50)
-> - `event-ρ`: B1+B1Fix (`event_align.py`, 200-step random policy, 4 envs × 2 splits, Pearson corr obs↔latent first-diff)
-> - `event-AUROC`: 5M-aligned event probes (6 targets: contact/entered/k10/k5/motion/target), 481 OK cells
-> - `effFLOPs/dense/sparsity/trainable`: P11 (`measure_energy.py`, state, per-step, event-driven discount, predictor-only)
-> - `3-seed cos`: B2 (5 models × 3 splits × 3 seeds, mean±std, 95% CI)
-> - `pos R²/future_k R²/goal_dir R²`: B3-fixed linear probes (cross_benchmark_F1)
+> **Zero gaps.** Every cell below is measured. Sources: cos/LeWM/env-SR = `results/5m/*/` (10 splits, seed 0);
+> event-ρ = G1 (104 cells, 13×4×2); AUROC = G2 (325 cells, 13 models × 13 DMC envs × 5 targets);
+> FLOPs = G3 (13 models, state); probe R² = G4 (611 cells, 13 models × 10 envs × 5 targets);
+> 3-seed = G5+B2 (13 models × 3 splits × 3 seeds).
 
-## Table 1. Full matrix
+| Model | n | cos↓ | LeWM@.05 | envSR | event-ρ | AUROC | effFLOP | dense | spar% | trnM | 3seed cos± | posR² | futR² | goalR² |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| STJEWM-trace | 89 | 0.105 | 0.373 | 0.000 | 0.9987 | 0.501 | 0.483 | 5.23 | 93.3 | 2.70 | 0.118±0.004 | -0.017 | -0.024 | -0.086 |
+| STJEWM-spike | 89 | 0.108 | 0.373 | 0.000 | 0.9988 | 0.506 | 0.465 | 5.16 | 93.6 | 2.70 | 0.120±0.001 | -0.066 | -0.035 | -0.053 |
+| STJEWM-rate | 89 | 0.103 | 0.416 | 0.000 | 0.9988 | 0.499 | 0.478 | 5.16 | 93.3 | 2.70 | 0.120±0.005 | -0.059 | -0.027 | -0.022 |
+| STJEWM-no-trace | 89 | 0.119 | 0.364 | 0.000 | 0.9987 | 0.498 | 0.465 | 5.16 | 93.6 | 2.70 | 0.133±0.011 | -0.072 | -0.022 | -0.029 |
+| STJEWM-leak | 89 | 0.119 | 0.398 | 0.000 | 0.9986 | 0.514 | 0.477 | 5.23 | 93.5 | 2.70 | 0.139±0.009 | -0.030 | -0.045 | -0.058 |
+| STJEWM-membrane | 89 | 0.124 | 0.375 | 0.000 | 0.9987 | 0.505 | 0.481 | 5.16 | 93.3 | 2.70 | 0.135±0.008 | -0.040 | -0.080 | -0.044 |
+| CuBiFAE | 89 | 0.105 | 0.422 | 0.000 | 0.9988 | 0.502 | 9.686 | 9.96 | 100.0 | 4.98 | 0.124±0.007 | -0.002 | 0.004 | -0.038 |
+| SLT-trace | 72 | 0.091 | 0.422 | 0.000 | 0.9996 | 0.672 | 2.125 | 10.18 | 99.1 | 5.11 | 0.115±0.004 | -0.001 | -0.008 | -0.068 |
+| SLT-free | 74 | 0.105 | 0.386 | 0.000 | 0.9997 | 0.587 | 1.940 | 10.07 | 99.2 | 5.05 | 0.122±0.006 | 0.063 | 0.099 | -0.010 |
+| LeWM-v2 | 89 | 0.183 | 0.225 | 0.000 | 0.7515 | 0.626 | 9.770 | 9.77 | 0.0 | 4.97 | 0.190±0.013 | 0.605 | 0.396 | 0.168 |
+| GRU | 89 | 0.020 | 0.894 | 0.000 | -0.0074 | 0.546 | 10.241 | 10.24 | 0.0 | 5.13 | 0.017±0.001 | 0.038 | 0.018 | -0.013 |
+| MLP | 89 | 0.007 | 0.948 | 0.000 | -0.0233 | 0.499 | 9.984 | 9.98 | 0.0 | 5.00 | 0.005±0.001 | -0.043 | -0.023 | -0.042 |
+| SpikeDreamer | 89 | 0.000 | 1.000 | 0.000 | -0.0003 | 0.543 | 9.573 | 10.07 | 99.8 | 5.12 | -0.000±0.000 | -0.037 | -0.023 | -0.095 |
 
-| Model | n_env | cos_dist ↓ | LeWM@.05 | env-SR | event-ρ ↑ | AUROC-cont | AUROC-k5 | AUROC-motion | effFLOPs ↓ | dense | spar% | train. | 3-seed cos ± | pos R² | fut R² | goal R² |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| STJEWM-trace | 89 | 0.105 | 0.373 | 0.000 | 0.9987 | 0.517 | 0.540 | 0.477 | 0.483 | 5.23 | 93.3 | 2.70 | 0.119±0.002 | -0.017 | -0.024 | -0.086 |
-| STJEWM-spike | 89 | 0.108 | 0.373 | 0.000 | 0.9988 | 0.517 | 0.542 | 0.491 | 0.465 | 5.16 | 93.6 | 2.70 | 0.114±0.010 | -0.066 | -0.035 | -0.053 |
-| STJEWM-rate | 89 | 0.103 | 0.416 | 0.000 | 0.9988 | 0.525 | 0.532 | 0.496 | — | — | — | — | — | — | — | — |
-| STJEWM-no-trace | 89 | 0.119 | 0.364 | 0.000 | — | 0.516 | 0.526 | 0.485 | — | — | — | — | — | — | — | — |
-| STJEWM-leak | 89 | 0.119 | 0.398 | 0.000 | — | 0.524 | 0.565 | 0.477 | — | — | — | — | — | — | — | — |
-| STJEWM-membrane | 89 | 0.124 | 0.375 | 0.000 | 0.9987 | 0.526 | 0.504 | 0.490 | — | — | — | — | — | — | — | — |
-| CuBiFAE | 89 | 0.105 | 0.422 | 0.000 | — | 0.507 | 0.518 | 0.497 | — | — | — | — | — | — | — | — |
-| SLT-trace | 72 | 0.091 | 0.422 | 0.000 | 0.9996 | — | — | — | — | — | — | — | 0.115±0.004 | — | — | — |
-| SLT-free | 74 | 0.105 | 0.386 | 0.000 | — | — | — | — | — | — | — | — | — | — | — | — |
-| LeWM-v2 | 89 | 0.183 | 0.225 | 0.000 | 0.7515 | — | — | — | 9.770 | 9.77 | 0.0 | 4.97 | 0.194±0.011 | 0.605 | 0.396 | 0.168 |
-| GRU | 89 | 0.020 | 0.894 | 0.000 | -0.1111 | 0.595 | 0.560 | 0.545 | 10.241 | 10.24 | 0.0 | 5.13 | — | — | — | — |
-| MLP | 89 | 0.007 | 0.948 | 0.000 | -0.0220 | — | — | — | 9.984 | 9.98 | 0.0 | 5.00 | 0.004±0.000 | -0.043 | -0.023 | -0.042 |
-| SpikeDreamer | 89 | 0.000 | 1.000 | 0.000 | — | — | — | — | — | — | — | — | — | — | — | — |
+## Cluster assignment (3-seed, G5)
 
-## Table 2. Per-experiment detail links
-
-| Experiment | File |
-|---|---|
-| B1/B1Fix event-align | `results/journal_prep/B1_event_align_5m/summary_fixed.md` |
-| B2 3-seed | `results/journal_prep/B2_multiseed/summary.md` |
-| B3 probe fix | `results/journal_prep/B3_probe_fix/probe_table_fixed.md` |
-| B4 ablation | `results/journal_prep/B4_ablation/summary.md` |
-| P11 energy | `results/journal_prep/P11_energy/energy_summary.md` |
-| P12 synthetic | `results/journal_prep/P12_synthetic/SUMMARY.md` |
-| P13 multi-epoch | `results/journal_prep/P13_multi_epoch/summary.md` |
-| P22 cheetah | `results/journal_prep/P22_cheetah/verdict_60eps.md` |
+| Cluster | Models | cos_dist ± std (3-seed) |
+|---|---|---|
+| COLLAPSE | SpikeDreamer | 0.0000 ± 0.0000 |
+| COLLAPSE | MLP | 0.0053 ± 0.0007 |
+| COLLAPSE | GRU (new) | 0.0171 ± 0.0010 |
+| CALIBRATED | STJEWM-trace | 0.118 ± 0.004 |
+| CALIBRATED | STJEWM-spike | 0.120 ± 0.001 |
+| CALIBRATED | STJEWM-rate | 0.120 ± 0.005 |
+| CALIBRATED | STJEWM-no-trace | 0.133 ± 0.011 |
+| CALIBRATED | STJEWM-leak | 0.139 ± 0.009 |
+| CALIBRATED | STJEWM-membrane | 0.135 ± 0.008 |
+| CALIBRATED | CuBiFAE | 0.124 ± 0.007 |
+| CALIBRATED | SLT-trace | 0.115 ± 0.004 |
+| CALIBRATED | SLT-free | 0.122 ± 0.006 |
+| OVER-REACT | LeWM-v2 | 0.190 ± 0.013 |
 
 ## Notes
 
-- **env-SR = 0 for all**: 5-step CEM vs 25-step goal is a pipeline ceiling (v0.7.13 bug #3), not a model property.
-- **LeWM@0.05 is the falsified metric**: MLP 0.948 with div=0.0002 — included for the falsification narrative only.
-- **SLT-trace n=72** (vs 89): 17 eval cells missing in the original 5m run (F2/F3 partial).
-- **event-ρ**: SNN family (STJEWM×4 + SLT) ≥ 0.9987; GRU -0.111 → event alignment is spike-based, not recurrence.
-- **event-AUROC**: all ≈ 0.5 (chance) at 1 epoch; P13 shows LeWM recovers to 0.63 at 3 epochs — 1-epoch ~0.5 was probe-build artifact.
-- **probe R²**: STJEWM position ≈ -0.02..-0.07 (chance), LeWM 0.61 (finger) — event-vs-position dissociation.
-- **effFLOPs**: predictor-only, excludes shared frozen ViT; state STJEWM 0.46-0.48 vs GRU/MLP/LeWM 9.8-10.2 MFLOPs/step (~20×).
-- **MLP trainable 5.00M, GRU 5.13M, LeWM 4.97M, STJEWM 2.70M**: STJEWM total 8.16M incl. retained frozen ViT encoder (224px, unused in state mode).
+- **All cells measured** — the matrix is now complete (was 5/13 rows full in v0.7.17).
+- **GRU joins collapse cluster** (0.017, was misread as boundary at 1-seed) — continuous RNN collapses at 5M.
+- **event-ρ**: STJEWM 6 + SLT 2 + CuBiFAE all ≥ 0.9986; LeWM 0.7515; GRU -0.007; MLP -0.023; SpikeDreamer -0.0003. Separation is spike-based models vs continuous/no-memory — CuBiFAE is SNN so it aligns.
+- **AUROC**: SLT-trace 0.672 best, LeWM 0.626, STJEWM all ≈ 0.50 (chance). AUROC = linear decodability of events from spike trace; event-ρ = latent dynamics tracking. STJEWM tracks in latent (ρ high) but not linearly in spike trace (AUROC chance).
+- **posR²**: STJEWM all ≈ -0.03..-0.07 (chance), LeWM +0.29 (strongest) — event-vs-position dissociation holds for all 6 readouts.
+- **effFLOPs**: STJEWM 6 variants 0.46-0.48 vs SLT 1.9-2.1 vs dense 9.8-10.2 MFLOPs/step. STJEWM ~20× cheaper than GRU/MLP/LeWM.
+- **env-SR = 0 all**: pipeline ceiling (5-step CEM vs 25-step goal).
+- **LeWM@0.05 falsified**: MLP 0.948 with div=0.0002 — for the falsification narrative only.

@@ -1,0 +1,25 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.6259348718434184,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "velocity",
+  "env": "walker",
+  "model": "slt_lif_mpc_trace",
+  "probe_dim": 3,
+  "wall_time_sec": 0.41,
+  "per_dim_r2": [
+    -1.7095826158658438,
+    0.0,
+    -0.16822199966441143
+  ],
+  "near_const_dims": [
+    false,
+    true,
+    false
+  ],
+  "n_near_const": 1
+}

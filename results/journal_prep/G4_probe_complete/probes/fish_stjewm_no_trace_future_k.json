@@ -1,0 +1,33 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.021871822299560355,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "future_k",
+  "env": "fish",
+  "model": "stjewm_no_trace",
+  "probe_dim": 7,
+  "wall_time_sec": 0.45,
+  "per_dim_r2": [
+    0.000442549495927258,
+    -0.026135625513118654,
+    -0.027765688762739993,
+    -0.02565574921744096,
+    -0.034249896998506335,
+    -0.01815439585919476,
+    -0.021583949241849032
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

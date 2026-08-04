@@ -1,0 +1,10 @@
+{
+  "skipped": false,
+  "reason": null,
+  "env": "cheetah",
+  "model": "slt_lif_mpc_free",
+  "corr_obs_latent": 0.9988054633140564,
+  "corr_obs_rate": -0.03395247086882591,
+  "n_steps": 199,
+  "n_resets": 0
+}

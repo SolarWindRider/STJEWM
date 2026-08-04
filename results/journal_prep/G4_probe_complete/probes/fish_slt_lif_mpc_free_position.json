@@ -1,0 +1,33 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.04173892497903754,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "position",
+  "env": "fish",
+  "model": "slt_lif_mpc_free",
+  "probe_dim": 7,
+  "wall_time_sec": 2.36,
+  "per_dim_r2": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    -0.2921724748532628
+  ],
+  "near_const_dims": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false
+  ],
+  "n_near_const": 6
+}

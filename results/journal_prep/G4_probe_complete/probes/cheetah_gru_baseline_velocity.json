@@ -1,0 +1,25 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.08300149657705387,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "velocity",
+  "env": "cheetah",
+  "model": "gru_baseline",
+  "probe_dim": 3,
+  "wall_time_sec": 0.52,
+  "per_dim_r2": [
+    -0.08793437645041324,
+    -0.17049074716029766,
+    0.009420633879549278
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

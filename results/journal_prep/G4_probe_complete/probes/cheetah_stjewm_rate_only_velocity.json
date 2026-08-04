@@ -1,0 +1,25 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.0911299395317835,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "velocity",
+  "env": "cheetah",
+  "model": "stjewm_rate_only",
+  "probe_dim": 3,
+  "wall_time_sec": 1.22,
+  "per_dim_r2": [
+    -0.0388641609098912,
+    -0.23289541243608025,
+    -0.0016302452493790476
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

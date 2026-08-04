@@ -1,0 +1,21 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.26510333751532733,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "contact",
+  "env": "fish",
+  "model": "stjewm_rate_only",
+  "probe_dim": 1,
+  "wall_time_sec": 1.06,
+  "per_dim_r2": [
+    -0.26510333751532733
+  ],
+  "near_const_dims": [
+    false
+  ],
+  "n_near_const": 0
+}

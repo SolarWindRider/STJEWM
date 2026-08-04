@@ -1,0 +1,23 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.010457705664101924,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "position",
+  "env": "pendulum_2d",
+  "model": "stjewm_rate_only",
+  "probe_dim": 2,
+  "wall_time_sec": 0.12,
+  "per_dim_r2": [
+    -0.04744575755847946,
+    0.026530346230275614
+  ],
+  "near_const_dims": [
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

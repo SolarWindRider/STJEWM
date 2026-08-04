@@ -1,0 +1,24 @@
+[14:03:49] [gpu1] START stjewm_no_trace(stjewm,no_trace) cross_benchmark_F1 seed=1
+[14:26:55] [gpu1] OK stjewm_no_trace cross_benchmark_F1 seed=1 (1386s)
+[14:27:49] [gpu1] START slt_lif_mpc_free(slt_lif_mpc_free,) cross_benchmark_F1 seed=1
+[15:00:40] [gpu1] OK slt_lif_mpc_free cross_benchmark_F1 seed=1 (1970s)
+[15:00:40] [gpu1] START stjewm_no_trace(stjewm,no_trace) cross_benchmark_F1 seed=2
+[15:19:29] [gpu1] OK stjewm_no_trace cross_benchmark_F1 seed=2 (1130s)
+[15:19:29] [gpu1] START slt_lif_mpc_free(slt_lif_mpc_free,) cross_benchmark_F1 seed=2
+[15:49:27] [gpu1] OK slt_lif_mpc_free cross_benchmark_F1 seed=2 (1798s)
+[15:49:27] [gpu1] START stjewm_no_trace(stjewm,no_trace) oodc_F2 seed=1
+[15:50:10] [gpu1] OK stjewm_no_trace oodc_F2 seed=1 (43s)
+[15:50:10] [gpu1] START slt_lif_mpc_free(slt_lif_mpc_free,) oodc_F2 seed=1
+[15:50:55] [gpu1] OK slt_lif_mpc_free oodc_F2 seed=1 (45s)
+[15:50:55] [gpu1] START stjewm_no_trace(stjewm,no_trace) oodc_F2 seed=2
+[15:51:38] [gpu1] OK stjewm_no_trace oodc_F2 seed=2 (43s)
+[15:51:38] [gpu1] START slt_lif_mpc_free(slt_lif_mpc_free,) oodc_F2 seed=2
+[15:52:22] [gpu1] OK slt_lif_mpc_free oodc_F2 seed=2 (44s)
+[15:52:22] [gpu1] START stjewm_no_trace(stjewm,no_trace) generalist_16env seed=1
+[16:10:27] [gpu1] OK stjewm_no_trace generalist_16env seed=1 (1085s)
+[16:10:27] [gpu1] START slt_lif_mpc_free(slt_lif_mpc_free,) generalist_16env seed=1
+[16:42:13] [gpu1] OK slt_lif_mpc_free generalist_16env seed=1 (1906s)
+[16:42:13] [gpu1] START stjewm_no_trace(stjewm,no_trace) generalist_16env seed=2
+[17:00:57] [gpu1] OK stjewm_no_trace generalist_16env seed=2 (1125s)
+[17:00:57] [gpu1] START slt_lif_mpc_free(slt_lif_mpc_free,) generalist_16env seed=2
+[17:05:20] [gpu1] FAIL(rc=-15) slt_lif_mpc_free generalist_16env seed=2 (263s)

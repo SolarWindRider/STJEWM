@@ -1,0 +1,1 @@
+[probe] humanoid/gru_baseline/contact: R^2=-0.0913  (n_train=160, n_val=40, 0.7s)

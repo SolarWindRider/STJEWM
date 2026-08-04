@@ -1,0 +1,31 @@
+/home/lx/miniconda3/envs/snn/lib/python3.10/runpy.py:126: RuntimeWarning: 'code.train.train' found in sys.modules after import of package 'code.train', but prior to execution of 'code.train.train'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[train/stjewm] cmd: {'model': 'stjewm', 'env_kind': None, 'image_size': 0, 'multi_env_spec': 'configs/oodc_5m/cross_benchmark_F1.json', 'pad_obs_to': 128, 'action_dim': 56, 'embed_dim': 192, 'data': None, 'out': '/home/lx/snn/results/5m_seed2/cross_benchmark_F1/stjewm_membrane_readout/seed_0', 'epochs': 1, 'batch': 32, 'lr': 0.0003, 'num_workers': 0, 'save_every': 2000, 'log_every': 200, 'seed': 2, 'n_layers': 2, 'hidden_dim': None, 'mlp_hidden': None, 'mlp_layers': None, 'slt_layers': None, 'slt_din': None, 'lambda_sigreg': 0.09, 'lambda_goal': 0.5, 'goal_offset': 25, 'history_size': 1, 't_pred': 3, 'max_windows': None, 'n_episodes': 50, 'max_steps_per_ep': 200, 'readout_mode': 'membrane_readout'}
+[train/stjewm] STJEWM params total=8.16M trainable=2.70M, 150000 windows/epoch, batch=32, epochs=1, lr=0.0003, lambda_sigreg=0.09, lambda_goal=0.5, goal_offset=25, history=1
+[train/stjewm] ep 1/1 step 200 pred=3.5915 sigreg=36.9420 goal=1.3925 total=7.6126 speed=3.51/s ETA=0.4h sparsity=0.904
+[train/stjewm] ep 1/1 step 400 pred=4.0176 sigreg=33.2682 goal=1.5764 total=7.7999 speed=3.58/s ETA=0.3h sparsity=0.908
+[train/stjewm] ep 1/1 step 600 pred=3.8605 sigreg=36.6728 goal=1.5678 total=7.9450 speed=3.63/s ETA=0.3h sparsity=0.905
+[train/stjewm] ep 1/1 step 800 pred=3.5287 sigreg=40.9854 goal=1.3998 total=7.9173 speed=3.67/s ETA=0.3h sparsity=0.906
+[train/stjewm] ep 1/1 step 1000 pred=4.0844 sigreg=33.3557 goal=1.7202 total=7.9466 speed=3.69/s ETA=0.3h sparsity=0.911
+[train/stjewm] ep 1/1 step 1200 pred=nan sigreg=33.2896 goal=1.4840 total=nan speed=3.70/s ETA=0.3h sparsity=0.911
+[train/stjewm] ep 1/1 step 1400 pred=4.0292 sigreg=33.2471 goal=1.6721 total=7.8575 speed=3.71/s ETA=0.2h sparsity=0.908
+[train/stjewm] ep 1/1 step 1600 pred=3.5348 sigreg=40.5930 goal=1235.6023 total=624.9893 speed=3.72/s ETA=0.2h sparsity=0.906
+[train/stjewm] ep 1/1 step 1800 pred=3.6516 sigreg=36.9524 goal=1.5367 total=7.7457 speed=3.73/s ETA=0.2h sparsity=0.908
+[train/stjewm] ep 1/1 step 2000 pred=4.1191 sigreg=25.8143 goal=1.7928 total=7.3388 speed=3.73/s ETA=0.2h sparsity=0.909
+[train/stjewm] saved /home/lx/snn/results/5m_seed2/cross_benchmark_F1/stjewm_membrane_readout/seed_0/step2000.pt
+[train/stjewm] ep 1/1 step 2200 pred=4.0367 sigreg=27.6604 goal=1.8194 total=7.4359 speed=3.76/s ETA=0.2h sparsity=0.905
+[train/stjewm] ep 1/1 step 2400 pred=3.8861 sigreg=36.6954 goal=1.7443 total=8.0609 speed=3.84/s ETA=0.2h sparsity=0.904
+[train/stjewm] ep 1/1 step 2600 pred=3.6940 sigreg=41.0810 goal=1.5212 total=8.1519 speed=3.91/s ETA=0.1h sparsity=0.906
+[train/stjewm] ep 1/1 step 2800 pred=3.8922 sigreg=33.3135 goal=1.5085 total=7.6446 speed=3.98/s ETA=0.1h sparsity=0.907
+[train/stjewm] ep 1/1 step 3000 pred=4.2938 sigreg=27.2644 goal=1.8087 total=7.6520 speed=4.03/s ETA=0.1h sparsity=0.905
+[train/stjewm] ep 1/1 step 3200 pred=3.6444 sigreg=36.9359 goal=1.6291 total=7.7832 speed=4.08/s ETA=0.1h sparsity=0.904
+[train/stjewm] ep 1/1 step 3400 pred=3.8446 sigreg=36.9185 goal=1.6745 total=8.0046 speed=4.13/s ETA=0.1h sparsity=0.906
+[train/stjewm] ep 1/1 step 3600 pred=4.0795 sigreg=29.8341 goal=1.6664 total=7.5978 speed=4.17/s ETA=0.1h sparsity=0.909
+[train/stjewm] ep 1/1 step 3800 pred=3.7885 sigreg=36.9184 goal=1.5203 total=7.8713 speed=4.20/s ETA=0.1h sparsity=0.907
+[train/stjewm] ep 1/1 step 4000 pred=nan sigreg=30.0837 goal=1.5892 total=nan speed=4.24/s ETA=0.0h sparsity=0.911
+[train/stjewm] saved /home/lx/snn/results/5m_seed2/cross_benchmark_F1/stjewm_membrane_readout/seed_0/step4000.pt
+[train/stjewm] ep 1/1 step 4200 pred=3.6762 sigreg=33.1480 goal=1.5874 total=7.4532 speed=4.27/s ETA=0.0h sparsity=0.906
+[train/stjewm] ep 1/1 step 4400 pred=3.6265 sigreg=36.9220 goal=1.4771 total=7.6881 speed=4.30/s ETA=0.0h sparsity=0.906
+[train/stjewm] ep 1/1 step 4600 pred=3.9988 sigreg=29.9789 goal=1.6583 total=7.5260 speed=4.32/s ETA=0.0h sparsity=0.908
+[train/stjewm] final saved /home/lx/snn/results/5m_seed2/cross_benchmark_F1/stjewm_membrane_readout/seed_0/final.pt
+[train/stjewm] loss log saved /home/lx/snn/results/5m_seed2/cross_benchmark_F1/stjewm_membrane_readout/seed_0/loss_log.json

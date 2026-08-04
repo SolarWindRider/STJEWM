@@ -1,0 +1,23 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.009666708442645944,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "goal_direction",
+  "env": "cartpole_2d",
+  "model": "slt_lif_mpc_trace",
+  "probe_dim": 2,
+  "wall_time_sec": 0.32,
+  "per_dim_r2": [
+    0.10920396042158398,
+    -0.12853737730687587
+  ],
+  "near_const_dims": [
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

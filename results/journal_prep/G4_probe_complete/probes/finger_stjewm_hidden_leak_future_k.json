@@ -1,0 +1,25 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": 0.019938019769791742,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "future_k",
+  "env": "finger",
+  "model": "stjewm_hidden_leak",
+  "probe_dim": 3,
+  "wall_time_sec": 0.01,
+  "per_dim_r2": [
+    0.03380195679340359,
+    0.04717948484388179,
+    -0.021167382327910156
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false
+  ],
+  "n_near_const": 0
+}

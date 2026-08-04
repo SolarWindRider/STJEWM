@@ -1,0 +1,33 @@
+/home/lx/miniconda3/envs/snn/lib/python3.10/runpy.py:126: RuntimeWarning: 'code.train.train' found in sys.modules after import of package 'code.train', but prior to execution of 'code.train.train'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[train/cubifae_baseline] cmd: {'model': 'cubifae_baseline', 'env_kind': None, 'image_size': 0, 'multi_env_spec': 'configs/oodc_5m/generalist_16env.json', 'pad_obs_to': 128, 'action_dim': 56, 'embed_dim': 192, 'data': None, 'out': '/home/lx/snn/results/5m_seed1/generalist_16env/cubifae_baseline/seed_0', 'epochs': 1, 'batch': 32, 'lr': 0.0003, 'num_workers': 0, 'save_every': 2000, 'log_every': 200, 'seed': 1, 'n_layers': 2, 'hidden_dim': None, 'mlp_hidden': None, 'mlp_layers': None, 'slt_layers': None, 'slt_din': None, 'lambda_sigreg': 0.09, 'lambda_goal': 0.5, 'goal_offset': 25, 'history_size': 1, 't_pred': 3, 'max_windows': None, 'n_episodes': 50, 'max_steps_per_ep': 200, 'readout_mode': 'hidden_leak'}
+[train/cubifae_baseline] CubifAEBaseline params total=4.98M trainable=4.98M, 160000 windows/epoch, batch=32, epochs=1, lr=0.0003, lambda_sigreg=0.09, lambda_goal=0.5, goal_offset=25, history=1
+[train/cubifae_baseline] ep 1/1 step 200 pred=0.0982 sparse=0.0092 total=0.0982 speed=10.00/s ETA=0.1h sparsity=0.991
+[train/cubifae_baseline] ep 1/1 step 400 pred=0.0435 sparse=0.0064 total=0.0435 speed=10.13/s ETA=0.1h sparsity=0.994
+[train/cubifae_baseline] ep 1/1 step 600 pred=0.0811 sparse=0.0132 total=0.0811 speed=10.22/s ETA=0.1h sparsity=0.988
+[train/cubifae_baseline] ep 1/1 step 800 pred=0.1323 sparse=0.0139 total=0.1323 speed=9.96/s ETA=0.1h sparsity=0.987
+[train/cubifae_baseline] ep 1/1 step 1000 pred=0.1479 sparse=0.0168 total=0.1479 speed=9.59/s ETA=0.1h sparsity=0.984
+[train/cubifae_baseline] ep 1/1 step 1200 pred=0.1551 sparse=0.0208 total=0.1551 speed=9.36/s ETA=0.1h sparsity=0.980
+[train/cubifae_baseline] ep 1/1 step 1400 pred=0.1105 sparse=0.0164 total=0.1106 speed=9.24/s ETA=0.1h sparsity=0.984
+[train/cubifae_baseline] ep 1/1 step 1600 pred=1.0713 sparse=0.0009 total=1.0713 speed=9.17/s ETA=0.1h sparsity=0.999
+[train/cubifae_baseline] ep 1/1 step 1800 pred=0.0513 sparse=0.0056 total=0.0513 speed=9.14/s ETA=0.1h sparsity=0.995
+[train/cubifae_baseline] ep 1/1 step 2000 pred=nan sparse=0.0095 total=nan speed=9.12/s ETA=0.1h sparsity=0.991
+[train/cubifae_baseline] saved /home/lx/snn/results/5m_seed1/generalist_16env/cubifae_baseline/seed_0/step2000.pt
+[train/cubifae_baseline] ep 1/1 step 2200 pred=nan sparse=0.0052 total=nan speed=9.12/s ETA=0.1h sparsity=0.995
+[train/cubifae_baseline] ep 1/1 step 2400 pred=nan sparse=0.0125 total=nan speed=9.14/s ETA=0.1h sparsity=0.988
+[train/cubifae_baseline] ep 1/1 step 2600 pred=nan sparse=0.0137 total=nan speed=9.17/s ETA=0.1h sparsity=0.987
+[train/cubifae_baseline] ep 1/1 step 2800 pred=0.1987 sparse=0.0178 total=0.1987 speed=9.20/s ETA=0.1h sparsity=0.983
+[train/cubifae_baseline] ep 1/1 step 3000 pred=nan sparse=0.0099 total=nan speed=9.26/s ETA=0.1h sparsity=0.990
+[train/cubifae_baseline] ep 1/1 step 3200 pred=0.0323 sparse=0.0049 total=0.0323 speed=9.30/s ETA=0.1h sparsity=0.995
+[train/cubifae_baseline] ep 1/1 step 3400 pred=0.1907 sparse=0.0251 total=0.1907 speed=9.35/s ETA=0.0h sparsity=0.976
+[train/cubifae_baseline] ep 1/1 step 3600 pred=nan sparse=0.0060 total=nan speed=9.41/s ETA=0.0h sparsity=0.994
+[train/cubifae_baseline] ep 1/1 step 3800 pred=0.0544 sparse=0.0090 total=0.0544 speed=9.45/s ETA=0.0h sparsity=0.991
+[train/cubifae_baseline] ep 1/1 step 4000 pred=0.2226 sparse=0.0243 total=0.2226 speed=9.49/s ETA=0.0h sparsity=0.977
+[train/cubifae_baseline] saved /home/lx/snn/results/5m_seed1/generalist_16env/cubifae_baseline/seed_0/step4000.pt
+[train/cubifae_baseline] ep 1/1 step 4200 pred=0.0868 sparse=0.0112 total=0.0868 speed=9.53/s ETA=0.0h sparsity=0.990
+[train/cubifae_baseline] ep 1/1 step 4400 pred=0.9291 sparse=0.0314 total=0.9291 speed=9.57/s ETA=0.0h sparsity=0.970
+[train/cubifae_baseline] ep 1/1 step 4600 pred=0.0563 sparse=0.0079 total=0.0563 speed=9.60/s ETA=0.0h sparsity=0.993
+[train/cubifae_baseline] ep 1/1 step 4800 pred=0.0584 sparse=0.0072 total=0.0584 speed=9.63/s ETA=0.0h sparsity=0.993
+[train/cubifae_baseline] ep 1/1 step 5000 pred=0.1596 sparse=0.0173 total=0.1596 speed=9.66/s ETA=0.0h sparsity=0.984
+[train/cubifae_baseline] final saved /home/lx/snn/results/5m_seed1/generalist_16env/cubifae_baseline/seed_0/final.pt
+[train/cubifae_baseline] loss log saved /home/lx/snn/results/5m_seed1/generalist_16env/cubifae_baseline/seed_0/loss_log.json

@@ -1,0 +1,39 @@
+{
+  "skipped": false,
+  "reason": null,
+  "r2": -0.06155694577354546,
+  "metric": "r2",
+  "binary": false,
+  "n_train": 160,
+  "n_val": 40,
+  "probe_target": "future_k",
+  "env": "stacker",
+  "model": "stjewm_rate_only",
+  "probe_dim": 10,
+  "wall_time_sec": 0.57,
+  "per_dim_r2": [
+    -0.08566058464367621,
+    -0.09518291784648669,
+    -0.08685902968400216,
+    -0.07145194626293061,
+    -0.10291424778993563,
+    0.004037527326670953,
+    -0.12257506689973763,
+    -0.0014718378465965465,
+    0.0,
+    -0.053491354088760046
+  ],
+  "near_const_dims": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    false
+  ],
+  "n_near_const": 1
+}

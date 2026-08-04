@@ -1,0 +1,31 @@
+/home/lx/miniconda3/envs/snn/lib/python3.10/runpy.py:126: RuntimeWarning: 'code.train.train' found in sys.modules after import of package 'code.train', but prior to execution of 'code.train.train'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[train/spikedreamer_baseline] cmd: {'model': 'spikedreamer_baseline', 'env_kind': None, 'image_size': 0, 'multi_env_spec': 'configs/oodc_5m/cross_benchmark_F1.json', 'pad_obs_to': 128, 'action_dim': 56, 'embed_dim': 192, 'data': None, 'out': '/home/lx/snn/results/5m_seed1/cross_benchmark_F1/spikedreamer_baseline/seed_0', 'epochs': 1, 'batch': 32, 'lr': 0.0003, 'num_workers': 0, 'save_every': 2000, 'log_every': 200, 'seed': 1, 'n_layers': 2, 'hidden_dim': None, 'mlp_hidden': None, 'mlp_layers': None, 'slt_layers': None, 'slt_din': None, 'lambda_sigreg': 0.09, 'lambda_goal': 0.5, 'goal_offset': 25, 'history_size': 1, 't_pred': 3, 'max_windows': None, 'n_episodes': 50, 'max_steps_per_ep': 200, 'readout_mode': 'hidden_leak'}
+[train/spikedreamer_baseline] SpikeDreamerBaseline params total=5.12M trainable=5.12M, 150000 windows/epoch, batch=32, epochs=1, lr=0.0003, lambda_sigreg=0.09, lambda_goal=0.5, goal_offset=25, history=1
+[train/spikedreamer_baseline] ep 1/1 step 200 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=6.89/s ETA=0.2h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 400 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=7.12/s ETA=0.2h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 600 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=7.20/s ETA=0.2h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 800 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=7.21/s ETA=0.1h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 1000 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=7.22/s ETA=0.1h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 1200 pred=nan sparse=0.0008 kl=0.0000 recon=0.0000 total=nan speed=7.22/s ETA=0.1h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 1400 pred=nan sparse=0.0008 kl=0.0000 recon=0.0000 total=nan speed=7.22/s ETA=0.1h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 1600 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=7.17/s ETA=0.1h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 1800 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=7.20/s ETA=0.1h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 2000 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=7.23/s ETA=0.1h sparsity=0.999
+[train/spikedreamer_baseline] saved /home/lx/snn/results/5m_seed1/cross_benchmark_F1/spikedreamer_baseline/seed_0/step2000.pt
+[train/spikedreamer_baseline] ep 1/1 step 2200 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=7.25/s ETA=0.1h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 2400 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=7.27/s ETA=0.1h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 2600 pred=0.0262 sparse=0.0008 kl=0.0000 recon=0.0000 total=0.0262 speed=7.21/s ETA=0.1h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 2800 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=7.23/s ETA=0.1h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 3000 pred=nan sparse=0.0008 kl=0.0000 recon=0.0000 total=nan speed=7.25/s ETA=0.1h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 3200 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=7.27/s ETA=0.1h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 3400 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=7.29/s ETA=0.0h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 3600 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=7.28/s ETA=0.0h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 3800 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=7.29/s ETA=0.0h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 4000 pred=nan sparse=0.0008 kl=0.0000 recon=0.0000 total=nan speed=7.29/s ETA=0.0h sparsity=0.999
+[train/spikedreamer_baseline] saved /home/lx/snn/results/5m_seed1/cross_benchmark_F1/spikedreamer_baseline/seed_0/step4000.pt
+[train/spikedreamer_baseline] ep 1/1 step 4200 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=7.30/s ETA=0.0h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 4400 pred=nan sparse=0.0009 kl=0.0000 recon=0.0000 total=nan speed=7.30/s ETA=0.0h sparsity=0.999
+[train/spikedreamer_baseline] ep 1/1 step 4600 pred=nan sparse=0.0008 kl=0.0000 recon=0.0000 total=nan speed=7.31/s ETA=0.0h sparsity=0.999
+[train/spikedreamer_baseline] final saved /home/lx/snn/results/5m_seed1/cross_benchmark_F1/spikedreamer_baseline/seed_0/final.pt
+[train/spikedreamer_baseline] loss log saved /home/lx/snn/results/5m_seed1/cross_benchmark_F1/spikedreamer_baseline/seed_0/loss_log.json
