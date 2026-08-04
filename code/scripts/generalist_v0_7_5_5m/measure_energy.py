@@ -45,14 +45,14 @@ from code.train.train import build_model
 
 
 MODEL_NAMES = (
-    "stjewm_trace_only",
-    "stjewm_spike_only",
-    "gru_baseline",
-    "mlp_baseline",
-    "lewm_baseline_v2",
+    "stjewm_trace_only", "stjewm_spike_only", "stjewm_rate_only", "stjewm_no_trace",
+    "stjewm_hidden_leak", "stjewm_membrane_readout", "cubifae_baseline",
+    "slt_lif_mpc_trace", "slt_lif_mpc_free", "spikedreamer_baseline",
+    "gru_baseline", "mlp_baseline", "lewm_baseline_v2",
 )
-STJEWM_VARIANTS = {"stjewm_trace_only", "stjewm_spike_only"}
-BASELINE_NAMES = {"gru_baseline", "mlp_baseline", "lewm_baseline_v2"}
+STJEWM_VARIANTS = {name for name in MODEL_NAMES if name.startswith("stjewm_")}
+SPIKING_BASELINES = {"cubifae_baseline", "slt_lif_mpc_trace", "slt_lif_mpc_free", "spikedreamer_baseline"}
+BASELINE_NAMES = {"gru_baseline", "mlp_baseline", "lewm_baseline_v2"} | SPIKING_BASELINES
 DEFAULT_ROOT = Path("/home/lx/snn")
 DEFAULT_OUT = DEFAULT_ROOT / "results" / "journal_prep" / "P11_energy"
 
@@ -123,6 +123,18 @@ def _input_and_action_flops(model: nn.Module, model_kind: str) -> Tuple[int, Dic
             parts["pixel_projector"] = _linears_flops(model.pixel_pre.proj)
         else:
             parts["state_encoder"] = _linears_flops(getattr(model, "state_encoder", None))
+        parts["action_encoder"] = _linears_flops(getattr(model, "action_encoder", None))
+    elif model_kind in {"cubifae_baseline", "slt_lif_mpc_trace", "slt_lif_mpc_free"}:
+        if getattr(model, "pixel_pre", None) is not None:
+            parts["pixel_projector"] = _linears_flops(model.pixel_pre.proj)
+        else:
+            parts["state_projector"] = _linears_flops(getattr(model, "state_projector", None))
+        parts["action_encoder"] = _linears_flops(getattr(model, "action_encoder", None))
+    elif model_kind == "spikedreamer_baseline":
+        if getattr(model, "pixel_pre", None) is not None:
+            parts["pixel_projector"] = _linears_flops(model.pixel_pre.proj)
+        else:
+            parts["state_projector"] = _linears_flops(getattr(model, "state_proj", None))
         parts["action_encoder"] = _linears_flops(getattr(model, "action_encoder", None))
     else:
         raise ValueError(f"Unsupported model kind for energy ledger: {model_kind}")
@@ -206,6 +218,34 @@ def _lewm_dynamic_flops(model: nn.Module, sequence_len: int) -> Tuple[int, Dict[
     return sum(parts.values()), parts
 
 
+def _spiking_baseline_dynamic_flops(model: nn.Module, model_kind: str, sequence_len: int) -> Tuple[int, int, Dict[str, int]]:
+    """Return total dynamic FLOPs, event-discountable FLOPs, and breakdown."""
+    if model_kind in {"slt_lif_mpc_trace", "slt_lif_mpc_free"}:
+        lif = _linears_flops(model.stack)
+        readout = _linears_flops(model.readout)
+        parts = {"lif_stack": lif, "readout_projection": readout}
+        return lif + readout, lif + readout, parts
+    if model_kind == "cubifae_baseline":
+        lif = sum(_linears_flops(cell) for cell in model.stack.cells)
+        conv = model.stack.time_conv
+        time_cells = 2 * int(conv.in_channels) * int(conv.out_channels) * int(conv.kernel_size[0])
+        fuse = _linears_flops(model.stack.fuse)
+        parts = {"alif_stack": lif, "time_cell_conv": time_cells, "readout_fusion": fuse}
+        return lif + time_cells + fuse, lif, parts
+    if model_kind == "spikedreamer_baseline":
+        lif = _linears_flops(model.lif_stack)
+        spike_proj = _linears_flops(model.spike_proj)
+        tx = interactions = 0
+        for block in model.blocks:
+            tx += _linears_flops(block.adaLN) + _linears_flops(block.mlp)
+            tx += 2 * int(block.attn.in_proj_weight.numel()) + _linears_flops(block.attn.out_proj)
+            interactions += 4 * sequence_len * int(block.attn.embed_dim)
+        fuser = _linears_flops(model.fuser)
+        parts = {"lif_stack": lif, "spike_projection": spike_proj, "transformer_linears": tx,
+                 "attention_interactions": interactions, "readout_fusion": fuser}
+        return lif + spike_proj + tx + interactions + fuser, lif + spike_proj, parts
+    raise ValueError(model_kind)
+
 def _flop_ledger(model: nn.Module, model_kind: str, sequence_len: int) -> Dict[str, Any]:
     input_flops, input_parts = _input_and_action_flops(model, model_kind)
     if model_kind == "stjewm":
@@ -220,6 +260,9 @@ def _flop_ledger(model: nn.Module, model_kind: str, sequence_len: int) -> Dict[s
     elif model_kind == "lewm_baseline":
         dynamic, dynamic_parts = _lewm_dynamic_flops(model, sequence_len)
         dynamic_label = "transformer_readout"
+    elif model_kind in SPIKING_BASELINES:
+        dynamic, event_dynamic, dynamic_parts = _spiking_baseline_dynamic_flops(model, model_kind, sequence_len)
+        dynamic_label = "spiking_or_hybrid_predictor"
     else:
         raise ValueError(model_kind)
     return {
@@ -227,6 +270,7 @@ def _flop_ledger(model: nn.Module, model_kind: str, sequence_len: int) -> Dict[s
         "input_action_breakdown": {k: int(v) for k, v in input_parts.items()},
         "dynamic_flops": int(dynamic),
         "dynamic_label": dynamic_label,
+        "event_discountable_flops": int(event_dynamic if model_kind in SPIKING_BASELINES else dynamic if model_kind == "stjewm" else 0),
         "dynamic_breakdown": {k: int(v) for k, v in dynamic_parts.items()},
         "dense_flops_per_step": int(input_flops + dynamic),
     }
@@ -381,6 +425,8 @@ def _build_from_checkpoint(
             hidden_dim=hidden_dim,
             mlp_hidden=mlp_hidden,
             mlp_layers=mlp_layers,
+            slt_layers=_as_optional_int(args.get("slt_layers")),
+            slt_din=_as_optional_int(args.get("slt_din")),
             image_size=image_size if pixel else 0,
         )
     return model, model_kind
@@ -441,8 +487,9 @@ def _measure_one(
             seed=seed,
         )
         active = float(sparsity["active_fraction"])
-        if model_kind == "stjewm":
-            effective_dynamic = ledger["dynamic_flops"] * active
+        event_dynamic = float(ledger["event_discountable_flops"])
+        if model_kind == "stjewm" or model_kind in SPIKING_BASELINES:
+            effective_dynamic = ledger["dynamic_flops"] - event_dynamic + event_dynamic * active
             effective_total = ledger["input_action_flops"] + effective_dynamic
         else:
             effective_dynamic = float(ledger["dynamic_flops"])

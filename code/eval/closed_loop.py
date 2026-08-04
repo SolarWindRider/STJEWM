@@ -351,6 +351,8 @@ def eval_closed_loop(
         success_rate_lewm_std=float(lewm_arr.std()) if len(lewm_arr) > 0 else float("nan"),
         success_rate_lewm_005=float(lewm_005_arr.mean()) if len(lewm_005_arr) > 0 else float("nan"),
         success_rate_lewm_001=float(lewm_001_arr.mean()) if len(lewm_001_arr) > 0 else float("nan"),
+        success_rate_env=float(env_arr.mean()) if len(env_arr) > 0 else float("nan"),
+        success_rate_env_std=float(env_arr.std()) if len(env_arr) > 0 else float("nan"),
         mean_cos_dist=float(cos_arr.mean()) if len(cos_arr) > 0 else float("nan"),
         mean_cos_dist_std=float(cos_arr.std()) if len(cos_arr) > 0 else float("nan"),
         mean_phys_dist=float(phys_arr.mean()) if len(phys_arr) > 0 else float("nan"),
