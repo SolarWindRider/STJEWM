@@ -5,7 +5,7 @@
 > **CEM planning** (300 samples x 10 iters, 5 episodes per env, 13 DMC envs).
 > Pixel uses 100 samples x 5 iters x 3 episodes (faster but still CEM).
 > Both use 5M-aligned trainable params, 1 epoch, 1 seed, batch 32.
-> Pixel encoder: frozen ViT-Tiny 5.5M + 0.07M trainable projector.
+> Pixel encoder: frozen ViT-Tiny 5.5M; trainable 5.00M total (0.07M projector + 4.93M SNN predictor).
 
 **Why this is the v0.7.15 final cross-modality table:**
 The earlier `cross_modality_table.md` (random policy pixel) showed

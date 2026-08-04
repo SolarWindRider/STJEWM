@@ -1,6 +1,6 @@
 # Experiment 2: 5M-aligned PIXEL (CEM) — FULL per-env main table (AUTHORITATIVE)
 
-> Protocol: frozen ViT-Tiny 5.5M + 0.07M projector, CEM 300×30×10, H=5, budget 50, 5 eps × 1 seed.
+> Protocol: frozen ViT-Tiny 5.5M (trainable 5.00M total: 0.07M projector + 4.93M SNN predictor), CEM 300×30×10, H=5, budget 50, 5 eps × 1 seed.
 > Goal = STATIC qpos (reachable) — env-SR is a REAL control signal. Cell format: **env-SR** / cos_dist.
 > NOT comparable to state env-SR (goal source differs). cos scale ~0.7-1.1 = frozen ViT bottleneck.
 

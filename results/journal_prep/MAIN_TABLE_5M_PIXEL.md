@@ -1,6 +1,6 @@
 # Experiment 2: 5M-aligned PIXEL obs (CEM) — mean_cos_dist per (split, model)
 
-> Pixel obs (frozen ViT-Tiny 5.5M + 0.07M projector), 5M-aligned, seed 0. CEM 300×30×10, H=5, budget 50. Goal = STATIC qpos (reachable). 10 splits × 13 models. Scale ~0.7-1.1 vs state ~0.1: frozen ViT representational bottleneck.
+> Pixel obs (frozen ViT-Tiny 5.5M; trainable 5.00M = 0.07M projector + 4.93M SNN predictor), 5M-aligned, seed 0. CEM 300×30×10, H=5, budget 50. Goal = STATIC qpos (reachable). 10 splits × 13 models. Scale ~0.7-1.1 vs state ~0.1: frozen ViT representational bottleneck.
 
 | Model | F1 (PushT held out) | F2 (TwoRoom held out) | F3 (Reacher held out) | oodc_F1 (5 envs) | oodc_F1F2 (10 envs) | oodc_F1F3 (5 envs) | oodc_F2 (5 envs) | oodc_F2F3 (6 envs) | oodc_F3 (1 env) | G16 (15 envs) |
 |---|---|---|---|---|---|---|---|---|---|---|

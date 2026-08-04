@@ -19,7 +19,8 @@ representation.
 - **Frozen ViT-Tiny** (5.5M, 192-dim, 12 layers, 3 heads, image_size=84).
   - patch_size=14, hidden_act=gelu, hf.ViTModel
   - Always frozen (`requires_grad=False` on all 5.5M params)
-  - 0.07M trainable projector (Linear(192→192) + SiLU + Linear(192→192))
+  - 0.07M trainable projector (Linear(192→192) + SiLU + Linear(192→192));
+  - **5.00M total trainable** = 0.07M projector + 4.93M SNN predictor (stack/readout/action-encoder)
 - **STJEWM 6 readouts** (trace, leak, spike, rate, no-trace, membrane): pixel_pre → SNN stack → gated trace. trainable 4.99M.
 - **7 baselines** (cubifae, gru, lewm, 2 slt, spikedreamer, mlp): pixel_pre → per-model architecture. trainable 4.83-5.21M.
 
@@ -48,7 +49,7 @@ Configs at `configs/oodc_5m_pixel/*.json` (10 files).
 ## Code changes (committed as `3c181c2`)
 
 ### New files
-- `code/core/pixel_pre.py` — FrozenPixelPreprocessor (5.5M frozen + 0.07M trainable).
+- `code/core/pixel_pre.py` — FrozenPixelPreprocessor (5.5M frozen). Total trainable 5.00M (projector 0.07M + SNN predictor 4.93M).
 - `code/scripts/generalist_v0_7_5_5m_pixel/` — 7 files:
   - `train_one_pixel.sh`, `train_one_stjewm_pixel.sh`, `train_all_pixel.sh`
   - `launch_parallel_pixel.sh`
