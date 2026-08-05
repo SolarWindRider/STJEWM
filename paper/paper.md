@@ -47,7 +47,7 @@ Our contributions are five:
 
 1. **Protocol contribution.** We formalise the *membrane-forbidden predictive-state interface* and argue that this interface, rather than a specific architecture choice, is the relevant unit of comparison for spiking world models.
 2. **Model contribution.** We propose ST-JEWM, a reconstruction-free world model whose predictive state is a gated post-spike trace and whose architecture is fully spiking end-to-end.
-3. **Diagnostic contribution.** We *falsify* latent cosine success (LeWM-SR) as a planner-quality signal (§2.3a, `MASTER_TABLE.md` §2 row `mlp_baseline`): a stateless MLP, whose latent has per-dim standard deviation $0.0002$ (i.e. is the *constant* zero vector), achieves LeWM-SR = $98.0\%$ on the 20-env std suite — *higher* than every recurrent world-model baseline. The metric is therefore not safe as a standalone headline; it is admissible only as an upper-bound proxy when paired with collapse-robust measures. We introduce three such diagnostics — divergence-from-constant, responsiveness, and event-alignment ρ — and show that together with env-native success and linear-probe AUROC they form a metric package that distinguishes four qualitatively different failure modes (collapsed / noisy / over-reactive / calibrated).
+3. **Diagnostic contribution.** We *falsify* latent cosine success (LeWM-SR) as a planner-quality signal (§2.3a, `results/journal_prep/FULL_METRIC_MATRIX.md` row `MLP`): a stateless MLP, whose latent has per-dim standard deviation $0.0002$ (i.e. is the *constant* zero vector), achieves LeWM-SR = $98.0\%$ on the 20-env std suite — *higher* than every recurrent world-model baseline. The metric is therefore not safe as a standalone headline; it is admissible only as an upper-bound proxy when paired with collapse-robust measures. We introduce three such diagnostics — divergence-from-constant, responsiveness, and event-alignment ρ — and show that together with env-native success and linear-probe AUROC they form a metric package that distinguishes four qualitatively different fa…
 4. **Diagnostic empirical contribution.** Across 13 specialist models × 24 environments, 12 generalist models × 3 task scales (G4, G8, G16), and **1200 OOD cells** (1008 within-DMC sub-family + 192 cross-benchmark), STJEWM is competitive but not dominant on closed-loop task success. Under the collapse-robust metrics, every STJEWM readout clusters in the same calibrated region, and that region is qualitatively distinct from MLP, GRU, and LeWM-v2. The three independent metrics (div, resp, ρ) **all agree on the same family partition** across all OOD settings. Event-alignment ρ for STJEWM generalist ckpts is ≥ 0.99 across all three task scales; the non-spiking baselines sit at ≤ 0.18.
 5. **Utility empirical contribution.** A diagnostic that the latent is calibrated does not by itself prove that the planner can use it. We complement the diagnostic with three utility measurements — latent-goal MPC horizon sweep, latent-vs-env gradient correlation, frozen-encoder sample efficiency — and show that the calibrated STJEWM readouts are the *only family in the retrained subset* that passes every utility axis; the collapse / noise / over-reactive baselines each fail at least one by a factor of $5$–$50\times$ (§9). Calibrated SNNs CuBiFAE and SLT-LIF-MPC were not included in the utility ; the only-family claim still requires them.
 
@@ -118,7 +118,7 @@ The trio separates four qualitatively distinct latent regimes: collapsed (low di
 ### 2.3a *An empirical falsification of LeWM-SR* (empirical result)
 
 In we tabulated the 13 baseline models on a single threshold of `cos_dist < 0.1`
-(LeWM-SR, `results/aggregate/MASTER_TABLE.md` §2, line 99). The headline reading from that
+(LeWM-SR, `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`, `MLP` row across splits). The headline reading from that
 table was that the stateless MLP baseline achieved LeWM-SR = **98.0%** on the 20-env std
 suite — *higher* than every recurrent world-model baseline, and only +1.2pp below the
 maximum possible value. We argued at the time that this was a metric artefact: a model whose
@@ -172,7 +172,7 @@ calibration is parameter-robust (2.70M and 5.06M give the same partition); the
 
 This falsification reframes prior work that reported LeWM-SR as a headline for latent
 quality. Those numbers, taken in isolation, cannot distinguish calibrated from collapsed.
-We retain LeWM-SR in `MASTER_TABLE.md` for completeness; we **deprecate it as headline**
+We retain LeWM-SR in `results/journal_prep/FULL_METRIC_MATRIX.md` (`LeWM@.05` column) for completeness; we **deprecate it as headline**
 in this revision and replace it with the 4-metric package.
 
 ### 2.4 Metric interpretation and true environment success
@@ -258,7 +258,7 @@ All forbidden readouts depend only on the bounded, content-aware post-spike hist
 
 We evaluate 13 specialist models — STJEWM with each of six readouts, plus seven baselines (LeWM Transformer 5-epoch, GRU continuous-RNN, stateless MLP collapse-control, CuBiFAE, SpikeDreamer, SLT-LIF-MPC trace, SLT-LIF-MPC free) — across two suites:
 
-- **Standard 20-environment suite**: env-native success rate saturates at 64–70% across all models (no diagnostic discrimination); full table in `MASTER_TABLE.md` §1.
+- **Standard 20-environment suite**: env-native success rate saturates at 64–70% across all models (no diagnostic discrimination); full per-env table in `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`.
 - **Stress 4-environment suite** designed to break the LeWM evaluator: `pusht_ood` (held-out goal split — i.e. a within-environment distribution shift on the *goal* axis), `tworoom_long` (longer horizon), `cartpole_flicker` (mask-randomised observation stream), `cheetah_velhidden` (held-out velocity field). These are *environment-distribution shifts* within the DMC + LeWM family — *not* cross-environment generalisation tests — and are intended to stress whether the planner can read latent geometry under shifted observation distributions within an env it has seen.
 
 ### 4.2 Shared-weight generalist suite
@@ -325,15 +325,15 @@ The four baseline families — STJEWM, continuous baselines, SNN baselines, and 
 
 ### 5.1 Closed-loop control: competitive but not dominant
 
-On the standard 20-environment suite (see `MASTER_TABLE.md` §1), env-native success rate (AVG over 20 envs) is *saturated*: every model lands in the 64–70% band.
+On the standard 20-environment suite (see `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`), env-native success rate (AVG over 20 envs) is *saturated*: every model lands in the 64–70% band.
 
 We write this as **competitive, not dominant**: the saturation reflects that the standard suite no longer distinguishes world models on raw control capability, not that all models are equally good at planning. We do not claim env-native SOTA for ST-JEWM.
 
-On the stress 4-environment suite (`MASTER_TABLE.md` §3), the spread widens.
+On the stress 4-environment suite, the spread widens (per-env cells in `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`).
 
 ### 5.2 Latent cosine success and the collapse pathology
 
-The standard LeWM-SR (`MASTER_TABLE.md` §2) tells a different story.
+The standard LeWM-SR (cross-model rows in `results/journal_prep/FULL_METRIC_MATRIX.md`, `LeWM@.05` column) tells a different story.
 
 This is the only place where the metric pathology has practical bite. We report both numbers — env-native success and latent cosine success — but we treat LeWM-SR as informative *only when paired with* divergence-from-constant or event-align ρ. Used alone, it is a foot-gun.
 
@@ -343,7 +343,7 @@ The closest honest summary of the specialist suite, after collapsing the inflati
 
 ### 5.3 Event-probe AUROC: mechanistic evidence at the linear level
 
-On the 7-env × 12-model × ~3-target linear-probe suite (`MASTER_TABLE.md` §5), STJEWM-trace averages 0.690 AUROC across event-type targets.
+On the 7-env × 12-model × ~3-target linear-probe suite, STJEWM-trace averages 0.690 AUROC across event-type targets; the per-model summary lives in `results/journal_prep/FULL_METRIC_MATRIX.md` (`AUROC` column).
 
 Three observations hold across this matrix: (i) every STJEWM readout outscores LeWM Transformer by ~0.5 AUROC; (ii) STJEWM outperforms the SNN baselines on average; (iii) the linear-probe split matches the recurrent-dynamics taxonomy, not the trace/no-trace taxonomy — i.e. spike-only and trace-only are both event-aligned, and the alignment comes from the spiking dynamics, not from the gated decay. We use this in §7 to motivate §3.5's ablation logic.
 
@@ -379,7 +379,7 @@ Figure 3 is the compact specialist summary. The headline visual observations:
 - The non-SNN baselines (last 3 rows) **sit on different axes**: LeWM Transformer has the *worst* event-probe AUROC (0.166), GRU has the best stress env-SR (42.0%) but **negative** event-align, MLP dominates LeWM-SR (98.0%) but its divergence is 0.0002 (collapse).
 - The mechanism metrics (event-probe AUROC, event-align ρ) **separate the families** that the raw control metrics (env-SR, LeWM-SR) cannot.
 
-Full per-env matrices (all 20 standard × 13 models × 6 metrics) are in `MASTER_TABLE.md` §1–§6.
+Full per-env matrices (all 20 standard × 13 models × 6 metrics) are in `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md` and the cross-model summary is `results/journal_prep/FULL_METRIC_MATRIX.md`.
 
 ---
 
@@ -393,11 +393,11 @@ All generalist numbers in this section are one-seed pilot-scale and must be read
 
 ### 6.2 env-SR saturates under the generalist setting
 
-On G16, every model lands within ±4pp of 71.1% env-native success rate (see `MASTER_TABLE.md` §9.1).
+On G16, every model lands within ±4pp of 71.1% env-native success rate (cross-model summary in `results/journal_prep/FULL_METRIC_MATRIX.md` `envSR` column; per-env G16 cells in `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`).
 
 ### 6.3 LeWM-SR is the wrong question if asked alone
 
-The latent cosine success metric on the generalist suite (`MASTER_TABLE.md` §9.2) ranks the models as follows:
+The latent cosine success metric on the generalist suite ranks the models as follows (cross-model summary in `results/journal_prep/FULL_METRIC_MATRIX.md`):
 
 | Rank on G16 LeWM-SR | Model | LeWM-SR | Failure mode (per §6.5) |
 | ------------------- | ---------------------------------- | ------- | ------------------------------- |
@@ -474,7 +474,7 @@ What we test in this section, with full clarity:
 - *What we do not (yet) test in this section:* transfer across benchmark families (DMC → pixel-control → T-maze → POMDPs). The proper cross-family OOD matrix (PushT / TwoRoom / Reacher / DMC, 4 directed splits, 192 cells) is in §9.7.
 
 All §7 evidence is therefore honest about two limits:
-*Latent-dynamics regime only.* We report the four-diagnostic profile on the held-out envs. env-native control success is *0* for all 1008 OOD cells under the current pipeline (DMC `tol = 0.1`, CEM horizon 5 vs goal 25 → never reaches), so control generalisation is **not** what is being probed by the diagnostic. *Single seed.* Numbers are 200-step random-policy trajectories (div / resp) and 100-step event-alignment (ρ); all retrained ckpts use seed 0. Standard error is unmeasured; we use the language *largely preserved* / *shows limited drift* / *in the same diagnostic regime*, never *invariant*.
+*Latent-dynamics regime only.* We report the four-diagnostic profile on the held-out envs. env-native control success on the OOD cells follows the true env-SR pattern after aggregation correction: easy envs (ball_in_cup, cartpole, cheetah, finger) saturate at 1.0, hard envs (dog, humanoid, quadruped, reacher, stacker, tworoom) are 0 — a CEM-horizon planning ceiling (horizon 5 vs goal_offset 25), not a latent failure. Control generalisation is therefore **not** what is being probed by the diagnostic. *Single seed.* Numbers are 200-step random-policy trajectories (div / resp) and 100-step event-alignment (ρ); all retrained ckpts use seed 0. Standard error is unmeasured; we use the language *largely preserved* / *shows limited drift* / *in the same diagnostic regime*, never *invariant*.
 
 ### 7.1 Setup: leave-two-env-out (within-suite transfer pilot)
 
@@ -534,7 +534,7 @@ Per split: 12 ckpts × 14 DMC envs × 3 episodes per held-out env (200 CEM steps
 
 
 
-**env-SR = 0 for all 1008 cells** because a 5-step CEM plan cannot reach a 25-step DMC goal. The primary headline metric is raw, threshold-free `mean_cos_dist`, computed as $1 - \cos(z_{\text{imagined terminal}}, z_g)$; lower is better.
+**env-SR pattern (aggregation-corrected)**: easy envs saturate at 1.0, hard envs at 0 — a 5-step CEM plan cannot reach a 25-step DMC goal on the hard envs, so env-SR there is a planning-ceiling artifact. The primary headline metric is raw, threshold-free `mean_cos_dist`, computed as $1 - \cos(z_{\text{imagined terminal}}, z_g)$; lower is better.
 
 #### Per-family summary, current (1008 cells, mean ± family-min..max across 6 splits × 14 envs)
 
@@ -617,7 +617,7 @@ Full per-cell ρ across all 1008 cells is in `results/utility/ood1_table.md`. Th
 
 3. **`cubifae_baseline` and `slt_lif_mpc_{trace,free}` are also calibrated**, with `mean_cos_dist ∈ [0.098, 0.102]` across the 6 splits. This supports the claim that the *trace dynamics family* (any SNN encoder + gated exponential decay) is the load-bearing element, not the STJEWM-specific readout. CuBiFAE and SLT-LIF-MPC are not the focus of this paper; the OOD path-C confirms they are *equivalent under within-DMC sub-family transfer*, within noise of STJEWM.
 
-4. **MLP's high env-SR was the collapse signature, not a capability.** Under the pipeline (`tol = 1.0`, `LeWM@0.1`), MLP reached env-SR within ±4pp of the calibrated family while its `div ≈ 0.0001` and `resp ≈ 0.0007` showed the latent was a constant function of the input. Under the fix (`tol = 0.1`, raw `mean_cos_dist`), env-SR = 0 and `mean_cos_dist = 0.0000` for MLP — *the latent itself is the constant zero* and the planner is reading a constant. This refutes the claim "MLP is the strongest LeWM-SR baseline" as a real capability claim.
+4. **MLP's high LeWM-SR was the collapse signature, not a capability.** MLP reaches LeWM@0.05 ≈ 0.95 while its `div ≈ 0.0002` shows the latent is a constant zero vector — `mean_cos_dist = 0.0000` for MLP means the planner reads a constant, satisfying the cosine threshold vacuously. This refutes the claim "MLP is the strongest LeWM-SR baseline" as a real capability claim.
 
 5. **The three axes agree.** STJEWM `ρ ∈ [0.97, 0.99]` vs non-SNN `ρ ∈ [0.04, 0.62]`; STJEWM `div ≈ 0.10` vs non-SNN `div ∈ [0.0001, 0.18]`; STJEWM `mean_cos_dist ≈ 0.10` vs non-SNN `mean_cos_dist ∈ [0.0000, 0.18]`. Three independent metrics, on the same 1008 cells, all drawing the same family partition. Combined with §9.1 (the planner *can* use the calibrated latent), this supports the working title as a *behavioural* claim — "the planner can use the calibrated latent" — rather than as a *raw control* claim.
 
@@ -1011,13 +1011,13 @@ STJEWM satisfies (1)–(5). CuBiFAE and SLT-LIF-MPC satisfy (1)–(4) on the sam
 
 ### 10.1 Cross-modality agreement across the 13 models
 
-The cross-modality Pearson ρ across all 13 models (computed by `code/scripts/generalist_v0_7_5_5m_pixel/cross_modality_table.py` against both `generalist_5m_table.md` and `generalist_5m_pixel_table.md`) tests the central hypothesis: does the calibrated / collapsed / over-reactive family partition survive the state → pixel transition?
+The cross-modality Pearson ρ across all 13 models (computed by `code/scripts/generalist_v0_7_5_5m_pixel/cross_modality_table.py` against `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md` and `results/journal_prep/MAIN_TABLE_5M_PIXEL_FULL.md`) tests the central hypothesis: does the calibrated / collapsed / over-reactive family partition survive the state → pixel transition?
 
 - **Strong preservation** (ρ > 0.6) on `mean_cos_dist` is the central empirical claim. The trace-dynamics family (STJEWM 6 readouts + CuBiFAE + SLT-LIF-MPC trace/free) should stay in the same calibrated band; the collapse signatures (MLP, GRU) and the over-reactive signature (LeWM-v2) should survive.
 - **Per-family sub-correlation** quantifies the family-level preservation: STJEWM family ρ uses only the 6 readouts; SNN baselines use CuBiFAE + SpikeDreamer + SLT-trace + SLT-free; non-SNN uses GRU + LeWM-v2 + MLP.
 - **env-SR saturation caveat.** `env-SR` saturates across the DMC suite (close to 0 for closed-loop with horizon 5 on PushT/TwoRoom-style 20-step tasks). The cross-modality ρ on `env-SR` is therefore a weaker signal than on `mean_cos_dist`; we report both.
 
-> **Status (2026-08-01):** all 131 pixel ckpts (130 model×split + 1 stjewm ckpt from early run) are trained and evaluated. The aggregate + cross-modality tables are populated from `results/aggregate/cross_modality_table.md` and `results/aggregate/generalist_5m_pixel_table.md`. 4-GPU parallel run wall ≈ 8.5 h after a restartable skip-aware scheduling fix.
+> **Status (2026-08-01):** all 131 pixel ckpts (130 model×split + 1 stjewm ckpt from early run) are trained and evaluated. The pixel-modality per-env main table is `results/journal_prep/MAIN_TABLE_5M_PIXEL_FULL.md`. 4-GPU parallel run wall ≈ 8.5 h after a restartable skip-aware scheduling fix.
 
 **Per-model summary — state cos_dist vs pixel cos_dist** (mean across splits, lower=better):
 
@@ -1068,7 +1068,7 @@ Pixel cos_dist (lower=better within a model, but absolute scale differs from sta
 
 ### 10.2 Per-(model, split) results (state vs pixel, side by side)
 
-The full 130-cell table (10 splits × 13 models) for both modalities lives at `results/aggregate/generalist_5m_table.md` (state) and `results/aggregate/generalist_5m_pixel_table.md` (pixel). The per-model summaries (mean env-SR across splits, mean LeWM-SR across splits) are in the `cross_modality_table.md` tables inserted above.
+The full 130-cell table (10 splits × 13 models) for both modalities lives at `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md` (state) and `results/journal_prep/MAIN_TABLE_5M_PIXEL_FULL.md` (pixel). The per-model summaries (mean env-SR across splits, mean LeWM-SR across splits) are in the cross-modality comparison inserted above (and the underlying JSON is `results/aggregate/cross_modality_table_cem.md`).
 
 - **Family partition survives modality change.** *Confirmed (, 130 ckpts each modality, n_pixel=110 per model).* The STJEWM + CuBiFAE + SLT-LIF-MPC-trace/free family stays clustered at the calibrated band on pixel obs (mean 1.090; range 0.999–1.243 across SN family). The collapse baseline MLP sits at 1.019 (small because its latent is near-constant regardless of input — the same artefact visible on the state side cos_dist = 0.007). LeWM-v2 is the *highest* pixel cos_dist at 1.252, mirroring its over-reactive state signature. Therefore the trace-dynamics hypothesis is **intrinsic to the architecture and not an artefact of the low-dim state encoder**: the rank order SN-family-clustered < LeWM-v2-worst is preserved across both modalities.
 - **Encoder does not dominate.** The frozen ViT-Tiny pixel encoder (5.5M) with only a 0.07M trainable adapter produces the same family partition as the linear state projector. This says the latent signature is set by the SNN dynamics, not by the encoder — i.e. the trace readout is the load-bearing architectural choice; the encoder (linear state projector vs frozen ViT) is interchangeable.
@@ -1115,17 +1115,17 @@ The full 130-cell table (10 splits × 13 models) for both modalities lives at `r
 
 | # | Claim | Evidence axis | Status | Cells | Source |
 | --- | --- | --- | --- | --- | --- |
-| 1 | The trace dynamics family is calibrated under the membrane-forbidden protocol, on specialist & generalist (G4/G8/G16) suites | Specialist (§5) + Generalist (§6) | ✅ Supported | 252+ | §5, §6, `MASTER_TABLE.md` §5–6 |
-| 2 | Non-SNN baselines fail at distinct axes (collapse / noise / over-react) | Generalist (§6) + Within-DMC OOD (§7.6) | ✅ Supported | 72 + 1008 | §6, §7.6, `ood1_table.md` |
+| 1 | The trace dynamics family is calibrated under the membrane-forbidden protocol, on specialist & generalist (G4/G8/G16) suites | Specialist (§5) + Generalist (§6) | ✅ Supported | 252+ | §5, §6, `results/journal_prep/FULL_METRIC_MATRIX.md` (`cos↓` / `event-ρ` columns) |
+| 2 | Non-SNN baselines fail at distinct axes (collapse / noise / over-react) | Generalist (§6) + Within-DMC OOD (§7.6) | ✅ Supported | 72 + 1008 | §6, §7.6, `results/utility/ood1_table.md` |
 | 3 | The three independent collapse-robust metrics (`div`, `ρ`, `mean_cos_dist`) all agree on the same family partition | Within-DMC OOD (§7.6) + Cross-bench (§9.7) | ✅ Supported | 1008 + 192 | §7.6, §9.7 |
-| 4 | STJEWM trace/spike carry calibration under within-suite leave-2-env-out transfer | Within-suite (§7.1–§7.2) | ✅ Supported (4/12 ckpts) | 16 | `cross_env_gen_table.md` |
-| 5 | STJEWM 6 readouts + CuBiFAE + SLT-LIF-MPC are calibrated under within-DMC sub-family OOD (1- and 2-family held-out splits) | Within-DMC OOD (§7.6) | ✅ Supported (12/12 ckpts) | 1008 | `ood1_table.md` |
-| 7 | STJEWM trace, membrane and spike readouts tie on the event-window content-aware rate-counting task | Event-window (§9.6) | ✅ Supported (membrane-forbidden protocol wins) | 3 ckpts × 3 seeds | `eventwindow_eval/` |
-| 8 | Event-window STJEWM > CuBiFAE by +2 pp | Event-window (§9.6) | ✅ Supported (small effect, 3 seeds) | 3 ckpts × 3 seeds | `eventwindow_eval/` |
-| 9 | Trace / spike / rate are *all* calibrated in cross-bench, the readout choice is not the determining factor | Cross-bench (§9.7) | ✅ Supported | 12 ckpts × 4 splits | `cross_benchmark_*` |
+| 4 | STJEWM trace/spike carry calibration under within-suite leave-2-env-out transfer | Within-suite (§7.1–§7.2) | ✅ Supported (4/12 ckpts) | 16 | `results/utility/cross_env_gen_table.md` |
+| 5 | STJEWM 6 readouts + CuBiFAE + SLT-LIF-MPC are calibrated under within-DMC sub-family OOD (1- and 2-family held-out splits) | Within-DMC OOD (§7.6) | ✅ Supported (12/12 ckpts) | 1008 | `results/utility/ood1_table.md` |
+| 7 | STJEWM trace, membrane and spike readouts tie on the event-window content-aware rate-counting task | Event-window (§9.6) | ✅ Supported (membrane-forbidden protocol wins) | 3 ckpts × 3 seeds | `results/generalist_G16_eventwindow_demo/eval/` |
+| 8 | Event-window STJEWM > CuBiFAE by +2 pp | Event-window (§9.6) | ✅ Supported (small effect, 3 seeds) | 3 ckpts × 3 seeds | `results/generalist_G16_eventwindow_demo/eval/` |
+| 9 | Trace / spike / rate are *all* calibrated in cross-bench, the readout choice is not the determining factor | Cross-bench (§9.7) | ✅ Supported | 12 ckpts × 4 splits | `results/cross_benchmark_F{1,2,3,4}/eval/` |
 | 10 | Specific STJEWM readout winner varies per cross-bench split (rate/trace/spike) | Cross-bench (§9.7) | ✅ Supported | 4 splits | §9.7 |
-| 11 | The planner *can use* the calibrated latent (latent-goal MPC, gradient correlation, frozen-encoder sample efficiency) | Utility (§9.1) | ✅ Supported (calibrated family passes every axis) | 12 ckpts × 4 envs | `utility/` |
-| 12 | Cross-modality transfer (state → pixel) generalises across families | Cross-modality axis (§10) | ✅ Supported / partly supported — see §10 | 130 (per encoder) | `cross_modality_table.md`, `generalist_5m_pixel_table.md` |
+| 11 | The planner *can use* the calibrated latent (latent-goal MPC, gradient correlation, frozen-encoder sample efficiency) | Utility (§9.1) | ✅ Supported (calibrated family passes every axis) | 12 ckpts × 4 envs | `results/utility/` |
+| 12 | Cross-modality transfer (state → pixel) generalises across families | Cross-modality axis (§10) | ✅ Supported / partly supported — see §10 | 130 (per encoder) | `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`, `results/journal_prep/MAIN_TABLE_5M_PIXEL_FULL.md` |
 | 15 | Membrane-forbidden protocol is *empirically necessary* for specialist stress success | → | ❌ Refuted (membrane-readout gets 25.5%, trace-only gets 25.0%; within 0.5pp) | — | §5.5, §8.1 |
 | 16 | env-SR is the right headline metric for cross-bench family OOD | — | ❌ Refuted (env-SR = 0 across all 1200 cells under current pipeline; planner-horizon ) | — | §2.4, §7.6, §9.7 |
 | 17 | The planner is the bottleneck on env-success (T-maze LeWM-SR=0.94, env-SR=0.03) | §9.5 | ✅ Supported | 3 ckpts × 90 episodes | `G15_trace_demo/eval/` |
@@ -1135,9 +1135,9 @@ The full 130-cell table (10 splits × 13 models) for both modalities lives at `r
 
 |  | Cells | Path |
 | --- | --- | --- |
-| Specialist evaluation | 24 envs × 13 models × 6 metrics = ~1872 | `MASTER_TABLE.md` §1–6 |
-| Generalist evaluation | G4 / G8 / G16 × 12 models × 6 metrics = 216 × 3 = 648 | `MASTER_TABLE.md` §9 |
-| **Within-DMC sub-family OOD ( / current)** | **1008** (6 splits × 12 ckpts × 14 envs) | `results/utility/ood1_table.md`, `docs/v0_7_13_RESULTS.md` |
+| Specialist evaluation | 24 envs × 13 models × 6 metrics = ~1872 | `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md` (per-env state cells), `results/journal_prep/FULL_METRIC_MATRIX.md` (cross-model summary) |
+| Generalist evaluation | G4 / G8 / G16 × 12 models × 6 metrics = 216 × 3 = 648 | `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md` (per-env state cells), `results/journal_prep/FULL_METRIC_MATRIX.md` (`envSR` column) |
+| **Within-DMC sub-family OOD ( / current)** | **1008** (6 splits × 12 ckpts × 14 envs) | `results/utility/ood1_table.md` |
 | **Cross-benchmark family OOD ** | **192** (12 ckpts × 4 splits: F1, F2, F3, F4) | `results/cross_benchmark_F{1,2,3,4}/eval/` |
 | Within-suite leave-2-env-out | 8 ckpts × 2 envs × 3 metrics = 48 (4 ckpts retrained, 4 referenced) | `results/utility/cross_env_gen_table.md` |
 | Latent-goal MPC horizon sweep | 12 ckpts × 4 envs × 5 horizons × 5 episodes = 1200 | `results/utility/latent_goal_mpc_table.md` |
@@ -1147,7 +1147,7 @@ The full 130-cell table (10 splits × 13 models) for both modalities lives at `r
 | T-maze negative result | 3 ckpts × 2 difficulties × 3 seeds × 30 episodes = 540 | `results/generalist_G15_trace_demo/eval/` |
 | **Total OOD (current)** | **1200** (1008 + 192) | — |
 
-(All cell counts include only cells with `div`, `resp`, `ρ`, `env-SR`/`cos_dist` populated. Specialist cells with missing metrics are documented in `MASTER_TABLE.md` §1–§6.)
+(All cell counts include only cells with `div`, `resp`, `ρ`, `env-SR`/`cos_dist` populated. Specialist cells with missing metrics are documented in `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md` §per-split breakdown.)
 
 ### A.3 Per-axis truth table ( final)
 
@@ -1233,10 +1233,8 @@ All numbers use **seed 0** (one seed per (model, env) cell). The seed-to-seed va
 
 ### B.6 Data and model artefact paths
 
-- `MASTER_TABLE.md` — full §1–§11 aggregate (specialist + generalist + collapse-robust diagnostics)
-- `results/aggregate/generalist_master_table.md` — generalist-only
-- `results/aggregate/generalist_align_table.md` — event-align ρ on the generalist ckpts
-- `results/aggregate/event_probes_table.md` — linear-probe AUROC per (env, model, target)
+- `results/journal_prep/FULL_METRIC_MATRIX.md` — cross-model summary (13 models × 14 metrics); `MAIN_TABLE_5M_STATE_FULL.md` — per-env state main table; `MAIN_TABLE_5M_PIXEL_FULL.md` — per-env pixel main table
+- `results/journal_prep/JOURNAL_STORY.md` — consolidated evidence narrative (incl. C1 LeWM-SR falsification, C4 synthetic-validation, C9 probe R² bug fix)
 - `results/utility/ood1_table.md` — 1008-cell OOD Path-C
 - `results/utility/cross_env_gen_table.md` — within-suite leave-2-env-out 
 - `results/utility/generalist_scaling_table.md` — G4/G8/G16 scaling
@@ -1244,11 +1242,9 @@ All numbers use **seed 0** (one seed per (model, env) cell). The seed-to-seed va
 - `results/utility/latent_goal_mpc_table.md` — horizon sweep
 - `results/utility/latent_env_grad_table.md` — gradient correlation
 - `results/utility/sample_efficiency_table.md` — frozen-encoder 1%/5%/10%/25%/100% data
-- `results/generalist_G15_trace_demo/eval/` — T-maze (§9.5)
-- `results/generalist_G16_eventwindow_demo/eval/` — event-window gating (§9.6)
+- `results/generalist_G15_trace_demo/eval/RESULTS.md` — T-maze (§9.5) summary, raw JSONs under `…/eval/`
+- `results/generalist_G16_eventwindow_demo/eval/RESULTS.md` — event-window gating (§9.6) summary
 - `results/cross_benchmark_F{1,2,3,4}/eval/` — cross-bench (§9.7, 192 cells)
-- `docs/v0_7_13_RESULTS.md` — narrative + per-cell table
-- `docs/CODE_BUG_AUDIT.md` — metric analysis
 - **`results/journal_prep/JOURNAL_STORY.md` + `FULL_METRIC_MATRIX.md`** — journal-prep evidence (B1/B1Fix event-ρ, B2/G5 multiseed, B3/G4 probe R², B4 ablation, P11/G3 energy, P12 synthetic, P13 multi-epoch, P22 cheetah, G1-G5 gap fills)
 ### B.7 Code structure (paths)
 
