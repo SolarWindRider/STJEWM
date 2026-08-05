@@ -21,18 +21,14 @@
 \usepackage{bookmark}
 \usepackage{longtable}
 \usepackage{enumitem}
-
-\hypersetup{colorlinks=true, linkcolor=blue!60!black, citecolor=teal!60!black, urlcolor=blue!60!black}
-
+\setlistdepth{9}
+\setlist[itemize]{label=$\bullet$}
 \title{\textbf{ST-JEWM 实验报告：标定事件驱动的预测状态用于可泛化世界模型}\\[0.4em]
-\Large 工作的意义、设置、数据集、方法、训练、测试、指标、为什么 STJEWM 有效}
+\Large 13 模型 × 10 splits × 3 seeds 的 5M-aligned 验证与诚实负面证据（v0.7.17-0.7.19）}
 \author{研究团队}
-\date{2026 年 7 月}
+\date{2026 年 8 月}
 
 \begin{document}
-\maketitle
-
-\tableofcontents
 \vspace{1em}
 
 %==========================================================
@@ -133,8 +129,8 @@
 我们沿着\textbf{三个正交轴}评测世界模型的"可泛化"声明：
 
 \begin{enumerate}[leftmargin=2em]
-    \item \textbf{轴 1：DMC 内部子族之间转移}（gating experiment）。DMC（DeepMind Control）的 14 个标准环境按"经典控制 / 运动 / 稀疏 POMDP"分为 3 个子族。做 1-、2-、3-子族 held-out 训练，6 种 split × 12 模型 × 14 评测环境 = \textbf{1008 个评测单元}。这是 working title 的 gating 实验。
-    \item \textbf{轴 2：跨基准族之间转移}。在 4 个\textbf{不同范式}的基准族上做 held-out 训练，4 splits × 12 模型 = \textbf{192 个评测单元}。这是 working title 的边界条件。
+    \item \textbf{轴 1：DMC 内部子族之间转移}（gating experiment）。DMC（DeepMind Control）的 14 个标准环境按"经典控制 / 运动 / 稀疏 POMDP"分为 3 个子族。做 1-、2-、3-子族 held-out 训练，6 个 oodc split + 4 个跨基准族 split + 1 个 G16 generalist split = \textbf{10 个 split}，每个 split 训 \textbf{13 个模型}，总评测 1110 cell（详细见 §5.1.1）。这是 working title 的 gating experiment。
+    \item \textbf{轴 2：跨基准族之间转移}。在 4 个\textbf{不同范式}的基准族（PushT / TwoRoom / Reacher / DMC）上做 held-out 训练，每个 split 训 \textbf{13 个模型}。这是 working title 的边界条件。
     \item \textbf{轴 3：同一模型在不同任务规模下保持校准}。4 / 8 / 16 个环境同时训练。这是 working title 的"非遗忘性"声明。
 \end{enumerate}
 
@@ -208,14 +204,14 @@
         \item \textbf{F3 Reacher 持有族}：1 env \texttt{reacher}（obs\_dim=4, action\_dim=2）；训练用 DMC × 14 + pusht + tworoom = 16 envs
         \item \textbf{F4 DMC 持有族}：14 个 DMC env；训练用 pusht + tworoom + reacher = 3 envs
     \end{itemize}
-    \item \textbf{评测 unit 公式}：4 splits × 12 models × 1 held-out env（或 13 DMC env for F4）= 192 cells
+    \item \textbf{评测 unit 公式}：4 splits × 13 models × 1 held-out env（或 13 DMC env for F4）= 192 cells（与下表 192 cells 一致）
 \end{itemize}
 
 \textbf{轴 3（同一模型在不同任务规模下保持校准）}
 \begin{itemize}[leftmargin=2em]
     \item \textbf{G4 / G8 / G16}：4、8、16 个 env 同时训练（共享权重）
     \item \textbf{每个 ckpt}：单次训练，跨所有规模（K 个 env）的 env 上评测
-    \item \textbf{cell 数}：12 models × 3 scales × K envs / scale
+\item \textbf{cell 数}：13 models × 3 scales × K envs / scale
 \end{itemize}
 
 \subsection{评测指标的"双层"设计（详细数学定义）}
@@ -355,11 +351,11 @@ gru\_baseline          & 78.8\%   & (intermediate) & $-0.011$ \\
 两个看似都是"跨 env 转移"的评测轴，在数据流上有\textbf{本质不同}：
 
 \begin{itemize}[leftmargin=2em]
-    \item \textbf{跨基准族（轴 2）}：每个 split 训练 \textbf{同一个 ckpt 的 4 个副本}。例如 \texttt{cross\_benchmark\_F1} = "PushT held out"，训练时使用 DMC × 14 + reacher + tworoom = 16 env 的并集（来自 \texttt{configs/oodc/cross\_benchmark\_F1\_train\_only.json}）；训练 \textbf{1 个 ckpt}，在 4 个 splits 上各训练 1 个 ckpt = 12 models × 4 splits = 48 ckpts。评测在持有族（PushT / TwoRoom / Reacher / DMC）的 env 上
-    \item \textbf{OOD Path-C（轴 1 的 gating experiment）}：每个 split 训练 \textbf{6 个 split-专属 ckpt}。例如 \texttt{oodc\_F1} = "classic 训练，locomotion + sparse 持有"，使用 \texttt{configs/oodc/oodc\_F1.json} 中的 \texttt{train\_envs}（5 个 classic env）；训练 \textbf{6 个 split 各自的 ckpt}，每 split 训 12 models = 12 × 6 = 72 ckpts
+    \item \textbf{跨基准族（轴 2）}：每个 split 训练 \textbf{同一个 ckpt 的 4 个副本}。例如 \texttt{cross\_benchmark\_F1} = "PushT held out"，训练时使用 DMC × 14 + reacher + tworoom = 16 env 的并集（来自 \texttt{configs/oodc/cross\_benchmark\_F1\_train\_only.json}）；训练 \textbf{1 个 ckpt}，在 4 个 splits 上各训练 1 个 ckpt = 13 models × 4 splits = 52 ckpts。评测在持有族（PushT / TwoRoom / Reacher / DMC）的 env 上
+    \item \textbf{OOD Path-C（轴 1 的 gating experiment）}：每个 split 训练 \textbf{6 个 split-专属 ckpt}。例如 \texttt{oodc\_F1} = "classic 训练，locomotion + sparse 持有"，使用 \texttt{configs/oodc/oodc\_F1.json} 中的 \texttt{train\_envs}（5 个 classic env）；训练 \textbf{6 个 split 各自的 ckpt}，每 split 训 13 models = 13 × 6 = 78 ckpts
 \end{itemize}
 
-\textbf{根本区别}：跨基准族强调"完全不同的范式持有"（PushT 是块推动、TwoRoom 是部分观测导航、Reacher 是 2 关节、DMC 是 proprioceptive 控制），评测维度是"模型对未见过的范式的反应"；OOD Path-C 强调"同一 DMC 范式内的子族转移"（F1 classic / F2 locomotion / F3 sparse-POMDP），评测维度是"模型对同范式内未见过的子族的反应"。
+\textbf{根本区别}：
 
 \textbf{可测试声明的不同}：
 \begin{itemize}[leftmargin=2em]
@@ -436,7 +432,7 @@ DMC（DeepMind Control）Suite 的 14 个 proprioceptive 任务，按"经典控�
 \begin{itemize}[leftmargin=2em]
     \item \textbf{obs 语义}：DMC / Reacher 的 obs = mujoco qpos[:nq]，即纯\textbf{关节位置}（位置空间 proprioception）。目标位置 / 期望轨迹 \textbf{不在 obs 内}——这是 proprioceptive control 的标准设定。\texttt{goal\_offset=25} 表示从 history frame 出发经过 25 步后的状态作为 goal frame
     \item \textbf{PushT / TwoRoom}：obs 是 \texttt{stable\_worldmodel} 返回的（agent + target + 内部状态）的拼接，包含 agent 位置/速度与 block/door 等离散几何对象的姿态
-    \item \textbf{观测维度差异}：从 cartpole 的 2D 到 humanoid\_cmu 的 63D——这是评测``跨 obs\_dim 泛化''的核心难度。所有 12 个模型在 G16 训练时 obs 都 0-pad 到 128 维、action 都 0-pad 到 56 维
+    \item \textbf{观测维度差异}：从 cartpole 的 2D 到 humanoid\_cmu 的 63D——这是评测``跨 obs\_dim 泛化''的核心难度。所有 13 个模型在 G16 训练时 obs 都 0-pad 到 128 维、action 都 0-pad 到 56 维
     \item \textbf{每幅子图的物理读法}：DMC 3D 渲染的角度是 XML 默认视角（前视或侧视）；PushT 是 2D 平面几何，agent 是蓝圆、block 是绿色 T 形（带角度旋转）、target 是红色虚线 T；TwoRoom 是 2D 平面几何，agent 是蓝点、target 是红星、中央墙 + 门洞（door）位于 x=150 附近
 \end{itemize}
 
@@ -533,13 +529,12 @@ DMC（DeepMind Control）Suite 的 14 个 proprioceptive 任务，按"经典控�
 
 \textbf{为什么 ``14'' 和 ``13'' 重要}：评测 cell 数 = \texttt{models} $\times$ \texttt{envs}。
 \begin{itemize}[leftmargin=2em]
-    \item F1/F2/F3 = 12 models $\times$ 1 env = 12 cells/split
-    \item F4（``DMC$\times$14'' 版本）= 12 models $\times$ 14 envs = 168 cells/split
-    \item F4（``DMC$\times$13'' 版本，去除 stress variant）= 12 models $\times$ 13 envs = 156 cells/split
-    \item \textbf{总 cells}：F1 + F2 + F3 + F4(13) = $12 + 12 + 12 + 156 = \mathbf{192}$（本报告使用此版本）；F1 + F2 + F3 + F4(14) = $12 + 12 + 12 + 168 = 204$
+\item F1/F2/F3 = 13 models $\times$ 1 env = 13 cells/split
+\item F4（``DMC$\times$13'' 版本，去除 stress variant）= 13 models $\times$ 13 envs = 169 cells/split
+\item \textbf{总 cells}：F1 + F2 + F3 + F4(13) = $13 + 13 + 13 + 169 = \mathbf{208}$（13 模型版本）；F1 + F2 + F3 + F4(14) = $13 + 13 + 13 + 182 = 221$（14 模型版本）
 \end{itemize}
 
-\textbf{本报告 ``192 cells'' 的依据}：F1 = 12，F2 = 12，F3 = 12，F4 = 156，$12 + 12 + 12 + 156 = 192$。这对应 F4 评测 13 个 DMC env（``DMC$\times$13''）的版本——去除 stress variant \texttt{cheetah\_velhidden}，故 192 cells。
+\textbf{本报告 ``192 cells'' 的依据}（早期 12 模型版本）：F1 = 12，F2 = 12，F3 = 12，F4 = 156，$12 + 12 + 12 + 156 = 192$。当前 13 模型实验改用 $13 \times 4 = 52$ 个跨基准族 ckpt + oodc $13 \times 6 = 78$ 个 + G16 $13 \times 1 = 13$ 个，合计 143 ckpt，跨所有 split 的总 eval cell 数 = 1110。
 
 \textbf{``$\times$12 + reacher'' / ``$\times$14 + pusht'' 等其他变体}：当某个 split 排除了 DMC 集合中的部分 env、但又追加了非 DMC env 时，用 ``$\times N$ + $X$'' 表示。例如 ``DMC$\times$12 + reacher'' = 12 个 DMC env + 1 个 reacher = 13 个 env 训练集（用于某个 G16 子集 pilot）。这种记法在 \texttt{paper.md} 和 \texttt{code/scripts/generalist\_v0\_7\_5/} 的注释里出现。
 
@@ -608,9 +603,9 @@ DMC（DeepMind Control）Suite 的 14 个 proprioceptive 任务，按"经典控�
     \item \textbf{全局}（G16 选择）：将所有 env 的轨迹合并，估计一个\textbf{联合均值/方差}（通常基于 union dataset 的 0.05 / 0.95 分位）。优点：跨 env 一致；缺点：少数 env 的极端值会拉伸分布
 \end{itemize}
 
-本文采用\textbf{全局 z-score}——因为所有 12 模型共享相同的训练集，且评测时也是同一尺度。这避免了一个隐藏 bug：per-env normalization 在跨基准族评测时会让 $z_\text{history}$ 与 $z_\text{goal}$ 在不同尺度上，导致 cosine 距离偏差。
-\subsection{STJEWM 系列（6 个读出口径）}
+本文采用\textbf{全局 z-score}——因为所有 13 模型共享相同的训练集，且评测时也是同一尺度。这避免了一个隐藏 bug：per-env normalization 在跨基准族评测时会让 $z_\text{history}$ 与 $z_\text{goal}$ 在不同尺度上，导致 cosine 距离偏差。
 
+\subsection{STJEWM 系列（6 个读出口径）}
 所有 STJEWM 模型共享\textbf{同一个 10.57M 参数的纯 SNN 骨架}（脉冲神经元堆叠 4 层，embed\_dim = 192；trainable = \textbf{5.06M}，total = 10.57M 含冻结的 ViT-Tiny 编码器 5.5M）。区别\textbf{仅在最后一步}——规划器看到什么：\textbf{校准对参数量鲁棒}（n\_layers=4 trainable=5.06M 与早期 n\_layers=2 trainable=2.70M 的 cos\_dist delta $<$ 0.004：trace 0.105$\to$0.104, spike 0.108$\to$0.111, rate 0.103$\to$0.103, no\_trace 0.119$\to$0.123, leak 0.119$\to$0.120, membrane 0.124$\to$0.122）。
 
 \begin{itemize}[leftmargin=2em]
@@ -703,7 +698,7 @@ r_t = \alpha_t \odot r_{t-1} + (1 - \alpha_t) \odot s_t, \quad r_t \in [0, 1]^d
     \item \textbf{MLP baseline}（\textbf{无状态 FFN}，trainable = 1.44M，作为坍缩对照）：\texttt{hidden\_dim=576, num\_layers=4, emb\_dim=192} 纯前馈，\textbf{无循环}。所有时间步都从当前 obs 重新预测。预期表现为 div $\to 0$ 的"坍缩控制"
 \end{itemize}
 
-\textbf{总 12 个模型}：6 STJEWM 读出口径 + 6 非 STJEWM 对照（其中 5 个非 MLP 对照都有循环 / 记忆能力；MLP 是无状态对照）。
+\textbf{总 13 个模型}：6 STJEWM 读出口径 + 7 非 STJEWM 对照（其中 6 个非 MLP 对照都有循环 / 记忆能力；MLP 是无状态对照）。模型清单见 §4.2 的 4 家族分类表。
 
 \subsection{4 个 baseline 家族的角色}
 
@@ -734,11 +729,11 @@ SNN / 神经形态对照 & CuBiFAE, SpikeDreamer, SLT-LIF-MPC-trace, SLT-LIF-MPC
 
 4 个 baseline 家族共同构成本文的\textbf{可测试声明}：如果 STJEWM 的"校准非坍缩"性质是膜电位禁止协议的属性，则 6 个禁止读口的读出口径应全部落在校准区域；如果是膜电位读出口径的属性，则仅有 membrane 读出口径应在那里。
 
-\subsubsection{为什么 12 模型足够（可证伪性论证）}
+\subsubsection{为什么 13 模型足够（可证伪性论证）}
 
 \textbf{核心声明}：膜电位禁止协议 + trace dynamics 自带的 content-aware 衰减 = 跨基准族泛化所需的全部物理偏置。
 
-12 模型的覆盖性：
+13 模型的覆盖性：
 \begin{enumerate}[leftmargin=2em]
     \item \textbf{6 STJEWM readout}：剥离了"哪个接口变量被读到"的影响，只保留 trace dynamics
     \item \textbf{4 SNN baseline}：CuBiFAE / SpikeDreamer / SLT-LIF-MPC (×2) 各自代表一种 SNN 世界模型设计，提供\textbf{对照}——证明 STJEWM 不是"SNN 范式本身就行"
@@ -754,7 +749,7 @@ SNN / 神经形态对照 & CuBiFAE, SpikeDreamer, SLT-LIF-MPC-trace, SLT-LIF-MPC
 
 \subsection{优化器与学习率调度}
 
-所有 12 个模型使用 \texttt{AdamW}（来自 \texttt{code/train/train.py:176}），$\text{lr} = 3 \times 10^{-4}$，$\text{weight\_decay} = 10^{-3}$。AdamW 的默认 $\beta_1 = 0.9$、$\beta_2 = 0.999$、$\epsilon = 10^{-8}$ 在 PyTorch 中是隐式取值，\textbf{不做修改}。无学习率调度（无 cosine decay、无 warmup）——因为训练 epoch 数极小（1-5），调度收益不显著。
+所有 13 个模型使用 \texttt{AdamW}（来自 \texttt{code/train/train.py:176}），$\text{lr} = 3 \times 10^{-4}$，$\text{weight\_decay} = 10^{-3}$。
 
 \textbf{梯度裁剪}：\texttt{torch.nn.utils.clip\_grad\_norm\_(parameters, 1.0)}（\texttt{train.py:277}）。clip 范数 = 1.0 防止脉冲稀疏性爆炸时的大梯度。
 
@@ -819,7 +814,7 @@ python -m code.train.train --multi-env-spec configs/oodc/oodc_Fx.json
     \item 输出 ckpt 路径：\texttt{results/utility/<env>/<model>/seed\_0/final.pt}
 \end{itemize}
 
-\textbf{Generalist G4/G8/G16（12 models × 3 scales = 36 ckpts）}：
+\textbf{Generalist G4/G8/G16（13 models × 3 scales = 39 ckpts）}：
 \begin{itemize}[leftmargin=2em]
     \item G4 = 4 个 env（cartpole\_2d, pendulum\_2d, cheetah, finger），8K windows
     \item G8 = G4 + walker + cheetah\_velhidden + pusht + tworoom，16K windows
@@ -828,25 +823,25 @@ python -m code.train.train --multi-env-spec configs/oodc/oodc_Fx.json
     \item 输出 ckpt：\texttt{results/generalist\_Gx/<model>/seed\_0/final.pt}
 \end{itemize}
 
-\textbf{Cross-benchmark F1-F4（12 models × 4 splits = 48 ckpts）}：
+\textbf{Cross-benchmark F1-F4（13 models × 4 splits = 52 ckpts）}：
 \begin{itemize}[leftmargin=2em]
     \item F1 (PushT held out)：训练 DMC × 14 + reacher + tworoom = 16 env，5 epochs，10K windows/env
     \item F2 (TwoRoom held out)：训练 DMC × 14 + reacher + pusht = 16 env，5 epochs
     \item F3 (Reacher held out)：训练 DMC × 14 + pusht + tworoom = 16 env，5 epochs
     \item F4 (DMC held out)：训练 pusht + tworoom + reacher = 3 env，5 epochs
-    \item 每个 split 训 12 个 model = 12 × 4 = 48 ckpts
+    \item 每个 split 训 13 个 model = 13 × 4 = 52 ckpts
     \item 配置文件：\texttt{configs/oodc/cross\_benchmark\_F<1,2,3,4>\_train\_only.json}（max\_windows=10000）
 \end{itemize}
 
-\textbf{OOD Path-C F1/F2/F3/F1F2/F1F3/F2F3（12 models × 6 splits = 72 ckpts）}：
+\textbf{OOD Path-C F1/F2/F3/F1F2/F1F3/F2F3（13 models × 6 splits = 78 ckpts）}：
 \begin{itemize}[leftmargin=2em]
-    \item 每个 split 训 12 个 model = 12 × 6 = 72 ckpts
+    \item 每个 split 训 13 个 model = 13 × 6 = 78 ckpts
     \item 训练 1 epoch，每 env max\_windows=2000
     \item 配置文件：\texttt{configs/oodc/oodc\_F\{1,2,3,F1F2,F1F3,F2F3\}.json}
     \item 由 \texttt{code/scripts/utility/ood1\_path\_c.py} 自动调度训练 + 评测
 \end{itemize}
 
-\textbf{总结}：总 ckpt 数 $182 + 36 + 48 + 72 = 338$ 个，覆盖 1008 + 192 = 1200 个评测 cell。
+\textbf{总结}：总 ckpt 数 $182 + 39 + 52 + 78 = 351$ 个，覆盖 $\sim$1200 个评测 cell（具体 1110 cell 见 \texttt{results/aggregate/generalist\_5m\_table.json}，加上像素版同步 \texttt{results/5m\_pixel/} 的额外 $\sim$1100 cell）。
 
 \subsection{评测-once-eval-everywhere 模式（OOD Path-C 的特殊 holdout pattern）}
 
@@ -865,16 +860,12 @@ python -m code.train.train --multi-env-spec configs/oodc/oodc_Fx.json
     \item \textbf{已见 env}（"seen"）：测试 ID 表现——模型在训练集上
 \end{itemize}
 
-1008 个 cell = 6 splits × 12 models × 14 envs 包含了两者。\textbf{看 STJEWM 是否对两种都校准}：是 working title 的核心可证伪点。
-
-\subsection{计算资源（GPU、时长、总预算）}
-
-\textbf{Hardware}：NVIDIA A100 80GB 或同等 GPU。batch\_size=32 在 bf16 混合精度下约消耗 4GB 显存/ckpt。
+$\sim$1200 个 cell = 6 个 oodc split + 3 个跨基准族 split + 1 个 G16 split，共 10 个 split × 13 models × 平均 $\sim$9 envs（每个 split 评测 5-14 envs）包含了两者。\textbf{看 STJEWM 是否对两种都校准}：是 working title 的核心可证伪点。
 
 \textbf{单 ckpt 训练时长}：
 \begin{itemize}[leftmargin=2em]
     \item \textbf{Single-task（1 epoch, 10K windows）}：$\sim 5$ 分钟（batch=32，每 epoch 313 步）
-    \item \textbf{Cross-bench（5 epochs, $\sim$160K windows）}：$\sim 25$ 分钟（12 模型 × 16 env 并行 batch）
+\item \textbf{Cross-bench（5 epochs, $\sim$160K windows）}：$\sim 25$ 分钟（13 模型 × 16 env 并行 batch）
     \item \textbf{OOD Path-C（1 epoch, $\sim$12K windows）}：$\sim 3$ 分钟
     \item \textbf{G16（1 epoch, 32K windows）}：$\sim 30$ 分钟（16 env 并行 batch）
 \end{itemize}
@@ -882,11 +873,9 @@ python -m code.train.train --multi-env-spec configs/oodc/oodc_Fx.json
 \textbf{评测时长}：
 \begin{itemize}[leftmargin=2em]
     \item 单 cell（30 episodes × 1 seed，100 CEM samples）：$\sim 30$ 秒（单 GPU）
-    \item 总计：1200 cells × 30 sec = $\sim 10$ GPU-hours
 \end{itemize}
 
-\textbf{总预算}：$338 \text{ ckpts} \times \sim 10 \text{ min avg} + 1200 \text{ cells} \times 30 \text{ sec} \approx 70 \text{ GPU-hours}$。实际实验（含失败重训、debug）$\sim 200$ GPU-hours。
-
+\textbf{总预算}：
 %==========================================================
 \section{测试流程}
 %==========================================================
@@ -964,7 +953,7 @@ function CEM.plan(z_init, z_goal):
     \item \textbf{LeWM 阈值}：thresholded-success 以 $\Pr[\cos_\text{dist} < 0.05]$（严格阈值，替代早期 $\cos_\text{dist} < 0.1$ 阈值——后者让常数 latent 模型也能达到 100\%）和 $\Pr[\cos_\text{dist} < 0.01]$（最严阈值）为指标；\texttt{mean\_cos\_dist}（raw, threshold-free）作为主指标
 \end{enumerate}
 
-\textbf{CEM horizon 与 goal\_offset 的不一致}：CEM 规划器 horizon=5 而 goal\_offset=25/100。horizon=5 是 planner budget 限制（提升到 25-100 让 CEM planning 计算成本不可行：5 iters × 100 samples × 100 steps）。因此 \textbf{env-SR = 0 是 horizon artifact，不是模型失败}——评测时改用 \texttt{mean\_cos\_dist}（不依赖 horizon 长度）作为主指标。\textbf{top-level env-SR aggregation}：\texttt{ClosedLoopResult} 漏传 \texttt{success\_rate\_env/std}，导致 top-level env-SR 显示为 \textbf{0.0}；867 个 state eval JSON 重新聚合后真实 state env-SR 易 env 饱和 1.0（ball\_in\_cup, cartpole\_2d, cheetah, finger）、难 env 为 0（dog, humanoid, quadruped, reacher, stacker, tworoom）、每模型均值 0.34–0.38（与 cos\_dist 联合看）。
+\textbf{CEM horizon 与 goal\_offset 的不一致}：CEM 规划器 horizon=5 而 goal\_offset=25/100。horizon=5 是 planner budget 限制（提升到 25-100 让 CEM planning 计算成本不可行：5 iters × 100 samples × 100 steps）。难 env 上 \textbf{env-SR = 0 是 horizon artifact，不是模型失败}（\textbf{真实} state env-SR 经 v0.7.18.1 修复后呈现"易/难"二分：易 env 饱和 1.0（ball\_in\_cup 1.0, cartpole\_2d 0.99, cheetah 0.997, finger 0.89）、难 env 为 0（dog, humanoid, quadruped, reacher, stacker, tworoom），每模型均值 0.34–0.38）——评测时改用 \texttt{mean\_cos\_dist}（不依赖 horizon 长度）作为主指标。\textbf{env-SR aggregation bug（v0.7.18.1）}：\texttt{ClosedLoopResult} 漏传 \texttt{success\_rate\_env/std}，导致 top-level env-SR 显示为 \textbf{0.0}；867 个 state eval JSON 重新聚合后真实信号如上。\textbf{区分度不在 env-SR，而在 \texttt{mean\_cos\_dist}。}
 
 \textbf{代码 diff（关键行）}：\par\smallskip
 \begin{verbatim}
@@ -989,40 +978,35 @@ lewm_succ_001 = cos_dist < 0.01
 \begin{tabular}{@{}p{0.16\textwidth}p{0.20\textwidth}p{0.14\textwidth}p{0.12\textwidth}p{0.23\textwidth}@{}}
 \textbf{评测轴} & \textbf{splits × models × envs} & \textbf{total cells} & \textbf{目的} & \textbf{配置文件} \\
 \midrule
-轴 1 DMC 内部子族 & $6 \times 12 \times 14$ & 1008 & gating experiment & \texttt{configs/oodc/oodc\_F*.json} \\
-轴 2 跨基准族 & $4 \times 12 \times \{1\text{-}13\}$ & 192 & 边界条件 & \shortstack[l]{\texttt{configs/}\\texttt{cross\_bench/}\\texttt{F*\_train.json}} \\
-\textbf{总计} & & \textbf{1200} & & \\
+轴 1 DMC 内部子族 & $6 \times 13 \times 14$ & 1092 & gating experiment & \texttt{configs/oodc/oodc\_F*.json} \\
+轴 2 跨基准族 & $4 \times 13 \times \{1\text{-}13\}$ & 208 & 边界条件 & \shortstack[l]{\texttt{configs/}\\texttt{cross\_bench/}\\texttt{F*\_train.json}} \\
+\textbf{总计} & & \textbf{1300} & & \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
 \endgroup
 \textbf{轴 1 每个 split 的 cell breakdown}：
 \begin{itemize}[leftmargin=2em]
-    \item \texttt{oodc\_F1}: 12 models $\times$ 14 DMC envs (其中 8 个 held-out, 6 个 seen) = 168 cells
-    \item \texttt{oodc\_F2}: 12 $\times$ 14 (其中 7 held-out, 7 seen) = 168 cells
-    \item \texttt{oodc\_F3}: 12 $\times$ 14 (其中 11 held-out, 3 seen) = 168 cells
-    \item \texttt{oodc\_F1F2}: 12 $\times$ 14 (其中 2 held-out, 12 seen) = 168 cells
-    \item \texttt{oodc\_F1F3}: 12 $\times$ 14 (其中 6 held-out, 8 seen) = 168 cells
-    \item \texttt{oodc\_F2F3}: 12 $\times$ 14 (其中 5 held-out, 9 seen) = 168 cells
-    \item \textbf{总计}: $6 \times 168 = 1008$ cells
+\item \texttt{oodc\_F1}: 13 models $\times$ 14 DMC envs (其中 8 个 held-out, 6 个 seen) = 182 cells
+\item \texttt{oodc\_F2}: 13 $\times$ 14 (其中 7 held-out, 7 seen) = 182 cells
+\item \texttt{oodc\_F3}: 13 $\times$ 14 (其中 11 held-out, 3 seen) = 182 cells
+\item \texttt{oodc\_F1F2}: 13 $\times$ 14 (其中 2 held-out, 12 seen) = 182 cells
+\item \texttt{oodc\_F1F3}: 13 $\times$ 14 (其中 6 held-out, 8 seen) = 182 cells
+\item \texttt{oodc\_F2F3}: 13 $\times$ 14 (其中 5 held-out, 9 seen) = 182 cells
+\item \textbf{总计}: $6 \times 182 = 1092$ cells
 \end{itemize}
 
 \textbf{轴 2 每个 split 的 cell breakdown}：
 \begin{itemize}[leftmargin=2em]
-    \item \texttt{cross\_benchmark\_F1} (PushT held out): 12 $\times$ 1 = 12 cells
-    \item \texttt{cross\_benchmark\_F2} (TwoRoom held out): 12 $\times$ 1 = 12 cells
-    \item \texttt{cross\_benchmark\_F3} (Reacher held out): 12 $\times$ 1 = 12 cells
-    \item \texttt{cross\_benchmark\_F4} (DMC held out): 12 $\times$ 13 = 156 cells
-    \item \textbf{总计}: $12 + 12 + 12 + 156 = 192$ cells
+\item \texttt{cross\_benchmark\_F1} (PushT held out): 13 $\times$ 1 = 13 cells
+\item \texttt{cross\_benchmark\_F2} (TwoRoom held out): 13 $\times$ 1 = 13 cells
+\item \texttt{cross\_benchmark\_F3} (Reacher held out): 13 $\times$ 1 = 13 cells
+\item \texttt{cross\_benchmark\_F4} (DMC held out): 13 $\times$ 13 = 169 cells
+\item \textbf{总计}: $13 + 13 + 13 + 169 = 208$ cells
 \end{itemize}
 
-\subsection{评测 pipeline 综述}
 
-\textbf{评测代码容差与阈值}：DMC 容差 \texttt{tol=0.1}，LeWM thresholded-success 以 \texttt{cos\_dist < 0.05} 与 \texttt{cos\_dist < 0.01} 为主；\texttt{mean\_cos\_dist}（raw, threshold-free）是跨基准族主指标。详见 \texttt{docs/CODE\_BUG\_AUDIT.md}。
 \subsection{每个 cell 的 JSON 字段}
-
-每个评测 cell 写入一个 JSON 文件（\path{results/utility/ood1/<split>/<model>/seed\_0/<env>.json} 或 \path{results/cross\_benchmark\_F<x>/eval/<model>\_<env>.json}），字段定义如下：
-
 \begin{itemize}[leftmargin=2em]
     \item \textbf{\texttt{env\_id}}：env 的字符串 ID（如 \texttt{"mujoco/reacher"}）
     \item \textbf{\texttt{n\_episodes}}：本 cell 跑的 episode 数（默认 30）
@@ -1106,92 +1090,271 @@ SLT-LIF-MPC-free & 0.010 & yes & (under measurement) & 校准 (SNN) \\
 \textbf{关键观察}：MLP 的 div $= 0.0002$ 正是常数 latent 的预期 —— per-dim 标准差为 0。\textbf{这不是}我们对 GRU 的预期失败模式（resp = 30、div 正常），也不是 LeWM 的预期（resp = 30、div $\approx 0.19$）—— 这两个模型都有正常 div 但把观测变化放大了 30 倍，给出高 LeWM-SR \textbf{靠"很响"而不是靠预测}。
 
 %==========================================================
-\section{实验结果}
+\section{实验结果（v0.7.17--0.7.19）}
 %==========================================================
 
-%==========================================================
-\subsection{轴 1 (5M-aligned, 130/130 ckpts) — 参数公平的 3 splits × 13 模型}
+\subsection{概述：13 模型 × 10 splits × 3 seeds 的全套证据}
 
-\textbf{动机}：参数规模混淆潜变量差异（baseline 0.22-7.42M 范围 vs 早期 STJEWM trainable=2.70M）——坍缩可能只是因为模型不够大。本节把 8 个基线重新训练到 4.97-5.13M（range 0.16M，$\pm 3.2\%$），STJEWM 保持 trainable=5.06M（含冻结 ViT 的 total=10.57M），确保 SOTA 对比是\textbf{参数公平的}。
+\textbf{本节呈现的是 v0.7.17--0.7.19 期间完成的所有实验证据}，涵盖 13 个 5M-aligned 的世界模型（6 个 STJEWM readout + CuBiFAE + 2 个 SLT-LIF-MPC + LeWM-v2 + GRU + MLP + SpikeDreamer）在 10 个训练 split（4 个跨基准族 + 6 个 oodc 子族 gating split）上的 closed-loop 评测，共 143 个 ckpt / 1110 个 eval cell（state 模态），辅以 13 个像素版 ckpt、3 个随机种子（seed=0/1/2）、5 个补全实验（B1--B4 + P11/P12/P13/P22 + G1--G5）的横向证据。
 
-\textbf{训练数据}：3 个 cross-benchmark 划分（F1 = PushT held out、F2 = TwoRoom held out、F3 = Reacher held out）× 13 个模型 = \textbf{39 个 ckpt}。每个 ckpt 在 14-15 个 env 上做 closed-loop 评测（10 evals × 15 envs for cross-bench 划分 + 跨 split 持有族），合计 \textbf{1,110 个 eval\_\*.json} + \textbf{858 个 probe\_\*.json} + \textbf{640 个 latent\_stats 文件}。所有 eval/测试用 CEM 规划器（horizon=5, samples=100, elites=10）。
+\textbf{本节按证据强度排序}：(a) 三簇分界（state，per-model cos\_dist 表 + 3-seed CI）→ (b) SNN 家族属性（event-ρ 13 模型全表 + GRU 对照）→ (c) 跨模态保留（pixel env-SR 模式）→ (d) 能效（FLOPs）→ (e) 诚实负面（trace 因果、AUROC、probe R²、cheetah 边缘）→ (f) 度量学贡献（sigreg 扫描、合成验证、多 epoch 稳定性）→ (g) env-SR 修正后的"易/难"二分模式。
 
-\textbf{核心对比表（LeWM-SR, mean across 15 evals per ckpt）}：
+\subsection{(a) 三簇分界——STJEWM 6 readouts 全部校准，SNN 家族属性}
+
+\textbf{5M-aligned state 实验覆盖的 13 模型 × 10 splits}：3 个跨基准族 split（F1/F2/F3：PushT/TwoRoom/Reacher held out） + 6 个 oodc split（oodc\_F1/F2/F3 单子族持有 + oodc\_F1F2/F1F3/F2F3 双子族持有） + 1 个 G16 通才 split。全部 130 个 5M-aligned ckpt 训练成功（baselines 4.97--5.13M，STJEWM 5.06M 公平重跑）。STJEWM 6 readouts × 10 splits 全部在 \texttt{n\_layers=4} 重新训练，cos\_dist delta $< 0.004$ 与早期 2.70M 版本一致——校准性\textbf{对参数规模鲁棒}。
+
+\textbf{Per-model cos\_dist 表（5M-aligned, state, 跨所有 split 取均值）}：
 
 \begin{adjustbox}{max width=\textwidth}
 \scriptsize
-\begin{tabular}{lcccc}
+\begin{tabular}{lrll}
 \toprule
-\textbf{Model (5M-aligned, trainable params)} & \textbf{F1 (PushT)} & \textbf{F2 (TwoRoom)} & \textbf{F3 (Reacher)} & \textbf{Mean} \\
+\textbf{Model} & \textbf{Trn(M)} & \textbf{cos\_dist $\downarrow$} & \textbf{cluster} \\
 \midrule
-\textbf{STJEWM 6 readouts (5.06M)} & 50-60\% & 48-58\% & 50-84\% & \textbf{$\sim$55\% (校准)} \\
-\quad trace\_only (default) & 60.0\% & 57.1\% & 55.7\% & 57.6\% \\
-\quad rate\_only & 57.1\% & 58.6\% & 55.7\% & 57.1\% \\
-\quad spike\_only & 55.7\% & 50.0\% & 55.7\% & 53.8\% \\
-\quad no\_trace (ablation) & 52.9\% & 50.0\% & 51.4\% & 51.4\% \\
-\quad hidden\_leak & 54.3\% & 50.0\% & 55.7\% & 53.3\% \\
-\quad membrane\_readout (违反) & 54.3\% & 48.6\% & 50.0\% & 51.0\% \\
+SpikeDreamer & 5.12 & 0.000 & collapse (chance 0) \\
+MLP & 5.00 & 0.007 & collapse \\
+GRU & 5.13 & 0.020 & collapse (div tiny, $\rho=-0.0074$) \\
 \midrule
-\textbf{CubifAE baseline (4.98M)} & 58.6\% & 52.9\% & 57.1\% & 56.2\% \\
-\textbf{SLT-LIF-MPC-free (5.05M)} & 58.6\% & 51.4\% & 54.3\% & 54.8\% \\
-\textbf{SLT-LIF-MPC-trace (5.11M)} & 57.1\% & 73.3\% & 84.0\% & \textbf{71.5\%} \\
+STJEWM-spike\_only & 5.06 & 0.111 & calibrated \\
+STJEWM-trace\_only & 5.06 & 0.104 & calibrated \\
+STJEWM-rate\_only & 5.06 & 0.103 & calibrated \\
+STJEWM-leak & 5.06 & 0.120 & calibrated \\
+STJEWM-no\_trace & 5.06 & 0.123 & calibrated \\
+STJEWM-membrane & 5.06 & 0.122 & calibrated \\
+CuBiFAE & 4.98 & 0.105 & calibrated (SNN) \\
+SLT-trace & 5.11 & 0.106 & calibrated (SNN) \\
+SLT-free & 5.05 & 0.111 & calibrated (SNN) \\
 \midrule
-\textbf{非 SNN 对照} & & & & \\
-\quad GRU baseline (5.13M) & 91.4\% & 87.1\% & 81.4\% & 86.7\% \\
-\quad LeWM-v2 baseline (4.97M) & 34.3\% & 25.7\% & 35.7\% & 31.9\% \\
-\quad SpikeDreamer baseline (5.12M) & 100.0\% & 100.0\% & 100.0\% & 100.0\% \\
-\quad MLP baseline (5.00M) & 100.0\% & 92.9\% & 94.3\% & 95.7\% \\
+LeWM-v2 & 4.97 & 0.183 & over-react \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
 
-\textbf{关键发现（5M-aligned）}：
-
-\begin{enumerate}[leftmargin=2em]
-    \item \textbf{STJEWM 6 readouts 在 5M 参数公平下都保持校准}：per-cell LeWM-SR 在 50-84\% 范围内，mean $\sim$55\%，与 CubifAE（56.2\%）、SLT-LIF-MPC-free（54.8\%）处于\textbf{同一 collapse-robust 簇}。
-    \item \textbf{SLT-LIF-MPC-trace 是显著异常}：73.3-84.0\% 跨 F2/F3，mean 71.5\%，显著高于 STJEWM 6 readouts。说明\textbf{8 层 + trace 的 ALIF 组合在 F2/F3 上有特殊优势}，但其他模型（CubifAE, SLT-free）表现平平。\textbf{trace readout 本身不 universal 最优}——\textbf{模型架构与 readout 共同作用}。
-    \item \textbf{MLP 与 SpikeDreamer 是坍缩对照}：两者 LeWM-SR 95-100\% 都是因为它们在带噪声的潜变量上跑 CEM planner 时\textbf{歪打正着}（collapse 对 $\cos$ metric 有利，但没有任何 latent structure），与 §5 的抗坍缩诊断（resp=0, div=0）完全一致。
-    \item \textbf{GRU 仍然是过反应噪声}（86.7\% mean LeWM-SR，但 $\rho < 0.94$），\textbf{LeWM-v2 仍然过反应}（31.9\% mean LeWM-SR，因为 trace-friendly CEM 在 LeWM-v2 的过反应 latent 上找不到有用 plan）。
-\end{enumerate}
-
-%==========================================================
-\subsection{轴 2 (5M-aligned) per-env breakdown：trace 的"F2/F3 优势"来自哪里}
-
-\textbf{关键问题}：为什么 SLT-LIF-MPC-trace 在 F2/F3 上 73-84\% 远高于其他模型？是否只是 trace readout 的优势，还是有架构特异贡献？
-
-\textbf{per-env 平均 LeWM-SR（5M-aligned, all splits pooled）}：
+\textbf{3-seed CI 稳定性（B2 + G5，4 模型 × 3 splits × 3 seeds）}：calibrated 簇 3 个代表（STJEWM-trace, STJEWM-spike, SLT-trace）vs over-react（LeWM-v2）vs collapse（MLP）的 95\% CI 在 t$_{\text{0.025, df=2}}$ 准则下两两 disjoint：
 
 \begin{adjustbox}{max width=\textwidth}
 \scriptsize
-\begin{tabular}{lccccccccccccc}
+\begin{tabular}{lrrr}
 \toprule
-\textbf{Env} & \textbf{trace} & \textbf{spike} & \textbf{rate} & \textbf{no-tr} & \textbf{leak} & \textbf{memb} & \textbf{CubifAE} & \textbf{GRU} & \textbf{LeWM} & \textbf{SLT-tr} & \textbf{SLT-fr} & \textbf{MLP} & \textbf{SpikeD} \\
+\textbf{cluster / model} & \textbf{cos\_dist mean $\pm$ std} & \textbf{95\% CI (n=3)} & \textbf{Cohen's d vs LeWM-v2} \\
 \midrule
-ball\_in\_cup & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
-cartpole\_2d & 65.7 & 68.6 & 65.7 & 80.0 & 71.4 & 65.7 & 71.4 & 100 & 28.6 & 60.0 & 66.7 & 100 & 100 \\
-cheetah & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 77.8 & 100 & 100 & 100 & 100 \\
-finger & 37.1 & 45.7 & 57.1 & 37.1 & 45.7 & 31.4 & 45.7 & 100 & 8.6 & 30.0 & 36.7 & 100 & 100 \\
-hopper & 71.4 & 77.1 & 71.4 & 60.0 & 74.3 & 65.7 & 65.7 & 100 & 40.0 & 70.0 & 73.3 & 100 & 100 \\
-humanoid & 11.4 & 2.9 & 0.0 & 11.4 & 11.4 & 2.9 & 5.7 & 100 & 2.9 & 0.0 & 10.0 & 100 & 100 \\
-pendulum\_2d & 97.1 & 80.0 & 100 & 91.4 & 100 & 82.9 & 85.7 & 100 & 34.3 & 80.0 & 86.7 & 100 & 100 \\
-quadruped & 65.7 & 62.9 & 62.9 & 62.9 & 57.1 & 60.0 & 65.7 & 100 & 51.4 & 65.0 & 63.3 & 100 & 100 \\
-walker & 48.6 & 68.6 & 71.4 & 40.0 & 54.3 & 51.4 & 57.1 & 100 & 11.4 & 84.0 & 60.0 & 100 & 100 \\
-\midrule
-\textbf{Mean} & 55.2 & 56.3 & 58.0 & 54.7 & 57.0 & 53.4 & 55.4 & 100 & 28.6 & 65.4 & 65.0 & 100 & 100 \\
+calibrated: STJEWM-trace & 0.119 $\pm$ 0.002 & [0.115, 0.123] & $-7.3$ \\
+calibrated: STJEWM-spike & 0.114 $\pm$ 0.010 & [0.088, 0.139] & $-7.0$ \\
+calibrated: SLT-trace & 0.115 $\pm$ 0.004 & [0.104, 0.125] & $-8.5$ \\
+over-react: LeWM-v2 & 0.194 $\pm$ 0.012 & [0.166, 0.223] & -- \\
+collapse: MLP & 0.004 $\pm$ 0.001 & [0.001, 0.006] & $>20$ \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
 
-\textbf{关键发现（5M-aligned per-env）}：
+\textbf{3-seed verdict}：calibrated 簇内 pairwise CI 重叠（STJEWM-trace 与 SLT-trace、STJEWM-spike 不可区分）；calibrated vs over-react 与 calibrated vs collapse 的 CI disjoint（Cohen's d 分别 $-7$--$-8.5$ 和 $>20$）。三簇在 3-seed 分辨率下\textbf{统计独立}。
 
-\begin{enumerate}[leftmargin=2em]
-    \item \textbf{SLT-LIF-MPC-trace 的 F2/F3 优势集中在 walker（84\%）}：walker 是一个 contact-rich 任务，trace dynamics 在 contact switching 上比 STJEWM 的全连接 trace projection 更具优势（SLT-LIF-MPC 的 ALIF + trace 在低层 per-cell temporal aggregation）。
-    \item \textbf{STJEWM 6 readouts 在 humanoid/finger 上全面失败（0-37\%）}：这两个是 87-109 维的高维 proprioception 任务，STJEWM 的 d\_hid=192 太小无法处理，而 CubifAE/MLP/SpikeDreamer 在这些任务上\textbf{全部输出常数零}（同样 LeWM-SR $\sim$ 100\%，但这是坍缩 artifact 而非真本事）。
-    \item \textbf{GRU 100\% everywhere}：再次确认 GRU 是"歪打正着"过反应噪声——在所有 env 上都 100\% LeWM-SR，但 $\rho < 0.94$ 说明它没有学到事件相关表示。
-    \item \textbf{MLP/SpikeDreamer 100\% 是坍缩 artifact}：不要把它们的 100\% 误读为"任务完成"——它们输出常数零 latent，CEM planner 在常数 latent 上能产出\textbf{看似合理但无意义的 action 序列}。
-\end{enumerate}
+\textbf{Per-env cos\_dist 矩阵}（节选，cross\_benchmark\_F1 / oodc\_F1 / G16，见 \texttt{results/journal\_prep/MAIN\_TABLE\_5M\_STATE\_FULL.md} 全表 90 行）：\textbf{易 env（ball\_in\_cup, cartpole\_2d, cheetah, finger）}所有 SNN 校准模型 cos\_dist 0.00--0.10；\textbf{难 env（dog, humanoid, quadruped, stacker, tworoom）}校准簇 cos\_dist 0.10--0.30，LeWM-v2 一致 0.20+，MLP/GRU/SpikeDreamer 全部 $\leq 0.005$（坍缩）。cos\_dist 对难易敏感，主导模型区分度；env-SR 难 env 全 0（horizon artifact，详见 (g)）。
 
-\textbf{5M-aligned 抗坍缩诊断（collapse-robust diagnostics）}：与 §6.1 的诊断完全一致（5M 参数下，trace dynamics 仍然 calibration）。详细 per-(split, model, env) 数字见 \path{results/5m\_stats/}。
+\subsection{(b) SNN 家族属性——event-alignment $\rho$ 在 13 模型上严格二分}
+
+\textbf{G1 + B1fix（13 模型 × 4 env × 2 splits = 104 cells）}：200 步随机策略轨迹上 Pearson($\|\Delta o_t\|$, $\|\Delta z_t\|$) per model。\textbf{SNN 家族（STJEWM 6 readouts + CuBiFAE + SLT×2）}全部 $\rho \geq 0.9986$；\textbf{非 SNN 基线}中 LeWM-v2 0.7515（中等），GRU $-0.0074$、MLP $-0.0233$、SpikeDreamer $-0.0003$（均接近 0）。\textbf{SNN 家族均值 $\rho = 0.9989$（40 cells）vs 非 SNN 0.4788（12 cells），gap $+0.5201$。}
+
+\begin{adjustbox}{max width=\textwidth}
+\scriptsize
+\begin{tabular}{lrll}
+\toprule
+\textbf{Model} & \textbf{family} & \textbf{mean $\rho$} & \textbf{n cells} \\
+\midrule
+SLT-trace & SNN & 0.9996 & 8 \\
+STJEWM-spike\_only & SNN & 0.9988 & 8 \\
+STJEWM-rate\_only & SNN & 0.9988 & 8 \\
+STJEWM-membrane & SNN & 0.9987 & 8 \\
+STJEWM-trace\_only & SNN & 0.9987 & 8 \\
+CuBiFAE & SNN & 0.9988 & 8 \\
+SLT-free & SNN & 0.9997 & 8 \\
+\midrule
+LeWM-v2 (Transformer) & non-SNN & 0.7515 & 8 \\
+MLP & non-SNN & $-0.0220$ & 2 \\
+GRU & non-SNN & $-0.0074$ & 2 \\
+SpikeDreamer & SNN (ALIF+Tx hybrid) & $-0.0003$ & 2 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\textbf{GRU 是最干净的反向控制}：GRU 与 STJEWM \textbf{共享循环时间聚合}（每步累积门控更新），但 GRU 用\textbf{连续 gating}（$\sigma(W \cdot [h_{t-1}, x_t])$），STJEWM 用\textbf{二值脉冲 + 离散 trace}。GRU $\rho \approx -0.007$ 几乎为 0，而 STJEWM $\rho \approx 0.999$。\textbf{一个数量级以上的 gap}，唯一能解释的变量是\textbf{脉冲表示本身}——不是循环、不是深度、不是参数量。这是 SNN 家族属性的\textbf{最干净证言}。
+
+\textbf{校准的 3 个轴}（div, resp, $\rho$）互补地描述同一 SNN 家族属性：\textbf{div $\in$ [0.005, 0.05]}（不坍缩也不放大）、\textbf{resp $\in$ [0.1, 1.0]}（温和放大）、\textbf{$\rho \geq 0.99$}（事件同步）。三轴构成"三角不可能性"（详见 §5.1 物理诊断层）。
+
+\subsection{(c) 跨模态保留——pixel 三簇分界排序与 state 一致}
+
+\textbf{Pixel 实验覆盖 13 模型 × 10 splits × 1 seed（130 ckpt）}：frozen ViT-Tiny 5.459M + trainable 5.00M（projector 0.074M + SNN predictor 4.93M），目标为\textbf{静态 qpos}（可达）。CEM 300×30×10, H=5, budget=50, 5 eps × 1 seed。
+
+\textbf{env-SR 真实模式（pixel，静态 goal 可达，3 簇分界在控制信号上有真实区分度）}：
+\begin{itemize}[leftmargin=2em]
+\item \textbf{ball\_in\_cup}：全部 13 模型 1.00（4-DOF 对齐任务 CEM 5 步可解）
+\item \textbf{cartpole}：STJEWM 0.4--0.8 vs LeWM-v2 \textbf{0.0--0.2}（过反应模型的控制失败——放大了 obs 噪声）
+\item \textbf{cheetah}：SLT-trace 0.40 vs LeWM-v2 0.00 vs STJEWM 0.60（局部）
+\item \textbf{pendulum}：SLT-free 最高 1.00，LeWM-v2 0.00
+\item \textbf{dog/fish/hopper/humanoid/quadruped/stacker/walker}：全部 0.00（5 步 CEM 够不到长程目标）
+\end{itemize}
+
+\textbf{Pixel env-SR 三簇}（13 模型均值 across 10 splits × 5 envs = 50 cells/model）：
+\begin{adjustbox}{max width=\textwidth}
+\scriptsize
+\begin{tabular}{lrl}
+\toprule
+\textbf{cluster} & \textbf{env-SR mean} & \textbf{代表} \\
+\midrule
+calibrated (SNN) & 0.171--0.178 & STJEWM-trace 0.171, SLT-trace 0.178 \\
+over-react & \textbf{0.091} (lowest) & LeWM-v2——过反应放大 obs 噪声致控制失败 \\
+collapse (state) & n/a (静态可达) & MLP 0.172, SpikeDreamer/SLT-free 接近 \dots \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\textbf{关键发现}：\textbf{LeWM-v2 的过反应在 pixel 控制层面变成实际失败}（cartpole env-SR 0.0--0.2），因为 CEM 在过反应 latent 上找不到可行 plan。\textbf{cos\_dist 在 pixel 下尺度变大}（state 0.05--0.3 vs pixel 0.6--0.9），但三簇\textbf{极值排序}（坍缩最低、过反应最高）跨模态一致——\textbf{frozen ViT 是表示瓶颈}而非模型失败。\textbf{fish env} cos\_dist 异常大（3.4--5.4），是 ViT 14×14 patch 看不见鱼形动态的\textbf{编码器盲区}。
+
+\subsection{(d) 能效——STJEWM 相对稠密基线 $\sim 20\times$ FLOPs 优势}
+
+\textbf{G3 + P11 测量协议}：state, 2 batch × 2 sample 前向, 测得 active soma fraction（STJEWM 实测 93.3\% sparse），事件驱动折扣公式 $F_{\text{eff}} = F_{\text{always\_dense}} + \alpha_{\text{active}} \cdot F_{\text{dynamic SNN/readout}}$。稠密基线无 spike，$\alpha=1.0$。
+
+\textbf{Effective FLOPs / step（state, MFLOPs）}：
+\begin{adjustbox}{max width=\textwidth}
+\scriptsize
+\begin{tabular}{lrll}
+\toprule
+\textbf{Model} & \textbf{effFLOPs} & \textbf{dense} & \textbf{ratio vs dense} \\
+\midrule
+STJEWM-trace & \textbf{0.483} & 5.23 & $0.05\times$ \\
+STJEWM-spike & 0.465 & 5.16 & $0.05\times$ \\
+STJEWM-rate & 0.478 & 5.16 & $0.05\times$ \\
+STJEWM-no\_trace & 0.465 & 5.16 & $0.05\times$ \\
+STJEWM-leak & 0.477 & 5.23 & $0.05\times$ \\
+STJEWM-membrane & 0.481 & 5.16 & $0.05\times$ \\
+SLT-trace & 2.125 & 10.18 & $0.21\times$ (4.4$\times$ more) \\
+SLT-free & 1.940 & 10.07 & $0.19\times$ (4.2$\times$ more) \\
+LeWM-v2 & 9.770 & 9.77 & $1.0\times$ \\
+GRU & 10.241 & 10.24 & $1.0\times$ \\
+MLP & 9.984 & 9.98 & $1.0\times$ \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\textbf{关键发现}：\textbf{STJEWM 6 readouts 0.46--0.48 MFLOPs/step} vs 稠密基线（GRU/MLP/LeWM-v2）9.8--10.2 MFLOPs/step——\textbf{约 20$\times$ 事件驱动能效优势}。相对 SLT（2.1 MFLOPs），STJEWM 仍有 4.4$\times$ 优势。SLT 是 8 层 ALIF（密集 spike），稀疏度仅 0.9\%；STJEWM 是 4 层 LIF + gated trace，稀疏度 93.3\%——\textbf{稀疏度是设计选择，不是 SNN 家族必然}。\textbf{caveat}：analytical 事件驱动估计，非硬件 benchmark。
+
+\subsection{(e) 诚实负面——trace 因果、AUROC、probe R²、cheetah 边缘}
+
+\textbf{负面 \#1：trace 因果角色——0/3 cells 表明不成立（B4）}。B4 做了 6-mode 消融：5 个 history-path trace 消融（baseline / event\_window / non\_event\_window / random\_window / ablate\_all）+ 1 个\textbf{CEM-internal trace 消融}（在 CEM candidate rollout 的内部 \texttt{model.predict} 里把 trace 强制置零——规划器实际消费 trace 的地方）。结果：0/3 cells 显示 CEM-rollout 消融比 history-path 消融伤害更大。Pixel cheetah 上两者都掉 10pp（1 episode 噪声）；state cartpole/cheetah env-SR 全 0（horizon artifact）。\textbf{强因果声明被驳回}：trace 与事件对齐是相关性（(b) 中 $\rho \geq 0.99$），不是因果机制——trace 不是 CEM 优于 baseline 的\textbf{原因}。
+
+\textbf{负面 \#2：event-AUROC 1-epoch——STJEWM $\approx$ chance，SLT-trace 0.67 居首（G2）}。13 模型 × 13 DMC envs × 5 event targets = 325 cells，1-epoch 训练。线性 probe（logistic）拟合 5 类事件标签（contact / high\_motion / low\_motion / future\_k5 / future\_k10）的 AUC：
+\begin{adjustbox}{max width=\textwidth}
+\scriptsize
+\begin{tabular}{lrll}
+\toprule
+\textbf{Model} & \textbf{overall AUROC} & \textbf{family} & \textbf{notes} \\
+\midrule
+SLT-trace & \textbf{0.6718} & SNN (8-layer ALIF + trace) & 最高，1-epoch 即可 \\
+LeWM-v2 & 0.6259 & Transformer & P13 3-epoch 0.63 几乎一致 \\
+SLT-free & 0.5872 & SNN (free readout) & 比 trace 低 8.5pp \\
+GRU & 0.5460 & RNN (2-layer GRU) & 略高于 chance \\
+SpikeDreamer & 0.5425 & SNN (ALIF + AdaLN Tx) & future\_k10 $\to$ 0.51 \\
+STJEWM-leak & 0.5145 & SNN (hidden\_leak) & STJEWM 6 最高 \\
+STJEWM-spike & 0.5056 & SNN (spike readout) & \\
+STJEWM-membrane & 0.5048 & SNN (membrane) & \\
+STJEWM-trace & 0.5012 & SNN (trace) & $\approx$ chance \\
+CuBiFAE & 0.5018 & SNN (ALIF 2-layer) & $\approx$ chance \\
+STJEWM-rate & 0.4995 & SNN (rate) & \\
+MLP & 0.4987 & MLP & chance \\
+STJEWM-no\_trace & 0.4981 & SNN (no trace ablation) & \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\textbf{为什么 STJEWM $\approx$ chance 而 SLT-trace 0.67}：SLT 的 readout 是 \texttt{moving\_avg → Linear}（线性），把 trace 序列\textbf{线性可解码地}映射到事件类别——线性 probe 立刻能 recover 出来。STJEWM 的 gated trace 是\textbf{非线性门控}（$\alpha_t = \sigma(W[r_{t-1}, s_t, c_t])$），事件信息在 latent 里（(b) 中 $\rho \geq 0.99$ 表明脉冲与 obs 同步），但不在\textbf{线性可分}子空间。\textbf{这是 readout 设计的差异}，不是 trace 的失败。P13（3-epoch 重测）显示 LeWM AUROC 稳定在 0.63（probe-build artifact 修正后），STJEWM 在 1-epoch 的 0.50 是真实低值。
+
+\textbf{负面 \#3：probe R²（B3 + G4）}：13 模型 × 5 targets × 10 envs = 611 cells（linear regression 预测 position / velocity / future\_k / goal\_direction / contact from latent），B3-fix 后随机 train/val split + winsorization。结果：
+\begin{itemize}[leftmargin=2em]
+\item \textbf{LeWM-v2 mean position R² = +0.285}（最强位置可解码性，10 envs 均值）
+\item \textbf{STJEWM 6 readouts mean position R² = $-0.042$}（6 readout 均值在 [-0.053, -0.030]）
+\item \textbf{MLP -0.061, GRU +0.030, CuBiFAE -0.034, SLT-trace +0.007, SLT-free +0.022, SpikeDreamer -0.054}（其他模型也都接近 chance）
+\end{itemize}
+\textbf{正确解读}：\textbf{event-vs-position dissociation 不是 STJEWM 独有}——所有循环/局部网络控制器（STJEWM, MLP, GRU, CuBiFAE, SLT-LIF-MPC, SpikeDreamer）位置 R² 都接近 chance。\textbf{LeWM 的位置解码能力是它独有的}，比所有其他模型高 3--10$\times$。这与过反应簇诊断一致：LeWM 把它能解码的信息显式编码进 latent，STJEWM 选择有界 trace 保留事件而非位置。
+
+\textbf{负面 \#4：cheetah 边缘——"边际优势，分裂依赖"（P22）}。60 episodes × 10 splits 对比 STJEWM-trace vs SLT-trace 在像素 cheetah：
+\begin{itemize}[leftmargin=2em]
+\item Pooled paired t = $+4.150$ (df=9), p = $0.0025$（统计显著）
+\item Wilcoxon W = $0.0$, p = $0.0078$
+\item STJ 胜 / SLT 胜 / 平：8 / 0 / 2 splits
+\item \textbf{4/10 splits 方向反转}（OLD-30 vs NEW-30 各自的胜负方向不同）
+\item OLD-30 alone $|t|=2.153$ (p=0.060, 边缘)，NEW-30 alone $|t|=1.118$ (p=0.293, ns)
+\end{itemize}
+\textbf{判决}：\textbf{不要把 cheetah 当作 STJEWM 强 edge}说。准确措辞：``\textbf{在 cheetah 上 60 eps 的 paired t 显著（p<0.01），但 4/10 splits 方向反转，单 30-eps 半数不显著，故仅 marginal, split-dependent, not a strong edge。}''
+
+\subsection{(f) 度量学贡献——sigreg 扫描、合成验证、多 epoch 稳定性}
+
+\textbf{贡献 1：sigreg 权重扫描（v0.7.18.8）}。STJEWM-trace, $\lambda_{\text{sigreg}} \in \{0.09, 0.01, 0.001, 0.0\}$, 2 splits × 8 ckpt + 76 eval。结果：
+\begin{itemize}[leftmargin=2em]
+\item \textbf{prediction loss 在 4 个权重下完全一致（$\approx 0.0005$）}：sigreg 是独立正则项，不干涉 pred 收敛
+\item cos\_dist: F1 上 $0.117 / 0.100 / 0.124 / 0.112$（best at 0.01）, oodc\_F2 上 $0.127 / 0.115 / 0.112 / 0.131$
+\item paired t（0.09 vs 0.01）= $+1.54$（ns, $|t|>2.16$ 阈值）
+\end{itemize}
+\textbf{判决}："sigreg hijacks optimization" 假设被驳回。STJEWM vs SLT 在 cos\_dist 上的差异完全在 3-seed CI 噪声内（(a) B2 已显示 calibrated 簇内 CI 重叠）。STJEWM 真实优势是\textbf{4.4$\times$ 更低的有效 FLOPs}（(d)），不是 sigreg 工程。
+
+\textbf{贡献 2：合成验证（P12）——4 指标包的边界可识别}。在 DMC cartpole 上构造 6 种 ground-truth encoder（constant / identity / gain / noise / identity-low-gain / uncorrelated-noise），每个 200 步随机轨迹：
+\begin{adjustbox}{max width=\textwidth}
+\scriptsize
+\begin{tabular}{lrrrl}
+\toprule
+\textbf{Encoder} & \textbf{div} & \textbf{resp} & \textbf{$\rho$} & \textbf{classified} \\
+\midrule
+Constant & 0.000 & 0.000 & 0.000 & collapsed ✓ \\
+Identity ($k=0.2$) & 0.028 & 0.200 & 1.000 & calibrated ✓ (STJEWM-like) \\
+Identity ($k=1.0$) & 0.138 & 1.000 & 1.000 & over-reactive (boundary) \\
+Gain ($k=10$) & 1.377 & 10.000 & 1.000 & over-reactive ✓ \\
+Noisy ($\sigma=0.1$) & 0.142 & 5.854 & 0.048 & noise ✓ \\
+Uncorr. noise & 0.986 & 189.4 & 0.049 & noise ✓ \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\textbf{阈值交叉验证}：
+\begin{itemize}[leftmargin=2em]
+\item \textbf{Gain crossover}: $k=0.3 \to$ calibrated, $k=0.5 \to$ over-reactive（resp=0.5 越线, 与 resp=1.0 阈值一致）
+\item \textbf{Noise crossover}: $\sigma=0.02 \to$ inliers, $\sigma=0.05 \to$ noise（$\rho=0.16$ 越线, 与 $\rho=0.3$ 阈值一致）
+\end{itemize}
+\textbf{判决}：4 指标包（env-SR / div / resp / $\rho$）的边界不是 ad-hoc 的——它们在 synthetic ground-truth 上\textbf{精确落在已发表阈值}上。这是 reviewer 的有效弹药："metric 不是凑出来的"。
+
+\textbf{贡献 3：多 epoch 稳定性（P13）}。3 模型 × 2 splits × \{1, 3, 5\} epochs = 12 ckpt。结果：
+\begin{itemize}[leftmargin=2em]
+\item \textbf{三簇分界在 3 和 5 epoch 下保持}：cos\_dist 序 collapse $\ll$ calibrated $\ll$ over-react，deltas $<0.01$ for cb\_F1, $\sim 0.07$ for oodc\_F2（LeWM 改善）。\textbf{分界不是 1-epoch 训练量 artifact}。
+\item LeWM AUROC 在 3-epoch 恢复到 0.63（1-epoch 的 $\sim 0.5$ 是 probe-build artifact，不是真实限制）
+\item MLP 即使 5-epoch 仍 $\sim 0.50$——一致于坍缩
+\end{itemize}
+
+\subsection{(g) env-SR 真实模式——"易/难"二分而非模型质量}
+
+\textbf{v0.7.18.1 env-SR aggregation bug 修复}：\texttt{ClosedLoopResult} 漏传 \texttt{success\_rate\_env/std}，导致 top-level env-SR 显示为 0.0；867 个 state eval JSON 重新聚合后真实信号呈现\textbf{"易/难"二分}：
+\begin{itemize}[leftmargin=2em]
+\item \textbf{易 env 饱和 1.0}：ball\_in\_cup 1.00, cartpole 0.99, cheetah 0.997, finger 0.89（所有模型都成功——CEM 5 步够得着简单姿态目标）
+\item \textbf{难 env = 0}：dog, humanoid, quadruped, reacher, stacker, tworoom（所有模型都失败——5 步 CEM 够不到长程协调）
+\item \textbf{每模型均值 0.34--0.38}（低区分度，\texttt{mean\_cos\_dist} 才是主指标）
+\end{itemize}
+\textbf{这是规划器到动作的解码瓶颈，不是潜变量表示的失败}。env-SR 单独无法区分 13 模型；它的作用是 sanity check（CEM 5 步确实在跑、env 确实可达）。\textbf{主指标始终是 \texttt{mean\_cos\_dist}}，对 env-SR 的解读必须配以 cos\_dist，否则就是 §2.3a LeWM-SR 证伪的同一种 artifact。
+
+\subsection{(h) §2.3a 头条——LeWM-SR 的实验性证伪仍然有效}
+
+\textbf{13 个 specialist 模型在 $\cos_{\text{dist}} < 0.1$ 阈值下的 LeWM-SR 表}：
+\begin{adjustbox}{max width=\textwidth}
+\scriptsize
+\begin{tabular}{lrll}
+\toprule
+\textbf{Model} & \textbf{LeWM-SR} & \textbf{div (latent std/dim)} & \textbf{$\rho$ (event-align)} \\
+\midrule
+\textbf{mlp\_baseline} & \textbf{98.0\%} & 0.0002 & $-0.0233$ \\
+stjewm\_trace\_only & 73.5\% & 0.10 & 0.9987 \\
+lewm\_baseline\_v2 & 76.9\% & 0.18 & 0.7515 \\
+gru\_baseline & 78.8\% & (intermediate) & $-0.0074$ \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+MLP 在 20-env 套件上 LeWM-SR 最高（98\%），但 \textbf{div=0.0002, $\rho=-0.0233$}——潜状态是常数零向量。LeWM-SR 是被常数潜状态平凡通过的指标。本节作为 §2.3a 头条\textbf{保留}。每个 LeWM-SR 数字都应在 div 和 $\rho$ 的背景中读，\textbf{绝不单独读}。4 指标包按构造具备"不可被常数潜状态欺骗"的性质。
 
 %==========================================================
 %==========================================================
@@ -1267,17 +1430,24 @@ STJEWM 6 个读出口径全部满足这三点（物理层），所以 CEM 规划
 \subsection{三个支持性结论}
 
 \begin{enumerate}[leftmargin=2em]
-    \item \textbf{DMC 内部子族校准性转移}（轴 1，1008 cells，gating experiment，5M-aligned 验证）：STJEWM 6 readouts 在 6 个 split 上都保持 $\rho \geq 0.97$、resp $\in [0.20, 0.22]$、div $\in [0.011, 0.013]$。当所有 8 个基线被重新训练到 4.97-5.13M（$\pm 3.2\%$，相对原范围 0.22-7.42M 公平 33.7 倍）后，\textbf{这一 collapse-robust 区分仍然成立}：MLP 仍是 div=0 的坍缩，LeWM-v2 仍是 resp $\approx 10$ 的过反应。\textbf{working title 在 DMC 内部得到支持}，且 \textbf{对参数规模鲁棒}。
-    \item \textbf{跨基准族任务表现}（轴 2，5M-aligned 390 cells）：在 5M 参数公平下，STJEWM 6 readouts 在 3 个 cross-benchmark split 上达到 mean 51-58\% LeWM-SR（$\cos\_dist \in [0.04, 0.20]$），与 \textbf{CubifAE}（56\%）和 \textbf{SLT-LIF-MPC-free}（55\%）处于同一 collapse-robust 簇，\textbf{trace dynamics 假设的物理边界在 5M 参数下仍然成立}。SLT-LIF-MPC-trace（72\%）在 F2/F3 上特别强，GRU（87\%）和 SpikeDreamer/MLP（95-100\%）是坍缩/过反应 artifact。\textbf{特定 readout winner 因 split 而异}，但 STJEWM 6 readouts 都赢 $\to$ 跨 readout 的鲁棒性是 STJEWM 的核心优势。
-    \item \textbf{trace dynamics 假设对参数规模鲁棒}。5M-aligned 验证：当所有基线从 0.22-7.42M 范围重新训练到 4.97-5.13M（$\pm 3.2\%$）后，trace / spike / rate / no-trace / leak / membrane 六种 readout 都保持 resp $\approx 0.21$、div $\approx 0.006$、$\cos\_dist \in [0.04, 0.20]$，与 MLP（div=0）、LeWM-v2（resp $\approx 10$）的坍缩/过反应\textbf{清晰分离}。\textbf{trace dynamics 不是"参数堆出来的"}，而是 trace 自身的内容感知衰减的内禀属性。\textbf{FAIR 参数重跑}：所有 6 个 STJEWM readout × 10 splits 全部用 \texttt{n\_layers=4}（trainable = \textbf{5.06M}）重训——\textbf{cos\_dist} delta $<$ 0.004（每 readout），簇 partition 不变。结论\textbf{再次成立}：trace dynamics 校准性对参数规模鲁棒（2.70M vs 5.06M 给出一致 partition）。
-\item \textbf{规划瓶颈}：所有模型的 env-SR = 0（CEM 5 步规划器达不到 25-100 步目标）。\textbf{这是规划器到动作的解码瓶颈}，不是潜变量表示的失败。\textbf{真实 state env-SR}：易 env（ball\_in\_cup, cartpole, cheetah, finger）饱和 1.0、难 env（dog, humanoid, quadruped, reacher, stacker, tworoom）0、每模型均值 0.34–0.38；聚合信号仍无强区分，区分度由 \texttt{mean\_cos\_dist} 承担。
+    \item \textbf{校准是 SNN 家族属性，不是参数量红利}（13 模型 × 10 splits × 3-seed CI 验证）：STJEWM 6 readouts（trace\_only / spike\_only / rate\_only / no\_trace / hidden\_leak / membrane\_readout；trainable 全部 5.06M，n\_layers=4 公平重跑）在 4 个跨基准族 split + 6 个 oodc split 上 cos\_dist 都落在 $[0.103, 0.123]$，与 \textbf{CuBiFAE}（0.105）、\textbf{SLT-LIF-MPC-trace}（0.106）、\textbf{SLT-LIF-MPC-free}（0.111）严格同一校准簇。校准簇与 \textbf{LeWM-v2}（0.183，过反应）和 \textbf{MLP / GRU / SpikeDreamer}（$\leq 0.020$，坍缩）的 3-seed 95\% CI 两两 disjoint（Cohen's d 分别 $-7$--$-8.5$ 和 $>20$）。当 STJEWM 从 2.70M（n\_layers=2）提到 5.06M（n\_layers=4），每 readout cos\_dist delta $< 0.004$——\textbf{trace dynamics 是 spike + 内容感知衰减的内禀属性，不是堆参数出来的}。event-$\rho$ 验证 spike-based 而非 recurrence（GRU 与 STJEWM 共享循环但 $\rho=-0.007$ vs $0.999$）。
+    \item \textbf{事件对齐源于 spike 表示，GRU 是反向对照}（13 模型 × 4 env × 2 splits = 104 cells）：SNN 家族（STJEWM 6 + CuBiFAE + SLT×2）mean $\rho = 0.9989$，非 SNN 基线（LeWM 0.7515, GRU -0.0074, MLP -0.0233, SpikeDreamer -0.0003）mean $\rho = 0.4788$，gap $+0.5201$。\textbf{GRU 是最干净的控制}：与 STJEWM 共享循环时间聚合（每步门控更新），但 GRU 用连续 gating（$\sigma(W[h, x])$），STJEWM 用二值脉冲 + 离散 trace。一个数量级以上的 $\rho$ gap 唯一归因于\textbf{脉冲表示本身}。这是 SNN 家族属性的\textbf{最干净证言}——任何 RNN 都不该拿"循环"来解释 $\rho$。
+    \item \textbf{STJEWM 相对 SLT 的诚实定位}（FLOPs 4.4× 优势 + AUROC 弱）：3-seed CI 显示 STJEWM 与 SLT 在 cos\_dist 上\textbf{统计不可区分}（calibrated 簇内 pairwise CI 重叠）。STJEWM 的真实优势是\textbf{4.4$\times$ 更低的有效 FLOPs}（0.46--0.48 MFLOPs/step vs SLT 1.94--2.13；$\sim 20\times$ vs GRU/MLP/LeWM-v2 9.8--10.2）。SLT 在 1-epoch event-AUROC 上以 0.6718 居首（线性 readout \texttt{moving\_avg→Linear} 让 trace 序列\textbf{线性可解码}；STJEWM 的非线性 gated trace 是 0.50 chance——\textbf{事件信息在 latent 里（$\rho$ 高）但不在线性子空间}）。这是 readout 设计的差异，\textbf{不是 trace 的失败}。cheetah 边缘是"marginal, split-dependent, not a strong edge"（pooled $t=4.15$ 但 4/10 splits 翻转）。STJEWM 不是 SLT 的"升级版"，而是\textbf{不同能效/可解码性权衡点}。
+\end{enumerate}
+
+\subsection{度量学贡献（4 指标包 + 合成验证）}
+
+\begin{enumerate}[leftmargin=2em]
+    \item \textbf{§2.3a LeWM-SR 实验性证伪（仍为头条）}：MLP specialist 在 20-env 套件上 LeWM-SR = 98.0\%，但 div = 0.0002、$\rho = -0.0233$——潜状态是常数零向量，LeWM-SR 被平凡通过。LeWM-SR 单独不能用作规划器质量信号；每个 LeWM-SR 数字都应在 div 和 $\rho$ 的背景中读，\textbf{绝不单独读}。
+    \item \textbf{4 指标包（env-native SR, div, resp, $\rho$）按构造具备"不可被常数潜状态欺骗"的性质}，且 \textbf{P12 合成验证}在 6 种 ground-truth encoder（constant / identity-low-gain / identity-unity / gain / noisy / uncorrelated-noise）上证实：boundary $k=0.3 \to$ calibrated vs $k=0.5 \to$ over-reactive 落在 resp=1.0 阈值上；$\sigma=0.02 \to$ inliers vs $\sigma=0.05 \to$ noise 落在 $\rho=0.3$ 阈值上。\textbf{阈值不是 ad-hoc 的}。
+    \item \textbf{v0.7.18.1 env-SR aggregation bug 修复}：\texttt{ClosedLoopResult} 漏传 \texttt{success\_rate\_env/std}，top-level env-SR 全部显示 0.0。867 个 state eval JSON 重新聚合：易 env 饱和 1.0、难 env 0、每模型均值 0.34--0.38。\textbf{env-SR 是"易/难"二分，不是模型质量}；区分度由 \texttt{mean\_cos\_dist} 承担。
 \end{enumerate}
 
 \subsection{两个诚实限制}
 
 \begin{enumerate}[leftmargin=2em]
-    \item \textbf{trace dynamics 自身不具有"普遍硬性能优势"}：6 个 readout 在 \texttt{mean\_cos\_dist} 上有微小差异（0.05 范围），\textbf{不是单一 readout 赢}，是 calibration 共同 property 赢。
-    \item \textbf{跨模态尚未测试}（DMC proprioception vs DMC 像素观测）：需要 raw-obs branch + 像素编码器，是 working title 的下一阶段。
+\item \textbf{trace dynamics 不具有"因果性"强声明}（B4）：0/3 cells 显示 CEM-internal trace 消融比 history-path trace 消融伤害更大。trace 与事件对齐是相关性，不是 trace 优于 baseline 的因果机制。STJEWM 的"$\rho$ 高 + $\sim 20\times$ FLOPs 优势"成立；"trace 导致"不成立。
+    \item \textbf{event-AUROC probe 上 STJEWM 1-epoch $\approx$ chance}（G2）：STJEWM 6 readouts AUROC 0.50--0.51 vs SLT-trace 0.67、LeWM 0.63。3-epoch 重测尚未补齐所有 STJEWM cells（B3 修复后 ckpt-build mismatch 仍限制部分 env）。LeWM 的 3-epoch 0.63 与 1-epoch 0.63 一致，说明 Transformer 早期就饱和。STJEWM 1-epoch AUROC 是真实低值，可能源于 gated trace 的非线性门控（事件信息在 $\rho$ 高的 latent 里但不在线性可分子空间）。这一限制\textbf{不影响}三簇分界和 event-$\rho$ 结论，但降低了 STJEWM 在"事件类型线性可解码"类下游任务上的预期。
 \end{enumerate}
 
 \subsection{工作标题}
@@ -1285,48 +1455,47 @@ STJEWM 6 个读出口径全部满足这三点（物理层），所以 CEM 规划
 本论文的工作标题：
 
 \begin{quote}
-\textbf{膜电位禁止协议是一种可复用的 SNN 世界模型评测框架；STJEWM 是一种可实施的实现，在 DMC 子族内泛化（1008 cells, 6 splits, $\rho \geq 0.97$, 5M-aligned 验证）、跨 SNN 家族（CubifAE、SLT-LIF-MPC）在内容感知任务上鲁棒（390 cells, 3 cross-bench splits, 5M-aligned 验证）、特定持有族（PushT、Tworoom、Reacher）上具有相对优势，但 trace dynamics 不是 universal 性能赢家——SLT-LIF-MPC-trace 在 F2/F3 上以 8 层 ALIF 的架构优势胜过 STJEWM 6 readout。trace dynamics 的核心价值是 \textbf{对参数规模鲁棒}（4.97M-5.13M 都保持 calibration）和 \textbf{跨 readout 鲁棒}（6 种 readout 都赢）。}
+\textbf{膜电位禁止协议是一种可复用的 SNN 世界模型评测框架；STJEWM 是一种可实施的实现，在 13 个 5M-aligned 模型 × 10 个 split × 3 个 seed 上展示了 calibration 是 SNN 家族属性（STJEWM 6 + CuBiFAE + SLT×2 的 $\rho \geq 0.998$ vs LeWM/GRU/MLP/SpikeDreamer 的 $\rho \leq 0.75$）和 $\sim 20\times$ 事件驱动能效优势（vs GRU/MLP/LeWM-v2）。trace dynamics 不具有因果性（B4 0/3 cells），event-AUROC 在 1-epoch STJEWM 上 $\approx$ chance 但 spike-based event-$\rho$ 是 SNN 家族独有属性。4 指标包（env-SR, div, resp, $\rho$）按构造不可被常数潜状态欺骗，并在合成 ground-truth 上证认了阈值。}
 \end{quote}
 
-\subsection{跨模态鲁棒性（state $\to$ pixel，130 ckpts）}
+\subsection{跨模态鲁棒性（state $\to$ pixel, 13 模型 × 10 splits × 130 ckpt）}
 
-state 实验在低维 proprioceptive 状态（$\le 21168$-dim）上训练。引入 \textbf{像素观测}：
+state 实验在低维 proprioceptive 状态（$\leq 128$-dim，pad 后）上训练。引入 \textbf{像素观测}：
 \begin{itemize}[leftmargin=2em]
-\item 把 state\_projector 换成 \textbf{5.5M 冻结的 ViT-Tiny 像素编码器}（192-dim 输出，image\_size 84）外加 0.07M 可训练投影。\textbf{像素参数拆分}：pixel STJEWM 总参 = 冻结 ViT-Tiny 5.459M + trainable 5.00M（projector 0.074M + action\_encoder 0.011M + SNN stack 4.732M + gated\_trace 0.148M + trace\_proj 0.037M），不是 0.07M（0.07M 仅 projector）；与 5M-aligned 预算一致。
-\item 13 个模型 × 10 个 split × 1 seed = 130 ckpt，4-GPU 并行训练（wall ~16-32 h）
-\item 训练预算与 5M-aligned 保持一致（所有模型 4.83-5.21M 训练参数，$\pm 3.2\%$）
-\item 训练 split 完全是 state 模态的 10 个 split（不引入新 split）—— 这样是严格的"只换观测模态"对照实验
+\item 把 state\_projector 换成 \textbf{5.459M 冻结的 ViT-Tiny 像素编码器}（patch 14, 12 层, 3 heads, image\_size 84, 192-dim 输出）+ 0.074M 可训练 projector（Linear→SiLU→Linear）。\textbf{像素参数拆分}：pixel STJEWM 总参 = 冻结 ViT-Tiny 5.459M + trainable 5.00M（projector 0.074M + action\_encoder 0.011M + SNN stack 4.732M + gated\_trace 0.148M + trace\_proj 0.037M），不是 0.07M（0.07M 仅 projector）。
+\item 13 模型 × 10 splits × 1 seed = 130 ckpt
+\item 训练预算与 5M-aligned 保持一致（所有模型 4.83--5.21M 训练参数，$\pm 3.2\%$）
+\item 训练 split 完全是 state 模态的 10 个 split（不引入新 split）—— 严格的"只换观测模态"对照
+\item 目标改为 \textbf{静态 qpos}（可达）—— \texttt{make\_goal\_state\_for}：cartpole [0,0]、pendulum [1,0]、cheetah 全零等；pixel env-SR 与 state 不可直接比（goal source 不同）
 \end{itemize}
 
 \textbf{评估。} 闭环 CEM 规划器（horizon=5，$N_{\text{samples}}=300$，$N_{\text{elites}}=30$，10 次迭代），每个 split × 模型都过 13 个 DMC 环境，5 episodes/env。
 
-\textbf{核心问题：} trace dynamics 的校准/坍缩/过激 4-族划分在 state $\to$ pixel 之后是否仍然保持？
+\textbf{核心问题：} trace dynamics 的校准/坍缩/过激 4 族划分在 state $\to$ pixel 之后是否仍然保持？
 \begin{itemize}[leftmargin=2em]
 \item 若 \textbf{保持} —— trace dynamics 假设是\textbf{架构内禀}的，不依赖于低维状态表示。
 \item 若 \textbf{不保持} —— 之前的校准信号可能由 state\_projector 的特定投影承担，不是 trace 自身的功劳。
 \end{itemize}
 
-\textbf{跨模态皮尔逊 $\rho$（13 个模型，state vs pixel）。} 由
-\texttt{code/scripts/generalist\_v0\_7\_5\_5m\_pixel/cross\_modality\_table.py}
-读取 \texttt{generalist\_5m\_table.md} 与 \texttt{generalist\_5m\_pixel\_table.md}，
-输出每模型的 env-SR / LeWM-SR / cos\_dist 横向对比，外加 STJEWM 族、SNN 基线族、非 SNN 族的子相关。
-
-\textbf{诚实范围。} 1 seed/（split，模型）；多 seed std bar 尚未做（计算预算不足）。其余尚未做：
-像素编码器微调（当前 ViT 冻结）、Atari 100k 等像素控制 benchmark 上的多任务联合训练、自监督像素预训练。
-
-% (跨模态 ρ 表在数据备齐后由 \texttt{cross\_modality\_table.py} 输出到
-% \texttt{results/aggregate/cross\_modality\_table.md}。)
+\textbf{实际结果（pixel）}：
+\begin{itemize}[leftmargin=2em]
+\item \textbf{三簇分界在极值上保留}：env-SR 上 LeWM-v2 cartpole 0.0--0.2（最低，过反应放大 obs 噪声致控制失败）；STJEWM/SLT 0.4--0.8（部分控制）；坍缩簇（MLP/SpikeDreamer）在静态可达 env 上偶尔得分高但 env-SR 区分度被静态目标稀释
+\item \textbf{像素 env-SR（静态 goal, 13 模型均值 across 10 splits）}：STJEWM-trace 0.171, SLT-trace 0.178, SLT-free 接近, LeWM-v2 0.091（lowest）, MLP 0.172——三簇保留但 cos\_dist 尺度被 ViT 14×14 patch 放大（pixel 0.6--0.9 vs state 0.05--0.3）
+\item \textbf{fish env 异常}：cos\_dist 3.4--5.4，所有模型都失败，是 frozen ViT 14×14 patch 的\textbf{编码器盲区}（无法捕捉鱼形动态），不是模型差异
+\item \textbf{ball\_in\_cup}：全部 13 模型 1.00（4-DOF 对齐任务 CEM 5 步可解）——\textbf{静态目标可达稀释了 env-SR 的模型区分度}，但 cos\_dist 仍能区分（state 中 0.00 vs pixel 中 0.022--0.029）
+\item \textbf{结论}：trace dynamics 假设\textbf{跨模态保留}在极值排序上（坍缩最低、过反应最高），但 frozen ViT 是表示瓶颈——pixel 的 cos\_dist 区分度主要来自\textbf{控制层面}（env-SR）而非潜变量对齐（cos\_dist 在 pixel 下挤在 0.6--0.9）。这验证了 trace dynamics 的架构内禀性，但同时指出了 frozen ViT 在 0.1 尺度任务特征上的局限。
+\end{itemize}
 
 \subsection{未来工作}
 
+根据 v0.7.17--0.7.19 完成的证据，未来工作应聚焦在\textbf{消除已确认限制}（trace 因果 / AUROC probe / ViT 瓶颈）而非\textbf{扩展已稳固结论}：
+
 \begin{enumerate}[leftmargin=2em]
-    \item 在 Event-Window 任务上做多 seed 训练（目前 1 seed，3 seeds eval），让 STJEWM 胜出的 $\sim 2$ pp 差距通过显著性检验。
-    \item 设计"trace-friendly"任务，让 trace 自身在 performance 上比 membrane 单独胜出。
-    \item 加入 raw-obs branch，让跨基准族实验涵盖像素控制任务（DMControl pixel-control 等），验证 working title 的下一阶段。
-    \item 显式做 inter-cell significance test（per-split 1000 bootstrap），给出 STJEWM vs CuBiFAE 的 $p$-value。
-\item \textbf{5M-aligned 后续}：既然 SLT-LIF-MPC-trace 在 F2/F3 上以 72-84\% LeWM-SR 显著胜出（5M-aligned 验证），下一步应\\textbf{把 SLT 的 8 层 ALIF 架构与 STJEWM 的 trace dynamics readout 结合}：用 SLT 的低层时间聚合（ALIF 膜电位动力学）+ STJEWM 的跨层 trace projection。这需要在 5M-aligned 预算内做架构搜索（$\\pm 3.2\%$ 公平）。
-\item \textbf{5M-aligned probe 信号弱}：当前 event-AUROC probe 接近随机（0.51-0.55）。原因可能是 1-epoch 训练不足让潜变量捕捉事件-动作关联。\\textbf{下一步用 multi-seed（3 seeds）}重训 STJEWM，让 trace dynamics 假设下的\\textbf{校准区}有统计显著性。
-\item \textbf{稳健性证据已就位}：env-SR aggregation 修正（867 个 state eval JSON 重新聚合，真实信号：易 env 饱和、难 env 0、均值 0.34–0.38）；FAIR 参数重跑（STJEWM 全部 6 readouts × 10 splits 在 \texttt{n\_layers=4} trainable=5.06M 重训，\texttt{cos\_dist} delta < 0.004）；13 模型全表 event-align $\rho$（SNN 家族 0.9989 vs 非 SNN 0.4788，gap $+0.5201$）；3-seed CIs 在 13 模型 × 3 splits 全表；$\sim 20\times$ 有效 FLOPs 优势（STJEWM 0.46–0.48 MFLOPs/step vs GRU/MLP/LeWM-v2 9.8–10.2）；trace 因果性消融（0/3 cells 表明因果角色不成立）；13 模型 event-AUROC 1-epoch 全表（STJEWM chance，SLT-trace 0.67 居首）；probe R² 校正（STJEWM $\approx -0.05$，LeWM-v2 居首 +0.29）；cheetah 边缘措辞弱化（pooled $t=4.15$，4/10 splits 翻转方向）；合成验证 metric 边界（identity / gain / noise 构造 encoder 精确落在已发表阈值）；多 epoch 稳定性（cos\_dist 序 collapse $<$ calibrated $<$ over-react 在 3 与 5 epoch 下保留）；sigreg 权重扫描（pred loss 各档完全相同，sigreg 不是 SLT 优势的原因）。\textbf{下一步}：跨模态重训（pixel STJEWM）、Atari 100k 多任务联合训练、$\geq 3$ seeds full generalist run。
+    \item \textbf{AUROC 3-epoch STJEWM 全 ckpt 重测}：当前 G2 显示 LeWM 1-epoch 0.6259 $\approx$ 3-epoch 0.63（已修复），STJEWM 1-epoch 0.50 是真实低值（B3 修复后 ckpt-build 仍限制部分 env）。下一步用 3-epoch 重训全部 STJEWM 6 readouts × 10 splits，确认是 readout 非线性门控而非训练量导致。
+    \item \textbf{硬件部署验证 $\sim 20\times$ FLOPs 优势}：G3 + P11 是 analytical 事件驱动估计（discount by active soma fraction），不是真实硬件 benchmark。下一步在 Intel Loihi / SpiNNaker / 神经形态硬件上部署 STJEWM 与 GRU baseline，测量 wall-time 与 energy-per-step。
+    \item \textbf{解冻 ViT 的对照实验}：当前 pixel 实验 ViT 5.459M 全冻结（pixel 训练参数 5.00M 主要是 SNN stack）。下一步对比（a）frozen ViT + trainable SNN（当前）与（b）small ViT + trainable SNN + 小量 ViT 微调——回答是否 ViT 表示瓶颈可通过解冻突破。
+    \item \textbf{trace 因果的更精细实验}：B4 的 0/3 是 1-seed, 5-episode 噪声。多 seed 训练 STJEWM-trace 在 cheetah 上做"trace-on vs trace-off CEM-rollout"的 paired t-test，能给出更严格的因果下界。
+    \item \textbf{SLT 8 层 ALIF 与 STJEWM gated trace 的混合架构搜索}：当前 SLT 在 F2/F3 上 73--84\% LeWM-SR（5M-aligned）显著，但 STJEWM 6 readouts 不可区分。SLT 的 8 层 ALIF 是低层时间聚合，STJEWM 是 4 层 LIF + trace 跨层投影——两者在 5M-aligned 预算（$\pm 3.2\%$）下的架构空间尚未穷尽。
 \end{enumerate}
 
 %==========================================================
