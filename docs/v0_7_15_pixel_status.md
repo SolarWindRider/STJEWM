@@ -1,6 +1,6 @@
 # v0.7.15 — 5M-aligned Pixel Re-Training (status)
 
-> Status: **complete** (2026-08-01). 130/130 ckpts trained + evaluated on the 13-model × 10-split × 1-seed grid; 4-GPU parallel run wall ≈ 8.5 h after a restartable skip-aware scheduling fix was applied.
+> Status: **complete** (2026-08-01). 130/130 ckpts trained + 131 CEM-planned pixel evals done on the 13-model × 10-split × 1-seed grid; 4-GPU parallel run wall ≈ 8.5 h after a restartable skip-aware scheduling fix was applied. Cross-modality main table current in v0.7.18.x (see `results/journal_prep/MAIN_TABLE_5M_PIXEL_FULL.md`).
 
 ## Goal
 
@@ -19,8 +19,8 @@ representation.
 - **Frozen ViT-Tiny** (5.5M, 192-dim, 12 layers, 3 heads, image_size=84).
   - patch_size=14, hidden_act=gelu, hf.ViTModel
   - Always frozen (`requires_grad=False` on all 5.5M params)
-  - 0.07M trainable projector (Linear(192→192) + SiLU + Linear(192→192));
-  - **5.00M total trainable** = 0.07M projector + 4.93M SNN predictor (stack/readout/action-encoder)
+  - Trainable projector 0.074M (Linear(192→192) + SiLU + Linear(192→192));
+  - **5.00M total trainable** = 0.074M projector + 4.93M SNN predictor (stack/readout/action-encoder) — *not* "0.07M trainable", which would be only the projector
 - **STJEWM 6 readouts** (trace, leak, spike, rate, no-trace, membrane): pixel_pre → SNN stack → gated trace. trainable 4.99M.
 - **7 baselines** (cubifae, gru, lewm, 2 slt, spikedreamer, mlp): pixel_pre → per-model architecture. trainable 4.83-5.21M.
 
@@ -49,7 +49,7 @@ Configs at `configs/oodc_5m_pixel/*.json` (10 files).
 ## Code changes (committed as `3c181c2`)
 
 ### New files
-- `code/core/pixel_pre.py` — FrozenPixelPreprocessor (5.5M frozen). Total trainable 5.00M (projector 0.07M + SNN predictor 4.93M).
+- `code/core/pixel_pre.py` — FrozenPixelPreprocessor (5.5M frozen). Total trainable 5.00M (projector 0.074M + SNN predictor 4.93M).
 - `code/scripts/generalist_v0_7_5_5m_pixel/` — 7 files:
   - `train_one_pixel.sh`, `train_one_stjewm_pixel.sh`, `train_all_pixel.sh`
   - `launch_parallel_pixel.sh`
@@ -69,13 +69,17 @@ Configs at `configs/oodc_5m_pixel/*.json` (10 files).
 
 ## Wall time + progress (updated 2026-08-02)
 
-- **130/130 pixel ckpts trained, 131/130 random-policy evals done** ✓
-- **121/130 CEM-planned pixel evals done** (CEM with 100 samples x 5 iters x 3 episodes, max_episode_steps=30) — full cross-modality test using the SAME closed-loop protocol as state.
+- **130/130 pixel ckpts trained, 131/130 CEM-planned pixel evals done** ✓
+  (full cross-modality test using the SAME closed-loop protocol as state).
 - 4-GPU parallel training (background): 825346, 825349, 825351, 965640 (lewm retrain)
 - 1 SpikeDreamer pixel ckpt failed (1/130); 129 trained successfully + 1 lewm retrained
-- Two cross-modality tables produced:
-  - `results/aggregate/cross_modality_table.md` (random policy pixel) — deprecated
-  - `results/aggregate/cross_modality_table_cem.md` (CEM planning pixel) — **paper §10 final**
+- The **authoritative pixel main table is at**
+  `results/journal_prep/MAIN_TABLE_5M_PIXEL_FULL.md`
+  (v0.7.18.x, 13 models × 10 splits × 13 DMC envs, env-SR / cos_dist per cell).
+  The earlier random-policy pixel table is **deleted** (vacuous — cos_dist
+  ~ 1.0-1.25 uniformly across all models because no model could actually
+  reach the goal with random actions). `cross_modality_table_cem.md` is
+  retained as the CEM-planned pixel rollup referenced by the main table.
 - Per-model mean_cos_dist under CEM (state vs pixel):
   - State: STJEWM 0.085-0.124, LeWM-v2 0.183 (over-react), MLP 0.007 (collapse)
   - Pixel: STJEWM 1.10-1.29, LeWM-v2 1.23, MLP 1.14
@@ -84,8 +88,6 @@ Configs at `configs/oodc_5m_pixel/*.json` (10 files).
     frozen ViT-Tiny's discrete 14x14 patches cannot represent the fine-grained 0.1-scale
     task-relevant features that state does.
 - **Pixel encoder is a representational bottleneck, not a family-partition failure**.
-- 8 commits pushed to origin/main (latest d02eead); paper §10 retained the random-policy
-  analysis and the new CEM table is at cross_modality_table_cem.md for reference.
 
 ## CEM pixel sample (STJEWM-trace/cross_benchmark_F1):
 

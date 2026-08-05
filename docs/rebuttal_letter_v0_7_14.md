@@ -26,18 +26,27 @@ Each paragraph is self-contained and can be dropped into a response letter uncha
 
 ## R2. "env-SR is a saturated/leaky metric — no model has a real advantage."
 
-> We agree. The 5-step CEM planner vs 25-step DMC goal gives env-SR = 0% for all trained
-> models after bug-fix (see §2.4 bug #1 and §7.6). The env-SR column in
-> `MASTER_TABLE.md` §1 reflects an *artefactual* performance floor of
-> the old DMC tolerances, not a controllable task.
+> We agree that env-SR alone does not discriminate model families. After
+> the v0.7.18.1 aggregation fix, env-SR separates envs into two
+> regimes — not two model regimes:
 >
-> For this reason env-SR was never the headline metric in v0.7.13 or v0.7.14. The
-> *real* headline is the four-metric package — `mean_cos_dist` (raw, threshold-free)
-> plus the three collapse-robust diagnostics (`div`, `resp`, ρ). On these the families
-> cluster cleanly: SNN family plus CuBiFAE plus SLT-LIF-MPC at
-> `mean_cos_dist ∈ [0.094, 0.116]`; MLP/GRU at `mean_cos_dist ∈ [0.000, 0.004]`
-> (collapse); LeWM-v2 at `mean_cos_dist = 0.1825` (over-react).
-> Env-SR remains in the table only as a sanity check, never as a claim.
+> - **Easy envs saturate 1.0** (ball_in_cup 1.00, cartpole 0.99,
+>   cheetah 0.997, finger 0.89 across models). CEM's 5-step horizon is
+>   sufficient for posture-style goals; all 13 models succeed.
+> - **Hard envs saturate 0** (dog, humanoid, quadruped, reacher,
+>   stacker, tworoom across models). 5-step CEM cannot reach 25-step
+>   locomotion goals; all 13 models fail.
+> - **Per-model means** land in a narrow band (0.34-0.38 across all 13
+>   models) — env-SR does not separate the family partition.
+>
+> Discrimination lives in the **raw, threshold-free `mean_cos_dist`**
+> column of `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`. There
+> the families cluster cleanly: SNN family (STJEWM 6 readouts +
+> CuBiFAE + SLT-LIF-MPC ×2) at `mean_cos_dist ∈ [0.103, 0.124]`;
+> LeWM-v2 at `mean_cos_dist = 0.183` (over-react); MLP / GRU /
+> SpikeDreamer at `mean_cos_dist ∈ [0.000, 0.001]` (collapse, latent
+> is a constant vector). See `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`
+> for the per-(split, model, env) table.
 
 ## R3. "Why didn't prior SNN world models report the failure modes you report?"
 
@@ -68,6 +77,9 @@ Each paragraph is self-contained and can be dropped into a response letter uncha
 > we have *not* removed it. The cost of removing it would be reporting LeWM-SR
 > as a successor to env-SR — but a metric package whose headline cell can be
 > satisfied by `div = 0.0002` is not a success indicator (see R1, §2.3a).
+> Per-model env-SR means land in a narrow band (0.34-0.38 across all 13
+> models — see R2 for the breakdown by easy/hard env), so env-SR alone cannot
+> pick a winner regardless of who is reading.
 >
 > We invite the reviewer to consider the four-metric package as the new headline.
 > On the package, the SNN family plus CuBiFAE plus SLT-LIF-MPC form a

@@ -545,13 +545,9 @@ The 4th and 5th v0.7.8 experiments:
 │       ├── cross_benchmark_F3.json
 │       ├── oodc_F1.json ... oodc_F2F3.json
 │       └── generalist_16env.json
-├── docs/                                     # experiment plans + status (LEGACY banners in-place)
-│   ├── CODE_BUG_AUDIT.md                     # LEGACY: pre-v0.7.18.1 bug audit; see journal_prep/JOURNAL_STORY.md §5.1a
-│   ├── v0_7_13_RESULTS.md                    # LEGACY: pre-fix env-SR; corrected values in results/journal_prep/
-│   ├── v0_7_14_5m_status.md                  # LEGACY: 2.70M state param count; superseded by v0.7.18.4 FAIR rerun
-│   ├── v0_7_15_pixel_status.md               # current: 5M-aligned pixel cross-modality plan
-│   ├── OOD_PATH_C_PLAN.md                    # LEGACY: planning doc; superseded by results/journal_prep/
-│   └── rebuttal_letter_v0_7_14.md            # §2.3a LeWM-SR falsification argument
+├── docs/                                     # experiment status (current)
+│   ├── v0_7_15_pixel_status.md               # current: 5M-aligned pixel cross-modality status
+│   └── rebuttal_letter_v0_7_14.md            # §2.3a LeWM-SR falsification argument (R1-R8)
 ├── results/
 │   ├── journal_prep/                         # AUTHORITATIVE current tables (v0.7.18.x)
 │   │   ├── JOURNAL_STORY.md                  # evidence map (read first)
@@ -561,9 +557,7 @@ The 4th and 5th v0.7.8 experiments:
 │   │   ├── GAP_LIST.md                       # known coverage gaps
 │   │   └── sigreg_sweep_summary.md           # sigreg weight sweep (hypothesis rejected)
 │   ├── aggregate/                            # current aggregate (small, kept)
-│   │   ├── cross_modality_table_cem.md       # CEM-rollout pixel eval (current)
-│   │   ├── cross_modality_table.md           # SUPERSEDED: random-policy pixel eval
-│   │   └── generalist_5m_pixel_table.md      # v0.7.15 pixel per-model rollup
+│   │   └── cross_modality_table_cem.md       # CEM-rollout pixel eval (current)
 │   ├── oodc/                                # v0.7.10b OOD Path-C per-cell JSONs (468)
 │   │   ├── oodc_F1/  oodc_F1F2/  oodc_F1F3/
 │   │   ├── oodc_F2/  oodc_F2F3/  oodc_F3/
