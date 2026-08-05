@@ -135,11 +135,38 @@ Restored the event-window causal ablation (5 modes) + added a 6th mode that
 ablates trace **inside CEM candidate rollouts** (where the planner actually
 consumes it):
 - 0/3 cells show CEM-rollout ablation hurting more than history-path ablation.
-- State cells: env-SR = 0 in all modes (pipeline ceiling).
+- State cells: env-SR = 0 in all modes (note: state env-SR is now FIXED —
+  true values saturate 1.0 on easy envs and 0 on hard envs; the ablation
+  cells happened to be hard envs where env-SR is 0 regardless of ablation).
 - Pixel cheetah: both history-ablate-all and CEM-rollout drop 10pp — no
   differential trace use.
 - **The strong form of the trace-dynamics causal claim is rejected.** The
   correlation (C5) stands; the causal role does not. Report both.
+
+### 5.1a env-SR aggregation bug fix (v0.7.18.1) — reviewer armor
+`closed_loop.py` constructed `ClosedLoopResult` without `success_rate_env`/
+`std`, so top-level env-SR was always 0.0 despite correct per_seed values.
+Fixed; 867 state eval JSONs re-aggregated from per_seed. TRUE state env-SR:
+- Easy envs saturate 1.0: ball_in_cup 1.0, cartpole 0.99, cheetah 0.997,
+  finger 0.89 (all models succeed — CEM reaches simple posture goals).
+- Hard envs 0: dog, humanoid, quadruped, reacher, stacker, tworoom (all
+  models fail — 5-step CEM cannot plan long-horizon locomotion).
+- Per-model means 0.34-0.38 (low discrimination; discrimination comes from
+  cos_dist, unchanged).
+
+### 5.1b FAIR parameter rerun (v0.7.18.4) — strengthens the partition
+Original 5m state run trained STJEWM at n_layers=2 (trainable 2.70M) vs ~5M
+baselines — parameter-unfair. Retrained all 6 STJEWM readouts × 10 splits at
+n_layers=4 (trainable 5.06M, verified) with identical protocol:
+- cos_dist delta < 0.004 for every readout (trace 0.105→0.104, spike
+  0.108→0.111, rate 0.103→0.103, no_trace 0.119→0.123, leak 0.119→0.120,
+  membrane 0.124→0.122); env-SR delta < 0.03.
+- Fair cluster partition identical: calibrated = STJEWM 6 + SLT 2 + CuBiFAE
+  (0.103-0.123), collapse = GRU/MLP/SpikeDreamer, over-react = LeWM 0.183.
+- **Implication: STJEWM calibration is parameter-robust (2.70M vs 5.06M
+  identical) — the family partition holds under parameter-fair comparison.**
+- Pixel trainable clarification: 5.00M total (projector 0.074M + SNN
+  predictor 4.93M), NOT 0.07M (that was only the projector).
 
 ### 5.2 Probe R2 anomalies were bugs (C9) — NEW, reviewer armor
 Root causes: (1) sequential train/val split on episode-ordered data → probe
