@@ -557,7 +557,6 @@ The 4th and 5th v0.7.8 experiments:
 │   │   ├── JOURNAL_STORY.md                  # evidence map (read first)
 │   │   ├── MAIN_TABLE_5M_STATE_FULL.md       # ★ state headline: 10 splits x 13 models (env-SR/cos_dist per cell)
 │   │   ├── MAIN_TABLE_5M_PIXEL_FULL.md       # ★ pixel headline: 10 splits x 13 models x 13 envs
-│   │   ├── JOURNAL_MAIN_TABLE.md             # journal-formatted main table
 │   │   ├── FULL_METRIC_MATRIX.md             # 13 models x 14 metrics, zero gaps
 │   │   ├── GAP_LIST.md                       # known coverage gaps
 │   │   └── sigreg_sweep_summary.md           # sigreg weight sweep (hypothesis rejected)
