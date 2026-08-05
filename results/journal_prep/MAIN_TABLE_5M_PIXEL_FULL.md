@@ -1,5 +1,82 @@
 # Experiment 2: 5M-aligned PIXEL (CEM) — FULL per-env main table (AUTHORITATIVE)
 
+## 实验是什么
+
+**5M 参数对齐的像素观测跨任务实验**：13 个世界模型在**像素输入**（84×84
+RGB 渲染）下重新训练并闭环评估。与 Experiment 1（state）的唯一区别是
+观测模态：state 用低维状态向量，这里用相机像素。回答「三簇分界是否
+跨模态保留」——即校准/坍缩/过反应是架构属性还是低维 state 的假象。
+
+## 方法（训练）
+
+- **观测**：像素 3×84×84（pad_obs_to=21168），来自 DMControl 环境实时渲染
+- **编码器**：Frozen ViT-Tiny（5.459M，patch 14，12 层，3 heads，image_size=84）
+  + 0.074M trainable projector（Linear→SiLU→Linear）
+- **可训练参数**：5.00M total（0.07M projector + 4.93M SNN 预测器主体），
+  与 state 版 5M-aligned 对齐（注意：不是「0.07M trainable」，那是 projector 单项）
+- **数据**：`configs/oodc_5m_pixel/<split>.json` 指定的 DMControl 像素数据集
+- **训练协议**：与 state 完全一致——1 epoch, batch 32, AdamW lr=3e-4, seed 0,
+  history_size=1, goal_offset=25, loss = pred + 0.09·sigreg + 0.5·goal（STJEWM 系）
+- **splits**：同样 10 个（3 cross-bench + 6 oodc + G16），每 split 统一 13 个 DMC envs
+
+## 方法（评估）
+
+- **CEM 规划器**：300 样本 × 30 elites × 10 迭代, horizon=5, budget=50（与 state 相同）
+- **goal 来源**：**静态 qpos**（`make_goal_state_for`：cartpole [0,0]、pendulum [1,0]、
+  cheetah 全零…）→ 设入环境渲染成目标像素 → 编码为目标潜状态
+- **每 cell**：1 个（split, 模型, env）= 5 episodes × 1 seed
+- **env 集**：13 个 DMC envs（ball_in_cup, cartpole, cheetah, dog, finger, fish,
+  hopper, humanoid, humanoid_cmu, pendulum, quadruped, stacker, walker）
+
+## 指标（每个 cell 两个数，格式 `env-SR / cos_dist`）
+
+| 指标 | 定义 | 方向 | 备注 |
+|---|---|---|---|
+| **env-SR** | 闭环成功率：最终状态是否在静态 goal 的 tolerance 内 | 高=好 | **可达目标**，因此有真实区分度；与 state 的 env-SR（t+25 动态目标）不可比 |
+| **cos_dist** | 最终潜状态与目标潜状态的余弦距离（1−cos）/2 | 低=好 | **注意尺度**：0.3–2.4（state 是 0.05–0.3）——frozen ViT 的表示瓶颈 |
+
+## 怎么读这张表
+
+- **每行一个模型**（含可训练参数 Trn(M)），每列一个 env，cell = `env-SR / cos_dist`
+- **env-SR 有真实区分度**（静态目标可达）：
+  - ball_in_cup：全部模型 1.00（4-DOF 对齐任务，CEM 可解）
+  - cartpole：STJEWM 0.4–0.8 vs LeWM-v2 **0.0–0.2**——过反应模型的控制失败
+  - pendulum：SLT-free 最高可达 1.00，LeWM 0.0
+  - dog/fish/hopper/humanoid/quadruped/stacker/walker：全部 0.00（5 步 CEM 够不到）
+- **cos_dist**：LeWM-v2 几乎处处最高（over-react 跨模态保留）；GRU/MLP/SpikeDreamer
+  在易 env 的 cos 低（坍缩到常数）；fish 的 cos 异常大（3.4–5.4，ViT 无法表示）
+- **三簇在 pixel 下变平但保留排序**：state 中校准簇 0.10–0.12 vs pixel 0.6–0.9，
+  坍缩簇 0.000 vs 0.4–0.7——frozen ViT 的粗粒度（14×14 patch）丢失了 0.1 尺度的
+  任务特征，但极值（坍缩最低、过反应最高）的排序跨模态一致
+
+## 数据说明了什么（结论）
+
+1. **家族分簇跨模态保留**：state 的三簇（校准/坍缩/过反应）在 pixel 下排序一致——
+   这不是低维 state 的假象，是架构内在属性
+2. **LeWM-v2 over-react 在控制层面失败**：pixel env-SR 全模型最低（cartpole 0.0–0.2）
+   ——过反应潜状态放大了观测噪声，CEM 规划找不到目标
+3. **坍缩模型在 pixel 也不工作**：GRU/MLP/SpikeDreamer 的 cos_dist 低但 env-SR 与
+   其他模型一样（易 env 靠静态目标可达，不是靠模型）
+4. **像素编码器是瓶颈**：cos_dist 尺度比 state 大 5–10×，13 个模型挤在 0.6–0.9
+   ——frozen ViT 无法表示任务关键的 0.1 尺度特征，区分度主要来自 env-SR
+
+## 重要 caveat
+
+- **env-SR 与 state 表不可直接比较**：pixel 用静态 qpos（可达），state 用数据集
+  t+25 动态状态（5 步 CEM 够不到）——pixel 的 0.17 vs state 的 0.36 不说明
+  pixel 控制更好
+- **cos_dist 尺度不同**：pixel 0.6–0.9 vs state 0.10–0.12，是 ViT 表示瓶颈，
+  不是模型变差——跨模态只能比排序，不能比绝对值
+- **fish env 的 cos_dist 异常**（3.4–5.4）：ViT patch 无法捕捉鱼形动态，所有模型
+  都失败，属于编码器盲区而非模型差异
+- **1-epoch 训练**：像素版也是 1 epoch；P13 显示多 epoch 会改善分簇清晰度
+
+## 数据出处
+
+- evals: `results/5m_pixel/<split>/<model>/seed_0/eval_summary_cem.json`
+- 训练: `results/_logs/5m_pixel_*.log`
+- 聚合逻辑: `results/journal_prep/`（FULL_METRIC_MATRIX.md 有 13 模型 × 14 指标横截面）
+
 > Protocol: frozen ViT-Tiny 5.5M; trainable 5.00M total (0.07M projector + SNN predictor),
 > CEM 300×30×10, H=5, budget 50, 5 eps × 1 seed. Cell: **env-SR** / cos_dist.
 > Goal = STATIC qpos (reachable). NOT comparable to state env-SR (goal source differs).
