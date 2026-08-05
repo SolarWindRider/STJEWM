@@ -158,13 +158,17 @@ Models: 13 (stjewm_trace_only, stjewm_spike_only, stjewm_rate_only, stjewm_no_tr
 
 ## Probes (event-AUROC)
 
-Total probes: 780 (skipped=299, OK=481)
+Total probes: 901 (skipped=87 from pre-B3 runs on pusht/tworoom/humanoid_CMU/delayed_t_maze for the 5 baselines; OK=814). All 13 models covered on 13 DMC envs × 5 event-type targets (G2 complete, see `results/journal_prep/G2_auroc_complete/summary.md`).
 
 | Target | stjewm_trace_only | stjewm_spike_only | stjewm_rate_only | stjewm_no_trace | stjewm_hidden_leak | stjewm_membrane_readout | cubifae_baseline | gru_baseline | lewm_baseline_v2 | slt_lif_mpc_trace | slt_lif_mpc_free | mlp_baseline | spikedreamer_baseline |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| contact | 0.517 | 0.517 | 0.525 | 0.516 | 0.524 | 0.526 | 0.507 | 0.595 | — | — | — | — | — |
-| entered | 0.500 | 0.500 | 0.500 | 0.500 | 0.500 | 0.500 | 0.500 | 0.500 | — | — | — | — | — |
-| k10 | 0.541 | 0.534 | 0.493 | 0.525 | 0.547 | 0.533 | 0.521 | 0.508 | — | — | — | — | — |
-| k5 | 0.540 | 0.542 | 0.532 | 0.526 | 0.565 | 0.504 | 0.518 | 0.560 | — | — | — | — | — |
-| motion | 0.477 | 0.491 | 0.496 | 0.485 | 0.477 | 0.490 | 0.497 | 0.545 | — | — | — | — | — |
-| target | 0.734 | 0.734 | 0.733 | 0.733 | 0.735 | 0.500 | 0.750 | 0.500 | — | — | — | — | — |
+| contact | 0.494 | 0.498 | 0.504 | 0.494 | 0.526 | 0.507 | 0.476 | 0.605 | 0.631 | 0.671 | 0.588 | 0.503 | 0.546 |
+| entered | 0.500 | 0.500 | 0.500 | 0.500 | 0.500 | 0.500 | 0.500 | 0.500 | 0.500 | 0.500 | 0.500 | 0.500 | 0.500 |
+| k10 | 0.541 | 0.534 | 0.493 | 0.525 | 0.547 | 0.533 | 0.521 | 0.508 | 0.618 | 0.670 | 0.593 | 0.496 | 0.507 |
+| k5 | 0.518 | 0.515 | 0.509 | 0.502 | 0.543 | 0.504 | 0.518 | 0.522 | 0.621 | 0.668 | 0.591 | 0.495 | 0.548 |
+| motion (high) | 0.466 | 0.489 | 0.492 | 0.482 | 0.461 | 0.479 | 0.490 | 0.602 | 0.632 | 0.675 | 0.585 | 0.501 | 0.564 |
+| low_motion | 0.488 | 0.492 | 0.499 | 0.488 | 0.494 | 0.501 | 0.504 | 0.493 | 0.628 | 0.675 | 0.580 | 0.499 | 0.547 |
+| **overall (5 targets, 13 DMC envs)** | **0.501** | **0.506** | **0.500** | **0.498** | **0.515** | **0.505** | **0.502** | **0.546** | **0.626** | **0.672** | **0.587** | **0.499** | **0.543** |
+| target (block_near, pusht) | 0.734 | 0.734 | 0.733 | 0.733 | 0.735 | 0.500 | 0.750 | 0.500 | 0.500 | 0.500 | 0.500 | 0.500 | 0.500 |
+
+Notes (G2 findings, 1-epoch ckpts at cross_benchmark_F1): SLT-trace (0.672) > LeWM-v2 (0.626) > SLT-free (0.587) > GRU (0.546) > SpikeDreamer (0.543). All 6 STJEWM variants sit at ~chance (0.50 ± 0.02) — the G2 binary-AUROC probe is much harder than the regression R² probe the STJEWM model was originally tuned for. MLP at chance (0.499), consistent with the collapsed-prediction diagnostic in MASTER_TABLE.md §9.7. The 5 previously-missing baselines (slt_trace, slt_free, lewm_v2, mlp, spikedreamer) all now have complete coverage on the 13 DMC envs × 5 event targets (325 cells, no skips). See `results/journal_prep/G2_auroc_complete/summary.md` for the full ranked table + cell counts.
