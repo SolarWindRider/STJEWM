@@ -1,3 +1,4 @@
+> **LEGACY (2026-07-20):** preserved for traceability. env-SR numbers here reflect the pre-fix aggregation bug; corrected values in `results/journal_prep/`. The §2.3a falsification remains valid.
 # v0.7.13 → v0.7.14 Bug-Fix Re-Run Results (legacy, retained for traceability)
 
 > **Status (2026-07-25):** This document is the v0.7.13 bug-fix re-run

@@ -1,3 +1,4 @@
+> **LEGACY (2026-07-25):** 5M-aligned status. STJEWM param counts here (2.70M state) are superseded by the v0.7.18.4 FAIR rerun (5.06M); see `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`.
 # v0.7.14: 5M-Aligned Re-Training + §2.3a Falsification — COMPLETE
 
 > **Status (2026-07-25):** v0.7.14 = 5M-aligned re-training (130 ckpts)

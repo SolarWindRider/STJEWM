@@ -1,3 +1,4 @@
+> **LEGACY:** planning doc; superseded by `results/journal_prep/`.
 # OOD Path-C Plan: 3-family DMC-only cross-family transfer
 
 > **Status (2026-07-25, v0.7.14):** OOD Path-C is **complete** (468 cells,

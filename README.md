@@ -18,7 +18,7 @@ whether the trace-dynamics hypothesis (paper §6) survives obs-space change.
 Status: code ready, training in background, target 130/130 by morning.
 See `docs/v0_7_15_pixel_status.md` for the plan.
 The headline result is no longer an env-SR or a LeWM-SR number. It is
-**a single row in `MASTER_TABLE.md` §2 that falsifies the headline
+**a single row in `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md` that falsifies the headline
 metric itself**: a stateless MLP baseline (no recurrent state, no event
 state, no spike history) reaches **LeWM-SR = 98.0%** on the 20-env std
 suite — *higher* than every recurrent world-model baseline, *and*
@@ -35,8 +35,7 @@ and `paper/figs/fig_four_family_falsification.png`.
    130 ckpts total (13 models × 10 splits: 3 cross-benchmark F1/F2/F3
    + 6 OOD continuity F1/F2/F3/F1F2/F1F3/F2F3 + 1 G16 generalist).
    Per-cell data at `results/5m/<split>/<model>/seed_0/eval_*.json` (1,110 cells).
-   Aggregate at `results/aggregate/generalist_5m_table.md` and
-   `results/aggregate/MASTER_TABLE_5m.md`.
+   Authoritative aggregates at `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md` (state, v0.7.18.x) and `results/journal_prep/MAIN_TABLE_5M_PIXEL_FULL.md` (pixel, v0.7.18.x).
 2. **OOD Path-C** (v0.7.10b → v0.7.13 bug-fixed, 468 cells across 6
    splits × 12 models, retained from v0.7.13): STJEWM `ρ ∈ [0.9676,
    0.9986]` in *every* split, non-SNN each fails at a distinct axis.
@@ -61,7 +60,7 @@ GRU under-fits (`resp` 0.10), MLP collapses (`resp` 0.0007). See
 > The same v0.7.2 master table that contained the OOD numbers above
 > also shows the stateless MLP baseline at **LeWM-SR = 98.0%** on the
 > 20-env std suite — *higher* than every recurrent world-model baseline
-> (line 99 of `results/aggregate/MASTER_TABLE.md`). At the same time
+> (`results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`, MLP row).
 > the MLP has `div = 0.0002` and `ρ = -0.002`: its latent is a
 > *constant zero vector*, and the LeWM-SR threshold `cos < 0.1` is
 > satisfied trivially.
@@ -70,7 +69,7 @@ GRU under-fits (`resp` 0.10), MLP collapses (`resp` 0.0007). See
 > planner-quality signal. **We therefore deprecate LeWM-SR as a
 > standalone headline** in v0.7.14 and replace it with the four-metric
 > package (`env-native SR` + `div` + `resp` + `ρ`). The MLP row of
-> `MASTER_TABLE.md` §2 is the empirical anchor; see paper §2.3a and
+> `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md` is the empirical anchor; see paper §2.3a and
 > `paper/figs/fig_four_family_falsification.png` for the visual.
 > A derived signal, **`env-SR / LeWM-SR` ratio**, is a single-number
 > sanity check: 0.66 = MLP (vacuous), 0.91 = calibrated, ≥ 0.99 =
@@ -232,13 +231,13 @@ versions:
 
 | axis | experiment | status |
 |---|---|---|
-| **5M-aligned parameter-fair re-training (v0.7.14)** | **13 models × 10 splits × 5M-aligned = 130 ckpts** | **done (`results/5m/`, `results/aggregate/generalist_5m_table.md`)** |
+| **5M-aligned parameter-fair re-training (v0.7.14)** | **13 models × 10 splits × 5M-aligned = 130 ckpts** | **done (`results/5m/`, `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`; v0.7.18.x FAIR rerun at 5.06M)** |
 | **5M-aligned pixel cross-modality (v0.7.15, in progress)** | **Same 130 ckpts but obs = pixel (3×84×84), frozen ViT-Tiny 5.5M** | **in progress (`results/5m_pixel/`, `docs/v0_7_15_pixel_status.md`)** |
 | Within-DMC, cross-sub-family (v0.7.10b, v0.7.13 bug-fixed) | F1/F2/F3 family held out, 12 models, 6 splits | done (`results/utility/ood1_table.md`) |
 | Cross-benchmark-family (v0.7.13) | F1/Pusht, F2/TwoRoom, F3/Reacher, F4/DMC, 12 models | done (`results/cross_benchmark_F{1,2,3,4}/eval/`) |
 | Within-suite, leave-N-envs-out (v0.7.8) | 2-3-4 envs held out from G16 | done (`results/utility/cross_env_gen_table.md`) |
 | Cross-modality (state → pixel) | real pixel rendering, larger encoder, longer training | deferred — needs separate paper |
-| **§2.3a LeWM-SR falsification (v0.7.14)** | **MLP row of `MASTER_TABLE.md` §2 = headline** | **done (paper §2.3a)** |
+| **§2.3a LeWM-SR falsification (v0.7.14)** | **MLP row of `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md` = headline** | **done (paper §2.3a)** |
 
 The 5M-aligned re-training **supports** the working title under
 parameter parity, and the §2.3a falsification **re-anchors** the
@@ -248,11 +247,11 @@ remains deferred.
 ## 6. Key per-(model) numbers from the v0.7.14 5M-aligned re-training
 
 The 13-model suite (6 STJEWM readouts + 7 baselines, all 5M-aligned)
-is the new headline. See `results/aggregate/generalist_5m_table.md`
-for the per-split, per-model table (130 ckpts × ~15 envs each).
-The 4-family partition per `MASTER_TABLE.md` §2 (v0.7.5 specialist,
-13 models × 20 envs) is the same shape, with 5M-aligned 13 models
-in `results/aggregate/MASTER_TABLE_5m.md`. The most important
+is the new headline. See `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`
+for the per-split, per-model table (130 ckpts × ~15 envs each; v0.7.18.4 FAIR rerun).
+The 4-family partition (calibrated / over-reactive / under-fit / collapse) is the
+same shape across state and pixel; v0.7.18.x kept STJEWM at the calibrated band.
+The most important
 per-model numbers from the v0.7.10b OOD (preserved, 468 cells):
 
 | model | oodc_F3 mean div | oodc_F3 mean resp | oodc_F3 mean ρ | oodc_F3 env-SR |
@@ -333,7 +332,7 @@ decoding bottleneck named in §6.5. Full per-cell JSONs at
 The v0.7.13 12-model table is preserved here for traceability. The
 v0.7.14 5M-aligned re-training reproduces the same family partition
 on 130 ckpts (5M-aligned) and confirms the §2.3a falsification
-(see `results/aggregate/MASTER_TABLE_5m.md`).
+(see `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`).
 
 4 splits × 12 model variants (cubifae, gru, lewm-v2, mlp, slt-lif-mpc×2,
 stjewm×6 readouts). Held-out family is the eval env. Metric: `mean_cos_dist`
@@ -425,7 +424,7 @@ artifact; with proper metrics, the picture is:
 > the latent is a constant. LeWM-SR is therefore deprecated as a
 > standalone headline; the four-metric package (`env-native SR`,
 > `div`, `resp`, `ρ`) is the paper's central diagnostic. The MLP row
-> of `MASTER_TABLE.md` §2 (line 99) is the empirical anchor — see
+> of `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md` (MLP row) is the empirical anchor — see
 > paper §2.3a and `paper/figs/fig_four_family_falsification.png`.
 
 > **5M-aligned: the trace-dynamics hypothesis survives parameter
@@ -546,32 +545,43 @@ The 4th and 5th v0.7.8 experiments:
 │       ├── cross_benchmark_F3.json
 │       ├── oodc_F1.json ... oodc_F2F3.json
 │       └── generalist_16env.json
-├── docs/                                     # experiment plans + status
-│   ├── OOD_PATH_C_PLAN.md                    # the OOD Path-C plan (now complete)
-│   └── SNN_WORLD_MODEL_SURVEY.md
-└── results/                                  # all numbers (mostly from v0.7.10b)
-    ├── aggregate/                           # consolidated master tables
-    │   ├── MASTER_TABLE.md
-    │   ├── generalist_master_table.md
-    │   ├── generalist_align_table.md
-    │   └── event_probes_table.md
-    ├── oodc/                                # v0.7.10b OOD Path-C per-cell JSONs (468)
-    │   ├── oodc_F1/  oodc_F1F2/  oodc_F1F3/
-    │   ├── oodc_F2/  oodc_F2F3/  oodc_F3/
-    └── utility/                              # v0.7.7 + v0.7.8 + v0.7.10b utility tables
-        ├── ood1_table.md                     # ★ the v0.7.10b OOD headline table
-        ├── cross_env_gen_table.md            # v0.7.8 within-suite pilot
-        ├── budget_scaling_table.md
-        ├── sample_efficiency_table.md
-        ├── latent_goal_mpc_table.md
-        └── latent_env_grad_table.md
+├── docs/                                     # experiment plans + status (LEGACY banners in-place)
+│   ├── CODE_BUG_AUDIT.md                     # LEGACY: pre-v0.7.18.1 bug audit; see journal_prep/JOURNAL_STORY.md §5.1a
+│   ├── v0_7_13_RESULTS.md                    # LEGACY: pre-fix env-SR; corrected values in results/journal_prep/
+│   ├── v0_7_14_5m_status.md                  # LEGACY: 2.70M state param count; superseded by v0.7.18.4 FAIR rerun
+│   ├── v0_7_15_pixel_status.md               # current: 5M-aligned pixel cross-modality plan
+│   ├── OOD_PATH_C_PLAN.md                    # LEGACY: planning doc; superseded by results/journal_prep/
+│   └── rebuttal_letter_v0_7_14.md            # §2.3a LeWM-SR falsification argument
+├── results/
+│   ├── journal_prep/                         # AUTHORITATIVE current tables (v0.7.18.x)
+│   │   ├── JOURNAL_STORY.md                  # evidence map (read first)
+│   │   ├── MAIN_TABLE_5M_STATE_FULL.md       # ★ state headline: 10 splits x 13 models (env-SR/cos_dist per cell)
+│   │   ├── MAIN_TABLE_5M_PIXEL_FULL.md       # ★ pixel headline: 10 splits x 13 models x 13 envs
+│   │   ├── JOURNAL_MAIN_TABLE.md             # journal-formatted main table
+│   │   ├── FULL_METRIC_MATRIX.md             # 13 models x 14 metrics, zero gaps
+│   │   ├── GAP_LIST.md                       # known coverage gaps
+│   │   └── sigreg_sweep_summary.md           # sigreg weight sweep (hypothesis rejected)
+│   ├── aggregate/                            # current aggregate (small, kept)
+│   │   ├── cross_modality_table_cem.md       # CEM-rollout pixel eval (current)
+│   │   ├── cross_modality_table.md           # SUPERSEDED: random-policy pixel eval
+│   │   └── generalist_5m_pixel_table.md      # v0.7.15 pixel per-model rollup
+│   ├── oodc/                                # v0.7.10b OOD Path-C per-cell JSONs (468)
+│   │   ├── oodc_F1/  oodc_F1F2/  oodc_F1F3/
+│   │   ├── oodc_F2/  oodc_F2F3/  oodc_F3/
+│   └── utility/                              # v0.7.7 + v0.7.8 + v0.7.10b utility tables
+│       ├── ood1_table.md                     # ★ the v0.7.10b OOD headline table
+│       ├── cross_env_gen_table.md            # v0.7.8 within-suite pilot
+│       ├── budget_scaling_table.md
+│       ├── sample_efficiency_table.md
+│       ├── latent_goal_mpc_table.md
+│       └── latent_env_grad_table.md
 ```
 
 ## 11. Status (v0.7.14, 2026-07-25)
 
 The v0.7.14 release adds **parameter-fair re-training** of all baselines
 at 4.97–5.13M (range 0.16M, ±3.2%) and the **§2.3a LeWM-SR falsification**.
-The MLP row of `MASTER_TABLE.md` §2 (line 99) — LeWM-SR = 98.0% with
+The MLP row of `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md` — LeWM-SR = 98.0% with
 `div = 0.0002` and `ρ = -0.002` — is the empirical anchor of the headline.
 
 **v0.7.14 findings:**

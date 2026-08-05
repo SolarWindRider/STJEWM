@@ -1,3 +1,4 @@
+> **LEGACY (2026-07-31):** historical bug audit. The v0.7.18.1 env-SR aggregation bug is NOT covered here; see `results/journal_prep/JOURNAL_STORY.md` §5.1a. Data tables referencing env-SR may predate the fix.
 # Code Bug Audit (v0.7.10b → v0.7.13 → v0.7.14) — 2026-07-25
 
 > **Status (2026-07-25):** v0.7.14 reframes BUG #1 (`success_threshold_cos = 0.1`)
