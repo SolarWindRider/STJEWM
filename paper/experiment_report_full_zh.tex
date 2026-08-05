@@ -1319,6 +1319,17 @@ over-react & LeWM-v2 & $0.190 \pm 0.013$ & $[0.157, 0.222]$ \\
 \end{itemize}
 \textbf{论文中所有 "env-SR = 0" 提法在聚合信号上仍然有效}——修复只是还原之前隐藏的 per-cell 方差。
 
+\subsubsection{sigreg 权重扫描（v0.7.18.8）：为什么 SLT 不是"更优"}（新增）
+
+STJEWM 的 \texttt{lambda\_sigreg=0.09} 在 total loss 中量级最大（$0.09 \times \text{sigreg} \approx 3.0$ vs $\text{pred} \approx 0.0005$），曾怀疑它"劫持"优化导致 STJEWM 校准不如 SLT。\textbf{扫描实验否定该假设}：将 \texttt{lambda\_sigreg} 扫过 $\{0.09, 0.01, 0.001, 0.0\}$（STJEWM-trace，n\_layers=4，2 splits，8 ckpts，76 evals）：
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{pred loss 在所有档位完全相同}（$\approx 0.0005$）——sigreg 是独立的正则项，不干扰 pred 收敛
+    \item cos\_dist 在 \texttt{0.01} 档最好（F1 0.100, oodc\_F2 0.115）但 paired t=1.54 vs \texttt{0.09}（n=14，不显著）
+    \item \textbf{结论}：sigreg 权重不是 SLT 优势的原因；STJEWM-trace 与 SLT-trace 的 cos\_dist 差异（0.10 vs 0.09）在 5-eps 噪声内，3-seed CI 重叠（B2）——统计上不可区分
+\end{itemize}
+
+\textbf{诚实的模型间对比}：SLT-trace 的 AUROC（0.67 vs 0.50）来自其\textbf{线性 readout}（moving\_avg$(s,k{=}4) \to$ Linear）使事件信息线性可解码，而非更好的预测；STJEWM 的 gated trace 是非线性 readout，事件信息在潜变量中（$\rho \geq 0.9986$）但不在线性子空间。STJEWM 的独特优势是\textbf{有效 FLOPs 4.4$\times$ 更低}（0.48 vs 2.13 MFLOPs/step）和 6-readout 协议消融（SLT 只有 2）。
+
 
 %==========================================================
 \section{为什么 STJEWM 有效（更好的物理故事）}
