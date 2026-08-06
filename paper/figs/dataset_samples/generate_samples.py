@@ -191,7 +191,13 @@ def _build_env(env_kind: str):
 
 
 def _capture_state(env, env_kind: str, rng: np.random.Generator, n_steps: int = 50):
-    """Reset, take n_steps random actions, capture obs/state and mujoco state."""
+    """Reset, take n_steps random actions, capture obs/state and mujoco state.
+
+    Quadruped is captured at the reset pose (n_steps=0): after 50 random
+    steps it falls over and the splayed limbs no longer read as four legs.
+    """
+    if env_kind == "quadruped":
+        n_steps = 0
     obs = env.reset(seed=0)
     for _ in range(n_steps):
         a = rng.uniform(env.spec.action_low, env.spec.action_high).astype(np.float32)
@@ -212,14 +218,34 @@ def _render_dmc_panel(env, ax, title: str):
     data = env._data
     H, W = 240, 320
     renderer = mujoco.Renderer(model, height=H, width=W)
-    # Pick a camera. Prefer "overview" / tracking camera when available.
-    cam_id = 0
-    for i in range(model.ncam):
-        name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_CAMERA, i)
-        if name and ("overview" in name.lower() or "track" in name.lower()):
-            cam_id = i
-            break
-    renderer.update_scene(data, camera=cam_id)
+    # Quadruped: the DMC "global" camera (fallback cam 0) sits at (-10, 10, 10)
+    # — far too far to make out the four legs. Use an orbit close-up aimed at
+    # the body centroid instead.
+    env_id = str(getattr(env.spec, "env_id", ""))
+    if "quadruped" in env_id:
+        cam = mujoco.MjvCamera()
+        cam.type = mujoco.mjtCamera.mjCAMERA_FREE
+        # Body centroid + extent (skip world body 0 and decorative bodies such
+        # as the scene ball); distance adapts so the whole robot fits in frame.
+        names = [mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, i)
+                 for i in range(1, model.nbody)]
+        body = data.xpos[1:][np.array([n != "ball" for n in names])]
+        centroid = body.mean(axis=0)
+        radius = float(np.max(np.linalg.norm(body - centroid, axis=1)))
+        cam.lookat[:] = centroid
+        cam.distance = max(1.5, min(3.5, 2.2 * radius))
+        cam.azimuth = 45.0   # degrees: side-front quarter view
+        cam.elevation = -20.0  # degrees: slight top-down (MuJoCo sign: negative = above lookat)
+        renderer.update_scene(data, camera=cam)
+    else:
+        # Pick a camera. Prefer "overview" / tracking camera when available.
+        cam_id = 0
+        for i in range(model.ncam):
+            name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_CAMERA, i)
+            if name and ("overview" in name.lower() or "track" in name.lower()):
+                cam_id = i
+                break
+        renderer.update_scene(data, camera=cam_id)
     img = renderer.render()  # (H, W, 3) uint8
     ax.imshow(img)
     ax.set_title(title, fontsize=9)
