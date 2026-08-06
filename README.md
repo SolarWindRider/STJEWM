@@ -152,44 +152,54 @@ All training / validation / test data used by the experiments is archived on OBS
 obs://lixiang01/STJEWM_NMI/data/
 ```
 
-| File | Size | Extract / place to (relative to repo root) | Used by |
-|---|---|---|---|
-| `STJEWM_data.tar` | 646 MB | `tar -xf STJEWM_data.tar` (restores `data/…`) | all state splits |
-| `pusht_expert_train.h5.zst` | 13 GB | `zstd -d` → `/home/lx/LeWM/data/pusht_expert_train.h5` | pusht (train + eval) |
-| `tworoom.h5` | 13 GB | `/home/lx/LeWM/data/tworoom_extract/tworoom.h5` | tworoom (train + eval) |
+### Where to put each file (so training/eval works out of the box)
 
-`STJEWM_data.tar` contains the 18 DMC / T-maze / event-window datasets referenced by
-`configs/oodc_5m/*.json` and `configs/oodc_5m_pixel/*.json`:
+| # | Download from OBS | Size | Place it at | Why this exact location |
+|---|---|---|---|---|
+| 1 | `STJEWM_data.tar` | 646 MB | **repo root**, then `tar -xf STJEWM_data.tar` | restores `data/…` relative to the repo root — this is what `configs/oodc_5m/*.json` reference as `data/dm_control/…` |
+| 2 | `pusht_expert_train.h5.zst` | 13 GB | `/home/lx/LeWM/data/pusht_expert_train.h5` (after `zstd -d`) | the split configs hard-code the **absolute** path `/home/lx/LeWM/data/pusht_expert_train.h5` |
+| 3 | `tworoom.h5` | 13 GB | `/home/lx/LeWM/data/tworoom_extract/tworoom.h5` | the split configs hard-code `/home/lx/LeWM/data/tworoom_extract/tworoom.h5` |
+
+After step 1 your repo root must look like this:
 
 ```
-data/dm_control/cartpole_250k.npz
- data/dm_control/pendulum_250k.npz
- data/dm_control/reacher_mujoco_rollouts_5x.npz
- data/dm_control/3d_rollouts_250k/{ball_in_cup,cheetah,dog,finger,fish,hopper,
-                                       humanoid,humanoid_CMU,quadruped,reacher,
-                                       stacker,walker}_250k.npz
- data/delayed_t_maze_30k.npz
- data/delayed_t_maze_30k_3d.npz
- data/event_window_50k.npz
+<repo>/
+  data/
+    dm_control/cartpole_250k.npz
+    dm_control/pendulum_250k.npz
+    dm_control/reacher_mujoco_rollouts_5x.npz
+    dm_control/3d_rollouts_250k/{ball_in_cup,cheetah,dog,finger,fish,hopper,
+                                 humanoid,humanoid_CMU,quadruped,reacher,
+                                 stacker,walker}_250k.npz
+    delayed_t_maze_30k.npz
+    delayed_t_maze_30k_3d.npz
+    event_window_50k.npz
+  configs/…
 ```
 
-> The pusht / tworoom paths are absolute (`/home/lx/LeWM/data/…`) in the split configs;
-> they live outside this repo, so place the two files there before training. The DMC
-> `_250k.npz` files are raw float32 rollouts (incompressible, hence the uncompressed tar).
+> **pusht / tworoom note.** These two live outside the repo because the configs use
+> absolute paths under `/home/lx/LeWM/data/` (the original author's machine layout).
+> Two options:
+> 1. Recreate that layout on your machine (simplest, nothing to edit):
+>    `mkdir -p /home/lx/LeWM/data/tworoom_extract` and place the files as in the table.
+> 2. Or point the configs at your own paths:
+>    `sed -i 's#/home/lx/LeWM/data#<YOUR_DIR>#g' configs/oodc_5m/*.json configs/oodc_5m_pixel/*.json`
 
-Download example (obsutil):
+One-command download & placement (option 1):
 
 ```bash
 obsutil cp obs://lixiang01/STJEWM_NMI/data/STJEWM_data.tar .
-tar -xf STJEWM_data.tar   # restores data/ inside the repo root
+tar -xf STJEWM_data.tar          # restores data/ inside the repo root
+
+mkdir -p /home/lx/LeWM/data/tworoom_extract
 obsutil cp obs://lixiang01/STJEWM_NMI/data/pusht_expert_train.h5.zst /home/lx/LeWM/data/
 zstd -d /home/lx/LeWM/data/pusht_expert_train.h5.zst
-mkdir -p /home/lx/LeWM/data/tworoom_extract
 obsutil cp obs://lixiang01/STJEWM_NMI/data/tworoom.h5 /home/lx/LeWM/data/tworoom_extract/
 ```
 
-Pixel experiments need no data files: `--env-kind dmc_pixel` collects episodes live from
-DMC via the frozen ViT encoder.
+> The DMC `_250k.npz` files are raw float32 rollouts (incompressible, hence the
+> uncompressed tar). Pixel experiments need **no** data files: `--env-kind dmc_pixel`
+> collects episodes live from DMC via the frozen ViT encoder.
 
 ## Reproducing the 5M-aligned experiments
 
