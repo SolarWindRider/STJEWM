@@ -144,6 +144,53 @@ paper/                         # paper.md + experiment_report_full_zh.{tex,pdf}
 docs/                          # rebuttal letter + pixel status (current only)
 ```
 
+## Data — download & placement
+
+All training / validation / test data used by the experiments is archived on OBS:
+
+```
+obs://lixiang01/STJEWM_NMI/data/
+```
+
+| File | Size | Extract / place to (relative to repo root) | Used by |
+|---|---|---|---|
+| `STJEWM_data.tar` | 646 MB | `tar -xf STJEWM_data.tar` (restores `data/…`) | all state splits |
+| `pusht_expert_train.h5.zst` | 13 GB | `zstd -d` → `/home/lx/LeWM/data/pusht_expert_train.h5` | pusht (train + eval) |
+| `tworoom.h5` | 13 GB | `/home/lx/LeWM/data/tworoom_extract/tworoom.h5` | tworoom (train + eval) |
+
+`STJEWM_data.tar` contains the 18 DMC / T-maze / event-window datasets referenced by
+`configs/oodc_5m/*.json` and `configs/oodc_5m_pixel/*.json`:
+
+```
+data/dm_control/cartpole_250k.npz
+ data/dm_control/pendulum_250k.npz
+ data/dm_control/reacher_mujoco_rollouts_5x.npz
+ data/dm_control/3d_rollouts_250k/{ball_in_cup,cheetah,dog,finger,fish,hopper,
+                                       humanoid,humanoid_CMU,quadruped,reacher,
+                                       stacker,walker}_250k.npz
+ data/delayed_t_maze_30k.npz
+ data/delayed_t_maze_30k_3d.npz
+ data/event_window_50k.npz
+```
+
+> The pusht / tworoom paths are absolute (`/home/lx/LeWM/data/…`) in the split configs;
+> they live outside this repo, so place the two files there before training. The DMC
+> `_250k.npz` files are raw float32 rollouts (incompressible, hence the uncompressed tar).
+
+Download example (obsutil):
+
+```bash
+obsutil cp obs://lixiang01/STJEWM_NMI/data/STJEWM_data.tar .
+tar -xf STJEWM_data.tar   # restores data/ inside the repo root
+obsutil cp obs://lixiang01/STJEWM_NMI/data/pusht_expert_train.h5.zst /home/lx/LeWM/data/
+zstd -d /home/lx/LeWM/data/pusht_expert_train.h5.zst
+mkdir -p /home/lx/LeWM/data/tworoom_extract
+obsutil cp obs://lixiang01/STJEWM_NMI/data/tworoom.h5 /home/lx/LeWM/data/tworoom_extract/
+```
+
+Pixel experiments need no data files: `--env-kind dmc_pixel` collects episodes live from
+DMC via the frozen ViT encoder.
+
 ## Reproducing the 5M-aligned experiments
 
 State training (fair STJEWM, n_layers=4):
