@@ -42,7 +42,7 @@ Each paragraph is self-contained and can be dropped into a response letter uncha
 > Discrimination lives in the **raw, threshold-free `mean_cos_dist`**
 > column of `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`. There
 > the families cluster cleanly: SNN family (STJEWM 6 readouts +
-> CuBiFAE + SLT-LIF-MPC ×2) at `mean_cos_dist ∈ [0.103, 0.124]`;
+> CuBiFAE + SLT-LIF-MPC ×2) at `mean_cos_dist ∈ [0.103, 0.123]`;
 > LeWM-v2 at `mean_cos_dist = 0.183` (over-react); MLP / GRU /
 > SpikeDreamer at `mean_cos_dist ∈ [0.000, 0.001]` (collapse, latent
 > is a constant vector). See `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`

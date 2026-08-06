@@ -83,7 +83,7 @@ and a joint-embedding loss
 
 $$\mathcal{L}_{\text{JE}} = d\!\left(\hat{z}_{t+1},\,\mathrm{sg}\!\left(z_{t+1}^{+}\right)\right)$$
 
-scores the prediction against a *stop-gradiented* target encoding $z_{t+1}^{+} = E_{\bar\theta}(o_{t+1})$. Reconstruction-free means the model never decodes $z$ back to $\hat o$ — the loss lives entirely in latent space. We use cosine distance for $d$ in the default configuration.
+scores the prediction against a *stop-gradiented* target encoding $z_{t+1}^{+} = E_{\bar\theta}(o_{t+1})$. Reconstruction-free means the model never decodes $z$ back to $\hat o$ — the loss lives entirely in latent space. We use the squared $L_2$ distance (MSE) for $d$ in our configuration (`F.mse_loss(pred, tgt.detach())`), matching `code/native_losses.py:stjewm_loss`.
 
 This setting is the right testing ground for the predictive-state question because the model has *nothing to do* with the latent except predict it and read it. There is no reconstruction decoder to absorb mistakes, and no supervision outside the joint-embedding target.
 
@@ -221,13 +221,15 @@ $$z_t = r_t^{\text{enc}} = \mathrm{trace}(E(o_{\leq t}, a_{<t})),$$
 
 $$\hat{z}_{t+1} = g_\theta(r_t,\, a_t),$$
 
-$$\mathcal{L} = \lambda_{\text{pred}} \, d\!\left(\hat{z}_{t+1},\, \mathrm{sg}(z_{t+1})\right) + \lambda_{\text{sigreg}} \, R_{\text{sigreg}}(\theta) + \lambda_{\text{goal}} \, \mathcal{L}_{\text{goal}}$$
+$$\mathcal{L} = \underbrace{\big\|\hat{z}_{t+1} - \mathrm{sg}(z_{t+1})\big\|^2}_{\mathcal{L}_{\text{pred}}} + \lambda_{\text{sigreg}} \, R_{\text{sigreg}}(\theta) + \lambda_{\text{goal}} \, \mathcal{L}_{\text{goal}}, \qquad \lambda_{\text{sigreg}} = 0.09,\ \lambda_{\text{goal}} = 0.5$$
 
-with $d$ as cosine distance by default and $R_{\text{sigreg}}$ a sigmoid-regularisation term that keeps the spike rate in a target band. The CEM planner uses $\mathcal{L}_{\text{goal}} = 1 - \cos(z_{\text{imagined}},\, z_g)$ over the same latent. Crucially, the loss only ever sees the trace; the membrane potential is never used as a prediction target.
+with $d$ the squared $L_2$ (MSE), $R_{\text{sigreg}}$ the Sketch Isotropic Gaussian Regularizer — an Epps–Pulley characteristic-function distance between random 1-D projections of the encoder outputs and the standard Gaussian (17 knots on $t \in [0,3]$, 1024 random unit projections, `code/sigreg.py`), and
+$$\mathcal{L}_{\text{goal}} = \big\|z^{\text{tf}}_{s+H+G-1} - \mathrm{sg}\big(f(o_{s+H+G}, \mathbf 0)\big)\big\|^2$$
+the teacher-forced goal term (window $H{=}1$, $G{=}25$): the latent at the frame $H{+}G{-}1$ is aligned to the zero-action encoding of the next frame. Note the CEM planner's *internal* rollout cost is also $\|z_{H} - z_{\text{goal}}\|^2$ (L2), while the *reported* metric is $(1-\cos)/2$ (see §3.4). Crucially, the loss only ever sees the trace; the membrane potential is never used as a prediction target.
 
 ### 3.4 Planning with trace dynamics
 
-The CEM planner rolls out imagined trajectories in trace space, re-using the same trace dynamics as the encoder but seeded from a candidate $z_t$ and a sequence of candidate actions. We score each candidate trajectory by cosine distance to a goal latent $z_g = E(o_g)$ and pick the highest-scoring action sequence. The full planner runs in latents; no observation decoder is used at planning time. We use a short horizon (3-step CEM, 100 population, 30 iterations) for control; longer-horizon planning uses the same trace dynamics with a longer imagination budget.
+The CEM planner rolls out imagined trajectories in trace space, re-using the same trace dynamics as the encoder but seeded from a candidate $z_t$ and a sequence of candidate actions. We score each candidate trajectory by the **L2 cost** $c(a_{1:H}) = \|z_H - z_g\|_2^2$ against a goal latent $z_g = E(o_g, \mathbf 0)$ and pick the lowest-cost action sequence; the reported episode metric is the normalised cosine distance $(1-\cos(z_{\text{final}}, z_g))/2$ between the *true terminal state* encoding and the goal. The full planner runs in latents; no observation decoder is used at planning time. We use horizon 5 with the 5M-aligned configuration (CEM 300 samples, 30 elites, 10 iterations, $\sigma_{\text{init}}=1$, 11th sampling round returns the argmin), executing the full 5-step block in the environment before replanning; the latent context is advanced by the model's own autoregressive prediction, not by reading the new observation (`code/core/cem.py`, `code/eval/closed_loop.py`).
 
 #### Figure 1 — Membrane-forbidden predictive-state interface
 
@@ -534,7 +536,7 @@ Per split: 12 ckpts × 14 DMC envs × 3 episodes per held-out env (200 CEM steps
 
 
 
-**env-SR pattern (aggregation-corrected)**: easy envs saturate at 1.0, hard envs at 0 — a 5-step CEM plan cannot reach a 25-step DMC goal on the hard envs, so env-SR there is a planning-ceiling artifact. The primary headline metric is raw, threshold-free `mean_cos_dist`, computed as $1 - \cos(z_{\text{imagined terminal}}, z_g)$; lower is better.
+**env-SR pattern (aggregation-corrected)**: easy envs saturate at 1.0, hard envs at 0 — a 5-step CEM plan cannot reach a 25-step DMC goal on the hard envs, so env-SR there is a planning-ceiling artifact. The primary headline metric is raw, threshold-free `mean_cos_dist`, computed as $\tfrac{1}{2}(1 - \cos(z_{\text{terminal}}, z_g))$ with $z_{\text{terminal}}$ the encoding of the true terminal state; lower is better.
 
 #### Per-family summary, current (1008 cells, mean ± family-min..max across 6 splits × 14 envs)
 
@@ -553,7 +555,7 @@ Per split: 12 ckpts × 14 DMC envs × 3 episodes per held-out env (200 CEM steps
 | `stjewm_membrane_readout` | 0.1082 | Calibrated (protocol violation) |
 | `lewm_baseline_v2` | 0.1825 | **Over-reactive** |
 
-The latent-dynamics regime continues to land every STJEWM readout (plus CuBiFAE and the two SLT-LIF-MPC variants) in the calibrated band, `mean_cos_dist ∈ [0.094, 0.116]`. MLP and GRU are collapsed (cos ≈ 0); LeWM-v2 is over-reactive (cos ≈ 0.18, ~2× calibrated). **The full per-cell table with `div`, `resp`, `ρ`, `env-SR` for all 1008 cells is in `results/utility/ood1_table.md`.**
+The latent-dynamics regime continues to land every STJEWM readout (plus CuBiFAE and the two SLT-LIF-MPC variants) in the calibrated band, `mean_cos_dist ∈ [0.103, 0.123]`. MLP and GRU are collapsed (cos ≈ 0); LeWM-v2 is over-reactive (cos ≈ 0.18, ~2× calibrated). **The full per-cell table with `div`, `resp`, `ρ`, `env-SR` for all 1008 cells is in `results/utility/ood1_table.md`.**
 
 #### Per-(split, model) `mean_cos_dist` table (1008 cells, current)
 
@@ -592,7 +594,7 @@ Across the same 1008 cells, the **three independent collapse-robust metrics all 
 | `div` (divergence-from-constant) | per-dim latent std | 0.010–0.108 | MLP / GRU ≈ 0.0 (collapse); LeWM ≈ 0.18 (over-react) |
 | `resp` (responsiveness) | mean ‖Δz‖ / mean ‖Δo‖ | 0.33 ± 0.01 | MLP / GRU ≈ 0.34; LeWM ≈ 0.34 (resp is uniform; **doesn't separate**) |
 | `ρ` (event-alignment) | corr ‖Δo‖ vs ‖Δz‖ | 0.97–0.99 | MLP ≈ 0; LeWM ≈ 0.52; GRU ≈ −0.07 |
-| `mean_cos_dist` (raw, current) | 1 − cos at terminal state | 0.094–0.116 | MLP/GRU ≈ 0 (collapse); LeWM ≈ 0.18 (over-react) |
+| `mean_cos_dist` (raw, current) | (1 − cos)/2 at terminal state | 0.103–0.123 | MLP/GRU ≈ 0 (collapse); LeWM ≈ 0.18 (over-react) |
 
 `resp` is the one axis on which non-SNN baselines also score in the same band; it is the metric on which collapse and over-reactivity *do not separate* (resp ≈ 0.34 for *every* model in the OOD data, because the env input is the same and the latent norm grows roughly proportional to the obs norm for every learned model). The other three — `div`, `ρ`, `mean_cos_dist` — are independent dimensions, and all three **independently** confirm the calibrated / collapsed / over-reactive family partition. **This three-metric agreement is the strongest empirical result of .**
 
@@ -726,7 +728,7 @@ Three empirically supported statements:
 >
 > (a) **Within-suite transfer .** When 2 of 16 G16 envs (`walker`, `humanoid`) are held out of training, the STJEWM `trace` / `spike` ckpts reach the same calibrated regime on the held-out envs as the full-G16 ckpts, while MLP stays collapsed and GRU stays noisy.
 >
-> (b) **Within-DMC sub-family OOD ( / current, 1008 cells).** All 12 model variants evaluated on 6 within-DMC sub-family splits × 14 held-out envs. The three independent collapse-robust metrics — `div`, `ρ`, `mean_cos_dist` — all agree on the same family partition: STJEWM 6 readouts + CuBiFAE + SLT-LIF-MPC-trace/free all cluster at `mean_cos_dist ∈ [0.094, 0.116]`, while MLP collapses to `0.0000`, GRU is near-collapsed at `0.0040`, and LeWM-v2 over-reacts at `0.1825`. ρ ∈ [0.97, 0.99] for STJEWM in every split; ρ ≤ 0.62 for non-SNN.
+> (b) **Within-DMC sub-family OOD ( / current, 1008 cells).** All 12 model variants evaluated on 6 within-DMC sub-family splits × 14 held-out envs. The three independent collapse-robust metrics — `div`, `ρ`, `mean_cos_dist` — all agree on the same family partition: STJEWM 6 readouts + CuBiFAE + SLT-LIF-MPC-trace/free all cluster at `mean_cos_dist ∈ [0.103, 0.123]`, while MLP collapses to `0.0000`, GRU is near-collapsed at `0.0040`, and LeWM-v2 over-reacts at `0.1825`. ρ ∈ [0.97, 0.99] for STJEWM in every split; ρ ≤ 0.62 for non-SNN.
 >
 > (c) **Cross-benchmark-family OOD (, 192 cells).** All 12 model variants evaluated on 4 cross-benchmark splits (PushT, TwoRoom, Reacher, DMC). STJEWM wins `mean_cos_dist` on **all 4** splits over the calibrated baseline CuBiFAE, by 30–70% lower distance. The specific STJEWM readout winner varies per split (rate wins F1, trace wins F2/F4, spike wins F3); the readout choice is *not* the determining factor — what matters is that all six STJEWM readouts beat CuBiFAE on PushT by 30–70%. Latent goal-proximity (`mean_cos_dist`) wins, not env-native control (env-SR = 0 on PushT/TwoRoom/Reacher because CEM 5-step plans cannot reach 25-100-step goals under the current DMC tolerance).
 >

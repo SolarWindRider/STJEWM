@@ -81,5 +81,5 @@ collapsed-prediction diagnostic in MASTER_TABLE.md §9.7. Aggregate table update
 
 ## Model → build name map (for training/loading)
 - STJEWM readouts: `--model stjewm --readout-mode {trace_only,spike_only,rate_only,no_trace,hidden_leak,membrane_readout}`
-- Baselines: `--model {cubifae_baseline, s lt_lif_mpc_trace, slt_lif_mpc_free, lewm_baseline, gru_baseline, mlp_baseline, spikedreamer_baseline}`
+- Baselines: `--model {cubifae_baseline, slt_lif_mpc_trace, slt_lif_mpc_free, lewm_baseline, gru_baseline, mlp_baseline, spikedreamer_baseline}`
 - N_LAYERS: stjewm=4, cubifae=2, slt=8, lewm=3, gru=2, mlp=12, spikedreamer=3

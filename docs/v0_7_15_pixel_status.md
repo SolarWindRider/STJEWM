@@ -81,10 +81,10 @@ Configs at `configs/oodc_5m_pixel/*.json` (10 files).
   reach the goal with random actions). `cross_modality_table_cem.md` is
   retained as the CEM-planned pixel rollup referenced by the main table.
 - Per-model mean_cos_dist under CEM (state vs pixel):
-  - State: STJEWM 0.085-0.124, LeWM-v2 0.183 (over-react), MLP 0.007 (collapse)
+  - State: STJEWM 0.103-0.123 (v0.7.18.4 fair rerun), LeWM-v2 0.183 (over-react), MLP 0.007 (collapse)
   - Pixel: STJEWM 1.10-1.29, LeWM-v2 1.23, MLP 1.14
   - **Rank order preserved at extremes**: MLP lowest (collapse), LeWM-v2 highest (over-react)
-  - Calibrated cluster flatter in pixel (1.10-1.29) than in state (0.085-0.124) because the
+  - Calibrated cluster flatter in pixel (1.10-1.29) than in state (0.103-0.123) because the
     frozen ViT-Tiny's discrete 14x14 patches cannot represent the fine-grained 0.1-scale
     task-relevant features that state does.
 - **Pixel encoder is a representational bottleneck, not a family-partition failure**.
