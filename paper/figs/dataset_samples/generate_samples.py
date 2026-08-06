@@ -236,7 +236,12 @@ def _render_dmc_panel(env, ax, title: str):
         cam.distance = max(1.5, min(3.5, 2.2 * radius))
         cam.azimuth = 45.0   # degrees: side-front quarter view
         cam.elevation = -20.0  # degrees: slight top-down (MuJoCo sign: negative = above lookat)
-        renderer.update_scene(data, camera=cam)
+        # Hide the 20 rangefinder sites (rf_00..rf_34): their yellow beams
+        # radiate from the head and read as artifacts in the close-up.
+        opt = mujoco.MjvOption()
+        mujoco.mjv_defaultOption(opt)
+        opt.flags[mujoco.mjtVisFlag.mjVIS_RANGEFINDER] = False
+        renderer.update_scene(data, camera=cam, scene_option=opt)
     else:
         # Pick a camera. Prefer "overview" / tracking camera when available.
         cam_id = 0
