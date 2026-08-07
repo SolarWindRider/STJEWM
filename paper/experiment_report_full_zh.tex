@@ -272,20 +272,20 @@
 & \texttt{stjewm\_hidden\_leak} & $z=h + r_t$（隐状态 + 轨迹，混合） & \textbf{5.06M} / 10.57M \\
 & \path{stjewm_membrane_readout} & $z=h$，违反协议（规划器可读膜电位） & \textbf{5.06M} / 10.57M \\
 \midrule
-\multirow{4}{*}{SNN / 神经形态对照} & \texttt{cubifae\_baseline} & ALIF + time-cell readout，$v_t$ 可读 & 5.31M \\
-& \texttt{spikedreamer\_baseline} & 2 层 LIF + AdaLN-zero Transformer & 1.58M \\
-& \texttt{slt\_lif\_mpc\_trace} & DECOLLE LIF，trace-only readout & 0.22M \\
-& \texttt{slt\_lif\_mpc\_free} & DECOLLE LIF，free-access readout & 0.26M \\
+\multirow{4}{*}{SNN / 神经形态对照} & \texttt{cubifae\_baseline} & ALIF + time-cell readout，$v_t$ 可读 & \textbf{4.98M} \\
+    & \texttt{spikedreamer\_baseline} & LIF 编码 + AdaLN-zero Transformer & \textbf{5.12M} \\
+    & \texttt{slt\_lif\_mpc\_trace} & DECOLLE LIF，trace-only readout & \textbf{5.11M} \\
+    & \texttt{slt\_lif\_mpc\_free} & DECOLLE LIF，free-access readout & \textbf{5.05M} \\
 \midrule
-\multirow{2}{*}{非 SNN 循环对照} & \path{lewm_transformer_baseline} & LeWM-style AdaLN-zero Transformer & 1.58M \\
-& \texttt{gru\_baseline} & 3 层 GRU h=576 & 7.42M \\
+\multirow{2}{*}{非 SNN 循环对照} & \path{lewm_transformer_baseline} & LeWM-style AdaLN-zero Transformer & \textbf{4.97M} \\
+    & \texttt{gru\_baseline} & GRU hidden=560, num\_layers=2 & \textbf{5.13M} \\
 \midrule
-\textbf{无状态对照} & \texttt{mlp\_baseline} & per-step FFN，no recurrence（坍缩控制） & 1.44M \\
+\textbf{无状态对照} & \texttt{mlp\_baseline} & per-step FFN，no recurrence（坍缩控制） & \textbf{5.00M} \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
 
-\textbf{5M-aligned 参数公平}：所有 8 个基线重新训练到 \textbf{4.97-5.13M}（range 0.16M，$\pm 3.2\%$），STJEWM 保持 trainable=5.06M（含冻结 ViT 的 total=10.57M）。具体配置：mlp\_baseline hidden=640 num\_layers=12 (5.00M)；lewm\_transformer embed=288 num\_layers=3 (4.97M)；cubifae\_baseline d\_hid=186 num\_layers=2 (4.98M)；gru\_baseline hidden=560 num\_layers=2 (5.13M)；slt\_lif\_mpc\_trace d\_in=672 num\_layers=8 (5.11M)；slt\_lif\_mpc\_free d\_in=640 num\_layers=8 (5.05M)；spikedreamer\_baseline d\_snn=288 d\_tx=288 num\_layers=3 (5.12M)。在 5M-aligned 设置下，trace dynamics 假设的 collapse-robust 区分仍然成立：STJEWM 6 readouts 保持 resp $\approx 0.21$、div $\approx 0.006$（校准），MLP 仍是 div $\to 0$（坍缩），LeWM-v2 仍是 resp $\approx 10$。
+\textbf{5M-aligned 参数公平}：所有 8 个基线重新训练到 \textbf{4.97-5.13M}（range 0.16M，$\pm 3.2\%$），STJEWM 保持 trainable=5.06M（含冻结 ViT 的 total=10.57M）。具体配置：mlp\_baseline hidden=640 num\_layers=12 (5.00M)；lewm\_transformer embed=288 num\_layers=3 (4.97M)；cubifae\_baseline d\_hid=186 num\_layers=2 (4.98M)；gru\_baseline hidden=560 num\_layers=2 (5.13M)；slt\_lif\_mpc\_trace d\_in=672 num\_layers=8 (5.11M)；slt\_lif\_mpc\_free d\_in=640 num\_layers=8 (5.05M)；spikedreamer\_baseline d\_snn=288 d\_tx=288 num\_layers=3 (5.12M)。在 5M-aligned 设置下，trace dynamics 假设的 collapse-robust 区分仍然成立：STJEWM 6 readouts 保持 resp $\approx 0.21$、div $\approx 0.01\text{--}0.03$（校准带 $[0.005, 0.05]$ 内），MLP 仍是 div $\to 0$（坍缩），LeWM-v2 仍是 resp $\gg 1$（过反应）。
 
 
 \textbf{5M-aligned 跨基准族结果（130/130 ckpts）}：所有 130 个 ckpt（13 模型 × 10 splits）都完成了 5M-aligned 训练。在 5M 参数公平下，trace dynamics 假设的 collapse-robust 三分法清晰呈现：
@@ -305,7 +305,7 @@ spikedreamer\_baseline & 100.0\% & 100.0\% & 100.0\% & 100.0\% (\textbf{坍缩�
 \bottomrule
 \end{tabular}
 
-\textbf{关键结论}：三分法在 4.97M $\to$ 5.13M 范围内依然成立。STJEWM 6 readouts 都保持 \textbf{resp $\approx$ 0.21}、\textbf{div $\approx$ 0.006}（校准），与 \textbf{CubifAE} 和 \textbf{SLT-LIF-MPC} 处于同一 collapse-robust 簇。\textbf{MLP} 和 \textbf{SpikeDreamer} 是坍缩对照（resp=0, div=0, cos\_dist$\approx$0），\textbf{GRU} 和 \textbf{LeWM-v2} 是过反应（resp $\gg$ 1, div $\gg$ 0.005）。这验证了 trace dynamics 假设 \textbf{对参数规模鲁棒}：从 1.44M（MLP 原始）到 5.13M（GRU 5M）都呈现相同的 collapse-robust 区分。
+\textbf{关键结论}：三分法在 4.97M $\to$ 5.13M 范围内依然成立。STJEWM 6 readouts 都保持 \textbf{resp $\approx$ 0.21}、\textbf{div $\approx$ 0.01--0.03}（校准），与 \textbf{CuBiFAE} 和 \textbf{SLT-LIF-MPC} 处于同一 collapse-robust 簇。\textbf{MLP} 和 \textbf{SpikeDreamer} 是坍缩对照（resp$\to$0, div$\to$0, cos\_dist$\approx$0），\textbf{GRU} 和 \textbf{LeWM-v2} 是过反应（resp $\gg$ 1, div $\gg$ 0.05）。这验证了 trace dynamics 假设 \textbf{对参数规模鲁棒}：从 5.00M（MLP）到 5.13M（GRU）的 5M-aligned 范围内都呈现相同的 collapse-robust 区分。
 
 
 
@@ -686,7 +686,7 @@ V^{s}_t \leftarrow 0 \ \text{if}\ s_t = 1,\qquad
     \item \texttt{n\_layers = 4}：4 层 SNN；trainable = 5.06M（校准对 n\_layers=2 $\to$ 4 的 delta $<$ 0.004）
     \item \texttt{n\_d = 3}：每细胞 3 个 dendrite 室
     \item \texttt{trace\_beta = 0.9}：trace 初始衰减率
-    \item \textbf{trainable = 5.06M，total = 10.57M}（含冻结 ViT-Tiny）
+    \item \textbf{trainable = 5.06M}（state 模态 total = trainable；pixel 模态另含冻结 ViT-Tiny 5.46M，total $\approx$ 10.46M，不计入可训练）
 \end{itemize}
 
 \subsubsection{Trace dynamics 完整公式}
@@ -728,13 +728,13 @@ r_t = \alpha_t \odot r_{t-1} + (1 - \alpha_t) \odot s_t, \quad r_t \in [0, 1]^d
 \subsection{6 个非 STJEWM 对比模型（详细配置）}
 
 \begin{itemize}[leftmargin=2em]
-    \item \textbf{CuBiFAE baseline}（\textbf{SNN}，trainable = 5.31M，违反协议）：\textbf{什么是 CuBiFAE}：多时间尺度 ALIF（Adaptive Leaky Integrate-and-Fire）SNN。每层 ALIF 维护 $v_t$，发放后 refractory 强制重置；ALIF 的 $b$ 自适应阈值随脉冲累积而增加。规划器可读 ALIF 的膜电位 $v_t$。配置：\texttt{d\_hid=192, n\_layers=4}
-    \item \textbf{SpikeDreamer baseline}（\textbf{混合 LIF + Transformer}，trainable = 1.58M，违反协议）：2 层 LIF 脉冲编码后接 2 层 AdaLN-zero Transformer hidden state。规划器可读 Transformer 隐状态。配置：\texttt{d\_snn=128, d\_tx=192, num\_layers=2, num\_heads=8}
-    \item \textbf{SLT-LIF-MPC-trace}（\textbf{SNN}，trainable = 0.22M，膜电位禁止）：DECOLLE 算法的 LIF 实现，3 阶段局部损失。读出 $z = \text{moving\_average}(s_t)$。膜电位禁止接口。配置：\texttt{d\_in=192, embed\_dim=192, n\_layers=2, trace\_beta=0.9, k\_avg=4}
-    \item \textbf{SLT-LIF-MPC-free}（\textbf{SNN}，trainable = 0.26M，违反协议）：同架构，但读出 $z = \text{concat}(s_t, v_t)$，允许规划器读膜电位
-    \item \textbf{LeWM Transformer baseline}（\textbf{Transformer}，trainable = 1.58M，违反协议）：LeWM paper 的 2-layer AdaLN-zero Transformer（论文原为 6 层 + 5.07M；G16 用 \texttt{embed\_dim=192, num\_layers=2}）。规划器可读 Transformer hidden state
-    \item \textbf{GRU baseline}（\textbf{连续循环神经网络}，trainable = 7.42M，违反协议）：3 层 GRU h=576。标准 GRU 隐状态可读
-    \item \textbf{MLP baseline}（\textbf{无状态 FFN}，trainable = 1.44M，作为坍缩对照）：\texttt{hidden\_dim=576, num\_layers=4, emb\_dim=192} 纯前馈，\textbf{无循环}。所有时间步都从当前 obs 重新预测。预期表现为 div $\to 0$ 的"坍缩控制"
+    \item \textbf{CuBiFAE baseline}（\textbf{SNN}，5M-aligned trainable = \textbf{4.98M}，违反协议）：多时间尺度 ALIF（Adaptive Leaky Integrate-and-Fire）SNN。每层 ALIF 维护 $v_t$，发放后 refractory 强制重置；ALIF 的 $b$ 自适应阈值随脉冲累积而增加。规划器可读 ALIF 的膜电位 $v_t$。5M 配置：\texttt{d\_hid=186, n\_layers=2}
+    \item \textbf{SpikeDreamer baseline}（\textbf{混合 LIF + Transformer}，5M-aligned trainable = \textbf{5.12M}，违反协议）：LIF 脉冲编码后接 AdaLN-zero Transformer hidden state。规划器可读 Transformer 隐状态。5M 配置：\texttt{d\_snn=288, d\_tx=288, num\_layers=3, num\_heads=8}
+    \item \textbf{SLT-LIF-MPC-trace}（\textbf{SNN}，5M-aligned trainable = \textbf{5.11M}，膜电位禁止）：DECOLLE 算法的 LIF 实现，3 阶段局部损失。读出 $z = \text{moving\_average}(s_t)$。膜电位禁止接口。5M 配置：\texttt{d\_in=672, embed\_dim=672, n\_layers=8, trace\_beta=0.9, k\_avg=4}
+    \item \textbf{SLT-LIF-MPC-free}（\textbf{SNN}，5M-aligned trainable = \textbf{5.05M}，违反协议）：同架构，但读出 $z = \text{concat}(s_t, v_t)$，允许规划器读膜电位。5M 配置：\texttt{d\_in=640, embed\_dim=640, n\_layers=8}
+    \item \textbf{LeWM Transformer baseline}（\textbf{Transformer}，5M-aligned trainable = \textbf{4.97M}，违反协议）：LeWM paper 的 AdaLN-zero Transformer（LeWM 原论文 6 层 5.07M；5M 配置 \texttt{embed\_dim=288, num\_layers=3, num\_heads=8}）。规划器可读 Transformer hidden state
+    \item \textbf{GRU baseline}（\textbf{连续循环神经网络}，5M-aligned trainable = \textbf{5.13M}，违反协议）：\texttt{hidden=560, num\_layers=2}。标准 GRU 隐状态可读
+    \item \textbf{MLP baseline}（\textbf{无状态 FFN}，5M-aligned trainable = \textbf{5.00M}，作为坍缩对照）：\texttt{hidden=640, num\_layers=12} 纯前馈，\textbf{无循环}。所有时间步都从当前 obs 重新预测。预期表现为 div $\to 0$ 的"坍缩控制"
 \end{itemize}
 
 \textbf{总 13 个模型}：6 STJEWM 读出口径 + 7 非 STJEWM 对照（其中 6 个非 MLP 对照都有循环 / 记忆能力；MLP 是无状态对照）。模型清单见 §4.2 的 4 家族分类表。
