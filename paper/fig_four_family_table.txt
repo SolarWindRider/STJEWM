@@ -1,0 +1,8 @@
+Four-family failure-mode partition (v0.7.5 specialist, n=130 cells)
+================================================================================
+model                | env-native | div        | resp       | rho        | LeWM-SR    | meaning
+--------------------------------------------------------------------------------
+mlp_baseline         |       36.2 |     0.0002 |          0 |     -0.023 |       97.3 | MLP (collapsed)
+gru_baseline         |       36.4 |     0.0304 |       26.5 |     -0.007 |       90.8 | GRU (noisy)
+lewm_baseline_v2     |       36.0 |      0.204 |       13.1 |      0.751 |       34.2 | LeWM-v2 (over-react)
+stjewm_trace_only    |       36.7 |     0.0106 |        0.2 |      0.999 |       58.7 | STJEWM-trace (calibrated)

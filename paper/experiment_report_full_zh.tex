@@ -311,7 +311,7 @@ spikedreamer\_baseline & 100.0\% & 100.0\% & 100.0\% & 100.0\% (\textbf{坍缩�
 
 \subsubsection{§2.3a  --  LeWM-SR 的实验性证伪}
 
-\textbf{本节是本文新的头条。} 13 个 baseline 模型在阈值 $\cos_{\mathrm{dist}} < 0.1$ 下制表（LeWM-SR，\texttt{MASTER\_TABLE.md} §2 第 99 行）。该表的关键读数是：\textbf{无状态 MLP baseline 在 20-env 标准套件上达到 LeWM-SR = 98.0\%}，高于每个循环世界模型基线，并仅比最大值低 +1.2 pp。这是"指标人为产物"：如果模型的潜状态是常数，则它把每个输入映射到同一点，目标潜状态与该常数的余弦距离本质上为零，因此阈值 $\cos_{\mathrm{dist}} < 0.1$ 空洞地成立。
+\textbf{本节是本文新的头条。} 13 个 baseline 模型在阈值 $\cos_{\mathrm{dist}} < 0.1$ 下制表（LeWM-SR，5M-aligned 聚合）。该表的关键读数是：\textbf{无状态 MLP baseline 达到 LeWM-SR = 97.3\%}，\textbf{高于每个循环世界模型基线}（次高 GRU 90.8\%）。这是"指标人为产物"：如果模型的潜状态是常数，则它把每个输入映射到同一点，目标潜状态与该常数的余弦距离本质上为零，因此阈值 $\cos_{\mathrm{dist}} < 0.1$ 空洞地成立。
 
 我们\textbf{把这个论点作为它实际是的"证伪"对待}，并明确化。在相同 ckpt 上直接比较三个量：
 
@@ -320,18 +320,18 @@ spikedreamer\_baseline & 100.0\% & 100.0\% & 100.0\% & 100.0\% (\textbf{坍缩�
 \small
 \begin{tabular}{lrll}
 \toprule
-model (specialist) & LeWM-SR & div (latent std/dim) & $\rho$ (event-align) \\
+model (5M-aligned) & LeWM-SR & div (latent std/dim) & $\rho$ (event-align) \\
 \midrule
-\textbf{mlp\_baseline}     & \textbf{98.0\%} & 0.0002 & $-0.002$ \\
-stjewm\_trace\_only     & 73.5\%   & 0.10   & 0.626 \\
-lewm\_baseline\_v2      & 76.9\%   & 0.18   & 0.160 \\
-gru\_baseline          & 78.8\%   & (intermediate) & $-0.011$ \\
+\textbf{mlp\_baseline}     & \textbf{97.3\%} & 0.0002 & $-0.023$ \\
+stjewm\_trace\_only     & 58.7\%   & 0.0106 & 0.9987 \\
+lewm\_baseline\_v2      & 34.2\%   & 0.204  & 0.7515 \\
+gru\_baseline          & 90.8\%   & 0.0304 & $-0.007$ \\
 \bottomrule
 \end{tabular}
-\caption{MASTER\_TABLE.md §2 第 99 行的 MLP 行就是 §2.3a LeWM-SR 证伪的实证锚点：一个无状态 FFN，per-dim 潜状态标准差 $0.0002$，$\rho=-0.002$，却在 LeWM-SR 上得分最高。被常数潜状态能通过的指标，不能作为规划器质量信号。}
+\caption{5M-aligned 聚合（89 cells/model，eval JSON + 5m\_stats + G1）的 MLP 行就是 §2.3a LeWM-SR 证伪的实证锚点：一个无状态 FFN，per-dim 潜状态标准差 $0.0002$，$\rho=-0.023$，却在 LeWM-SR 上得分最高（97.3\%）；次高是同样坍缩的 GRU（90.8\%）。被常数潜状态能通过的指标，不能作为规划器质量信号。}
 \end{table}
 
-这些数字构成一个清晰的负对照：\textbf{LeWM-SR 与潜状态表征的每个其他轴方向相反}。携带"更多世界信息"（高 div、高 $\rho$、校准）的模型，在 LeWM-SR 上得分\textbf{更低}，而"根本不是表征"的模型（MLP、坍缩）反而最高。方向反转是因为规划器的任务是把 $z$ 推向 $z_{\mathrm{goal}}$，$z$ 越接近 $z_{\mathrm{goal}}$ 越容易，但 $z$ 绝不应该从"无论输入什么都相同"开始。
+这些数字构成一个清晰的负对照：\textbf{LeWM-SR 与潜状态表征的每个其他轴方向相反}。坍缩模型（MLP 97.3\%、GRU 90.8\%）得分\textbf{最高}，校准的 STJEWM-trace 居中（58.7\%），过反应的 LeWM-v2 反而最低（34.2\%）。方向反转是因为规划器的任务是把 $z$ 推向 $z_{\mathrm{goal}}$，$z$ 越接近 $z_{\mathrm{goal}}$ 越容易，但 $z$ 绝不应该从"无论输入什么都相同"开始。
 
 \textbf{操作性改革：} 一个潜状态指标作为规划器质量指标被允许的\textbf{唯一}条件是它"不能被常数潜状态欺骗"。如果常数潜状态的模型能通过该指标，则该指标是测量人为产物，必须配以 collapse-robust 诊断。
 
@@ -340,9 +340,9 @@ gru\_baseline          & 78.8\%   & (intermediate) & $-0.011$ \\
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\linewidth]{fig_four_family_falsification.png}
-\caption{§2.3a 头条视觉。\textbf{左}：env-native SR 在 20-env 标准套件上为 64--68\%（4pp 范围），\textbf{不区分}潜状态质量。\textbf{中左}：div (log)，MLP 3 个数量级低于其他。\textbf{中右}：$\rho$ 区分 SNN 族（$\rho \geq 0.62$）与非 SNN 基线（$\rho \leq 0.16$）。\textbf{右}：LeWM-SR 把 MLP 放在 98.0\%——\textbf{最高}——尽管其 \texttt{div}=0.0002 且 $\rho=-0.002$。这一行证伪了 LeWM-SR。}
+\caption{§2.3a 头条视觉（5M-aligned，89 cells/model）。\textbf{左}：env-native SR 在 36.0--36.7\%（0.7pp 范围），\textbf{不区分}潜状态质量。\textbf{中左}：div (log)，MLP 0.0002 比其他模型低 2--3 个数量级。\textbf{中右}：$\rho$ 区分 STJEWM（0.9987）与循环/无状态基线（GRU $-0.007$、MLP $-0.023$；LeWM-v2 中等 0.75）。\textbf{右}：LeWM-SR 把 MLP 放在 97.3\%——\textbf{最高}——尽管其 \texttt{div}=0.0002 且 $\rho=-0.023$；次高 GRU 90.8\% 同样坍缩。这一行证伪了 LeWM-SR。}
 \end{figure}
-\textbf{派生单数字 sanity check}：env-SR / LeWM-SR 的比值无需新实验即可从现有数据中算出来——它是免费诊断。MLP：0.66 = vacuous（潜状态坍缩）。STJEWM trace：0.92。STJEWM spike：0.99。CubifAE：0.91。规则：比值 $\geq 0.9$ = 校准，$< 0.85$ = 顶部偏界 / vacuous。详见 \texttt{docs/rebuttal\_letter.md} §R1。
+\textbf{派生单数字 sanity check}：env-SR / LeWM-SR 的比值可从现有数据直接算出（5M-aligned）：MLP 0.37（vacuous，坍缩）、GRU 0.40（坍缩）、STJEWM-trace 0.63、LeWM-v2 1.05。该比值与 LeWM-SR 一样可被常数潜状态空洞拉高（MLP/GRU 最低比值却来自坍缩），故	extbf{不作为独立诊断}——与 §2.3a 的证伪一致。
 
 
 
@@ -1394,22 +1394,22 @@ Uncorr. noise & 0.986 & 189.4 & 0.049 & noise ✓ \\
 
 \subsection{(h) §2.3a 头条——LeWM-SR 的实验性证伪仍然有效}
 
-\textbf{13 个 specialist 模型在 $\cos_{\text{dist}} < 0.1$ 阈值下的 LeWM-SR 表}：
+\textbf{13 个 5M-aligned 模型在 $\cos_{\text{dist}} < 0.1$ 阈值下的 LeWM-SR 表（89 cells/model 聚合）}：
 \begin{adjustbox}{max width=\textwidth}
 \scriptsize
 \begin{tabular}{lrll}
 \toprule
 \textbf{Model} & \textbf{LeWM-SR} & \textbf{div (latent std/dim)} & \textbf{$\rho$ (event-align)} \\
 \midrule
-\textbf{mlp\_baseline} & \textbf{98.0\%} & 0.0002 & $-0.0233$ \\
-stjewm\_trace\_only & 73.5\% & 0.10 & 0.9987 \\
-lewm\_baseline\_v2 & 76.9\% & 0.18 & 0.7515 \\
-gru\_baseline & 78.8\% & (intermediate) & $-0.0074$ \\
+\textbf{mlp\_baseline} & \textbf{97.3\%} & 0.0002 & $-0.0233$ \\
+stjewm\_trace\_only & 58.7\% & 0.0106 & 0.9987 \\
+lewm\_baseline\_v2 & 34.2\% & 0.204 & 0.7515 \\
+gru\_baseline & 90.8\% & 0.0304 & $-0.0074$ \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
 
-MLP 在 20-env 套件上 LeWM-SR 最高（98\%），但 \textbf{div=0.0002, $\rho=-0.0233$}——潜状态是常数零向量。LeWM-SR 是被常数潜状态平凡通过的指标。本节作为 §2.3a 头条\textbf{保留}。每个 LeWM-SR 数字都应在 div 和 $\rho$ 的背景中读，\textbf{绝不单独读}。4 指标包按构造具备"不可被常数潜状态欺骗"的性质。
+MLP 在 5M-aligned 聚合上 LeWM-SR 最高（97.3\%），但 \textbf{div=0.0002, $\rho=-0.0233$}——潜状态是常数零向量；次高 GRU 90.8\% 同样坍缩。LeWM-SR 是被常数潜状态平凡通过的指标。本节作为 §2.3a 头条\textbf{保留}。每个 LeWM-SR 数字都应在 div 和 $\rho$ 的背景中读，\textbf{绝不单独读}。4 指标包按构造具备"不可被常数潜状态欺骗"的性质。
 
 %==========================================================
 %==========================================================
@@ -1493,7 +1493,7 @@ STJEWM 6 个读出口径全部满足这三点（物理层），所以 CEM 规划
 \subsection{度量学贡献（4 指标包 + 合成验证）}
 
 \begin{enumerate}[leftmargin=2em]
-    \item \textbf{§2.3a LeWM-SR 实验性证伪（仍为头条）}：MLP specialist 在 20-env 套件上 LeWM-SR = 98.0\%，但 div = 0.0002、$\rho = -0.0233$——潜状态是常数零向量，LeWM-SR 被平凡通过。LeWM-SR 单独不能用作规划器质量信号；每个 LeWM-SR 数字都应在 div 和 $\rho$ 的背景中读，\textbf{绝不单独读}。
+    \item \textbf{§2.3a LeWM-SR 实验性证伪（仍为头条）}：MLP（5M-aligned）LeWM-SR = 97.3\%，但 div = 0.0002、$\rho = -0.0233$——潜状态是常数零向量，LeWM-SR 被平凡通过。LeWM-SR 单独不能用作规划器质量信号；每个 LeWM-SR 数字都应在 div 和 $\rho$ 的背景中读，\textbf{绝不单独读}。
     \item \textbf{4 指标包（env-native SR, div, resp, $\rho$）按构造具备"不可被常数潜状态欺骗"的性质}，且 \textbf{P12 合成验证}在 6 种 ground-truth encoder（constant / identity-low-gain / identity-unity / gain / noisy / uncorrelated-noise）上证实：boundary $k=0.3 \to$ calibrated vs $k=0.5 \to$ over-reactive 落在 resp=1.0 阈值上；$\sigma=0.02 \to$ inliers vs $\sigma=0.05 \to$ noise 落在 $\rho=0.3$ 阈值上。\textbf{阈值不是 ad-hoc 的}。
     \item \textbf{v0.7.18.1 env-SR aggregation bug 修复}：\texttt{ClosedLoopResult} 漏传 \texttt{success\_rate\_env/std}，top-level env-SR 全部显示 0.0。867 个 state eval JSON 重新聚合：易 env 饱和 1.0、难 env 0、每模型均值 0.34--0.38。\textbf{env-SR 是"易/难"二分，不是模型质量}；区分度由 \texttt{mean\_cos\_dist} 承担。
 \end{enumerate}
