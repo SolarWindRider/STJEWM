@@ -147,6 +147,8 @@ class SpikingWMProbe:
         a_t = torch.from_numpy(np.asarray(action, dtype=np.float32)).reshape(
             1, -1
         ).to(self.device)
+        if state is None:
+            state = self.wm.dynamics.initial(1)
         post, _ = self.wm.dynamics.obs_step(
             state, a_t, embed, pre["is_first"], sample=False
         )
@@ -180,9 +182,10 @@ def main() -> int:
     n_done = 0
     obs_raw = env.reset()
     while t < args.n_steps:
-        a = env.action_space.sample()
-        out, _, done, _ = env.step(a)
+        a_raw = env.action_space.sample()
+        out, _, done, _ = env.step({"action": a_raw})
         obs_raw = out
+        a = a_raw
         with torch.no_grad():
             post = probe.policy_step(obs_raw, a, state)
             state = {k: v.detach() for k, v in post.items()}
@@ -207,10 +210,12 @@ def main() -> int:
 
     obs_arr = np.stack(obs_list)
     d_obs = np.linalg.norm(np.diff(obs_arr, axis=0), axis=1)
-    rate_arr = np.array(rate_list[: len(d_obs)], dtype=np.float32)
-    corr_obs_rate = pearson(d_obs, rate_arr)
-    stoch_arr = np.stack(stoch_list[: len(d_obs)])
+    rate_arr = np.array(rate_list, dtype=np.float32)
+    stoch_arr = np.stack(stoch_list)
     d_stoch = np.linalg.norm(np.diff(stoch_arr, axis=0), axis=1)
+    L = min(d_obs.shape[0], d_stoch.shape[0], rate_arr.shape[0])
+    d_obs, d_stoch, rate_arr = d_obs[:L], d_stoch[:L], rate_arr[:L]
+    corr_obs_rate = pearson(d_obs, rate_arr)
     corr_obs_latent = pearson(d_obs, d_stoch)
 
     result = {
