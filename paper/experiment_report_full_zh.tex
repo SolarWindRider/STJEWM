@@ -741,6 +741,19 @@ r_t = \alpha_t \odot r_{t-1} + (1 - \alpha_t) \odot s_t, \quad r_t \in [0, 1]^d
 
 \textbf{总 13 个模型}：6 STJEWM 读出口径 + 7 非 STJEWM 对照（其中 6 个非 MLP 对照都有循环 / 记忆能力；MLP 是无状态对照）。模型清单见 §4.2 的 4 家族分类表。
 
+\subsection{真实外部竞品：Spiking-WM（中科院自动化所 Brain-Cog-Lab，PNAS 2025）}
+
+除上述自研对照外，我们引入\textbf{真实可验证的外部竞品}：\textbf{Spiking-WM}（Sun, Zhao, Lv \& Zeng，arXiv:2503.00713，正式发表于 PNAS 2025，doi:10.1073/pnas.2513319122；开源代码 \url{https://github.com/Brain-Cog-Lab/Spiking-WM}，MIT 协议）。这是目前最接近“标准 Dreamer 风格 World Model + SNN”的公开工作，也是 \textbf{multi-compartment 神经元}路线与本项目 ST-JEWM 的直接同行工作：
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{核心贡献}：Multi-Compartment Neuron（MCN）——受树突非线性整合启发，apical/basal/soma 三腔室积分，显著提升 SNN 长时序记忆；全文（DMC + SHD/TIMIT/LibriSpeech）验证。
+    \item \textbf{架构}：spiking encoder + MCRNN 动力学（递归状态为\textbf{纯脉冲序列} $\{s^{\tau}_t\}_{\tau=1}^{T}$，膜电位为内部状态——\textbf{与本项目 membrane-forbidden 协议一致}）+ spiking decoder/actor，Dreamer 风格端到端 model-based RL。
+    \item \textbf{与 ST-JEWM 的差异}：其规划器/actor 读到的是从脉冲序列解码的\textbf{连续随机状态}（posterior/prior 分布参数），即“事件驱动动力学 + 连续规划接口”；ST-JEWM 则要求规划器只读有界 post-spike trace。
+    \item \textbf{我们做的对比}：下载官方代码，在 proprioceptive（状态输入）配置下于 4 个 DMC 任务（cartpole\_swingup、cheetah\_run、walker\_walk、finger\_spin）各训练 $5\times10^5$ 环境步（其 proprio 配置的公开预算），报告官方 episode return + 我们的协议指标（event-$\rho$、cos-dist、脉冲激活率）。
+\end{itemize}
+
+\textbf{相关工作（无代码，定性讨论）}：Capone \& Paolucci（Sci. Rep. 2024，doi:10.1038/s41598-024-65631-y）提出双模块（agent + model）递归 SNN，通过“dreaming”（在内部世界模型中模拟新经验）提升 sample efficiency，无需经验回放、在线学习，面向神经形态硬件；无公开代码，本报告仅在相关工作中讨论。
+
 \subsection{4 个 baseline 家族的角色}
 
 \begin{longtable}{p{0.30\textwidth}p{0.30\textwidth}p{0.30\textwidth}}
