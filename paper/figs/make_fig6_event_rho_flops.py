@@ -12,20 +12,22 @@ import numpy as np
 OUT = Path("/home/lx/snn/paper/figs/fig6_event_rho_flops.png")
 
 # (model, event-rho, effFLOPs, dense, sparsity%)
+# Baseline labels are in-house architectural descriptions (see paper Methods);
+# no external methods are referenced.
 DATA = [
-    ("STJEWM-trace",    0.9987, 0.483, 5.23, 93.3),
-    ("STJEWM-spike",    0.9988, 0.465, 5.16, 93.6),
-    ("STJEWM-rate",     0.9988, 0.478, 5.16, 93.3),
-    ("STJEWM-no-trace", 0.9987, 0.465, 5.16, 93.6),
-    ("STJEWM-leak",     0.9986, 0.477, 5.23, 93.5),
-    ("STJEWM-membrane", 0.9987, 0.481, 5.16, 93.3),
-    ("CuBiFAE",         0.9988, 9.686, 9.96, 100.0),
-    ("SLT-trace",       0.9996, 2.125, 10.18, 99.1),
-    ("SLT-free",        0.9997, 1.940, 10.07, 99.2),
-    ("LeWM-v2",         0.7515, 9.770, 9.77, 0.0),
-    ("GRU",            -0.0074, 10.241, 10.24, 0.0),
-    ("MLP",            -0.0233, 9.984, 9.98, 0.0),
-    ("SpikeDreamer",   -0.0003, 9.573, 10.07, 99.8),
+    ("STJEWM-trace",     0.9987, 0.483, 5.23, 93.3),
+    ("STJEWM-spike",     0.9988, 0.465, 5.16, 93.6),
+    ("STJEWM-rate",      0.9988, 0.478, 5.16, 93.3),
+    ("STJEWM-no-trace",  0.9987, 0.465, 5.16, 93.6),
+    ("STJEWM-leak",      0.9986, 0.477, 5.23, 93.5),
+    ("STJEWM-membrane",  0.9987, 0.481, 5.16, 93.3),
+    ("ALIF-timecell",    0.9988, 9.686, 9.96, 100.0),
+    ("Stacked-LIF trace", 0.9996, 2.125, 10.18, 99.1),
+    ("Stacked-LIF free",  0.9997, 1.940, 10.07, 99.2),
+    ("LeWM-v2",          0.7515, 9.770, 9.77, 0.0),
+    ("GRU",             -0.0074, 10.241, 10.24, 0.0),
+    ("MLP",             -0.0233, 9.984, 9.98, 0.0),
+    ("LIF-Transformer",  -0.0003, 9.573, 10.07, 99.8),
 ]
 models = [d[0] for d in DATA]
 rho = [d[1] for d in DATA]

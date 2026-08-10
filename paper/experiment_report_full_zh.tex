@@ -274,8 +274,8 @@
 \midrule
 \multirow{4}{*}{SNN / 神经形态对照} & \texttt{cubifae\_baseline} & ALIF + time-cell readout，$v_t$ 可读 & \textbf{4.98M} \\
     & \texttt{spikedreamer\_baseline} & LIF 编码 + AdaLN-zero Transformer & \textbf{5.12M} \\
-    & \texttt{slt\_lif\_mpc\_trace} & DECOLLE LIF，trace-only readout & \textbf{5.11M} \\
-    & \texttt{slt\_lif\_mpc\_free} & DECOLLE LIF，free-access readout & \textbf{5.05M} \\
+    & \texttt{slt\_lif\_mpc\_trace} & 堆叠 LIF（自研），trace-only readout & \textbf{5.11M} \\
+    & \texttt{slt\_lif\_mpc\_free} & 堆叠 LIF（自研），free-access readout & \textbf{5.05M} \\
 \midrule
 \multirow{2}{*}{非 SNN 循环对照} & \path{lewm_transformer_baseline} & LeWM-style AdaLN-zero Transformer & \textbf{4.97M} \\
     & \texttt{gru\_baseline} & GRU hidden=560, num\_layers=2 & \textbf{5.13M} \\
@@ -727,11 +727,13 @@ r_t = \alpha_t \odot r_{t-1} + (1 - \alpha_t) \odot s_t, \quad r_t \in [0, 1]^d
 
 \subsection{6 个非 STJEWM 对比模型（详细配置）}
 
+\textbf{重要声明}：其中三个 SNN 对照（CuBiFAE / SpikeDreamer / SLT-LIF-MPC）为\textbf{本项目自研实现}，对应三个常见架构家族：自适应 LIF + time-cell 读出、LIF 编码器 + Transformer 预测器、堆叠 LIF（移动平均或膜电位暴露读出）。它们复用 ST-JEWM 的 LIFCell 与投影组件构建，\textbf{不依赖任何外部代码库或外部文献}；早期代码注释中标注的文献引用未经核实，已撤销。文中保留这些名字仅作为自研对照的标识，不构成对任何外部系统的引用。
+
 \begin{itemize}[leftmargin=2em]
-    \item \textbf{CuBiFAE baseline}（\textbf{SNN}，5M-aligned trainable = \textbf{4.98M}，违反协议）：多时间尺度 ALIF（Adaptive Leaky Integrate-and-Fire）SNN。每层 ALIF 维护 $v_t$，发放后 refractory 强制重置；ALIF 的 $b$ 自适应阈值随脉冲累积而增加。规划器可读 ALIF 的膜电位 $v_t$。5M 配置：\texttt{d\_hid=186, n\_layers=2}
-    \item \textbf{SpikeDreamer baseline}（\textbf{混合 LIF + Transformer}，5M-aligned trainable = \textbf{5.12M}，违反协议）：LIF 脉冲编码后接 AdaLN-zero Transformer hidden state。规划器可读 Transformer 隐状态。5M 配置：\texttt{d\_snn=288, d\_tx=288, num\_layers=3, num\_heads=8}
-    \item \textbf{SLT-LIF-MPC-trace}（\textbf{SNN}，5M-aligned trainable = \textbf{5.11M}，膜电位禁止）：DECOLLE 算法的 LIF 实现，3 阶段局部损失。读出 $z = \text{moving\_average}(s_t)$。膜电位禁止接口。5M 配置：\texttt{d\_in=672, embed\_dim=672, n\_layers=8, trace\_beta=0.9, k\_avg=4}
-    \item \textbf{SLT-LIF-MPC-free}（\textbf{SNN}，5M-aligned trainable = \textbf{5.05M}，违反协议）：同架构，但读出 $z = \text{concat}(s_t, v_t)$，允许规划器读膜电位。5M 配置：\texttt{d\_in=640, embed\_dim=640, n\_layers=8}
+    \item \textbf{CuBiFAE baseline}（\textbf{SNN}，自研，5M-aligned trainable = \textbf{4.98M}，违反协议）：架构为多时间尺度 ALIF（Adaptive Leaky Integrate-and-Fire）。每层 ALIF 维护 $v_t$，发放后 refractory 强制重置；ALIF 的 $b$ 自适应阈值随脉冲累积而增加；多层膜电位拼接后经 1D 卷积 time-cell 读出。规划器可读 ALIF 的膜电位 $v_t$。5M 配置：\texttt{d\_hid=186, n\_layers=2}
+    \item \textbf{SpikeDreamer baseline}（\textbf{混合 LIF + Transformer}，自研，5M-aligned trainable = \textbf{5.12M}，违反协议）：架构为 LIF 脉冲编码后接 AdaLN-zero Transformer hidden state。规划器可读 Transformer 隐状态。5M 配置：\texttt{d\_snn=288, d\_tx=288, num\_layers=3, num\_heads=8}
+    \item \textbf{SLT-LIF-MPC-trace}（\textbf{SNN}，自研，5M-aligned trainable = \textbf{5.11M}，膜电位禁止）：架构为堆叠 LIF 预测模型。读出 $z = \text{moving\_average}(s_t)$。膜电位禁止接口。5M 配置：\texttt{d\_in=672, embed\_dim=672, n\_layers=8, trace\_beta=0.9, k\_avg=4}
+    \item \textbf{SLT-LIF-MPC-free}（\textbf{SNN}，自研，5M-aligned trainable = \textbf{5.05M}，违反协议）：同架构，但读出 $z = \text{concat}(s_t, v_t)$，允许规划器读膜电位。5M 配置：\texttt{d\_in=640, embed\_dim=640, n\_layers=8}
     \item \textbf{LeWM Transformer baseline}（\textbf{Transformer}，5M-aligned trainable = \textbf{4.97M}，违反协议）：LeWM paper 的 AdaLN-zero Transformer（LeWM 原论文 6 层 5.07M；5M 配置 \texttt{embed\_dim=288, num\_layers=3, num\_heads=8}）。规划器可读 Transformer hidden state
     \item \textbf{GRU baseline}（\textbf{连续循环神经网络}，5M-aligned trainable = \textbf{5.13M}，违反协议）：\texttt{hidden=560, num\_layers=2}。标准 GRU 隐状态可读
     \item \textbf{MLP baseline}（\textbf{无状态 FFN}，5M-aligned trainable = \textbf{5.00M}，作为坍缩对照）：\texttt{hidden=640, num\_layers=12} 纯前馈，\textbf{无循环}。所有时间步都从当前 obs 重新预测。预期表现为 div $\to 0$ 的"坍缩控制"
