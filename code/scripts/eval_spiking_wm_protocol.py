@@ -197,8 +197,8 @@ def main() -> int:
             np.concatenate(
                 [
                     np.asarray(obs_raw[k], dtype=np.float32).reshape(-1)
-                    for k in ("position", "velocity")
-                    if k in obs_raw
+                    for k in obs_raw
+                    if k not in ("image", "is_first", "is_terminal", "reward")
                 ]
             )
         )
