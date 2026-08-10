@@ -752,6 +752,30 @@ r_t = \alpha_t \odot r_{t-1} + (1 - \alpha_t) \odot s_t, \quad r_t \in [0, 1]^d
     \item \textbf{我们做的对比}：下载官方代码，在 proprioceptive（状态输入）配置下于 4 个 DMC 任务（cartpole\_swingup、cheetah\_run、walker\_walk、finger\_spin）各训练 $5\times10^5$ 环境步（其 proprio 配置的公开预算），报告官方 episode return + 我们的协议指标（event-$\rho$、cos-dist、脉冲激活率）。
 \end{itemize}
 
+\subsubsection{Spiking-WM 对比实验结果（seed 0，RTX 4090，proprio 配置）}
+
+\begin{longtable}{p{0.16\textwidth}p{0.14\textwidth}p{0.12\textwidth}p{0.12\textwidth}p{0.12\textwidth}p{0.26\textwidth}}
+\toprule
+任务 & Spiking-WM return & STJEWM env-SR & STJEWM cos-dist & Spiking-WM latent $\rho$ & Spiking-WM spike-rate $\rho$ \\
+\midrule
+cartpole\_swingup & 229.7 & 1.00 & 0.112 & 0.392 & $-0.002$ \\
+cheetah\_run & 105.1 & 1.00 & 0.006 & 0.560 & 0.005 \\
+walker\_walk & 211.8 & 0.00$^{*}$ & 0.091 & 0.456 & 0.000 \\
+finger\_spin & 229.8 & 1.00 & 0.125 & 0.656 & $-0.002$ \\
+\bottomrule
+\end{longtable}
+
+$^{*}$walker\_walk 对 F1 checkpoint 是留出族（STJEWM 从未见过 walker 数据）；Spiking-WM 直接在 walker 上训练。
+
+\textbf{结果解读}：
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{可学习性}：Spiking-WM 在全部 4 个任务上学会（return 105--230，满分 1000，为其公开 proprio 预算一半 + 降低的更新频率 train\_ratio 64），证明纯脉冲序列动力学可以支撑 model-based 控制。
+    \item \textbf{协议判定}：其动力学隐状态是 MCRNN 脉冲序列（膜电位为内部状态——协议合规的\textbf{动力学}），但规划器/actor 读到的是从脉冲序列解码的\textbf{连续后验均值}（连续规划接口——按读出\textbf{违反协议}）。
+    \item \textbf{事件对齐（同口径对比）}：观测-潜变量一阶差分 Pearson $\rho$：STJEWM 家族 $\geq 0.9986$（5.06M 参数）vs Spiking-WM 0.39--0.66（\textbf{28.5M 参数}）。Spiking-WM 的 MCRNN 脉冲平均活动对齐（spike-rate 口径）在机会水平（$-0.002$--$0.005$），与 STJEWM 自身 spike-rate 口径（$0.000$--$0.017$）同水平：\textbf{两种系统里原始脉冲计数聚合都不跟踪观测变化}，而 STJEWM 的 gated trace 潜状态跟踪。
+    \item \textbf{稀疏性}：Spiking-WM MCRNN 平均激活率 $0.8\%$（比我们协议暴露的 trace 稀疏一个数量级）；极端稀疏且无 trace 机制时，规划侧潜状态与观测动力学脱钩——这正是本协议设计要诊断的失败模式，且发生在最接近的公开系统而非仅自研对照中。
+    \item \textbf{对比局限}：Spiking-WM 是在线 actor-critic 训练（无 goal-conditioned CEM 协议）、28.5M 参数 vs 5.06M、proprio 配置 + 降低更新频率；4 个任务仍全部学会。
+\end{itemize}
+
 \textbf{相关工作（无代码，定性讨论）}：Capone \& Paolucci（Sci. Rep. 2024，doi:10.1038/s41598-024-65631-y）提出双模块（agent + model）递归 SNN，通过“dreaming”（在内部世界模型中模拟新经验）提升 sample efficiency，无需经验回放、在线学习，面向神经形态硬件；无公开代码，本报告仅在相关工作中讨论。
 
 \subsection{4 个 baseline 家族的角色}

@@ -152,7 +152,7 @@ class SpikingWMProbe:
         post, _ = self.wm.dynamics.obs_step(
             state, a_t, embed, pre["is_first"], sample=False
         )
-        return post
+        return post, embed
 
 
 def main() -> int:
@@ -176,7 +176,7 @@ def main() -> int:
         key="action",
     )
 
-    obs_list, rate_list, stoch_list = [], [], []
+    obs_list, rate_list, stoch_list, embed_list = [], [], [], []
     state = None
     t = 0
     n_done = 0
@@ -187,12 +187,15 @@ def main() -> int:
         obs_raw = out
         a = a_raw
         with torch.no_grad():
-            post = probe.policy_step(obs_raw, a, state)
+            post, embed = probe.policy_step(obs_raw, a, state)
             state = {k: v.detach() for k, v in post.items()}
             deter = post["deter"]  # [T, B, deter]
             stoch = post["stoch"]  # [B, stoch]
         rate_list.append(float(deter.detach().float().mean().item()))
         stoch_list.append(stoch.detach().cpu().numpy().reshape(-1))
+        embed_list.append(
+            embed.detach().float().mean(dim=0).cpu().numpy().reshape(-1)
+        )
         obs_list.append(
             np.concatenate(
                 [
@@ -212,16 +215,20 @@ def main() -> int:
     d_obs = np.linalg.norm(np.diff(obs_arr, axis=0), axis=1)
     rate_arr = np.array(rate_list, dtype=np.float32)
     stoch_arr = np.stack(stoch_list)
+    embed_arr = np.stack(embed_list)
     d_stoch = np.linalg.norm(np.diff(stoch_arr, axis=0), axis=1)
-    L = min(d_obs.shape[0], d_stoch.shape[0], rate_arr.shape[0])
-    d_obs, d_stoch, rate_arr = d_obs[:L], d_stoch[:L], rate_arr[:L]
+    d_embed = np.linalg.norm(np.diff(embed_arr, axis=0), axis=1)
+    L = min(d_obs.shape[0], d_stoch.shape[0], d_embed.shape[0], rate_arr.shape[0])
+    d_obs, d_stoch, d_embed, rate_arr = d_obs[:L], d_stoch[:L], d_embed[:L], rate_arr[:L]
     corr_obs_rate = pearson(d_obs, rate_arr)
     corr_obs_latent = pearson(d_obs, d_stoch)
+    corr_obs_embed = pearson(d_obs, d_embed)
 
     result = {
         "task": args.task,
         "event_rho": float(corr_obs_rate),
         "corr_obs_latent": float(corr_obs_latent),
+        "corr_obs_embed": float(corr_obs_embed),
         "n_steps": int(len(d_obs)),
         "n_resets": int(n_done),
         "mean_spike_rate": float(np.mean(rate_list)),
