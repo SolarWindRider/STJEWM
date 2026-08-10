@@ -159,7 +159,7 @@ obs://lixiang01/STJEWM_NMI/data/
 | 1 | `STJEWM_data.tar` | 646 MB | **repo root**, then `tar -xf STJEWM_data.tar` | restores `data/…` relative to the repo root — this is what `configs/oodc_5m/*.json` reference as `data/dm_control/…` |
 | 2 | `pusht_expert_train.h5.zst` | 13 GB | `/home/lx/LeWM/data/pusht_expert_train.h5` (after `zstd -d`) | the split configs hard-code the **absolute** path `/home/lx/LeWM/data/pusht_expert_train.h5` |
 | 3 | `tworoom.h5` | 13 GB | `/home/lx/LeWM/data/tworoom_extract/tworoom.h5` | the split configs hard-code `/home/lx/LeWM/data/tworoom_extract/tworoom.h5` |
-| 4 | `spiking_wm/` (dir) | 2.1 GB | `results/spiking_wm/` | real external baseline Spiking-WM (PNAS 2025) training logs, checkpoints (`logs_<task>/latest_model.pt`) and protocol metrics (`protocol_<task>.json`); eval script `code/scripts/eval_spiking_wm_protocol.py`; upstream code is not vendored — see `code/scripts/run_spiking_wm.py` (clone `https://github.com/Brain-Cog-Lab/Spiking-WM` to `/home/lx/Spiking-WM`) |
+| 4 | `spiking_wm/` (dir) | 2.1 GB | `results/spiking_wm/` | real external baseline Spiking-WM (PNAS 2025) training logs, checkpoints (`logs_<task>/latest_model.pt`) and protocol metrics (`protocol_<task>.json`); note the OBS object prefix is `spiking_wm/spiking_wm/…` (nested folder), so after downloading place the inner `spiking_wm/` folder at `results/`; eval script `code/scripts/eval_spiking_wm_protocol.py`; upstream code is not vendored — see `code/scripts/run_spiking_wm.py` (clone `https://github.com/Brain-Cog-Lab/Spiking-WM` to `/home/lx/Spiking-WM`) |
 
 After step 1 your repo root must look like this:
 
