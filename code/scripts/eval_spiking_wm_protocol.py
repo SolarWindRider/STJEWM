@@ -43,6 +43,14 @@ DMC_TASK_MAP = {
     "cheetah_run": "cheetah_run",
     "walker_walk": "walker_walk",
     "finger_spin": "finger_spin",
+    "pendulum_swingup": "pendulum_swingup",
+    "cup_catch": "cup_catch",
+    "reacher_easy": "reacher_easy",
+    "hopper_hop": "hopper_hop",
+    "quadruped_walk": "quadruped_walk",
+    "dog_walk": "dog_walk",
+    "fish_swim": "fish_swim",
+    "humanoid_run": "humanoid_run",
 }
 
 
