@@ -18,7 +18,7 @@ nohup /home/lx/miniconda3/envs/snn/bin/python code/scripts/run_spiking_wm.py \
     --task "dmc_${TASK}" \
     --spike_times 5 \
     --envs 8 \
-    --train_ratio 1024 \
+    --train_ratio 64 \
     --eval_every 20000 \
     --eval_episode_num 5 \
     --seed 0 \
