@@ -104,7 +104,7 @@
     },
     {
       "split": "cross_benchmark_F1",
-      "model": "cubifae_baseline",
+      "model": "alif_timecell_baseline",
       "n_seeds_with_data": 3,
       "cos_dist_mean_across_seeds": 0.11979636821807142,
       "cos_dist_std_across_seeds": 0.007475492351361637,
@@ -121,7 +121,7 @@
     },
     {
       "split": "cross_benchmark_F1",
-      "model": "slt_lif_mpc_trace",
+      "model": "stacked_lif_trace",
       "n_seeds_with_data": 3,
       "cos_dist_mean_across_seeds": 0.11292566106477309,
       "cos_dist_std_across_seeds": 0.003833957553924505,
@@ -138,7 +138,7 @@
     },
     {
       "split": "cross_benchmark_F1",
-      "model": "slt_lif_mpc_free",
+      "model": "stacked_lif_free",
       "n_seeds_with_data": 3,
       "cos_dist_mean_across_seeds": 0.1153103051551928,
       "cos_dist_std_across_seeds": 0.0016691378258853042,
@@ -206,7 +206,7 @@
     },
     {
       "split": "cross_benchmark_F1",
-      "model": "spikedreamer_baseline",
+      "model": "lif_transformer_baseline",
       "n_seeds_with_data": 3,
       "cos_dist_mean_across_seeds": -2.838316417875744e-09,
       "cos_dist_std_across_seeds": 8.862640174227665e-09,
@@ -325,7 +325,7 @@
     },
     {
       "split": "oodc_F2",
-      "model": "cubifae_baseline",
+      "model": "alif_timecell_baseline",
       "n_seeds_with_data": 3,
       "cos_dist_mean_across_seeds": 0.13815251688162486,
       "cos_dist_std_across_seeds": 0.012427819707195167,
@@ -342,7 +342,7 @@
     },
     {
       "split": "oodc_F2",
-      "model": "slt_lif_mpc_trace",
+      "model": "stacked_lif_trace",
       "n_seeds_with_data": 3,
       "cos_dist_mean_across_seeds": 0.11626328587532042,
       "cos_dist_std_across_seeds": 0.004662556392105958,
@@ -359,7 +359,7 @@
     },
     {
       "split": "oodc_F2",
-      "model": "slt_lif_mpc_free",
+      "model": "stacked_lif_free",
       "n_seeds_with_data": 3,
       "cos_dist_mean_across_seeds": 0.12912357449531556,
       "cos_dist_std_across_seeds": 0.012434020083991783,
@@ -427,7 +427,7 @@
     },
     {
       "split": "oodc_F2",
-      "model": "spikedreamer_baseline",
+      "model": "lif_transformer_baseline",
       "n_seeds_with_data": 3,
       "cos_dist_mean_across_seeds": -9.934107462565104e-09,
       "cos_dist_std_across_seeds": 6.882551541204759e-09,
@@ -544,7 +544,7 @@
     },
     {
       "split": "generalist_16env",
-      "model": "cubifae_baseline",
+      "model": "alif_timecell_baseline",
       "n_seeds_with_data": 3,
       "cos_dist_mean_across_seeds": 0.11363645397126676,
       "cos_dist_std_across_seeds": 0.002544845615655025,
@@ -561,7 +561,7 @@
     },
     {
       "split": "generalist_16env",
-      "model": "slt_lif_mpc_trace",
+      "model": "stacked_lif_trace",
       "n_seeds_with_data": 2,
       "cos_dist_mean_across_seeds": 0.11271225720023115,
       "cos_dist_std_across_seeds": 0.0032353968814770088,
@@ -576,7 +576,7 @@
     },
     {
       "split": "generalist_16env",
-      "model": "slt_lif_mpc_free",
+      "model": "stacked_lif_free",
       "n_seeds_with_data": 1,
       "cos_dist_mean_across_seeds": 0.11463703632354737,
       "cos_dist_std_across_seeds": 0.0,
@@ -640,7 +640,7 @@
     },
     {
       "split": "generalist_16env",
-      "model": "spikedreamer_baseline",
+      "model": "lif_transformer_baseline",
       "n_seeds_with_data": 3,
       "cos_dist_mean_across_seeds": 1.2583202785915799e-08,
       "cos_dist_std_across_seeds": 5.0000577736369436e-09,
@@ -736,7 +736,7 @@
       "ci95_high": 0.15518765627456502
     },
     {
-      "model": "cubifae_baseline",
+      "model": "alif_timecell_baseline",
       "n_seeds": 3,
       "seed_means_per_split": [
         0.12068502344486733,
@@ -749,7 +749,7 @@
       "ci95_high": 0.1404290078867458
     },
     {
-      "model": "slt_lif_mpc_trace",
+      "model": "stacked_lif_trace",
       "n_seeds": 3,
       "seed_means_per_split": [
         0.11328722929138513,
@@ -762,7 +762,7 @@
       "ci95_high": 0.12523307444063597
     },
     {
-      "model": "slt_lif_mpc_free",
+      "model": "stacked_lif_free",
       "n_seeds": 3,
       "seed_means_per_split": [
         0.12816380249668977,
@@ -814,7 +814,7 @@
       "ci95_high": 0.007074378969186617
     },
     {
-      "model": "spikedreamer_baseline",
+      "model": "lif_transformer_baseline",
       "n_seeds": 3,
       "seed_means_per_split": [
         -2.270653134300595e-09,
@@ -839,12 +839,12 @@
     "stjewm_no_trace",
     "stjewm_hidden_leak",
     "stjewm_membrane_readout",
-    "cubifae_baseline",
-    "slt_lif_mpc_trace",
-    "slt_lif_mpc_free",
+    "alif_timecell_baseline",
+    "stacked_lif_trace",
+    "stacked_lif_free",
     "lewm_baseline_v2",
     "gru_baseline",
     "mlp_baseline",
-    "spikedreamer_baseline"
+    "lif_transformer_baseline"
   ]
 }

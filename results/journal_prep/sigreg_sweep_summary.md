@@ -1,7 +1,7 @@
 # sigreg Weight Sweep — v0.7.18.8
 
 **Question:** Does STJEWM's lambda_sigreg=0.09 (which dominated total loss magnitude)
-explain why SLT-trace has lower cos_dist / higher AUROC?
+explain why Stacked-LIF-trace has lower cos_dist / higher AUROC?
 
 **Design:** STJEWM-trace, n_layers=4 (5.06M), lambda_sigreg in {0.09, 0.01, 0.001, 0.0},
 2 splits (cross_benchmark_F1, oodc_F2), identical protocol. 8 ckpts trained + 76 evals.
@@ -22,6 +22,6 @@ explain why SLT-trace has lower cos_dist / higher AUROC?
 is an independent regularization term that does NOT interfere with pred convergence.
 The 'sigreg hijacks optimization' hypothesis is REJECTED.
 
-**Verdict:** sigreg weight is not the cause of SLT's edge. cos_dist differences
-between SLT-trace (0.09-0.11) and STJEWM-trace (0.10-0.12) are within noise;
+**Verdict:** sigreg weight is not the cause of Stacked-LIF's edge. cos_dist differences
+between Stacked-LIF-trace (0.09-0.11) and STJEWM-trace (0.10-0.12) are within noise;
 3-seed CIs overlap (B2). STJEWM's real advantage is 4.4x lower effective FLOPs.

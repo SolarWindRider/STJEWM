@@ -8,9 +8,9 @@ Closed-loop CEM evaluation used the existing 5M wrapper/direct invocation with 5
 
 | Split | Model | Existing/skipped | Newly run | Verified | Missing/invalid |
 |---|---|---:|---:|---:|---:|
-| cross_benchmark_F2 | slt_lif_mpc_trace | 6 | 10 | 16/16 | 0 |
-| cross_benchmark_F3 | slt_lif_mpc_trace | 5 | 11 | 16/16 | 0 |
-| generalist_16env | slt_lif_mpc_free | 0 | 16 | 16/16 | 0 |
+| cross_benchmark_F2 | stacked_lif_trace | 6 | 10 | 16/16 | 0 |
+| cross_benchmark_F3 | stacked_lif_trace | 5 | 11 | 16/16 | 0 |
+| generalist_16env | stacked_lif_free | 0 | 16 | 16/16 | 0 |
 | **Total** | | **11** | **37** | **48/48** | **0** |
 
 Every expected `eval_<env>.json` was parsed and verified to contain both `success_rate_env` and `mean_cos_dist`.

@@ -5,8 +5,8 @@
 # B3 covered: stjewm_trace_only, stjewm_spike_only, lewm_baseline_v2,
 #             mlp_baseline  (4 models)
 # G4 adds:    stjewm_rate_only, stjewm_no_trace, stjewm_hidden_leak,
-#             stjewm_membrane_readout, cubifae_baseline, slt_lif_mpc_trace,
-#             slt_lif_mpc_free, gru_baseline, spikedreamer_baseline
+#             stjewm_membrane_readout, alif_timecell_baseline, stacked_lif_trace,
+#             stacked_lif_free, gru_baseline, lif_transformer_baseline
 #             (9 models)
 # Total: 13 models.
 #
@@ -25,8 +25,8 @@ mkdir -p "$OUT_DIR" "$LOG_DIR"
 
 ENVS=(finger fish stacker humanoid cartpole_2d pendulum_2d cheetah walker hopper quadruped)
 MODELS=(stjewm_rate_only stjewm_no_trace stjewm_hidden_leak stjewm_membrane_readout \
-        cubifae_baseline slt_lif_mpc_trace slt_lif_mpc_free \
-        gru_baseline spikedreamer_baseline)
+        alif_timecell_baseline stacked_lif_trace stacked_lif_free \
+        gru_baseline lif_transformer_baseline)
 TARGETS=(position velocity future_k goal_direction contact)
 
 for env in "${ENVS[@]}"; do

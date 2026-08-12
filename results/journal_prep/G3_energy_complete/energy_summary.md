@@ -23,10 +23,10 @@ This report is generated from `measurements.json`; all numeric entries below are
 | state | stjewm_no_trace | ok | 3 | 2,697,600 | 8,198,976 | 0.144 | 5.014 | 5.158 | 93.598% | 0.321 | 0.465 |
 | state | stjewm_hidden_leak | ok | 3 | 2,697,600 | 8,198,976 | 0.144 | 5.087 | 5.232 | 93.468% | 0.332 | 0.477 |
 | state | stjewm_membrane_readout | ok | 3 | 2,697,600 | 8,198,976 | 0.144 | 5.014 | 5.158 | 93.294% | 0.336 | 0.481 |
-| state | cubifae_baseline | ok | 3 | 4,984,986 | 4,984,986 | 0.207 | 9.756 | 9.963 | 100.000% | 9.479 | 9.686 |
-| state | slt_lif_mpc_trace | ok | 3 | 5,110,560 | 5,110,560 | 2.054 | 8.129 | 10.182 | 99.118% | 0.072 | 2.125 |
-| state | slt_lif_mpc_free | ok | 3 | 5,051,520 | 5,051,520 | 1.874 | 8.192 | 10.066 | 99.199% | 0.066 | 1.940 |
-| state | spikedreamer_baseline | ok | 3 | 5,119,488 | 5,119,488 | 0.106 | 9.964 | 10.070 | 99.812% | 9.467 | 9.573 |
+| state | alif_timecell_baseline | ok | 3 | 4,984,986 | 4,984,986 | 0.207 | 9.756 | 9.963 | 100.000% | 9.479 | 9.686 |
+| state | stacked_lif_trace | ok | 3 | 5,110,560 | 5,110,560 | 2.054 | 8.129 | 10.182 | 99.118% | 0.072 | 2.125 |
+| state | stacked_lif_free | ok | 3 | 5,051,520 | 5,051,520 | 1.874 | 8.192 | 10.066 | 99.199% | 0.066 | 1.940 |
+| state | lif_transformer_baseline | ok | 3 | 5,119,488 | 5,119,488 | 0.106 | 9.964 | 10.070 | 99.812% | 9.467 | 9.573 |
 
 ## Explicit STJEWM effective-vs-dense ratios
 
@@ -47,10 +47,10 @@ Each ratio is `STJEWM effective FLOPs/step ÷ comparator dense FLOPs/step` withi
 | state | stjewm_no_trace | 4,608 | 295 | 6.402% | measured from all STJEWM soma spike_layers on random forwards | L0=98.438%, L1=88.759% |
 | state | stjewm_hidden_leak | 4,608 | 301 | 6.532% | measured from all STJEWM soma spike_layers on random forwards | L0=98.958%, L1=87.977% |
 | state | stjewm_membrane_readout | 4,608 | 309 | 6.706% | measured from all STJEWM soma spike_layers on random forwards | L0=98.220%, L1=88.368% |
-| state | cubifae_baseline | 4,464 | 0 | 0.000% | measured from all STJEWM soma spike_layers on random forwards | L0=100.000%, L1=100.000% |
-| state | slt_lif_mpc_trace | 64,512 | 569 | 0.882% | measured from all STJEWM soma spike_layers on random forwards | L0=99.020%, L1=98.884%, L2=99.182%, L3=99.132%, L4=99.219%, L5=99.219%, L6=99.107%, L7=99.182% |
-| state | slt_lif_mpc_free | 61,440 | 492 | 0.801% | measured from all STJEWM soma spike_layers on random forwards | L0=99.102%, L1=99.102%, L2=99.362%, L3=99.141%, L4=99.180%, L5=99.232%, L6=99.284%, L7=99.193% |
-| state | spikedreamer_baseline | 6,912 | 13 | 0.188% | measured from all STJEWM soma spike_layers on random forwards | L0=99.624%, L1=100.000% |
+| state | alif_timecell_baseline | 4,464 | 0 | 0.000% | measured from all STJEWM soma spike_layers on random forwards | L0=100.000%, L1=100.000% |
+| state | stacked_lif_trace | 64,512 | 569 | 0.882% | measured from all STJEWM soma spike_layers on random forwards | L0=99.020%, L1=98.884%, L2=99.182%, L3=99.132%, L4=99.219%, L5=99.219%, L6=99.107%, L7=99.182% |
+| state | stacked_lif_free | 61,440 | 492 | 0.801% | measured from all STJEWM soma spike_layers on random forwards | L0=99.102%, L1=99.102%, L2=99.362%, L3=99.141%, L4=99.180%, L5=99.232%, L6=99.284%, L7=99.193% |
+| state | lif_transformer_baseline | 6,912 | 13 | 0.188% | measured from all STJEWM soma spike_layers on random forwards | L0=99.624%, L1=100.000% |
 
 ## Missing or failed inputs
 

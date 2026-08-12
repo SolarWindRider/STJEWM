@@ -1,31 +1,31 @@
 [
   {
     "env": "ball_in_cup",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_block_near_target",
     "auroc": 0.5
   },
   {
     "env": "ball_in_cup",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_contact",
     "auroc": 0.4913496376811594
   },
   {
     "env": "ball_in_cup",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_high_motion",
     "auroc": 0.6313768796992482
   },
   {
     "env": "ball_in_cup",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_low_motion",
     "auroc": 0.6065554511278195
   },
   {
     "env": "ball_in_cup",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_room_entered",
     "auroc": 0.5
   },
@@ -121,91 +121,91 @@
   },
   {
     "env": "ball_in_cup",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_block_near_target",
     "auroc": 0.5
   },
   {
     "env": "ball_in_cup",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_contact",
     "auroc": 0.5597040118979187
   },
   {
     "env": "ball_in_cup",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_high_motion",
     "auroc": 0.5856877375363291
   },
   {
     "env": "ball_in_cup",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_low_motion",
     "auroc": 0.6133195465686274
   },
   {
     "env": "ball_in_cup",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_room_entered",
     "auroc": 0.5
   },
   {
     "env": "ball_in_cup",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_block_near_target",
     "auroc": 0.5
   },
   {
     "env": "ball_in_cup",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_contact",
     "auroc": 0.6478708747342585
   },
   {
     "env": "ball_in_cup",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_high_motion",
     "auroc": 0.6744308443252105
   },
   {
     "env": "ball_in_cup",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_low_motion",
     "auroc": 0.6950539981617647
   },
   {
     "env": "ball_in_cup",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_room_entered",
     "auroc": 0.5
   },
   {
     "env": "ball_in_cup",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_block_near_target",
     "auroc": 0.5
   },
   {
     "env": "ball_in_cup",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_contact",
     "auroc": 0.5375915838648163
   },
   {
     "env": "ball_in_cup",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_high_motion",
     "auroc": 0.5472860310008199
   },
   {
     "env": "ball_in_cup",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_low_motion",
     "auroc": 0.5167978324142157
   },
   {
     "env": "ball_in_cup",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_room_entered",
     "auroc": 0.5
   },
@@ -391,31 +391,31 @@
   },
   {
     "env": "cartpole_2d",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_contact",
     "auroc": 0.630144927536232
   },
   {
     "env": "cartpole_2d",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k10",
     "auroc": 0.4007966776845495
   },
   {
     "env": "cartpole_2d",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k5",
     "auroc": 0.4604733910891089
   },
   {
     "env": "cartpole_2d",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_high_motion",
     "auroc": 0.6731931390977444
   },
   {
     "env": "cartpole_2d",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_low_motion",
     "auroc": 0.6018703007518797
   },
@@ -511,91 +511,91 @@
   },
   {
     "env": "cartpole_2d",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_contact",
     "auroc": 0.7072388294658736
   },
   {
     "env": "cartpole_2d",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k10",
     "auroc": 0.7995892018779344
   },
   {
     "env": "cartpole_2d",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k5",
     "auroc": 0.6780288274250097
   },
   {
     "env": "cartpole_2d",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_high_motion",
     "auroc": 0.7013588748077064
   },
   {
     "env": "cartpole_2d",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_low_motion",
     "auroc": 0.7312703505644682
   },
   {
     "env": "cartpole_2d",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_contact",
     "auroc": 0.807435393425744
   },
   {
     "env": "cartpole_2d",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k10",
     "auroc": 0.8422095070422535
   },
   {
     "env": "cartpole_2d",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k5",
     "auroc": 0.7944838332684068
   },
   {
     "env": "cartpole_2d",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_high_motion",
     "auroc": 0.8468839279173688
   },
   {
     "env": "cartpole_2d",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_low_motion",
     "auroc": 0.8616850861556743
   },
   {
     "env": "cartpole_2d",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_contact",
     "auroc": 0.6931645095686656
   },
   {
     "env": "cartpole_2d",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k10",
     "auroc": 0.5598591549295775
   },
   {
     "env": "cartpole_2d",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k5",
     "auroc": 0.7481340085703155
   },
   {
     "env": "cartpole_2d",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_high_motion",
     "auroc": 0.720579078455791
   },
   {
     "env": "cartpole_2d",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_low_motion",
     "auroc": 0.7100106951871659
   },
@@ -781,31 +781,31 @@
   },
   {
     "env": "cheetah",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_contact",
     "auroc": 0.4779664855072463
   },
   {
     "env": "cheetah",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k10",
     "auroc": 0.4639965481357395
   },
   {
     "env": "cheetah",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k5",
     "auroc": 0.4946223367275999
   },
   {
     "env": "cheetah",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_high_motion",
     "auroc": 0.3896757518796992
   },
   {
     "env": "cheetah",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_low_motion",
     "auroc": 0.37473684210526315
   },
@@ -901,91 +901,91 @@
   },
   {
     "env": "cheetah",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_contact",
     "auroc": 0.5580086151853885
   },
   {
     "env": "cheetah",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k10",
     "auroc": 0.5450431921020156
   },
   {
     "env": "cheetah",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k5",
     "auroc": 0.591706110914871
   },
   {
     "env": "cheetah",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_high_motion",
     "auroc": 0.5973268411442483
   },
   {
     "env": "cheetah",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_low_motion",
     "auroc": 0.5099412056183414
   },
   {
     "env": "cheetah",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_contact",
     "auroc": 0.6463772156224425
   },
   {
     "env": "cheetah",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k10",
     "auroc": 0.6720999588646647
   },
   {
     "env": "cheetah",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k5",
     "auroc": 0.7095725891910986
   },
   {
     "env": "cheetah",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_high_motion",
     "auroc": 0.6219646987218503
   },
   {
     "env": "cheetah",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_low_motion",
     "auroc": 0.5898734539078729
   },
   {
     "env": "cheetah",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_contact",
     "auroc": 0.4737587568233527
   },
   {
     "env": "cheetah",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k10",
     "auroc": 0.5
   },
   {
     "env": "cheetah",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k5",
     "auroc": 0.5060543977393146
   },
   {
     "env": "cheetah",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_high_motion",
     "auroc": 0.5148119293974437
   },
   {
     "env": "cheetah",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_low_motion",
     "auroc": 0.5145056316822625
   },
@@ -1171,31 +1171,31 @@
   },
   {
     "env": "dog",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_contact",
     "auroc": 0.5185326086956522
   },
   {
     "env": "dog",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k10",
     "auroc": 0.6763373480902778
   },
   {
     "env": "dog",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k5",
     "auroc": 0.4576181820704583
   },
   {
     "env": "dog",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_high_motion",
     "auroc": 0.580140977443609
   },
   {
     "env": "dog",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_low_motion",
     "auroc": 0.5909868421052632
   },
@@ -1291,91 +1291,91 @@
   },
   {
     "env": "dog",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_contact",
     "auroc": 0.642136523814937
   },
   {
     "env": "dog",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k10",
     "auroc": 0.6626388317564789
   },
   {
     "env": "dog",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k5",
     "auroc": 0.5762345460967856
   },
   {
     "env": "dog",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_high_motion",
     "auroc": 0.6066655790094961
   },
   {
     "env": "dog",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_low_motion",
     "auroc": 0.5850006086427267
   },
   {
     "env": "dog",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_contact",
     "auroc": 0.7289795763707325
   },
   {
     "env": "dog",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k10",
     "auroc": 0.7654514603044016
   },
   {
     "env": "dog",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k5",
     "auroc": 0.7575980219003886
   },
   {
     "env": "dog",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_high_motion",
     "auroc": 0.7318245289084879
   },
   {
     "env": "dog",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_low_motion",
     "auroc": 0.7298064516129031
   },
   {
     "env": "dog",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_contact",
     "auroc": 0.5179606684096851
   },
   {
     "env": "dog",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k10",
     "auroc": 0.493006993006993
   },
   {
     "env": "dog",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k5",
     "auroc": 0.5275521017308372
   },
   {
     "env": "dog",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_high_motion",
     "auroc": 0.5652594302275922
   },
   {
     "env": "dog",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_low_motion",
     "auroc": 0.5415069993913573
   },
@@ -1561,31 +1561,31 @@
   },
   {
     "env": "finger",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_contact",
     "auroc": 0.4644474637681159
   },
   {
     "env": "finger",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k10",
     "auroc": 0.44570267131242736
   },
   {
     "env": "finger",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k5",
     "auroc": 0.49198198330374565
   },
   {
     "env": "finger",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_high_motion",
     "auroc": 0.558935620300752
   },
   {
     "env": "finger",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_low_motion",
     "auroc": 0.5146381578947369
   },
@@ -1681,91 +1681,91 @@
   },
   {
     "env": "finger",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_contact",
     "auroc": 0.5196594590787434
   },
   {
     "env": "finger",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k10",
     "auroc": 0.518112966511543
   },
   {
     "env": "finger",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k5",
     "auroc": 0.5102814814814816
   },
   {
     "env": "finger",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_high_motion",
     "auroc": 0.5246674833340216
   },
   {
     "env": "finger",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_low_motion",
     "auroc": 0.5686404421208777
   },
   {
     "env": "finger",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_contact",
     "auroc": 0.5365896605155656
   },
   {
     "env": "finger",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k10",
     "auroc": 0.5387352860662469
   },
   {
     "env": "finger",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k5",
     "auroc": 0.546437037037037
   },
   {
     "env": "finger",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_high_motion",
     "auroc": 0.5457264898444203
   },
   {
     "env": "finger",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_low_motion",
     "auroc": 0.5318000506521463
   },
   {
     "env": "finger",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_contact",
     "auroc": 0.4666854486547401
   },
   {
     "env": "finger",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k10",
     "auroc": 0.5074596222283054
   },
   {
     "env": "finger",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k5",
     "auroc": 0.5153777777777777
   },
   {
     "env": "finger",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_high_motion",
     "auroc": 0.5181593785987272
   },
   {
     "env": "finger",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_low_motion",
     "auroc": 0.49474710106912206
   },
@@ -1951,31 +1951,31 @@
   },
   {
     "env": "fish",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_contact",
     "auroc": 0.4969293478260869
   },
   {
     "env": "fish",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k10",
     "auroc": 0.6967513360955984
   },
   {
     "env": "fish",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k5",
     "auroc": 0.6502526491365777
   },
   {
     "env": "fish",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_high_motion",
     "auroc": 0.4469125939849624
   },
   {
     "env": "fish",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_low_motion",
     "auroc": 0.5781578947368421
   },
@@ -2071,91 +2071,91 @@
   },
   {
     "env": "fish",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_contact",
     "auroc": 0.5879505893640351
   },
   {
     "env": "fish",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k10",
     "auroc": 0.5896955015498424
   },
   {
     "env": "fish",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k5",
     "auroc": 0.5537471512692496
   },
   {
     "env": "fish",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_high_motion",
     "auroc": 0.5763030371971335
   },
   {
     "env": "fish",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_low_motion",
     "auroc": 0.5644033530571992
   },
   {
     "env": "fish",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_contact",
     "auroc": 0.6426552220394737
   },
   {
     "env": "fish",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k10",
     "auroc": 0.6560652236201194
   },
   {
     "env": "fish",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k5",
     "auroc": 0.6204897840892624
   },
   {
     "env": "fish",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_high_motion",
     "auroc": 0.5762529860084177
   },
   {
     "env": "fish",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_low_motion",
     "auroc": 0.5507495069033531
   },
   {
     "env": "fish",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_contact",
     "auroc": 0.5110505756578948
   },
   {
     "env": "fish",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k10",
     "auroc": 0.49912739965095987
   },
   {
     "env": "fish",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k5",
     "auroc": 0.5242059780532465
   },
   {
     "env": "fish",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_high_motion",
     "auroc": 0.5037447389375498
   },
   {
     "env": "fish",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_low_motion",
     "auroc": 0.5107495069033531
   },
@@ -2341,31 +2341,31 @@
   },
   {
     "env": "hopper",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_contact",
     "auroc": 0.5673278985507246
   },
   {
     "env": "hopper",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k10",
     "auroc": 0.5173926868044515
   },
   {
     "env": "hopper",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k5",
     "auroc": 0.5566979752605024
   },
   {
     "env": "hopper",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_high_motion",
     "auroc": 0.5910667293233083
   },
   {
     "env": "hopper",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_low_motion",
     "auroc": 0.519187030075188
   },
@@ -2461,91 +2461,91 @@
   },
   {
     "env": "hopper",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_contact",
     "auroc": 0.5058273224043716
   },
   {
     "env": "hopper",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k10",
     "auroc": 0.588802818311015
   },
   {
     "env": "hopper",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k5",
     "auroc": 0.5686961468551844
   },
   {
     "env": "hopper",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_high_motion",
     "auroc": 0.548717321261063
   },
   {
     "env": "hopper",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_low_motion",
     "auroc": 0.6002713995626366
   },
   {
     "env": "hopper",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_contact",
     "auroc": 0.6696306010928962
   },
   {
     "env": "hopper",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k10",
     "auroc": 0.6929682339518405
   },
   {
     "env": "hopper",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k5",
     "auroc": 0.7223709952685546
   },
   {
     "env": "hopper",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_high_motion",
     "auroc": 0.6782608498624649
   },
   {
     "env": "hopper",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_low_motion",
     "auroc": 0.7126191034051859
   },
   {
     "env": "hopper",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_contact",
     "auroc": 0.6007956284153005
   },
   {
     "env": "hopper",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k10",
     "auroc": 0.5
   },
   {
     "env": "hopper",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k5",
     "auroc": 0.5024836619444714
   },
   {
     "env": "hopper",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_high_motion",
     "auroc": 0.5883691105763784
   },
   {
     "env": "hopper",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_low_motion",
     "auroc": 0.5449078412995939
   },
@@ -2731,31 +2731,31 @@
   },
   {
     "env": "humanoid",
-    "model": "CMU_cubifae_baseline",
+    "model": "CMU_alif_timecell_baseline",
     "target": "event_contact",
     "auroc": 0.5002717391304348
   },
   {
     "env": "humanoid",
-    "model": "CMU_cubifae_baseline",
+    "model": "CMU_alif_timecell_baseline",
     "target": "event_future_k10",
     "auroc": 0.5623998736433583
   },
   {
     "env": "humanoid",
-    "model": "CMU_cubifae_baseline",
+    "model": "CMU_alif_timecell_baseline",
     "target": "event_future_k5",
     "auroc": 0.5489306015621804
   },
   {
     "env": "humanoid",
-    "model": "CMU_cubifae_baseline",
+    "model": "CMU_alif_timecell_baseline",
     "target": "event_high_motion",
     "auroc": 0.40085526315789477
   },
   {
     "env": "humanoid",
-    "model": "CMU_cubifae_baseline",
+    "model": "CMU_alif_timecell_baseline",
     "target": "event_low_motion",
     "auroc": 0.5923355263157895
   },
@@ -2971,31 +2971,31 @@
   },
   {
     "env": "humanoid",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_contact",
     "auroc": 0.38754528985507253
   },
   {
     "env": "humanoid",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k10",
     "auroc": 0.3681035902503294
   },
   {
     "env": "humanoid",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k5",
     "auroc": 0.364782442597252
   },
   {
     "env": "humanoid",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_high_motion",
     "auroc": 0.43781015037593984
   },
   {
     "env": "humanoid",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_low_motion",
     "auroc": 0.49627584586466167
   },
@@ -3091,91 +3091,91 @@
   },
   {
     "env": "humanoid",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_contact",
     "auroc": 0.5967962119693369
   },
   {
     "env": "humanoid",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k10",
     "auroc": 0.47619616082513605
   },
   {
     "env": "humanoid",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k5",
     "auroc": 0.6480548941373321
   },
   {
     "env": "humanoid",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_high_motion",
     "auroc": 0.5701491101491102
   },
   {
     "env": "humanoid",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_low_motion",
     "auroc": 0.5582255940346126
   },
   {
     "env": "humanoid",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_contact",
     "auroc": 0.69023207415681
   },
   {
     "env": "humanoid",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k10",
     "auroc": 0.6373913666316493
   },
   {
     "env": "humanoid",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k5",
     "auroc": 0.6934326533238947
   },
   {
     "env": "humanoid",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_high_motion",
     "auroc": 0.7094107744107744
   },
   {
     "env": "humanoid",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_low_motion",
     "auroc": 0.6942970822281167
   },
   {
     "env": "humanoid",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_contact",
     "auroc": 0.5596032496109822
   },
   {
     "env": "humanoid",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k10",
     "auroc": 0.5
   },
   {
     "env": "humanoid",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k5",
     "auroc": 0.5174641225304074
   },
   {
     "env": "humanoid",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_high_motion",
     "auroc": 0.5453463203463204
   },
   {
     "env": "humanoid",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_low_motion",
     "auroc": 0.5352919626792305
   },
@@ -3361,31 +3361,31 @@
   },
   {
     "env": "pendulum_2d",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_contact",
     "auroc": 0.3745833333333334
   },
   {
     "env": "pendulum_2d",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k10",
     "auroc": 0.6373324721459713
   },
   {
     "env": "pendulum_2d",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k5",
     "auroc": 0.5653627063473611
   },
   {
     "env": "pendulum_2d",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_high_motion",
     "auroc": 0.4692481203007519
   },
   {
     "env": "pendulum_2d",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_low_motion",
     "auroc": 0.4976738721804511
   },
@@ -3481,91 +3481,91 @@
   },
   {
     "env": "pendulum_2d",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_contact",
     "auroc": 0.635031608271724
   },
   {
     "env": "pendulum_2d",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k10",
     "auroc": 0.6537990674897762
   },
   {
     "env": "pendulum_2d",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k5",
     "auroc": 0.6789307768709246
   },
   {
     "env": "pendulum_2d",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_high_motion",
     "auroc": 0.6585142846200981
   },
   {
     "env": "pendulum_2d",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_low_motion",
     "auroc": 0.6471254757368495
   },
   {
     "env": "pendulum_2d",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_contact",
     "auroc": 0.806970784670881
   },
   {
     "env": "pendulum_2d",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k10",
     "auroc": 0.7413195801099216
   },
   {
     "env": "pendulum_2d",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k5",
     "auroc": 0.736508759050539
   },
   {
     "env": "pendulum_2d",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_high_motion",
     "auroc": 0.7926982804840685
   },
   {
     "env": "pendulum_2d",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_low_motion",
     "auroc": 0.7917905981148712
   },
   {
     "env": "pendulum_2d",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_contact",
     "auroc": 0.6260536090574663
   },
   {
     "env": "pendulum_2d",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k10",
     "auroc": 0.5192753509937224
   },
   {
     "env": "pendulum_2d",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k5",
     "auroc": 0.6866966072174001
   },
   {
     "env": "pendulum_2d",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_high_motion",
     "auroc": 0.6403712852328433
   },
   {
     "env": "pendulum_2d",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_low_motion",
     "auroc": 0.5650063279283231
   },
@@ -3751,19 +3751,19 @@
   },
   {
     "env": "quadruped",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_contact",
     "auroc": 0.538804347826087
   },
   {
     "env": "quadruped",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k5",
     "auroc": 0.6176055602006689
   },
   {
     "env": "quadruped",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_low_motion",
     "auroc": 0.2884022556390977
   },
@@ -3847,91 +3847,91 @@
   },
   {
     "env": "quadruped",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_contact",
     "auroc": 0.6732156065088758
   },
   {
     "env": "quadruped",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k10",
     "auroc": 0.6452250031601567
   },
   {
     "env": "quadruped",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k5",
     "auroc": 0.6727648013548797
   },
   {
     "env": "quadruped",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_high_motion",
     "auroc": 0.6044950513196481
   },
   {
     "env": "quadruped",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_low_motion",
     "auroc": 0.5588543375936774
   },
   {
     "env": "quadruped",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_contact",
     "auroc": 0.7808288132807364
   },
   {
     "env": "quadruped",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k10",
     "auroc": 0.7058842118569081
   },
   {
     "env": "quadruped",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k5",
     "auroc": 0.7229729729729729
   },
   {
     "env": "quadruped",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_high_motion",
     "auroc": 0.7719279488432715
   },
   {
     "env": "quadruped",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_low_motion",
     "auroc": 0.7219372502124178
   },
   {
     "env": "quadruped",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_contact",
     "auroc": 0.5432075936883629
   },
   {
     "env": "quadruped",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k10",
     "auroc": 0.4991467576791809
   },
   {
     "env": "quadruped",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k5",
     "auroc": 0.5491673135276268
   },
   {
     "env": "quadruped",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_high_motion",
     "auroc": 0.5646714116976214
   },
   {
     "env": "quadruped",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_low_motion",
     "auroc": 0.5693920580473749
   },
@@ -4051,13 +4051,13 @@
   },
   {
     "env": "reacher",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_high_motion",
     "auroc": 0.4694125939849624
   },
   {
     "env": "reacher",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_low_motion",
     "auroc": 0.4789238721804512
   },
@@ -4141,91 +4141,91 @@
   },
   {
     "env": "reacher",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_contact",
     "auroc": 0.5194285714285714
   },
   {
     "env": "reacher",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k10",
     "auroc": 0.5664660766961652
   },
   {
     "env": "reacher",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k5",
     "auroc": 0.5603368615591398
   },
   {
     "env": "reacher",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_high_motion",
     "auroc": 0.5559665977428626
   },
   {
     "env": "reacher",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_low_motion",
     "auroc": 0.5277679879801895
   },
   {
     "env": "reacher",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_contact",
     "auroc": 0.5937420634920635
   },
   {
     "env": "reacher",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k10",
     "auroc": 0.5141002949852507
   },
   {
     "env": "reacher",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k5",
     "auroc": 0.5971522177419355
   },
   {
     "env": "reacher",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_high_motion",
     "auroc": 0.5238115332498746
   },
   {
     "env": "reacher",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_low_motion",
     "auroc": 0.588142957837918
   },
   {
     "env": "reacher",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_contact",
     "auroc": 0.4760357142857142
   },
   {
     "env": "reacher",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k10",
     "auroc": 0.511362831858407
   },
   {
     "env": "reacher",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k5",
     "auroc": 0.47600246415770603
   },
   {
     "env": "reacher",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_high_motion",
     "auroc": 0.5245312478021747
   },
   {
     "env": "reacher",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_low_motion",
     "auroc": 0.4918430375990057
   },
@@ -4339,19 +4339,19 @@
   },
   {
     "env": "stacker",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_contact",
     "auroc": 0.4261458333333334
   },
   {
     "env": "stacker",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k10",
     "auroc": 0.5491130733765726
   },
   {
     "env": "stacker",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_high_motion",
     "auroc": 0.4136231203007519
   },
@@ -4429,91 +4429,91 @@
   },
   {
     "env": "stacker",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_contact",
     "auroc": 0.598741794310722
   },
   {
     "env": "stacker",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k10",
     "auroc": 0.5501384777003152
   },
   {
     "env": "stacker",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k5",
     "auroc": 0.5380042851170569
   },
   {
     "env": "stacker",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_high_motion",
     "auroc": 0.5550986842105263
   },
   {
     "env": "stacker",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_low_motion",
     "auroc": 0.5462679735896425
   },
   {
     "env": "stacker",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_contact",
     "auroc": 0.5314464589628703
   },
   {
     "env": "stacker",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k10",
     "auroc": 0.5634371120236844
   },
   {
     "env": "stacker",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k5",
     "auroc": 0.5164088628762542
   },
   {
     "env": "stacker",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_high_motion",
     "auroc": 0.6125661470251716
   },
   {
     "env": "stacker",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_low_motion",
     "auroc": 0.6229318759601398
   },
   {
     "env": "stacker",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_contact",
     "auroc": 0.550428085165503
   },
   {
     "env": "stacker",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k10",
     "auroc": 0.5
   },
   {
     "env": "stacker",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k5",
     "auroc": 0.5114835911371238
   },
   {
     "env": "stacker",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_high_motion",
     "auroc": 0.5846302023741419
   },
   {
     "env": "stacker",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_low_motion",
     "auroc": 0.5835746427940237
   },
@@ -4615,19 +4615,19 @@
   },
   {
     "env": "walker",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_contact",
     "auroc": 0.34236413043478264
   },
   {
     "env": "walker",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_future_k10",
     "auroc": 0.45228810900452693
   },
   {
     "env": "walker",
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "target": "event_high_motion",
     "auroc": 0.21734962406015035
   },
@@ -4705,91 +4705,91 @@
   },
   {
     "env": "walker",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_contact",
     "auroc": 0.5351882969259663
   },
   {
     "env": "walker",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k10",
     "auroc": 0.5214285714285715
   },
   {
     "env": "walker",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_future_k5",
     "auroc": 0.5124864526568057
   },
   {
     "env": "walker",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_high_motion",
     "auroc": 0.5216641113283539
   },
   {
     "env": "walker",
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "target": "event_low_motion",
     "auroc": 0.5234614353553921
   },
   {
     "env": "walker",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_contact",
     "auroc": 0.6412144575137556
   },
   {
     "env": "walker",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k10",
     "auroc": 0.7047117794486216
   },
   {
     "env": "walker",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_future_k5",
     "auroc": 0.5999145181725206
   },
   {
     "env": "walker",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_high_motion",
     "auroc": 0.6928084809099818
   },
   {
     "env": "walker",
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "target": "event_low_motion",
     "auroc": 0.6814156326593137
   },
   {
     "env": "walker",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_contact",
     "auroc": 0.5391338011927119
   },
   {
     "env": "walker",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k10",
     "auroc": 0.5
   },
   {
     "env": "walker",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_future_k5",
     "auroc": 0.5065332539573506
   },
   {
     "env": "walker",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_high_motion",
     "auroc": 0.5193103868641544
   },
   {
     "env": "walker",
-    "model": "spikedreamer_baseline",
+    "model": "lif_transformer_baseline",
     "target": "event_low_motion",
     "auroc": 0.5366976868872548
   },

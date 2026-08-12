@@ -20,5 +20,5 @@
 [17:25:22] [gpu2] OK gru_baseline generalist_16env seed=1 (87s)
 [17:25:22] [gpu2] START eval stjewm_hidden_leak generalist_16env seed=2
 [17:29:05] [gpu2] OK stjewm_hidden_leak generalist_16env seed=2 (223s)
-[17:29:05] [gpu2] START eval spikedreamer_baseline generalist_16env seed=2
-[17:32:04] [gpu2] OK spikedreamer_baseline generalist_16env seed=2 (178s)
+[17:29:05] [gpu2] START eval lif_transformer_baseline generalist_16env seed=2
+[17:32:04] [gpu2] OK lif_transformer_baseline generalist_16env seed=2 (178s)

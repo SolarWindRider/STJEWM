@@ -1632,30 +1632,30 @@
     }
   },
   {
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "env": "cheetah",
-    "error": "Error(s) in loading state_dict for CubifAEBaseline:\n\tsize mismatch for stack.time_conv.weight: copying a param with shape torch.Size([1536, 384, 8]) from checkpoint, the shape in current model is torch.Size([1536, 768, 8])."
+    "error": "Error(s) in loading state_dict for ALIFTimecellBaseline:\n\tsize mismatch for stack.time_conv.weight: copying a param with shape torch.Size([1536, 384, 8]) from checkpoint, the shape in current model is torch.Size([1536, 768, 8])."
   },
   {
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "env": "walker",
-    "error": "Error(s) in loading state_dict for CubifAEBaseline:\n\tsize mismatch for stack.time_conv.weight: copying a param with shape torch.Size([1536, 384, 8]) from checkpoint, the shape in current model is torch.Size([1536, 768, 8])."
+    "error": "Error(s) in loading state_dict for ALIFTimecellBaseline:\n\tsize mismatch for stack.time_conv.weight: copying a param with shape torch.Size([1536, 384, 8]) from checkpoint, the shape in current model is torch.Size([1536, 768, 8])."
   },
   {
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "env": "reacher",
-    "error": "Error(s) in loading state_dict for CubifAEBaseline:\n\tsize mismatch for stack.time_conv.weight: copying a param with shape torch.Size([1536, 384, 8]) from checkpoint, the shape in current model is torch.Size([1536, 768, 8])."
+    "error": "Error(s) in loading state_dict for ALIFTimecellBaseline:\n\tsize mismatch for stack.time_conv.weight: copying a param with shape torch.Size([1536, 384, 8]) from checkpoint, the shape in current model is torch.Size([1536, 768, 8])."
   },
   {
-    "model": "cubifae_baseline",
+    "model": "alif_timecell_baseline",
     "env": "finger",
-    "error": "Error(s) in loading state_dict for CubifAEBaseline:\n\tsize mismatch for stack.time_conv.weight: copying a param with shape torch.Size([1536, 384, 8]) from checkpoint, the shape in current model is torch.Size([1536, 768, 8])."
+    "error": "Error(s) in loading state_dict for ALIFTimecellBaseline:\n\tsize mismatch for stack.time_conv.weight: copying a param with shape torch.Size([1536, 384, 8]) from checkpoint, the shape in current model is torch.Size([1536, 768, 8])."
   },
   {
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "env": "cheetah",
     "result": {
-      "ckpt": "results/generalist_G16/slt_lif_mpc_trace/seed_0/final.pt",
+      "ckpt": "results/generalist_G16/stacked_lif_trace/seed_0/final.pt",
       "env": "cheetah",
       "n_episodes": 5,
       "cem_samples": 100,
@@ -1720,10 +1720,10 @@
     }
   },
   {
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "env": "walker",
     "result": {
-      "ckpt": "results/generalist_G16/slt_lif_mpc_trace/seed_0/final.pt",
+      "ckpt": "results/generalist_G16/stacked_lif_trace/seed_0/final.pt",
       "env": "walker",
       "n_episodes": 5,
       "cem_samples": 100,
@@ -1788,10 +1788,10 @@
     }
   },
   {
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "env": "reacher",
     "result": {
-      "ckpt": "results/generalist_G16/slt_lif_mpc_trace/seed_0/final.pt",
+      "ckpt": "results/generalist_G16/stacked_lif_trace/seed_0/final.pt",
       "env": "reacher",
       "n_episodes": 5,
       "cem_samples": 100,
@@ -1856,10 +1856,10 @@
     }
   },
   {
-    "model": "slt_lif_mpc_trace",
+    "model": "stacked_lif_trace",
     "env": "finger",
     "result": {
-      "ckpt": "results/generalist_G16/slt_lif_mpc_trace/seed_0/final.pt",
+      "ckpt": "results/generalist_G16/stacked_lif_trace/seed_0/final.pt",
       "env": "finger",
       "n_episodes": 5,
       "cem_samples": 100,
@@ -1924,10 +1924,10 @@
     }
   },
   {
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "env": "cheetah",
     "result": {
-      "ckpt": "results/generalist_G16/slt_lif_mpc_free/seed_0/final.pt",
+      "ckpt": "results/generalist_G16/stacked_lif_free/seed_0/final.pt",
       "env": "cheetah",
       "n_episodes": 5,
       "cem_samples": 100,
@@ -1992,10 +1992,10 @@
     }
   },
   {
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "env": "walker",
     "result": {
-      "ckpt": "results/generalist_G16/slt_lif_mpc_free/seed_0/final.pt",
+      "ckpt": "results/generalist_G16/stacked_lif_free/seed_0/final.pt",
       "env": "walker",
       "n_episodes": 5,
       "cem_samples": 100,
@@ -2060,10 +2060,10 @@
     }
   },
   {
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "env": "reacher",
     "result": {
-      "ckpt": "results/generalist_G16/slt_lif_mpc_free/seed_0/final.pt",
+      "ckpt": "results/generalist_G16/stacked_lif_free/seed_0/final.pt",
       "env": "reacher",
       "n_episodes": 5,
       "cem_samples": 100,
@@ -2128,10 +2128,10 @@
     }
   },
   {
-    "model": "slt_lif_mpc_free",
+    "model": "stacked_lif_free",
     "env": "finger",
     "result": {
-      "ckpt": "results/generalist_G16/slt_lif_mpc_free/seed_0/final.pt",
+      "ckpt": "results/generalist_G16/stacked_lif_free/seed_0/final.pt",
       "env": "finger",
       "n_episodes": 5,
       "cem_samples": 100,

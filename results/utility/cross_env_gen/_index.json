@@ -372,9 +372,9 @@
             "rho": 0.9153411984443665,
             "skipped": false,
             "sources": {
-              "eval": "/home/lx/snn/results/generalist_G16/cubifae_baseline/seed_0/eval_humanoid.json",
-              "event_align": "/home/lx/snn/results/generalist_G16/event_align/humanoid_cubifae_baseline_seed0.json",
-              "latent_stats": "/home/lx/snn/results/generalist_G16/cubifae_baseline/seed_0/latent_stats_humanoid.json"
+              "eval": "/home/lx/snn/results/generalist_G16/alif_timecell_baseline/seed_0/eval_humanoid.json",
+              "event_align": "/home/lx/snn/results/generalist_G16/event_align/humanoid_alif_timecell_baseline_seed0.json",
+              "latent_stats": "/home/lx/snn/results/generalist_G16/alif_timecell_baseline/seed_0/latent_stats_humanoid.json"
             }
           }
         },
@@ -394,9 +394,9 @@
             "rho": 0.9937623739242554,
             "skipped": false,
             "sources": {
-              "eval": "/home/lx/snn/results/generalist_G16/cubifae_baseline/seed_0/eval_walker.json",
-              "event_align": "/home/lx/snn/results/generalist_G16/event_align/walker_cubifae_baseline_seed0.json",
-              "latent_stats": "/home/lx/snn/results/generalist_G16/cubifae_baseline/seed_0/latent_stats_walker.json"
+              "eval": "/home/lx/snn/results/generalist_G16/alif_timecell_baseline/seed_0/eval_walker.json",
+              "event_align": "/home/lx/snn/results/generalist_G16/event_align/walker_alif_timecell_baseline_seed0.json",
+              "latent_stats": "/home/lx/snn/results/generalist_G16/alif_timecell_baseline/seed_0/latent_stats_walker.json"
             }
           }
         }
@@ -407,8 +407,8 @@
         "responsiveness": 0.21126,
         "rho": 0.9961152911186218
       },
-      "model": "cubifae_baseline",
-      "row_id": "cubifae_baseline__full_G16",
+      "model": "alif_timecell_baseline",
+      "row_id": "alif_timecell_baseline__full_G16",
       "seed": 0,
       "train_regime": "full_G16",
       "train_regime_label": "full-G16"
@@ -549,9 +549,9 @@
             "rho": 0.917313814163208,
             "skipped": false,
             "sources": {
-              "eval": "/home/lx/snn/results/generalist_G16/slt_lif_mpc_trace/seed_0/eval_humanoid.json",
-              "event_align": "/home/lx/snn/results/generalist_G16/event_align/humanoid_slt_lif_mpc_trace_seed0.json",
-              "latent_stats": "/home/lx/snn/results/generalist_G16/slt_lif_mpc_trace/seed_0/latent_stats_humanoid.json"
+              "eval": "/home/lx/snn/results/generalist_G16/stacked_lif_trace/seed_0/eval_humanoid.json",
+              "event_align": "/home/lx/snn/results/generalist_G16/event_align/humanoid_stacked_lif_trace_seed0.json",
+              "latent_stats": "/home/lx/snn/results/generalist_G16/stacked_lif_trace/seed_0/latent_stats_humanoid.json"
             }
           }
         },
@@ -571,9 +571,9 @@
             "rho": 0.968292772769928,
             "skipped": false,
             "sources": {
-              "eval": "/home/lx/snn/results/generalist_G16/slt_lif_mpc_trace/seed_0/eval_walker.json",
-              "event_align": "/home/lx/snn/results/generalist_G16/event_align/walker_slt_lif_mpc_trace_seed0.json",
-              "latent_stats": "/home/lx/snn/results/generalist_G16/slt_lif_mpc_trace/seed_0/latent_stats_walker.json"
+              "eval": "/home/lx/snn/results/generalist_G16/stacked_lif_trace/seed_0/eval_walker.json",
+              "event_align": "/home/lx/snn/results/generalist_G16/event_align/walker_stacked_lif_trace_seed0.json",
+              "latent_stats": "/home/lx/snn/results/generalist_G16/stacked_lif_trace/seed_0/latent_stats_walker.json"
             }
           }
         }
@@ -584,8 +584,8 @@
         "responsiveness": 0.20918,
         "rho": 0.9954055666923523
       },
-      "model": "slt_lif_mpc_trace",
-      "row_id": "slt_lif_mpc_trace__full_G16",
+      "model": "stacked_lif_trace",
+      "row_id": "stacked_lif_trace__full_G16",
       "seed": 0,
       "train_regime": "full_G16",
       "train_regime_label": "full-G16"
@@ -608,9 +608,9 @@
             "rho": 0.9457752704620361,
             "skipped": false,
             "sources": {
-              "eval": "/home/lx/snn/results/generalist_G16/slt_lif_mpc_free/seed_0/eval_humanoid.json",
-              "event_align": "/home/lx/snn/results/generalist_G16/event_align/humanoid_slt_lif_mpc_free_seed0.json",
-              "latent_stats": "/home/lx/snn/results/generalist_G16/slt_lif_mpc_free/seed_0/latent_stats_humanoid.json"
+              "eval": "/home/lx/snn/results/generalist_G16/stacked_lif_free/seed_0/eval_humanoid.json",
+              "event_align": "/home/lx/snn/results/generalist_G16/event_align/humanoid_stacked_lif_free_seed0.json",
+              "latent_stats": "/home/lx/snn/results/generalist_G16/stacked_lif_free/seed_0/latent_stats_humanoid.json"
             }
           }
         },
@@ -630,9 +630,9 @@
             "rho": 0.9777724146842957,
             "skipped": false,
             "sources": {
-              "eval": "/home/lx/snn/results/generalist_G16/slt_lif_mpc_free/seed_0/eval_walker.json",
-              "event_align": "/home/lx/snn/results/generalist_G16/event_align/walker_slt_lif_mpc_free_seed0.json",
-              "latent_stats": "/home/lx/snn/results/generalist_G16/slt_lif_mpc_free/seed_0/latent_stats_walker.json"
+              "eval": "/home/lx/snn/results/generalist_G16/stacked_lif_free/seed_0/eval_walker.json",
+              "event_align": "/home/lx/snn/results/generalist_G16/event_align/walker_stacked_lif_free_seed0.json",
+              "latent_stats": "/home/lx/snn/results/generalist_G16/stacked_lif_free/seed_0/latent_stats_walker.json"
             }
           }
         }
@@ -643,8 +643,8 @@
         "responsiveness": 0.20088,
         "rho": 0.9944632649421692
       },
-      "model": "slt_lif_mpc_free",
-      "row_id": "slt_lif_mpc_free__full_G16",
+      "model": "stacked_lif_free",
+      "row_id": "stacked_lif_free__full_G16",
       "seed": 0,
       "train_regime": "full_G16",
       "train_regime_label": "full-G16"
@@ -1080,9 +1080,9 @@
             "rho": 0.9267507195472717,
             "skipped": false,
             "sources": {
-              "eval": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/cubifae_baseline/seed_0/eval_humanoid.json",
-              "event_align": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/event_align/humanoid_cubifae_baseline_seed0.json",
-              "latent_stats": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/cubifae_baseline/seed_0/latent_stats_humanoid.json"
+              "eval": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/alif_timecell_baseline/seed_0/eval_humanoid.json",
+              "event_align": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/event_align/humanoid_alif_timecell_baseline_seed0.json",
+              "latent_stats": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/alif_timecell_baseline/seed_0/latent_stats_humanoid.json"
             }
           }
         },
@@ -1102,9 +1102,9 @@
             "rho": 0.9829292297363281,
             "skipped": false,
             "sources": {
-              "eval": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/cubifae_baseline/seed_0/eval_walker.json",
-              "event_align": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/event_align/walker_cubifae_baseline_seed0.json",
-              "latent_stats": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/cubifae_baseline/seed_0/latent_stats_walker.json"
+              "eval": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/alif_timecell_baseline/seed_0/eval_walker.json",
+              "event_align": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/event_align/walker_alif_timecell_baseline_seed0.json",
+              "latent_stats": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/alif_timecell_baseline/seed_0/latent_stats_walker.json"
             }
           }
         }
@@ -1115,8 +1115,8 @@
         "responsiveness": 0.20686,
         "rho": 0.9935407638549805
       },
-      "model": "cubifae_baseline",
-      "row_id": "cubifae_baseline__minus_walker_humanoid",
+      "model": "alif_timecell_baseline",
+      "row_id": "alif_timecell_baseline__minus_walker_humanoid",
       "seed": 0,
       "train_regime": "minus_walker_humanoid",
       "train_regime_label": "minus walker+humanoid"
@@ -1257,9 +1257,9 @@
             "rho": 0.9419873356819153,
             "skipped": false,
             "sources": {
-              "eval": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/slt_lif_mpc_trace/seed_0/eval_humanoid.json",
-              "event_align": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/event_align/humanoid_slt_lif_mpc_trace_seed0.json",
-              "latent_stats": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/slt_lif_mpc_trace/seed_0/latent_stats_humanoid.json"
+              "eval": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/stacked_lif_trace/seed_0/eval_humanoid.json",
+              "event_align": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/event_align/humanoid_stacked_lif_trace_seed0.json",
+              "latent_stats": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/stacked_lif_trace/seed_0/latent_stats_humanoid.json"
             }
           }
         },
@@ -1279,9 +1279,9 @@
             "rho": 0.9730063676834106,
             "skipped": false,
             "sources": {
-              "eval": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/slt_lif_mpc_trace/seed_0/eval_walker.json",
-              "event_align": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/event_align/walker_slt_lif_mpc_trace_seed0.json",
-              "latent_stats": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/slt_lif_mpc_trace/seed_0/latent_stats_walker.json"
+              "eval": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/stacked_lif_trace/seed_0/eval_walker.json",
+              "event_align": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/event_align/walker_stacked_lif_trace_seed0.json",
+              "latent_stats": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/stacked_lif_trace/seed_0/latent_stats_walker.json"
             }
           }
         }
@@ -1292,8 +1292,8 @@
         "responsiveness": 0.1985,
         "rho": 0.9933683395385742
       },
-      "model": "slt_lif_mpc_trace",
-      "row_id": "slt_lif_mpc_trace__minus_walker_humanoid",
+      "model": "stacked_lif_trace",
+      "row_id": "stacked_lif_trace__minus_walker_humanoid",
       "seed": 0,
       "train_regime": "minus_walker_humanoid",
       "train_regime_label": "minus walker+humanoid"
@@ -1316,9 +1316,9 @@
             "rho": 0.9362010955810547,
             "skipped": false,
             "sources": {
-              "eval": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/slt_lif_mpc_free/seed_0/eval_humanoid.json",
-              "event_align": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/event_align/humanoid_slt_lif_mpc_free_seed0.json",
-              "latent_stats": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/slt_lif_mpc_free/seed_0/latent_stats_humanoid.json"
+              "eval": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/stacked_lif_free/seed_0/eval_humanoid.json",
+              "event_align": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/event_align/humanoid_stacked_lif_free_seed0.json",
+              "latent_stats": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/stacked_lif_free/seed_0/latent_stats_humanoid.json"
             }
           }
         },
@@ -1338,9 +1338,9 @@
             "rho": 0.9919437170028687,
             "skipped": false,
             "sources": {
-              "eval": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/slt_lif_mpc_free/seed_0/eval_walker.json",
-              "event_align": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/event_align/walker_slt_lif_mpc_free_seed0.json",
-              "latent_stats": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/slt_lif_mpc_free/seed_0/latent_stats_walker.json"
+              "eval": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/stacked_lif_free/seed_0/eval_walker.json",
+              "event_align": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/event_align/walker_stacked_lif_free_seed0.json",
+              "latent_stats": "/home/lx/snn/results/generalist_G16_minus_walker_humanoid/stacked_lif_free/seed_0/latent_stats_walker.json"
             }
           }
         }
@@ -1351,8 +1351,8 @@
         "responsiveness": 0.20638,
         "rho": 0.99527987241745
       },
-      "model": "slt_lif_mpc_free",
-      "row_id": "slt_lif_mpc_free__minus_walker_humanoid",
+      "model": "stacked_lif_free",
+      "row_id": "stacked_lif_free__minus_walker_humanoid",
       "seed": 0,
       "train_regime": "minus_walker_humanoid",
       "train_regime_label": "minus walker+humanoid"

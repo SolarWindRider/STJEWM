@@ -32,13 +32,13 @@ pendulum_2d, finger).
 
 | model | class | position | velocity | future_k | goal_direction | contact |
 | --- | --- | --- | --- | --- | --- | --- |
-| cubifae_baseline | CubifAE | -0.034 (n=10) | -0.914 (n=7) | -0.021 (n=10) | -0.045 (n=10) | -0.077 (n=10) |
+| alif_timecell_baseline | ALIFTimecell | -0.034 (n=10) | -0.914 (n=7) | -0.021 (n=10) | -0.045 (n=10) | -0.077 (n=10) |
 | gru_baseline | GRU recurrent | +0.030 (n=10) | -0.837 (n=7) | +0.026 (n=10) | -0.023 (n=10) | -0.057 (n=10) |
 | lewm_baseline_v2 | LeWM transformer | +0.285 (n=10) | -1.006 (n=7) | +0.215 (n=10) | +0.084 (n=10) | +0.034 (n=10) |
 | mlp_baseline | MLP (FF baseline) | -0.061 (n=10) | -1.000 (n=7) | -0.040 (n=10) | -0.063 (n=10) | -0.104 (n=10) |
-| slt_lif_mpc_free | SLT-LIF-MPC | +0.022 (n=10) | -0.364 (n=7) | +0.027 (n=10) | -0.014 (n=10) | -0.076 (n=10) |
-| slt_lif_mpc_trace | SLT-LIF-MPC | +0.007 (n=10) | -0.632 (n=7) | +0.033 (n=10) | -0.008 (n=10) | -0.067 (n=10) |
-| spikedreamer_baseline | SpikeDreamer | -0.054 (n=10) | -0.817 (n=7) | -0.034 (n=10) | -0.056 (n=10) | -0.099 (n=10) |
+| stacked_lif_free | Stacked-LIF | +0.022 (n=10) | -0.364 (n=7) | +0.027 (n=10) | -0.014 (n=10) | -0.076 (n=10) |
+| stacked_lif_trace | Stacked-LIF | +0.007 (n=10) | -0.632 (n=7) | +0.033 (n=10) | -0.008 (n=10) | -0.067 (n=10) |
+| lif_transformer_baseline | LIFTransformer | -0.054 (n=10) | -0.817 (n=7) | -0.034 (n=10) | -0.056 (n=10) | -0.099 (n=10) |
 | stjewm_hidden_leak | STJEWM (any readout) | -0.042 (n=10) | -0.969 (n=7) | -0.016 (n=10) | -0.049 (n=10) | -0.103 (n=10) |
 | stjewm_membrane_readout | STJEWM (any readout) | -0.042 (n=10) | -0.891 (n=7) | -0.020 (n=10) | -0.047 (n=10) | -0.108 (n=10) |
 | stjewm_no_trace | STJEWM (any readout) | -0.031 (n=10) | -1.009 (n=7) | -0.020 (n=10) | -0.050 (n=10) | -0.094 (n=10) |
@@ -54,9 +54,9 @@ pendulum_2d, finger).
 | LeWM transformer | +0.285 | -1.006 | +0.215 | +0.084 | +0.034 |
 | MLP (FF baseline) | -0.061 | -1.000 | -0.040 | -0.063 | -0.104 |
 | GRU recurrent | +0.030 | -0.837 | +0.026 | -0.023 | -0.057 |
-| CubifAE | -0.034 | -0.914 | -0.021 | -0.045 | -0.077 |
-| SLT-LIF-MPC | +0.014 | -0.498 | +0.030 | -0.011 | -0.071 |
-| SpikeDreamer | -0.054 | -0.817 | -0.034 | -0.056 | -0.099 |
+| ALIFTimecell | -0.034 | -0.914 | -0.021 | -0.045 | -0.077 |
+| Stacked-LIF | +0.014 | -0.498 | +0.030 | -0.011 | -0.071 |
+| LIFTransformer | -0.054 | -0.817 | -0.034 | -0.056 | -0.099 |
 
 ## Verdict on the event-vs-position dissociation
 
@@ -70,9 +70,9 @@ Reproduction of B3's dissociation claim with full 13-model coverage.
 | LeWM transformer | +0.285 |
 | MLP (FF baseline) | -0.061 |
 | GRU recurrent | +0.030 |
-| CubifAE | -0.034 |
-| SLT-LIF-MPC | +0.014 |
-| SpikeDreamer | -0.054 |
+| ALIFTimecell | -0.034 |
+| Stacked-LIF | +0.014 |
+| LIFTransformer | -0.054 |
 
 ### Individual STJEWM position R² (every readout)
 
@@ -94,14 +94,14 @@ With full 13-model coverage, the **event-vs-position dissociation** holds:
 - **Other recurrent / SNN baselines** also sit near or below chance:
   - MLP (FF): -0.061
   - GRU: +0.030
-  - CubifAE: -0.034
-  - SLT-LIF-MPC trace: +0.007
-  - SLT-LIF-MPC free: +0.022
-  - SpikeDreamer: -0.054
+  - ALIFTimecell: -0.034
+  - Stacked-LIF trace: +0.007
+  - Stacked-LIF free: +0.022
+  - LIFTransformer: -0.054
 
 **Caveat**: The dissociation is not unique to STJEWM — every
 controller in the recurrent / local-network family (STJEWM,
-MLP, GRU, CubifAE, SLT-LIF-MPC, SpikeDreamer) gives position
+MLP, GRU, ALIFTimecell, Stacked-LIF, LIFTransformer) gives position
 R² near chance. What LeWM has is **much higher position
 decodability** than every other model, not a special failure
 of STJEWM. The right framing of the result is:

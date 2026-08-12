@@ -35,7 +35,7 @@
    10461120
   ]
  },
- "cubifae_baseline": {
+ "alif_timecell_baseline": {
   "state": [
    4984986,
    4984986
@@ -45,7 +45,7 @@
    10456026
   ]
  },
- "slt_lif_mpc_trace": {
+ "stacked_lif_trace": {
   "state": [
    5110560,
    5110560
@@ -55,7 +55,7 @@
    10612704
   ]
  },
- "slt_lif_mpc_free": {
+ "stacked_lif_free": {
   "state": [
    5051520,
    5051520
@@ -95,7 +95,7 @@
    10328320
   ]
  },
- "spikedreamer_baseline": {
+ "lif_transformer_baseline": {
   "state": [
    5119488,
    5119488

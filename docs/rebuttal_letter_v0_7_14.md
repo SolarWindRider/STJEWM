@@ -42,15 +42,15 @@ Each paragraph is self-contained and can be dropped into a response letter uncha
 > Discrimination lives in the **raw, threshold-free `mean_cos_dist`**
 > column of `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`. There
 > the families cluster cleanly: SNN family (STJEWM 6 readouts +
-> CuBiFAE + SLT-LIF-MPC ×2) at `mean_cos_dist ∈ [0.103, 0.123]`;
+> ALIF-timecell + Stacked-LIF ×2) at `mean_cos_dist ∈ [0.103, 0.123]`;
 > LeWM-v2 at `mean_cos_dist = 0.183` (over-react); MLP / GRU /
-> SpikeDreamer at `mean_cos_dist ∈ [0.000, 0.001]` (collapse, latent
+> LIFTransformer at `mean_cos_dist ∈ [0.000, 0.001]` (collapse, latent
 > is a constant vector). See `results/journal_prep/MAIN_TABLE_5M_STATE_FULL.md`
 > for the per-(split, model, env) table.
 
 ## R3. "Why didn't prior SNN world models report the failure modes you report?"
 
-> Most prior SNN world-model work (CuBiFAE, SpikeDreamer, SLT-LIF-MPC) reports
+> Most prior SNN world-model work (ALIF-timecell, LIFTransformer, Stacked-LIF) reports
 > **only** env-SR plus a planner-side metric such as LeWM-SR or its variants. They do
 > not test whether the latent representation is meaningful — they measure whether
 > the planner succeeds, not whether the latent actually tracks observations. Our
@@ -82,7 +82,7 @@ Each paragraph is self-contained and can be dropped into a response letter uncha
 > pick a winner regardless of who is reading.
 >
 > We invite the reviewer to consider the four-metric package as the new headline.
-> On the package, the SNN family plus CuBiFAE plus SLT-LIF-MPC form a
+> On the package, the SNN family plus ALIF-timecell plus Stacked-LIF form a
 > calibrated cluster, MLP and GRU a collapse cluster, and LeWM-v2 alone an
 > over-react cluster. This 4-family partition is the paper's central empirical claim,
 > and it survives all 6 OOD splits in the v0.7.10b → v0.7.13 bug-fix re-run.

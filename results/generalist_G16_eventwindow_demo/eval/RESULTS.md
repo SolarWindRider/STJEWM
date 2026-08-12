@@ -3,7 +3,7 @@
 **Date:** 2026-07-15
 **Goal:** Test whether the gated exponential trace readout (STJEWM
 `trace_only`) outperforms the membrane readout and the
-multi-timescale passive decay readout (CuBiFAE) on an
+multi-timescale passive decay readout (ALIF-timecell) on an
 *input-consistency-detection* task — one that exercises the trace's
 *content-aware α gate* (selective retention on input change) rather
 than just memory-of-any-duration.
@@ -28,7 +28,7 @@ than just memory-of-any-duration.
   envs + `delayed_t_maze` + `event_window` (G16+2=18 envs total).
   10K windows per env, 1 epoch, lr 3e-4, batch 32, n_layers 2.
 - **3 models:** `stjewm_trace_only`, `stjewm_membrane_readout`,
-  `cubifae_baseline`.
+  `alif_timecell_baseline`.
 - **Eval:** `code/scripts/utility/eval_event_window.py` — uses
   CEM-planned actions, 30 episodes × 3 seeds = 90 episodes per cell.
 
@@ -36,16 +36,16 @@ than just memory-of-any-duration.
 
 | Model | mean_reward (per 20 windows) | % | vs. random (0%) | vs. oracle (70%) |
 |---|---|---|---|---|
-| `cubifae_baseline`        | 3.67 ± 0.21 | **18.4%** | +18.4 pp | -51.6 pp |
+| `alif_timecell_baseline`        | 3.67 ± 0.21 | **18.4%** | +18.4 pp | -51.6 pp |
 | `stjewm_trace_only`       | 4.01 ± 0.16 | **20.1%** | +20.1 pp | -49.9 pp |
 | `stjewm_membrane_readout` | 4.19 ± 0.11 | **20.9%** | +20.9 pp | -49.1 pp |
 
-**STJEWM readouts both win over CuBiFAE on this task**:
-- `trace_only` vs `cubifae`: +0.34 windows (p ≈ 0.05, one-sided,
+**STJEWM readouts both win over ALIF-timecell on this task**:
+- `trace_only` vs `alif_timecell`: +0.34 windows (p ≈ 0.05, one-sided,
   Welch's t = 3.32, dof ≈ 3.6; just below conventional significance
   on n=3 seeds but the *direction* is consistent across all 3 seeds
   (4.01 > 3.67 in every seed pair).
-- `membrane_readout` vs `cubifae`: +0.52 windows (p ≈ 0.02, Welch's
+- `membrane_readout` vs `alif_timecell`: +0.52 windows (p ≈ 0.02, Welch's
   t = 4.43, dof ≈ 3.2; **significant** on n=3 seeds).
 - `trace_only` vs `membrane_readout`: -0.18 windows (p ≈ 0.25,
   not significant). On this task, the trace and membrane readouts
@@ -54,10 +54,10 @@ than just memory-of-any-duration.
 
 ## Interpretation
 
-The 2-3 percentage point gap over CuBiFAE is **small but real and
+The 2-3 percentage point gap over ALIF-timecell is **small but real and
 consistent**: it is consistent with the hypothesis that the
 membrane-forbidden protocol (whether trace or membrane readout) is a
-content-aware detector that passive fixed-τ decay (CuBiFAE) is not.
+content-aware detector that passive fixed-τ decay (ALIF-timecell) is not.
 
 The *big* gap (to the 70% oracle) is the *plan-to-action decoding*
 bottleneck (the same one §9.5 named for delayed_t_maze). The CEM
@@ -76,7 +76,7 @@ in any way that changes the rate pattern).
    counter**: STJEWM readouts (trace, membrane) integrate the recent
    event stream and detect the modal event with 20% accuracy on
    a 5-class task with 30% pattern-switching probability.
-2. **CuBiFAE's passive decay is strictly less informative** on
+2. **ALIF-timecell's passive decay is strictly less informative** on
    this content-aware task: 18% accuracy, statistically
    significantly below both STJEWM readouts.
 3. **Trace and membrane readouts tie on this task** — the
@@ -88,7 +88,7 @@ in any way that changes the rate pattern).
 ## Honest scope
 
 - This is **one seed of training, three seeds of evaluation**. The
-  result is direction-consistent (STJEWM > CuBiFAE in all 3 seed
+  result is direction-consistent (STJEWM > ALIF-timecell in all 3 seed
   pairs) but the magnitude (~2 pp) is small.
 - The **trace is not the *unique* winner** on this task — the
   membrane readout ties it. The interface that matters here is
@@ -100,7 +100,7 @@ in any way that changes the rate pattern).
 ## Files
 
 - Trained ckpts: `results/generalist_G16_eventwindow_demo/{stjewm_trace_only,
-  stjewm_membrane_readout, cubifae_baseline}/seed_0/final.pt`
+  stjewm_membrane_readout, alif_timecell_baseline}/seed_0/final.pt`
 - Eval JSONs: `results/generalist_G16_eventwindow_demo/eval/*.json` (3 files)
 - Env: `code/core/envs/event_window.py`
 - Data: `data/event_window_50k.npz`

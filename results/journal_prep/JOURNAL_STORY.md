@@ -16,8 +16,8 @@
 > correlation) whose boundaries are quantitatively identifiable on synthetic
 > ground truth. Applied to 13 world models at 5M-parameter parity across 10
 > splits and 3 seeds, the package separates three families that no single
-> metric could: calibrated (SNN family: STJEWM readouts, SLT-LIF-MPC; plus
-> CuBiFAE), collapsed (MLP, SpikeDreamer), and over-reactive (LeWM-v2). The
+> metric could: calibrated (SNN family: STJEWM readouts, Stacked-LIF; plus
+> ALIF-timecell), collapsed (MLP, LIFTransformer), and over-reactive (LeWM-v2). The
 > calibrated SNN family is distinguished by event-aligned latent dynamics
 > (rho > 0.99) that recurrent continuous baselines lack (GRU rho ≈ -0.1),
 > and by a 20x effective-FLOP advantage under event-driven accounting. The
@@ -49,7 +49,7 @@
 - MLP baseline: LeWM-SR = 96-100% across F1/F2/F3/G16, with `div = 0.0002` and
   `rho = -0.002` → the latent is a constant zero vector; the `cos < 0.1`
   threshold is vacuously satisfied.
-- SpikeDreamer shows the same collapse signature (LeWM-SR = 100%, cos ≈ 0).
+- LIFTransformer shows the same collapse signature (LeWM-SR = 100%, cos ≈ 0).
 - **Implication**: any paper using LeWM-SR alone as a planner-quality signal
   is reporting on metric pathology, not model quality. This is the hook.
 
@@ -71,7 +71,7 @@ noise) on a real DMC env (200-step random policy):
 |---|---|---|---|
 | calibrated | STJEWM-trace | 0.119 ± 0.002 | [0.115, 0.123] |
 | calibrated | STJEWM-spike | 0.114 ± 0.010 | [0.088, 0.139] |
-| calibrated | SLT-trace | 0.115 ± 0.004 | [0.104, 0.125] |
+| calibrated | Stacked-LIF-trace | 0.115 ± 0.004 | [0.104, 0.125] |
 | over-react | LeWM-v2 | 0.194 ± 0.012 | [0.166, 0.223] |
 | collapse | MLP | 0.004 | includes 0 |
 
@@ -99,7 +99,7 @@ first-differences:
 | Model | mean rho | n cells |
 |---|---|---|
 | STJEWM trace/spike/membrane/rate | 0.9987-0.9988 | 32 |
-| SLT-LIF-MPC trace | 0.9996 | 8 |
+| Stacked-LIF trace | 0.9996 | 8 |
 | LeWM-v2 (Transformer) | 0.7515 | 8 |
 | GRU | -0.1111 | 2 |
 | MLP | -0.0220 | 2 |
@@ -161,8 +161,8 @@ n_layers=4 (trainable 5.06M, verified) with identical protocol:
 - cos_dist delta < 0.004 for every readout (trace 0.105→0.104, spike
   0.108→0.111, rate 0.103→0.103, no_trace 0.119→0.123, leak 0.119→0.120,
   membrane 0.124→0.122); env-SR delta < 0.03.
-- Fair cluster partition identical: calibrated = STJEWM 6 + SLT 2 + CuBiFAE
-  (0.103-0.123), collapse = GRU/MLP/SpikeDreamer, over-react = LeWM 0.183.
+- Fair cluster partition identical: calibrated = STJEWM 6 + Stacked-LIF 2 + ALIF-timecell
+  (0.103-0.123), collapse = GRU/MLP/LIFTransformer, over-react = LeWM 0.183.
 - **Implication: STJEWM calibration is parameter-robust (2.70M vs 5.06M
   identical) — the family partition holds under parameter-fair comparison.**
 - Pixel trainable clarification: 5.00M total (projector 0.074M + SNN
@@ -178,7 +178,7 @@ do not learn strong position representations (R2 in [-0.2, 0.2]) — the
 event-vs-position dissociation is a real finding, now on solid ground.**
 
 ### 5.3 Cheetah edge: noisy, softened (C10) — NEW
-60 episodes/cell (10 splits, paired): STJEWM-trace 0.143 vs SLT-trace 0.098,
+60 episodes/cell (10 splits, paired): STJEWM-trace 0.143 vs Stacked-LIF-trace 0.098,
 pooled t = +4.15 (p = 0.0025), Wilcoxon p = 0.0078. BUT: two 30-eps halves
 independently non-significant (t = 2.15, 1.12), 4/10 splits flip direction.
 **Wording: "marginal advantage on the hardest env with a split-dependent
@@ -197,7 +197,7 @@ effect; not claimed as a strong edge."**
 
 ### Must be softened / removed
 - "Trace dynamics advantage" → correlation-only (C8 kills causality).
-- "STJEWM beats SLT" → indistinguishable within calibrated cluster (C2).
+- "STJEWM beats Stacked-LIF" → indistinguishable within calibrated cluster (C2).
 - "STJEWM event-AUROC best" → was probe bug; LeWM recovers at 3 epochs (P1-3).
 - Cheetah edge → "marginal, split-dependent" (C10).
 

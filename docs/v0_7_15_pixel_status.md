@@ -22,7 +22,7 @@ representation.
   - Trainable projector 0.074M (Linear(192→192) + SiLU + Linear(192→192));
   - **5.00M total trainable** = 0.074M projector + 4.93M SNN predictor (stack/readout/action-encoder) — *not* "0.07M trainable", which would be only the projector
 - **STJEWM 6 readouts** (trace, leak, spike, rate, no-trace, membrane): pixel_pre → SNN stack → gated trace. trainable 4.99M.
-- **7 baselines** (cubifae, gru, lewm, 2 slt, spikedreamer, mlp): pixel_pre → per-model architecture. trainable 4.83-5.21M.
+- **7 baselines** (alif_timecell, gru, lewm, 2 slt, lif_transformer, mlp): pixel_pre → per-model architecture. trainable 4.83-5.21M.
 
 ## Splits (10 total)
 
@@ -63,7 +63,7 @@ Configs at `configs/oodc_5m_pixel/*.json` (10 files).
 - `code/data/loaders.py` — `load_dmc_pixel()` + `DMCPixelLiveDataset`.
 - `code/data/multi_env.py` — `_ActionPaddedDataset` now handles 4D pixel state.
 - `code/train/train.py` — `--env-kind dmc_pixel`; `--image-size` flag; `is_pixel_obs` detection; `build_model()` passes `image_size`.
-- All 7 baseline files (`cubifae_baseline.py`, `gru_baseline.py`, `lewm_transformer_baseline.py`, `mlp_baseline.py`, `slt_lif_mpc_baseline.py`, `spikedreamer_baseline.py`):
+- All 7 baseline files (`alif_timecell_baseline.py`, `gru_baseline.py`, `lewm_transformer_baseline.py`, `mlp_baseline.py`, `stacked_lif_baseline.py`, `lif_transformer_baseline.py`):
   - factory + `__init__` + `forward()` accept `image_size` kwarg.
   - When `state_dim >= 100 and image_size > 0`, use `FrozenPixelPreprocessor`.
 
@@ -72,7 +72,7 @@ Configs at `configs/oodc_5m_pixel/*.json` (10 files).
 - **130/130 pixel ckpts trained, 131/130 CEM-planned pixel evals done** ✓
   (full cross-modality test using the SAME closed-loop protocol as state).
 - 4-GPU parallel training (background): 825346, 825349, 825351, 965640 (lewm retrain)
-- 1 SpikeDreamer pixel ckpt failed (1/130); 129 trained successfully + 1 lewm retrained
+- 1 LIFTransformer pixel ckpt failed (1/130); 129 trained successfully + 1 lewm retrained
 - The **authoritative pixel main table is at**
   `results/journal_prep/MAIN_TABLE_5M_PIXEL_FULL.md`
   (v0.7.18.x, 13 models × 10 splits × 13 DMC envs, env-SR / cos_dist per cell).

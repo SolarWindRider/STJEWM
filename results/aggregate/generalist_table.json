@@ -58,7 +58,7 @@
           "n_episodes": null,
           "n_seeds": 0
         },
-        "cubifae_baseline": {
+        "alif_timecell_baseline": {
           "env_sr": null,
           "env_sr_std": null,
           "lewm_sr": null,
@@ -85,7 +85,7 @@
           "n_episodes": 5,
           "n_seeds": 1
         },
-        "slt_lif_mpc_trace": {
+        "stacked_lif_trace": {
           "env_sr": null,
           "env_sr_std": null,
           "lewm_sr": null,
@@ -94,7 +94,7 @@
           "n_episodes": null,
           "n_seeds": 0
         },
-        "slt_lif_mpc_free": {
+        "stacked_lif_free": {
           "env_sr": null,
           "env_sr_std": null,
           "lewm_sr": null,
@@ -171,7 +171,7 @@
           "n_episodes": null,
           "n_seeds": 0
         },
-        "cubifae_baseline": {
+        "alif_timecell_baseline": {
           "env_sr": null,
           "env_sr_std": null,
           "lewm_sr": null,
@@ -198,7 +198,7 @@
           "n_episodes": 5,
           "n_seeds": 1
         },
-        "slt_lif_mpc_trace": {
+        "stacked_lif_trace": {
           "env_sr": null,
           "env_sr_std": null,
           "lewm_sr": null,
@@ -207,7 +207,7 @@
           "n_episodes": null,
           "n_seeds": 0
         },
-        "slt_lif_mpc_free": {
+        "stacked_lif_free": {
           "env_sr": null,
           "env_sr_std": null,
           "lewm_sr": null,
@@ -284,7 +284,7 @@
           "n_episodes": null,
           "n_seeds": 0
         },
-        "cubifae_baseline": {
+        "alif_timecell_baseline": {
           "env_sr": null,
           "env_sr_std": null,
           "lewm_sr": null,
@@ -311,7 +311,7 @@
           "n_episodes": 5,
           "n_seeds": 1
         },
-        "slt_lif_mpc_trace": {
+        "stacked_lif_trace": {
           "env_sr": null,
           "env_sr_std": null,
           "lewm_sr": null,
@@ -320,7 +320,7 @@
           "n_episodes": null,
           "n_seeds": 0
         },
-        "slt_lif_mpc_free": {
+        "stacked_lif_free": {
           "env_sr": null,
           "env_sr_std": null,
           "lewm_sr": null,
@@ -397,7 +397,7 @@
           "n_episodes": null,
           "n_seeds": 0
         },
-        "cubifae_baseline": {
+        "alif_timecell_baseline": {
           "env_sr": null,
           "env_sr_std": null,
           "lewm_sr": null,
@@ -424,7 +424,7 @@
           "n_episodes": 5,
           "n_seeds": 1
         },
-        "slt_lif_mpc_trace": {
+        "stacked_lif_trace": {
           "env_sr": null,
           "env_sr_std": null,
           "lewm_sr": null,
@@ -433,7 +433,7 @@
           "n_episodes": null,
           "n_seeds": 0
         },
-        "slt_lif_mpc_free": {
+        "stacked_lif_free": {
           "env_sr": null,
           "env_sr_std": null,
           "lewm_sr": null,

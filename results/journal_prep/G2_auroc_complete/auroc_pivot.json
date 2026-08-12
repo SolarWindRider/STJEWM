@@ -155,7 +155,7 @@
       "mean": 0.5047628463161564
     }
   },
-  "cubifae_baseline": {
+  "alif_timecell_baseline": {
     "event_contact": {
       "n": 12,
       "mean": 0.47634510869565216
@@ -233,7 +233,7 @@
       "mean": 0.6259424901061371
     }
   },
-  "slt_lif_mpc_trace": {
+  "stacked_lif_trace": {
     "event_contact": {
       "n": 13,
       "mean": 0.6710748612214023
@@ -259,7 +259,7 @@
       "mean": 0.6717538925484549
     }
   },
-  "slt_lif_mpc_free": {
+  "stacked_lif_free": {
     "event_contact": {
       "n": 13,
       "mean": 0.5876098031251127
@@ -311,7 +311,7 @@
       "mean": 0.4987176150656217
     }
   },
-  "spikedreamer_baseline": {
+  "lif_transformer_baseline": {
     "event_contact": {
       "n": 13,
       "mean": 0.5458053249534766

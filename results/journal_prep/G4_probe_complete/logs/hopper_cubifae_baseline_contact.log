@@ -1,2 +1,0 @@
-[probe] WARN: 1 target dim(s) were near-constant on val; reporting R^2=0 for them.
-[probe] hopper/cubifae_baseline/contact: R^2=0.0000  (n_train=160, n_val=40, 0.8s)

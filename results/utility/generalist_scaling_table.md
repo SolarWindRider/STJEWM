@@ -28,11 +28,11 @@ env-SR_avg / resp_avg / div_avg match `generalist_master_table.md`
 | stjewm_no_trace | 71.1/71.1/75.6 | 0.202/0.196/0.201 | 0.0114/0.0114/0.0112 | 0.994/0.994/0.993 |
 | stjewm_hidden_leak | 71.1/71.1/71.1 | 0.202/0.206/0.202 | 0.0114/0.0125/0.0125 | 0.993/0.997/0.993 |
 | stjewm_membrane_readout | 75.6/73.3/73.3 | 0.205/0.207/0.210 | 0.0099/0.0121/0.0117 | 0.995/0.980/0.986 |
-| cubifae_baseline | 73.3/73.3/73.3 | 0.211/0.215/0.215 | 0.0117/0.0121/0.0110 | -/-/- |
+| alif_timecell_baseline | 73.3/73.3/73.3 | 0.211/0.215/0.215 | 0.0117/0.0121/0.0110 | -/-/- |
 | gru_baseline | 73.3/73.3/71.1 | 28.312/22.432/31.110 | 0.0068/0.0070/0.0076 | 0.072/0.057/-0.029 |
 | lewm_baseline_v2 | 73.3/71.1/71.1 | 30.425/32.728/29.992 | 0.2083/0.1842/0.1857 | 0.389/0.416/0.374 |
-| slt_lif_mpc_trace | 75.6/75.6/75.6 | 0.206/0.200/0.209 | 0.0102/0.0118/0.0108 | -/-/- |
-| slt_lif_mpc_free | 73.3/71.1/75.6 | 0.204/0.208/0.202 | 0.0121/0.0125/0.0111 | -/-/- |
+| stacked_lif_trace | 75.6/75.6/75.6 | 0.206/0.200/0.209 | 0.0102/0.0118/0.0108 | -/-/- |
+| stacked_lif_free | 73.3/71.1/75.6 | 0.204/0.208/0.202 | 0.0121/0.0125/0.0111 | -/-/- |
 | mlp_baseline | 75.6/71.1/71.1 | 0.558/0.718/0.548 | 0.0002/0.0002/0.0002 | 0.052/-0.016/-0.070 |
 
 ---
@@ -42,7 +42,7 @@ env-SR_avg / resp_avg / div_avg match `generalist_master_table.md`
 Bucket each (model, scale) by the joint signature. A model is
 **calibrated** when the two collapse-robust axes are in the
 calibrated band (resp ∈ [0.1, 1.0], div ∈ [0.005, 0.05]); ρ is
-confirmatory (≥ 0.9) but is unavailable for slt/cubifae, so
+confirmatory (≥ 0.9) but is unavailable for slt/alif_timecell, so
 their bucket is determined by resp+div alone. Other signatures:
 
 - **collapse**   : div < 0.005 (MLP signature: 0.0002).
@@ -57,11 +57,11 @@ their bucket is determined by resp+div alone. Other signatures:
 | stjewm_no_trace | calibrated | calibrated | calibrated |
 | stjewm_hidden_leak | calibrated | calibrated | calibrated |
 | stjewm_membrane_readout | calibrated | calibrated | calibrated |
-| cubifae_baseline | calibrated | calibrated | calibrated |
+| alif_timecell_baseline | calibrated | calibrated | calibrated |
 | gru_baseline | noise | noise | noise |
 | lewm_baseline_v2 | over-react | over-react | over-react |
-| slt_lif_mpc_trace | calibrated | calibrated | calibrated |
-| slt_lif_mpc_free | calibrated | calibrated | calibrated |
+| stacked_lif_trace | calibrated | calibrated | calibrated |
+| stacked_lif_free | calibrated | calibrated | calibrated |
 | mlp_baseline | collapse | collapse | collapse |
 
 ---
@@ -75,7 +75,7 @@ their bucket is determined by resp+div alone. Other signatures:
   4 envs, 8 envs, and 16 envs. This is the scaling robustness
   leg of the v0.7.8 cross-env claim.
 
-- **cubifae + slt_lif_mpc also hold the calibrated band** for
+- **alif_timecell + stacked_lif also hold the calibrated band** for
   resp + div at every scale (ρ not computed for these families,
   so the cell is `-` rather than a verdict).
 

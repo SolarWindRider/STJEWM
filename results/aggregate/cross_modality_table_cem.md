@@ -23,12 +23,12 @@ pixel should expose the same family partition as state eval.
 | STJEWM-rate | 0.1029 | 0.7910 | 89 | 130 |
 | STJEWM-no-trace | 0.1192 | 0.8213 | 89 | 130 |
 | STJEWM-membrane | 0.1237 | 0.8954 | 89 | 130 |
-| CubifAE | 0.1048 | 0.8468 | 89 | 130 |
-| SLT-trace | 0.0852 | 0.7426 | 57 | 130 |
-| SLT-free | 0.1053 | 0.6841 | 74 | 130 |
+| ALIFTimecell | 0.1048 | 0.8468 | 89 | 130 |
+| Stacked-LIF-trace | 0.0852 | 0.7426 | 57 | 130 |
+| Stacked-LIF-free | 0.1053 | 0.6841 | 74 | 130 |
 | GRU | 0.0202 | 0.7552 | 89 | 130 |
 | LeWM-v2 | 0.1832 | 0.9639 | 89 | 130 |
-| SpikeDreamer | 0.0000 | 0.7876 | 89 | 130 |
+| LIFTransformer | 0.0000 | 0.7876 | 89 | 130 |
 | MLP | 0.0068 | 0.7549 | 89 | 130 |
 
 ## Per-model summary (mean env-SR across splits, CEM-planned)
@@ -43,12 +43,12 @@ pixel should expose the same family partition as state eval.
 | STJEWM-rate | 0.0000 | 0.1446 | 89 | 130 |
 | STJEWM-no-trace | 0.0000 | 0.1492 | 89 | 130 |
 | STJEWM-membrane | 0.0000 | 0.1308 | 89 | 130 |
-| CubifAE | 0.0000 | 0.1615 | 89 | 130 |
-| SLT-trace | 0.0000 | 0.1785 | 57 | 130 |
-| SLT-free | 0.0000 | 0.1538 | 74 | 130 |
+| ALIFTimecell | 0.0000 | 0.1615 | 89 | 130 |
+| Stacked-LIF-trace | 0.0000 | 0.1785 | 57 | 130 |
+| Stacked-LIF-free | 0.0000 | 0.1538 | 74 | 130 |
 | GRU | 0.0000 | 0.1538 | 89 | 130 |
 | LeWM-v2 | 0.0000 | 0.0908 | 89 | 130 |
-| SpikeDreamer | 0.0000 | 0.1662 | 89 | 130 |
+| LIFTransformer | 0.0000 | 0.1662 | 89 | 130 |
 | MLP | 0.0000 | 0.1723 | 89 | 130 |
 
 **Interpretation.**
@@ -61,19 +61,19 @@ pixel should expose the same family partition as state eval.
   residual error — likely due to the frozen ViT-Tiny's coarse representation.
 ---
 
-## v0.7.16 HIGH-POWER rerun: SLT-trace vs STJEWM (30 episodes)
+## v0.7.16 HIGH-POWER rerun: Stacked-LIF-trace vs STJEWM (30 episodes)
 
-> **Motivation.** The 5-episode run showed SLT-trace marginally ahead (0.178 vs 0.171),
+> **Motivation.** The 5-episode run showed Stacked-LIF-trace marginally ahead (0.178 vs 0.171),
 > but every per-env diff was non-significant (|t|<1.0). To decide whether STJEWM
-> can actually beat SLT-trace, we reran the 4 competitive envs (cartpole, pendulum,
+> can actually beat Stacked-LIF-trace, we reran the 4 competitive envs (cartpole, pendulum,
 > finger, cheetah) with n=30 episodes per split (10 splits, paired design).
 > FULL CEM protocol unchanged: 300x10, budget 50, horizon 5.
 
 ### Results (mean SR over 10 splits, n=30 eps/env/split each)
 
-| env | SLT-trace | STJEWM-trace | STJEWM-spike | winner |
+| env | Stacked-LIF-trace | STJEWM-trace | STJEWM-spike | winner |
 |---|---|---|---|---|
-| cartpole | 0.720 | 0.703 | 0.707 | SLT (ns) |
+| cartpole | 0.720 | 0.703 | 0.707 | Stacked-LIF (ns) |
 | pendulum | 0.310 | 0.313 | **0.320** | STJ-spike (ns) |
 | finger | 0.037 | **0.067** | 0.060 | STJ-trace (ns) |
 | cheetah | 0.090 | **0.147** | 0.043 | **STJ-trace (t=-2.15, edge-sig)** |
@@ -83,26 +83,26 @@ pixel should expose the same family partition as state eval.
 
 | comparison | env | diff | t | verdict |
 |---|---|---|---|---|
-| SLT vs STJ-trace | cheetah | -0.057 | **-2.15** | edge-significant (STJ wins) |
-| SLT vs STJ-trace | finger | -0.030 | -1.59 | ns (STJ direction) |
-| SLT vs STJ-trace | cartpole | +0.017 | +0.50 | ns (SLT direction) |
-| SLT vs STJ-trace | pendulum | -0.003 | -0.11 | tie |
-| SLT vs STJ-trace | overall | -0.018 | -1.31 | ns (STJ direction) |
-| SLT vs STJ-spike | cheetah | +0.047 | +1.95 | ns (SLT direction) |
-| SLT vs STJ-spike | overall | +0.007 | +0.49 | tie |
+| Stacked-LIF vs STJ-trace | cheetah | -0.057 | **-2.15** | edge-significant (STJ wins) |
+| Stacked-LIF vs STJ-trace | finger | -0.030 | -1.59 | ns (STJ direction) |
+| Stacked-LIF vs STJ-trace | cartpole | +0.017 | +0.50 | ns (Stacked-LIF direction) |
+| Stacked-LIF vs STJ-trace | pendulum | -0.003 | -0.11 | tie |
+| Stacked-LIF vs STJ-trace | overall | -0.018 | -1.31 | ns (STJ direction) |
+| Stacked-LIF vs STJ-spike | cheetah | +0.047 | +1.95 | ns (Stacked-LIF direction) |
+| Stacked-LIF vs STJ-spike | overall | +0.007 | +0.49 | tie |
 
 ### Interpretation
 
-1. **The 5-episode SLT advantage was noise.** With 6x more episodes, the overall
-   mean flips: STJEWM-trace 0.307 > SLT-trace 0.289. No model is significantly
+1. **The 5-episode Stacked-LIF advantage was noise.** With 6x more episodes, the overall
+   mean flips: STJEWM-trace 0.307 > Stacked-LIF-trace 0.289. No model is significantly
    better overall, but the direction favors STJEWM.
 2. **STJEWM-trace wins cheetah at edge-significance** (0.147 vs 0.090, t=-2.15).
    Cheetah is the hardest env with nonzero signal — a real generalization edge.
 3. **STJEWM-spike's pendulum edge (5-eps: +0.10) did NOT survive 30 eps** (+0.01).
    The earlier spike-on-pendulum advantage was small-sample noise.
-4. **cos_dist is a wash** (SLT 0.514, STJ-trace 0.534, STJ-spike 0.514) — no
+4. **cos_dist is a wash** (Stacked-LIF 0.514, STJ-trace 0.534, STJ-spike 0.514) — no
    latent-quality difference at this resolution.
-5. **Verdict: "STJEWM is at least as good as SLT-trace, with a plausible edge
+5. **Verdict: "STJEWM is at least as good as Stacked-LIF-trace, with a plausible edge
    on the hardest nontrivial env (cheetah), but not proven significant at p<0.05
    with 10 splits x 30 eps."** To reach significance would need ~4x more splits
    or episodes (t≈2.15 at the edge; doubling n → t≈3.0).

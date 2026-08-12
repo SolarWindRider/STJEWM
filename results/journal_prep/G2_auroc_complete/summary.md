@@ -6,11 +6,11 @@
 ## Setup
 
 - **Ckpts:** `results/5m/cross_benchmark_F1/<model>/seed_0/final.pt` for 13 models
-  (5 re-run from missing set: slt_lif_mpc_trace, slt_lif_mpc_free, lewm_baseline_v2,
-  mlp_baseline, spikedreamer_baseline; 8 already-covered: 6× STJEWM, cubifae_baseline,
+  (5 re-run from missing set: stacked_lif_trace, stacked_lif_free, lewm_baseline_v2,
+  mlp_baseline, lif_transformer_baseline; 8 already-covered: 6× STJEWM, alif_timecell_baseline,
   gru_baseline).
 - **Probe script:** `code/scripts/probe.py` (B3-fixed: random split train/val,
-  robust R²/auroc aggregation, correct n_layers from state_dict for GRU/MLP/SLT/SpikeDreamer).
+  robust R²/auroc aggregation, correct n_layers from state_dict for GRU/MLP/Stacked-LIF/LIFTransformer).
 - **Invocation:**
   `python -m code.scripts.probe --env <env> --model <model> --ckpt <ckpt>
    --probe-target <target> --pad-obs-to 128 --action-dim-eval 56
@@ -22,7 +22,7 @@
   skipped files for the 5 missing models).
 - **Restriction:** pusht / tworoom / humanoid_CMU / delayed_t_maze probes still fail
   for these SNN-style models due to model-build edge cases (the same failures
-  exist for STJEWM/CuBiFAE/GRU on those envs, so they're excluded for an apples-to-apples
+  exist for STJEWM/ALIF-timecell/GRU on those envs, so they're excluded for an apples-to-apples
   comparison). Humanoid_CMU findings match humanoid; pusht/tworoom are restricted.
 
 ## Coverage
@@ -51,13 +51,13 @@ model × target column):
 | STJEWM-no-trace (stjewm_no_trace) | 0.4937 | 0.4824 | 0.4875 | 0.5020 | 0.5248 | 0.4981 | 11 |
 | STJEWM-leak (stjewm_hidden_leak) | 0.5263 | 0.4614 | 0.4936 | 0.5434 | 0.5475 | 0.5145 | 12 |
 | STJEWM-membrane (stjewm_membrane_readout) | 0.5073 | 0.4791 | 0.5005 | 0.5038 | 0.5330 | 0.5048 | 12 |
-| CuBiFAE (cubifae_baseline) | 0.4763 | 0.4899 | 0.5043 | 0.5177 | 0.5208 | 0.5018 | 12 |
+| ALIF-timecell (alif_timecell_baseline) | 0.4763 | 0.4899 | 0.5043 | 0.5177 | 0.5208 | 0.5018 | 12 |
 | GRU (gru_baseline) | 0.6048 | 0.6020 | 0.4933 | 0.5222 | 0.5079 | **0.5460** | 12 |
 | **LeWM-v2** (lewm_baseline_v2) | 0.6312 | 0.6318 | 0.6280 | 0.6206 | 0.6181 | **0.6259** | 13 |
-| **SLT-trace** (slt_lif_mpc_trace) | 0.6711 | 0.6753 | 0.6748 | 0.6681 | 0.6695 | **0.6718** | 13 |
-| **SLT-free** (slt_lif_mpc_free) | 0.5876 | 0.5851 | 0.5796 | 0.5908 | 0.5931 | **0.5872** | 13 |
+| **Stacked-LIF-trace** (stacked_lif_trace) | 0.6711 | 0.6753 | 0.6748 | 0.6681 | 0.6695 | **0.6718** | 13 |
+| **Stacked-LIF-free** (stacked_lif_free) | 0.5876 | 0.5851 | 0.5796 | 0.5908 | 0.5931 | **0.5872** | 13 |
 | MLP (mlp_baseline) | 0.5027 | 0.5005 | 0.4989 | 0.4950 | 0.4964 | 0.4987 | 13 |
-| **SpikeDreamer** (spikedreamer_baseline) | 0.5458 | 0.5644 | 0.5473 | 0.5476 | 0.5074 | **0.5425** | 13 |
+| **LIFTransformer** (lif_transformer_baseline) | 0.5458 | 0.5644 | 0.5473 | 0.5476 | 0.5074 | **0.5425** | 13 |
 
 All numbers come from actual JSONs in `results/probe_5m/` — see
 `auroc_pivot.json` (machine-readable summary) and `all_dmc_cells.json`
@@ -67,28 +67,28 @@ All numbers come from actual JSONs in `results/probe_5m/` — see
 
 | # | Model | overall AUROC | family | notes |
 |---:|---|---:|---|---|
-| 1 | **SLT-trace** (slt_lif_mpc_trace) | **0.6718** | SNN (event-driven, 8-layer LIF) | Highest 1-epoch AUROC of all 13 models; beats every STJEWM variant. |
+| 1 | **Stacked-LIF-trace** (stacked_lif_trace) | **0.6718** | SNN (event-driven, 8-layer LIF) | Highest 1-epoch AUROC of all 13 models; beats every STJEWM variant. |
 | 2 | LeWM-v2 (lewm_baseline_v2) | 0.6259 | Transformer (5-ep ckpt) | From `P13MultiEpoch` reported 0.63 at 3-epoch — the 1-epoch we test here is essentially identical (0.6259), confirming Transformer is stable across training durations on this probe. |
-| 3 | SLT-free (slt_lif_mpc_free) | 0.5872 | SNN (event-driven) | Looser membrane-forbidden protocol → +8pp lower than SLT-trace. |
+| 3 | Stacked-LIF-free (stacked_lif_free) | 0.5872 | SNN (event-driven) | Looser membrane-forbidden protocol → +8pp lower than Stacked-LIF-trace. |
 | 4 | GRU (gru_baseline) | 0.5460 | RNN (2-layer GRU) | Modest above-chance overall (driven by `contact`, `high_motion`). |
-| 5 | SpikeDreamer (spikedreamer_baseline) | 0.5425 | SNN (3 blocks) | Low base rate; signal dominated by `motion`/`low_motion` rows; `future_k10` collapses to chance. |
+| 5 | LIFTransformer (lif_transformer_baseline) | 0.5425 | SNN (3 blocks) | Low base rate; signal dominated by `motion`/`low_motion` rows; `future_k10` collapses to chance. |
 | 6 | STJEWM-leak | 0.5145 | SNN (4-layer, hidden_leak) | Best of the 6 STJEWM variants — but still ≈ chance. |
 | 7 | STJEWM-spike | 0.5056 | SNN (4-layer, spike_readout) | |
 | 8 | STJEWM-membrane | 0.5048 | SNN (4-layer, membrane_readout) | |
 | 9 | STJEWM-trace | 0.5012 | SNN (4-layer, trace_only) | Membrane-forbidden variants fail to lift contact/motion events on 1-epoch. |
-| 10 | CuBiFAE | 0.5018 | SNN (2-layer Conv) | Chance. |
+| 10 | ALIF-timecell | 0.5018 | SNN (2-layer Conv) | Chance. |
 | 11 | STJEWM-rate | 0.4995 | SNN (4-layer, rate_readout) | |
 | 12 | MLP | 0.4987 | MLP (12-layer) | At 1-epoch, MLP is at chance — collapses to mean dynamics. |
 | 13 | STJEWM-no-trace | 0.4981 | SNN (no trace) | |
 
 ## Key findings
 
-### 1. SLT-trace is the strongest event encoder at 1-epoch AUROC.
-SLT-trace's 0.6718 beats every STJEWM variant (~0.50), beats LeWM-v2 (0.6259),
-beats CuBiFAE (chance), and beats SpikeDreamer (0.5425). This is the "membrane-forbidden
-trace" ablation of SLT-LIF-MPC, and it consistently predicts event_contact,
+### 1. Stacked-LIF-trace is the strongest event encoder at 1-epoch AUROC.
+Stacked-LIF-trace's 0.6718 beats every STJEWM variant (~0.50), beats LeWM-v2 (0.6259),
+beats ALIF-timecell (chance), and beats LIFTransformer (0.5425). This is the "membrane-forbidden
+trace" ablation of Stacked-LIF, and it consistently predicts event_contact,
 high_motion, low_motion, future_k5, future_k10 with ~0.66 AUROC across all DMC envs.
-The membrane-readable SLT-free variant drops to 0.5872 (–8.5pp). This corroborates
+The membrane-readable Stacked-LIF-free variant drops to 0.5872 (–8.5pp). This corroborates
 the v0.7 protocol story: removing membrane access forces the SNN to encode "what
 changed in the world" into the trace, which is exactly what event-AUROC measures.
 
@@ -106,9 +106,9 @@ probes need time-window info the MLP doesn't encode. P13 reported non-zero 3-epo
 MLP numbers — those likely came from the now-fixed loading pipeline leaking earlier
 state into the latent. **At 1-epoch, MLP is genuinely at chance on event probes.**
 
-### 4. SpikeDreamer collapses to chance on time-derivative events.
+### 4. LIFTransformer collapses to chance on time-derivative events.
 Mean 0.5425 with `future_k10` = 0.5074 (chance). This is the same finding as the
-paper's main text: SpikeDreamer's 1-D state trace has the right base rate but not
+paper's main text: LIFTransformer's 1-D state trace has the right base rate but not
 the higher-order temporal statistics.
 
 ### 5. All 6 STJEWM variants are essentially at chance on this probe.
@@ -130,8 +130,8 @@ sharp event-class boundary the binary AUROC asks for.
 
 ## Acceptance check (from GAP_LIST.md G2)
 
-- [x] AUROC for all 5 missing models (slt_lif_mpc_trace, slt_lif_mpc_free,
-      lewm_baseline_v2, mlp_baseline, spikedreamer_baseline) on the 13 DMC envs
+- [x] AUROC for all 5 missing models (stacked_lif_trace, stacked_lif_free,
+      lewm_baseline_v2, mlp_baseline, lif_transformer_baseline) on the 13 DMC envs
       × 5 event targets = 325 cells, no skips for any DMC cell.
 - [x] Complete 13-model AUROC table produced above; no `—` for any cell that was
       in the original `generalist_5m_table.md Probes` block.

@@ -1,2 +1,0 @@
-[probe] WARN: 1 target dim(s) were near-constant on val; reporting R^2=0 for them.
-[probe] humanoid/slt_lif_mpc_free/velocity: R^2=-0.2507  (n_train=160, n_val=40, 1.8s)
