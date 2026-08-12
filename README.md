@@ -34,8 +34,8 @@ noise σ=0.02→inliers, σ=0.05→noise.
 
 | Cluster | Models | cos_dist (3-seed CI) |
 |---|---|---|
-| **Calibrated** | STJEWM 6 readouts + SLT-trace/free + CuBiFAE | 0.10–0.14, CIs pairwise overlap |
-| **Collapse** | MLP, GRU, SpikeDreamer | ≈ 0.000–0.02 (constant latent) |
+| **Calibrated** | STJEWM 6 readouts + Stacked-LIF-trace/free + ALIF-timecell | 0.10–0.14, CIs pairwise overlap |
+| **Collapse** | MLP, GRU, LIF-Transformer | ≈ 0.000–0.02 (constant latent) |
 | **Over-reactive** | LeWM-v2 | 0.19 (CI disjoint, Cohen's d −7…−8.5 vs calibrated) |
 
 - **Parameter-robust**: STJEWM retrained 2.70M→5.06M (n_layers=4),
@@ -52,10 +52,10 @@ Event-ρ (obs-event ↔ latent first-difference), 13 models × 4 envs × 2 split
 
 | Family | mean ρ |
 |---|---|
-| SNN (STJEWM 6 + SLT 2 + CuBiFAE) | **0.9989** |
+| SNN (STJEWM 6 + Stacked-LIF 2 + ALIF-timecell) | **0.9989** |
 | LeWM-v2 (Transformer) | 0.7515 |
 | GRU (recurrent, continuous gating) | **−0.0074** |
-| MLP / SpikeDreamer | ≈ 0 |
+| MLP / LIF-Transformer | ≈ 0 |
 
 The **GRU reverse control** (same recurrent temporal aggregation, continuous
 gating → chance alignment) shows the alignment comes from the **spike
@@ -64,16 +64,16 @@ representation**, not from recurrence.
 ### 4. Efficiency
 
 Effective per-step FLOPs (event-driven discount, state obs):
-**STJEWM 0.46–0.48 MFLOPs** vs SLT 1.94–2.13 vs GRU/MLP/LeWM-v2 9.8–10.2.
-≈ **20× cheaper than dense baselines**, ≈ 4.4× cheaper than SLT.
+**STJEWM 0.46–0.48 MFLOPs** vs Stacked-LIF 1.94–2.13 vs GRU/MLP/LeWM-v2 9.8–10.2.
+≈ **20× cheaper than dense baselines**, ≈ 4.4× cheaper than Stacked-LIF.
 
 ### 5. Honest negatives (reported, not hidden)
 
 - **Trace causality rejected**: event-window + CEM-rollout ablation →
   0/3 cells show differential trace use. Correlation (ρ) stands; the
   strong causal claim does not (B4).
-- **Event-AUROC at 1-epoch**: SLT-trace 0.672 (best), LeWM 0.626,
-  STJEWM ≈ 0.50 (chance). SLT's edge comes from its *linear* readout
+- **Event-AUROC at 1-epoch**: Stacked-LIF-trace 0.672 (best), LeWM 0.626,
+  STJEWM ≈ 0.50 (chance). Stacked-LIF-trace's edge comes from its *linear* readout
   (moving-avg→Linear); STJEWM's gated trace is nonlinear — event info
   is in the latent (ρ high) but not linearly decodable.
 - **Cheetah edge is marginal**: 60 eps paired, pooled t=4.15 but
@@ -81,7 +81,7 @@ Effective per-step FLOPs (event-driven discount, state obs):
 - **Probe R²**: STJEWM position R² ≈ −0.03…−0.07 (chance),
   LeWM +0.29 — the event-vs-position dissociation.
 - **sigreg sweep**: lambda_sigreg ∈ {0.09…0.0} does not change pred
-  loss; the STJEWM-vs-SLT cos_dist gap is within noise (hypothesis
+  loss; the STJEWM-vs-Stacked-LIF cos_dist gap is within noise (hypothesis
   "sigreg hijacks optimization" rejected).
 
 ### 6. Cross-modality (state → pixel)
@@ -90,7 +90,7 @@ Pixel (frozen ViT-Tiny 5.46M + trainable 5.00M), 13 DMC envs × 10 splits,
 CEM eval with static (reachable) goals:
 - Cluster ordering preserved at the extremes (collapse lowest, over-react highest).
 - **LeWM-v2 fails control on pixel**: env-SR 0.091, lowest of all models
-  (STJEWM-trace 0.171, SLT-trace 0.178, MLP 0.172).
+  (STJEWM-trace 0.171, Stacked-LIF-trace 0.178, MLP 0.172).
 - Frozen ViT is a representational bottleneck (cos scale 0.6–0.9 vs state 0.1);
   fish env is a ViT blind spot (cos 3.4–5.4).
 

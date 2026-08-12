@@ -49,7 +49,7 @@
 
 我们证明，这一接口约束使 ST-JEWM 在 14 个 DeepMind Control 环境、4 个跨基准族环境（PushT、TwoRoom、Reacher、DMC）的 1200 个评测单元（cell）上，都进入"校准"（calibrated）状态——既不坍缩、也不放大噪声、也不丢失与事件的同步；而所有对照组（连续循环网络、Transformer、已有 SNN）都在不同维度上失败。
 
-\textbf{5M-aligned 参数公平验证}：本实验把全部 8 个基线重新训练到 4.97-5.13M（$\pm 3.2\%$ 公平对比范围），130 个 ckpt 全部完成（13 模型 $\times$ 10 splits）。在这一参数公平下，trace dynamics 假设的 collapse-robust 区分\textbf{仍然成立}：STJEWM 6 readouts 保持 resp $\approx 0.21$、div $\approx 0.006$、$\cos\_dist \in [0.04, 0.20]$ 的校准区，与 CubifAE 和 SLT-LIF-MPC 处于同一簇，与 MLP（div=0）和 LeWM-v2（resp $\gg 1$）清晰分离。\textbf{trace dynamics 不是"参数堆出来的"}，而是 trace 自身的内容感知衰减的内禀属性。
+\textbf{5M-aligned 参数公平验证}：本实验把全部 8 个基线重新训练到 4.97-5.13M（$\pm 3.2\%$ 公平对比范围），130 个 ckpt 全部完成（13 模型 $\times$ 10 splits）。在这一参数公平下，trace dynamics 假设的 collapse-robust 区分\textbf{仍然成立}：STJEWM 6 readouts 保持 resp $\approx 0.21$、div $\approx 0.006$、$\cos\_dist \in [0.04, 0.20]$ 的校准区，与 ALIF-timecell 和 Stacked-LIF 处于同一簇，与 MLP（div=0）和 LeWM-v2（resp $\gg 1$）清晰分离。\textbf{trace dynamics 不是"参数堆出来的"}，而是 trace 自身的内容感知衰减的内禀属性。
 
 %==========================================================
 \section{读者需要知道的背景}
@@ -117,7 +117,7 @@
 \begin{enumerate}[leftmargin=2em]
     \item \textbf{诊断贡献}：证明仅用"潜余弦成功率"会\textbf{误判坍缩表征}（collapsed representations），并引入三个\textbf{抗坍缩诊断}指标
     \item \textbf{校准性验证}：在 13 个专家模型 × 24 个环境、12 个通才模型 × 3 个任务规模上证明，ST-JEWM 全部 6 个读出口径在抗坍缩诊断上落在\textbf{同一个"校准"区域}，而 MLP/GRU/LeWM-v2 各自表现为坍缩、噪声、过反应
-    \item \textbf{跨基准族验证}：在 4 个\textbf{不同范式}的基准族（PushT / TwoRoom / Reacher / DMC）的 192 个评测单元上对比，证明 STJEWM 全部优于最强的非 STJEWM 对照（CuBiFAE）
+    \item \textbf{跨基准族验证}：在 4 个\textbf{不同范式}的基准族（PushT / TwoRoom / Reacher / DMC）的 192 个评测单元上对比，证明 STJEWM 全部优于最强的非 STJEWM 对照（ALIF-timecell）
 \end{enumerate}
 
 %==========================================================
@@ -296,8 +296,8 @@
 \midrule
 \textbf{STJEWM 6 readouts} & 50-60\% & 48-58\% & 50-84\% & \textbf{$\sim$55\% (校准)} \\
 CubifA\_baseline & 58.6\% & 52.9\% & 57.1\% & 56.2\% (matches STJEWM) \\
-SLT-LIF-MPC-free & 58.6\% & 51.4\% & 54.3\% & 54.8\% (matches STJEWM) \\
-SLT-LIF-MPC-trace & 57.1\% & 73.3\% & 84.0\% & 71.5\% (notably better on F2/F3) \\
+Stacked-LIF-free & 58.6\% & 51.4\% & 54.3\% & 54.8\% (matches STJEWM) \\
+Stacked-LIF-trace & 57.1\% & 73.3\% & 84.0\% & 71.5\% (notably better on F2/F3) \\
 gru\_baseline & 91.4\% & 87.1\% & 81.4\% & 86.7\% (过反应噪声) \\
 lewm\_baseline\_v2 & 34.3\% & 25.7\% & 35.7\% & 31.9\% (过反应) \\
 mlp\_baseline & 100.0\% & 92.9\% & 94.3\% & 95.7\% (\textbf{坍缩对照}) \\
@@ -305,7 +305,7 @@ spikedreamer\_baseline & 100.0\% & 100.0\% & 100.0\% & 100.0\% (\textbf{坍缩�
 \bottomrule
 \end{tabular}
 
-\textbf{关键结论}：三分法在 4.97M $\to$ 5.13M 范围内依然成立。STJEWM 6 readouts 都保持 \textbf{resp $\approx$ 0.21}、\textbf{div $\approx$ 0.01--0.03}（校准），与 \textbf{CuBiFAE} 和 \textbf{SLT-LIF-MPC} 处于同一 collapse-robust 簇。\textbf{MLP} 和 \textbf{SpikeDreamer} 是坍缩对照（resp$\to$0, div$\to$0, cos\_dist$\approx$0），\textbf{GRU} 和 \textbf{LeWM-v2} 是过反应（resp $\gg$ 1, div $\gg$ 0.05）。这验证了 trace dynamics 假设 \textbf{对参数规模鲁棒}：从 5.00M（MLP）到 5.13M（GRU）的 5M-aligned 范围内都呈现相同的 collapse-robust 区分。
+\textbf{关键结论}：三分法在 4.97M $\to$ 5.13M 范围内依然成立。STJEWM 6 readouts 都保持 \textbf{resp $\approx$ 0.21}、\textbf{div $\approx$ 0.01--0.03}（校准），与 \textbf{ALIF-timecell} 和 \textbf{Stacked-LIF} 处于同一 collapse-robust 簇。\textbf{MLP} 和 \textbf{LIF-Transformer} 是坍缩对照（resp$\to$0, div$\to$0, cos\_dist$\approx$0），\textbf{GRU} 和 \textbf{LeWM-v2} 是过反应（resp $\gg$ 1, div $\gg$ 0.05）。这验证了 trace dynamics 假设 \textbf{对参数规模鲁棒}：从 5.00M（MLP）到 5.13M（GRU）的 5M-aligned 范围内都呈现相同的 collapse-robust 区分。
 
 
 
@@ -727,16 +727,30 @@ r_t = \alpha_t \odot r_{t-1} + (1 - \alpha_t) \odot s_t, \quad r_t \in [0, 1]^d
 
 \subsection{6 个非 STJEWM 对比模型（详细配置）}
 
-\textbf{重要声明}：其中三个 SNN 对照（CuBiFAE / SpikeDreamer / SLT-LIF-MPC）为\textbf{本项目自研实现}，对应三个常见架构家族：自适应 LIF + time-cell 读出、LIF 编码器 + Transformer 预测器、堆叠 LIF（移动平均或膜电位暴露读出）。它们复用 ST-JEWM 的 LIFCell 与投影组件构建，\textbf{不依赖任何外部代码库或外部文献}；早期代码注释中标注的文献引用未经核实，已撤销。文中保留这些名字仅作为自研对照的标识，不构成对任何外部系统的引用。
+\subsubsection{自研 SNN 对照的设计动机：它们要对比什么}
+
+协议的核心问题是“\textbf{规划器可见的潜状态到底是什么}”。为回答它，三个自研 SNN 对照按三个独立的设计轴构造，分别隔离一个变量：
+
+\begin{enumerate}[leftmargin=2em]
+    \item \textbf{轴 1：事件驱动发生在哪一层}（感知层 or 循环层）。ST-JEWM 是\textbf{纯脉冲循环动力学}（循环层事件驱动、持续）。\textbf{LIF-Transformer} 让事件驱动\textbf{只出现在感知编码器}，循环记忆由连续 Transformer 承担——检验“脉冲只在输入侧、记忆连续”的中间形态；\textbf{ALIF-timecell} 让感知与循环都是自适应 LIF，但时间聚合交给显式 1D 卷积 time-cell 读出（而非 ST-JEWM 的 gated trace）——检验“时间聚合机制”是否是校准的充分条件。
+    \item \textbf{轴 2：记忆载体}（连续 vs 脉冲）。\textbf{LIF-Transformer} 的记忆是连续 Transformer 隐状态；\textbf{Stacked-LIF} 与 ST-JEWM 的记忆都是纯脉冲序列。该轴检验：\textbf{连续记忆载体本身}（与脉冲感知配对）是否就足以产生校准潜状态。
+    \item \textbf{轴 3：读出接口}（膜电位 vs 脉冲/trace）。\textbf{ALIF-timecell} 与 \textbf{Stacked-LIF-free} 向规划器暴露连续膜电位（\textbf{违反协议}）；\textbf{Stacked-LIF-trace} 只提供脉冲移动平均（\textbf{协议合规}）。该轴检验：在事件驱动循环家族内，\textbf{读出接口是否决定校准}——若协议内 trace 与协议外膜电位同样校准，则“接口不是校准的关键，事件驱动循环动力学才是”。
+\end{enumerate}
+
+三个对照与连续家族（GRU/MLP/LeWM-v2）一起构成解码矩阵：事件驱动循环 × 连续循环 × 无循环，各配读出接口两极。\textbf{已有结果（见 §4.2 与 §5）}：ALIF-timecell、Stacked-LIF-trace/free 与 ST-JEWM 全部校准（cos-dist 0.103--0.123）；LIF-Transformer 与 GRU/MLP 一起崩塌（$\leq 0.020$）。即：\textbf{只要循环层是事件驱动的，无论读出接口（trace/膜电位）都校准；只要记忆是连续的（GRU、LIF-Transformer），都崩塌}。这直接把“校准性”归因到事件驱动循环动力学，而非协议接口本身——与 Spiking-WM 对比（外部竞品的连续读出同样低对齐）一致。
+
+\subsubsection{三个自研 SNN 对照（功能名）}
+
+\textbf{重要声明}：以下三个 SNN 对照为\textbf{本项目自研实现}，名字是\textbf{架构功能描述}（不引用任何外部文献或代码库；早期代码注释中的文献名未经核实，已撤销）。代码与 checkpoint 目录中的历史标识（\texttt{cubifae\_baseline}、\texttt{spikedreamer\_baseline}、\texttt{slt\_lif\_mpc\_trace/free}）与功能名对应关系如下。它们复用 ST-JEWM 的 LIFCell 与投影组件构建。
 
 \begin{itemize}[leftmargin=2em]
-    \item \textbf{CuBiFAE baseline}（\textbf{SNN}，自研，5M-aligned trainable = \textbf{4.98M}，违反协议）：架构为多时间尺度 ALIF（Adaptive Leaky Integrate-and-Fire）。每层 ALIF 维护 $v_t$，发放后 refractory 强制重置；ALIF 的 $b$ 自适应阈值随脉冲累积而增加；多层膜电位拼接后经 1D 卷积 time-cell 读出。规划器可读 ALIF 的膜电位 $v_t$。5M 配置：\texttt{d\_hid=186, n\_layers=2}
-    \item \textbf{SpikeDreamer baseline}（\textbf{混合 LIF + Transformer}，自研，5M-aligned trainable = \textbf{5.12M}，违反协议）：架构为 LIF 脉冲编码后接 AdaLN-zero Transformer hidden state。规划器可读 Transformer 隐状态。5M 配置：\texttt{d\_snn=288, d\_tx=288, num\_layers=3, num\_heads=8}
-    \item \textbf{SLT-LIF-MPC-trace}（\textbf{SNN}，自研，5M-aligned trainable = \textbf{5.11M}，膜电位禁止）：架构为堆叠 LIF 预测模型。读出 $z = \text{moving\_average}(s_t)$。膜电位禁止接口。5M 配置：\texttt{d\_in=672, embed\_dim=672, n\_layers=8, trace\_beta=0.9, k\_avg=4}
-    \item \textbf{SLT-LIF-MPC-free}（\textbf{SNN}，自研，5M-aligned trainable = \textbf{5.05M}，违反协议）：同架构，但读出 $z = \text{concat}(s_t, v_t)$，允许规划器读膜电位。5M 配置：\texttt{d\_in=640, embed\_dim=640, n\_layers=8}
-    \item \textbf{LeWM Transformer baseline}（\textbf{Transformer}，5M-aligned trainable = \textbf{4.97M}，违反协议）：LeWM paper 的 AdaLN-zero Transformer（LeWM 原论文 6 层 5.07M；5M 配置 \texttt{embed\_dim=288, num\_layers=3, num\_heads=8}）。规划器可读 Transformer hidden state
-    \item \textbf{GRU baseline}（\textbf{连续循环神经网络}，5M-aligned trainable = \textbf{5.13M}，违反协议）：\texttt{hidden=560, num\_layers=2}。标准 GRU 隐状态可读
-    \item \textbf{MLP baseline}（\textbf{无状态 FFN}，5M-aligned trainable = \textbf{5.00M}，作为坍缩对照）：\texttt{hidden=640, num\_layers=12} 纯前馈，\textbf{无循环}。所有时间步都从当前 obs 重新预测。预期表现为 div $\to 0$ 的"坍缩控制"
+    \item \textbf{ALIF-timecell}（代码标识 \texttt{cubifae\_baseline}；\textbf{SNN}，自研，5M-aligned trainable = \textbf{4.98M}，\textbf{违反协议}——暴露膜电位）：\textbf{多时间尺度自适应 LIF（ALIF）}。每层 ALIF 维护 $v_t$，发放后 refractory 强制重置；$b$ 自适应阈值随脉冲累积增加；多层膜电位拼接后经 1D 卷积 time-cell 读出（kernel 256 / stride 128 → 8 个时间锚点）。\textbf{设计目的}：用“自适应阈值 + 显式时间卷积”替代 ST-JEWM 的 gated trace 做时间聚合，检验\textbf{时间聚合机制}是否决定校准（轴 1 对照）。规划器可读膜电位 $v_t$。5M 配置：\texttt{d\_hid=186, n\_layers=2}
+    \item \textbf{LIF-Transformer}（代码标识 \texttt{spikedreamer\_baseline}；\textbf{混合 LIF + Transformer}，自研，5M-aligned trainable = \textbf{5.12M}，\textbf{违反协议}——读连续 Transformer 隐状态）：LIF 脉冲编码器\textbf{只做感知}，循环预测由 AdaLN-zero Transformer 承担。\textbf{设计目的}：检验“事件驱动\textbf{仅在感知层}、记忆为连续”的中间形态是否校准（轴 1 + 轴 2 对照；与 Stacked-LIF 的纯脉冲记忆直接对置）。规划器可读 Transformer 隐状态。5M 配置：\texttt{d\_snn=288, d\_tx=288, num\_layers=3, num\_heads=8}
+    \item \textbf{Stacked-LIF-trace}（代码标识 \texttt{slt\_lif\_mpc\_trace}；\textbf{SNN}，自研，5M-aligned trainable = \textbf{5.11M}，\textbf{膜电位禁止}——协议合规）：堆叠 LIF 循环动力学，读出 $z = \text{moving\_average}(s_t, k{=}4)$（脉冲移动平均）。\textbf{设计目的}：最接近 ST-JEWM 的协议内对照——纯脉冲循环记忆 + 脉冲读出，区别仅在“移动平均”与“gated trace”两种时间滤波（轴 3 的协议内一极）。5M 配置：\texttt{d\_in=672, embed\_dim=672, n\_layers=8, trace\_beta=0.9, k\_avg=4}
+    \item \textbf{Stacked-LIF-free}（代码标识 \texttt{slt\_lif\_mpc\_free}；\textbf{SNN}，自研，5M-aligned trainable = \textbf{5.05M}，\textbf{违反协议}——暴露膜电位）：同架构，但读出 $z = \text{concat}(s_t, v_t)$（脉冲 + 膜电位拼接）。\textbf{设计目的}：同一事件驱动循环动力学的\textbf{膜电位暴露孪生体}——与 trace 变体逐字对比，检验\textbf{读出接口是否是校准变量}（轴 3 的协议外一极）。5M 配置：\texttt{d\_in=640, embed\_dim=640, n\_layers=8}
+    \item \textbf{LeWM Transformer baseline}（\textbf{Transformer}，5M-aligned trainable = \textbf{4.97M}，违反协议）：自研 LeWM 参考实现的 AdaLN-zero Transformer（参考实现 6 层 5.07M；5M 配置 \texttt{embed\_dim=288, num\_layers=3, num\_heads=8}）。规划器可读 Transformer hidden state。\textbf{设计目的}：连续循环记忆家族的 Transformer 极点（与 GRU 一起代表“连续记忆”）。
+    \item \textbf{GRU baseline}（\textbf{连续循环神经网络}，5M-aligned trainable = \textbf{5.13M}，违反协议）：\texttt{hidden=560, num\_layers=2}。标准 GRU 隐状态可读。\textbf{设计目的}：连续循环记忆家族的“最小神入”对照——与 Stacked-LIF 共享循环聚合，但门控连续。\textbf{关键对照}：若事件驱动循环是校准必要条件，则 GRU 必须崩塌（实测 $\rho=-0.0074$、cos-dist 0.020）。
+    \item \textbf{MLP baseline}（\textbf{无状态 FFN}，5M-aligned trainable = \textbf{5.00M}，作为坍缩对照）：\texttt{hidden=640, num\_layers=12} 纯前馈，\textbf{无循环}。所有时间步都从当前 obs 重新预测。\textbf{设计目的}：\textbf{无记忆极点}——预期（且实测）潜状态坍缩为常数（div $\to 0$，LeWM-SR 97.3\% 却将其评为最高分，见 §4 度量批判）。
 \end{itemize}
 
 \textbf{总 13 个模型}：6 STJEWM 读出口径 + 7 非 STJEWM 对照（其中 6 个非 MLP 对照都有循环 / 记忆能力；MLP 是无状态对照）。模型清单见 §4.2 的 4 家族分类表。
@@ -749,8 +763,23 @@ r_t = \alpha_t \odot r_{t-1} + (1 - \alpha_t) \odot s_t, \quad r_t \in [0, 1]^d
     \item \textbf{核心贡献}：Multi-Compartment Neuron（MCN）——受树突非线性整合启发，apical/basal/soma 三腔室积分，显著提升 SNN 长时序记忆；全文（DMC + SHD/TIMIT/LibriSpeech）验证。
     \item \textbf{架构}：spiking encoder + MCRNN 动力学（递归状态为\textbf{纯脉冲序列} $\{s^{\tau}_t\}_{\tau=1}^{T}$，膜电位为内部状态——\textbf{与本项目 membrane-forbidden 协议一致}）+ spiking decoder/actor，Dreamer 风格端到端 model-based RL。
     \item \textbf{与 ST-JEWM 的差异}：其规划器/actor 读到的是从脉冲序列解码的\textbf{连续随机状态}（posterior/prior 分布参数），即“事件驱动动力学 + 连续规划接口”；ST-JEWM 则要求规划器只读有界 post-spike trace。
-    \item \textbf{我们做的对比}：下载官方代码，在 proprioceptive（状态输入）配置下于 4 个 DMC 任务（cartpole\_swingup、cheetah\_run、walker\_walk、finger\_spin）各训练 $5\times10^5$ 环境步（其 proprio 配置的公开预算），报告官方 episode return + 我们的协议指标（event-$\rho$、cos-dist、脉冲激活率）。
+    \item \textbf{我们做的对比}：下载官方代码，在 proprioceptive（状态输入）配置下于 12 个 DMC 任务（见下表）各按难度训练（$2$--$5\times10^5$ 环境步），报告官方 episode return + 我们的协议指标（event-$\rho$、cos-dist、脉冲激活率）。
 \end{itemize}
+
+\subsubsection{为什么 pusht / tworoom / reacher-4D / stacker / delayed-t-maze / humanoid-CMU 无法用 Spiking-WM 运行}
+
+ST-JEWM 的 10-split 设定还包含 6 个 \textbf{custom 环境}，它们不是 dm\_control 标准任务，Spiking-WM 的官方代码只注册了 dm\_control / Atari / DeepMind Lab / Crafter / Memory Maze / Minecraft 六个环境套件，\textbf{无法实例化这些自定义域}。逐一说明：
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{PushT}（跨基准族 F3 留出）：\textbf{自研像素+状态 PushT}（T 形物体推入目标区域），来自 LeWM 参考实现，\textbf{非 dm\_control 套件}；Spiking-WM 的 \texttt{make\_env} 无 PushT 注册、也无法映射到任何 dm\_control 域（无 push 类任务）。\textrightarrow 排除。
+    \item \textbf{TwoRoom}（跨基准族 F2 留出）：\textbf{自研双房间导航状态环境}（16-bucket 离散状态 + 4 动作 + 门控记忆），完全自研、非公开套件；Spiking-WM 无对应（dm\_control 无导航/离散状态任务）。\textrightarrow 排除。
+    \item \textbf{Reacher-4D}（跨基准族 F1 留出对应的自制域）：ST-JEWM 使用的 \texttt{reacher} 是 \textbf{4 维简化状态版}（reacher 4D，含 2D 位置 + 2D 目标差，观测结构为自定义 state 向量）；dm\_control 标准 reacher 域（\texttt{reacher\_easy}）的观测是 2D 关节角 + 2D to\_target + 2D 速度，维度/语义均不同。\textrightarrow Spiking-WM 只能跑标准 reacher\_easy，作为\textbf{同语义近似}（表中已标注）。
+    \item \textbf{Stacker}：dm\_control 没有"堆叠"任务（栈式操作属于 Robosuite/自定义）；Spiking-WM 无对应域。\textrightarrow 排除。
+    \item \textbf{Delayed T-Maze}：\textbf{自研延迟决策环境}（T 形迷宫 + 50 步延迟线索 + 记忆门控），非公开套件、无 dm\_control 等价（dm\_control 无迷宫/离散决策任务）。\textrightarrow 排除。
+    \item \textbf{Humanoid-CMU}：dm\_control 1.0.44 的 humanoid 域只有 \texttt{run/walk/stand} 三个 level，\textbf{没有 CMU（Carnegie Mellon mocap data）变体}；ST-JEWM 的 humanoid\_CMU 是该自定义变体（CMU 参考姿态/动力学参数）。\textrightarrow Spiking-WM 用标准 \texttt{humanoid\_run} 近似（表中已标注）。
+\end{itemize}
+
+\textbf{影响与说明}：跨基准留出族（F2 TwoRoom / F3 PushT / F1 的 reacher-4D）正是 ST-JEWM 验证\textbf{out-of-distribution 跨域泛化}的设计核心；Spiking-WM 无法在这些跨基准域上运行，因此外部对比\textbf{限定在 12 个 dm\_control 任务}（覆盖 ST-JEWM 的 DMC 训练/留出子族），跨基准泛化对比只能由自研对照（GRU/MLP/LeWM-v2 等，见表一）承担。报告中所有 Spiking-WM 对比单元格均不超出这 12 个任务。
 
 \subsubsection{Spiking-WM 对比实验结果（seed 0，RTX 4090，proprio 配置，12 任务）}
 
@@ -794,7 +823,7 @@ humanoid\_run & 1.4 & 0.00 & 0.141 & 0.239 & 0.058 & 0.027 \\
 \midrule
 STJEWM 读出口径 & trace / spike / rate / no-trace / leak / membrane & 同一 SNN 骨架，6 种接口变量 \\
 连续循环对照 & LeWM Transformer, GRU, stateless MLP & 连续循环、循环、记忆缺失（坍缩对照） \\
-SNN / 神经形态对照 & CuBiFAE, SpikeDreamer, SLT-LIF-MPC-trace, SLT-LIF-MPC-free & 已有 SNN 世界模型及其各自的轨迹约定 \\
+SNN / 神经形态对照 & ALIF-timecell, LIF-Transformer, Stacked-LIF-trace, Stacked-LIF-free & 已有 SNN 世界模型及其各自的轨迹约定 \\
 \bottomrule
 \end{longtable}
 
@@ -822,7 +851,7 @@ SNN / 神经形态对照 & CuBiFAE, SpikeDreamer, SLT-LIF-MPC-trace, SLT-LIF-MPC
 13 模型的覆盖性：
 \begin{enumerate}[leftmargin=2em]
     \item \textbf{6 STJEWM readout}：剥离了"哪个接口变量被读到"的影响，只保留 trace dynamics
-    \item \textbf{4 SNN baseline}：CuBiFAE / SpikeDreamer / SLT-LIF-MPC (×2) 各自代表一种 SNN 世界模型设计，提供\textbf{对照}——证明 STJEWM 不是"SNN 范式本身就行"
+    \item \textbf{4 SNN baseline}：ALIF-timecell / LIF-Transformer / Stacked-LIF (×2) 各自代表一种 SNN 世界模型设计，提供\textbf{对照}——证明 STJEWM 不是"SNN 范式本身就行"
     \item \textbf{2 循环非 SNN baseline}：GRU / LeWM Transformer 代表连续循环 + attention，证明 STJEWM 不是"循环结构本身就行"
     \item \textbf{1 无状态对照}：MLP 证明 STJEWM 不是"前馈结构也行"——它必须 div $\to 0$ 坍缩
 \end{enumerate}
@@ -864,7 +893,7 @@ STJEWM 的训练损失（\texttt{code/native\_losses.py:stjewm\_loss}）由 3 �
 
 \textbf{具体权重}：$\lambda_{\text{sigreg}} = 0.09$（弱正则，避免破坏 trace 动态），$\lambda_{\text{goal}} = 0.5$（goal 是 planner 的实际目标，给予较大权重）。
 
-\textbf{不同 baseline 的 native 损失}：CuBiFAE 用 \texttt{cubifae\_loss}（pred + L1 spike sparsity）；SpikeDreamer 用 \texttt{spikedreamer\_loss}（pred + KL + recon + sparse）；SLT-LIF-MPC 用 \texttt{slt\_lif\_mpc\_loss}（pred + sparse + action）；其他基线（LeWM Transformer / GRU / MLP）沿用 STJEWM 的 3 项损失。所有损失通过 \texttt{code/native\_losses.NATIVE\_LOSS\_DISPATCH} 在 \texttt{train.py:219} 处按 \texttt{args.model} 分派。
+\textbf{不同 baseline 的 native 损失}：ALIF-timecell 用 \texttt{cubifae\_loss}（pred + L1 spike sparsity）；LIF-Transformer 用 \texttt{spikedreamer\_loss}（pred + KL + recon + sparse）；Stacked-LIF 用 \texttt{slt\_lif\_mpc\_loss}（pred + sparse + action）；其他基线（LeWM Transformer / GRU / MLP）沿用 STJEWM 的 3 项损失。所有损失通过 \texttt{code/native\_losses.NATIVE\_LOSS\_DISPATCH} 在 \texttt{train.py:219} 处按 \texttt{args.model} 分派。
 
 \subsection{batch 构造与损失归约}
 
@@ -1013,7 +1042,7 @@ $T$ 轮后\textbf{再采样一轮}（第 11 轮）返回成本最小的序列：
 评测代码里的容差与阈值定义如下（详见 \texttt{docs/CODE\_BUG\_AUDIT.md}）：
 
 \begin{enumerate}[leftmargin=2em]
-    \item \textbf{DMC 容差}：DMC \texttt{check\_success} 使用 \texttt{dist = $\|$\text{state} - \text{goal}$\|_2 / \sqrt{n_q}$} 与阈值 $\text{tol}=0.1$。对 9 个高维 locomotion env（\texttt{cheetah, walker, hopper, quadruped, humanoid, humanoid\_cmu, dog, fish, stacker}）的 87 维 state，随机 uniform 距离 $\approx 0.45 < 0.1$ 已不成立（随机通过率 0\%）。CEM 5 步规划器达不到 25 步目标，因此这些 env 的 env-SR 落在 0，\texttt{mean\_cos\_dist} 显露出真信号：STJEWM 6 个 readout 全部在 $[0.103, 0.123]$（v0.7.18.4 公平重跑），MLP/GRU/SpikeDreamer 接近 0（坍缩），LeWM-v2 在 0.183（过反应）
+    \item \textbf{DMC 容差}：DMC \texttt{check\_success} 使用 \texttt{dist = $\|$\text{state} - \text{goal}$\|_2 / \sqrt{n_q}$} 与阈值 $\text{tol}=0.1$。对 9 个高维 locomotion env（\texttt{cheetah, walker, hopper, quadruped, humanoid, humanoid\_cmu, dog, fish, stacker}）的 87 维 state，随机 uniform 距离 $\approx 0.45 < 0.1$ 已不成立（随机通过率 0\%）。CEM 5 步规划器达不到 25 步目标，因此这些 env 的 env-SR 落在 0，\texttt{mean\_cos\_dist} 显露出真信号：STJEWM 6 个 readout 全部在 $[0.103, 0.123]$（v0.7.18.4 公平重跑），MLP/GRU/LIF-Transformer 接近 0（坍缩），LeWM-v2 在 0.183（过反应）
     \item \textbf{LeWM 阈值}：thresholded-success 以 $\Pr[\cos_\text{dist} < 0.05]$（严格阈值，替代早期 $\cos_\text{dist} < 0.1$ 阈值——后者让常数 latent 模型也能达到 100\%）和 $\Pr[\cos_\text{dist} < 0.01]$（最严阈值）为指标；\texttt{mean\_cos\_dist}（raw, threshold-free）作为主指标
 \end{enumerate}
 
@@ -1179,12 +1208,12 @@ Uncorrelated noise & 0.986 & 189.4 & 0.049 & noise $\checkmark$ \\
 \midrule
 MLP（无状态对照） & $\approx 0.0002$（常数 latent） & $\to 0$ & $-0.0233$ & \textbf{坍缩}：常输出，LeWM-SR 假阳性 \\
 GRU & 小 & 大 & $-0.0074$ & \textbf{噪声/坍缩}：latent 与观测事件不相关 \\
-SpikeDreamer & 小 & 小 & $-0.0003$ & \textbf{坍缩} \\
+LIF-Transformer & 小 & 小 & $-0.0003$ & \textbf{坍缩} \\
 LeWM-v2 & 大 & 大 & 0.7515 & \textbf{过反应}：latent 放大观测 \\
 STJEWM（6 readouts） & 中（非零） & 中 & 0.9986--0.9988 & \textbf{校准} \\
-CuBiFAE & 中 & 中 & 0.9988 & 校准（SNN） \\
-SLT-LIF-MPC-trace & 中 & 中 & 0.9996 & 校准（SNN） \\
-SLT-LIF-MPC-free & 中 & 中 & 0.9997 & 校准（SNN） \\
+ALIF-timecell & 中 & 中 & 0.9988 & 校准（SNN） \\
+Stacked-LIF-trace & 中 & 中 & 0.9996 & 校准（SNN） \\
+Stacked-LIF-free & 中 & 中 & 0.9997 & 校准（SNN） \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
@@ -1197,7 +1226,7 @@ SLT-LIF-MPC-free & 中 & 中 & 0.9997 & 校准（SNN） \\
 
 \subsection{概述：13 模型 × 10 splits × 3 seeds 的全套证据}
 
-\textbf{本节呈现的是 v0.7.17--0.7.19 期间完成的所有实验证据}，涵盖 13 个 5M-aligned 的世界模型（6 个 STJEWM readout + CuBiFAE + 2 个 SLT-LIF-MPC + LeWM-v2 + GRU + MLP + SpikeDreamer）在 10 个训练 split（3 个跨基准族 F1/F2/F3 + 6 个 oodc 子族 gating split + 1 个 generalist 16-env 并集）上的 closed-loop 评测，state 模态 130 个 ckpt / 1157 个 eval cell（\texttt{MAIN\_TABLE\_5M\_STATE\_FULL.md}），辅以 pixel 模态 130 个 ckpt / 1690 个 eval cell、3 个随机种子（seed=0/1/2）、补全实验（B1--B4 + P11/P12/P13/P22 + G1--G5）的横向证据。
+\textbf{本节呈现的是 v0.7.17--0.7.19 期间完成的所有实验证据}，涵盖 13 个 5M-aligned 的世界模型（6 个 STJEWM readout + ALIF-timecell + 2 个 Stacked-LIF + LeWM-v2 + GRU + MLP + LIF-Transformer）在 10 个训练 split（3 个跨基准族 F1/F2/F3 + 6 个 oodc 子族 gating split + 1 个 generalist 16-env 并集）上的 closed-loop 评测，state 模态 130 个 ckpt / 1157 个 eval cell（\texttt{MAIN\_TABLE\_5M\_STATE\_FULL.md}），辅以 pixel 模态 130 个 ckpt / 1690 个 eval cell、3 个随机种子（seed=0/1/2）、补全实验（B1--B4 + P11/P12/P13/P22 + G1--G5）的横向证据。
 
 \textbf{本节按证据强度排序}：(a) 三簇分界（state，per-model cos\_dist 表 + 3-seed CI）→ (b) SNN 家族属性（event-ρ 13 模型全表 + GRU 对照）→ (c) 跨模态保留（pixel env-SR 模式）→ (d) 能效（FLOPs）→ (e) 诚实负面（trace 因果、AUROC、probe R²、cheetah 边缘）→ (f) 度量学贡献（sigreg 扫描、合成验证、多 epoch 稳定性）→ (g) env-SR 修正后的"易/难"二分模式。
 
@@ -1213,7 +1242,7 @@ SLT-LIF-MPC-free & 中 & 中 & 0.9997 & 校准（SNN） \\
 \toprule
 \textbf{Model} & \textbf{Trn(M)} & \textbf{cos\_dist $\downarrow$} & \textbf{cluster} \\
 \midrule
-SpikeDreamer & 5.12 & 0.000 & collapse (chance 0) \\
+LIF-Transformer & 5.12 & 0.000 & collapse (chance 0) \\
 MLP & 5.00 & 0.007 & collapse \\
 GRU & 5.13 & 0.020 & collapse (div tiny, $\rho=-0.0074$) \\
 \midrule
@@ -1223,16 +1252,16 @@ STJEWM-rate\_only & 5.06 & 0.103 & calibrated \\
 STJEWM-leak & 5.06 & 0.120 & calibrated \\
 STJEWM-no\_trace & 5.06 & 0.123 & calibrated \\
 STJEWM-membrane & 5.06 & 0.122 & calibrated \\
-CuBiFAE & 4.98 & 0.105 & calibrated (SNN) \\
-SLT-trace & 5.11 & 0.106 & calibrated (SNN) \\
-SLT-free & 5.05 & 0.111 & calibrated (SNN) \\
+ALIF-timecell & 4.98 & 0.105 & calibrated (SNN) \\
+Stacked-LIF-trace & 5.11 & 0.106 & calibrated (SNN) \\
+Stacked-LIF-free & 5.05 & 0.111 & calibrated (SNN) \\
 \midrule
 LeWM-v2 & 4.97 & 0.183 & over-react \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
 
-\textbf{3-seed CI 稳定性（B2 + G5，4 模型 × 3 splits × 3 seeds）}：calibrated 簇 3 个代表（STJEWM-trace, STJEWM-spike, SLT-trace）vs over-react（LeWM-v2）vs collapse（MLP）的 95\% CI 在 t$_{\text{0.025, df=2}}$ 准则下两两 disjoint：
+\textbf{3-seed CI 稳定性（B2 + G5，4 模型 × 3 splits × 3 seeds）}：calibrated 簇 3 个代表（STJEWM-trace, STJEWM-spike, Stacked-LIF-trace）vs over-react（LeWM-v2）vs collapse（MLP）的 95\% CI 在 t$_{\text{0.025, df=2}}$ 准则下两两 disjoint：
 
 \begin{adjustbox}{max width=\textwidth}
 \scriptsize
@@ -1242,20 +1271,20 @@ LeWM-v2 & 4.97 & 0.183 & over-react \\
 \midrule
 calibrated: STJEWM-trace & 0.119 $\pm$ 0.002 & [0.115, 0.123] & $-7.3$ \\
 calibrated: STJEWM-spike & 0.114 $\pm$ 0.010 & [0.088, 0.139] & $-7.0$ \\
-calibrated: SLT-trace & 0.115 $\pm$ 0.004 & [0.104, 0.125] & $-8.5$ \\
+calibrated: Stacked-LIF-trace & 0.115 $\pm$ 0.004 & [0.104, 0.125] & $-8.5$ \\
 over-react: LeWM-v2 & 0.194 $\pm$ 0.012 & [0.166, 0.223] & -- \\
 collapse: MLP & 0.004 $\pm$ 0.001 & [0.001, 0.006] & $>20$ \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
 
-\textbf{3-seed verdict}：calibrated 簇内 pairwise CI 重叠（STJEWM-trace 与 SLT-trace、STJEWM-spike 不可区分）；calibrated vs over-react 与 calibrated vs collapse 的 CI disjoint（Cohen's d 分别 $-7$--$-8.5$ 和 $>20$）。三簇在 3-seed 分辨率下\textbf{统计独立}。
+\textbf{3-seed verdict}：calibrated 簇内 pairwise CI 重叠（STJEWM-trace 与 Stacked-LIF-trace、STJEWM-spike 不可区分）；calibrated vs over-react 与 calibrated vs collapse 的 CI disjoint（Cohen's d 分别 $-7$--$-8.5$ 和 $>20$）。三簇在 3-seed 分辨率下\textbf{统计独立}。
 
-\textbf{Per-env cos\_dist 矩阵}（节选，cross\_benchmark\_F1 / oodc\_F1 / G16，见 \texttt{results/journal\_prep/MAIN\_TABLE\_5M\_STATE\_FULL.md} 全表 90 行）：\textbf{易 env（ball\_in\_cup, cartpole\_2d, cheetah, finger）}所有 SNN 校准模型 cos\_dist 0.00--0.10；\textbf{难 env（dog, humanoid, quadruped, stacker, tworoom）}校准簇 cos\_dist 0.10--0.30，LeWM-v2 一致 0.20+，MLP/GRU/SpikeDreamer 全部 $\leq 0.005$（坍缩）。cos\_dist 对难易敏感，主导模型区分度；env-SR 难 env 全 0（horizon artifact，详见 (g)）。
+\textbf{Per-env cos\_dist 矩阵}（节选，cross\_benchmark\_F1 / oodc\_F1 / G16，见 \texttt{results/journal\_prep/MAIN\_TABLE\_5M\_STATE\_FULL.md} 全表 90 行）：\textbf{易 env（ball\_in\_cup, cartpole\_2d, cheetah, finger）}所有 SNN 校准模型 cos\_dist 0.00--0.10；\textbf{难 env（dog, humanoid, quadruped, stacker, tworoom）}校准簇 cos\_dist 0.10--0.30，LeWM-v2 一致 0.20+，MLP/GRU/LIF-Transformer 全部 $\leq 0.005$（坍缩）。cos\_dist 对难易敏感，主导模型区分度；env-SR 难 env 全 0（horizon artifact，详见 (g)）。
 
 \subsection{(b) SNN 家族属性——event-alignment $\rho$ 在 13 模型上严格二分}
 
-\textbf{G1 + B1fix（13 模型 × 4 env × 2 splits = 104 cells）}：200 步随机策略轨迹上 Pearson($\|\Delta o_t\|$, $\|\Delta z_t\|$) per model。\textbf{SNN 家族（STJEWM 6 readouts + CuBiFAE + SLT×2）}全部 $\rho \geq 0.9986$；\textbf{非 SNN 基线}中 LeWM-v2 0.7515（中等），GRU $-0.0074$、MLP $-0.0233$、SpikeDreamer $-0.0003$（均接近 0）。\textbf{SNN 家族均值 $\rho = 0.9989$（40 cells）vs 非 SNN 0.4788（12 cells），gap $+0.5201$。}
+\textbf{G1 + B1fix（13 模型 × 4 env × 2 splits = 104 cells）}：200 步随机策略轨迹上 Pearson($\|\Delta o_t\|$, $\|\Delta z_t\|$) per model。\textbf{SNN 家族（STJEWM 6 readouts + ALIF-timecell + SLT×2）}全部 $\rho \geq 0.9986$；\textbf{非 SNN 基线}中 LeWM-v2 0.7515（中等），GRU $-0.0074$、MLP $-0.0233$、LIF-Transformer $-0.0003$（均接近 0）。\textbf{SNN 家族均值 $\rho = 0.9989$（40 cells）vs 非 SNN 0.4788（12 cells），gap $+0.5201$。}
 
 \begin{adjustbox}{max width=\textwidth}
 \scriptsize
@@ -1263,18 +1292,18 @@ collapse: MLP & 0.004 $\pm$ 0.001 & [0.001, 0.006] & $>20$ \\
 \toprule
 \textbf{Model} & \textbf{family} & \textbf{mean $\rho$} & \textbf{n cells} \\
 \midrule
-SLT-trace & SNN & 0.9996 & 8 \\
+Stacked-LIF-trace & SNN & 0.9996 & 8 \\
 STJEWM-spike\_only & SNN & 0.9988 & 8 \\
 STJEWM-rate\_only & SNN & 0.9988 & 8 \\
 STJEWM-membrane & SNN & 0.9987 & 8 \\
 STJEWM-trace\_only & SNN & 0.9987 & 8 \\
-CuBiFAE & SNN & 0.9988 & 8 \\
-SLT-free & SNN & 0.9997 & 8 \\
+ALIF-timecell & SNN & 0.9988 & 8 \\
+Stacked-LIF-free & SNN & 0.9997 & 8 \\
 \midrule
 LeWM-v2 (Transformer) & non-SNN & 0.7515 & 8 \\
 MLP & non-SNN & $-0.0220$ & 2 \\
 GRU & non-SNN & $-0.0074$ & 2 \\
-SpikeDreamer & SNN (ALIF+Tx hybrid) & $-0.0003$ & 2 \\
+LIF-Transformer & SNN (ALIF+Tx hybrid) & $-0.0003$ & 2 \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
@@ -1291,8 +1320,8 @@ SpikeDreamer & SNN (ALIF+Tx hybrid) & $-0.0003$ & 2 \\
 \begin{itemize}[leftmargin=2em]
 \item \textbf{ball\_in\_cup}：全部 13 模型 1.00（4-DOF 对齐任务 CEM 5 步可解）
 \item \textbf{cartpole}：STJEWM 0.4--0.8 vs LeWM-v2 \textbf{0.0--0.2}（过反应模型的控制失败——放大了 obs 噪声）
-\item \textbf{cheetah}：SLT-trace 0.40 vs LeWM-v2 0.00 vs STJEWM 0.60（局部）
-\item \textbf{pendulum}：SLT-free 最高 1.00，LeWM-v2 0.00
+\item \textbf{cheetah}：Stacked-LIF-trace 0.40 vs LeWM-v2 0.00 vs STJEWM 0.60（局部）
+\item \textbf{pendulum}：Stacked-LIF-free 最高 1.00，LeWM-v2 0.00
 \item \textbf{dog/fish/hopper/humanoid/quadruped/stacker/walker}：全部 0.00（5 步 CEM 够不到长程目标）
 \end{itemize}
 
@@ -1303,9 +1332,9 @@ SpikeDreamer & SNN (ALIF+Tx hybrid) & $-0.0003$ & 2 \\
 \toprule
 \textbf{cluster} & \textbf{env-SR mean} & \textbf{代表} \\
 \midrule
-calibrated (SNN) & 0.171--0.178 & STJEWM-trace 0.171, SLT-trace 0.178 \\
+calibrated (SNN) & 0.171--0.178 & STJEWM-trace 0.171, Stacked-LIF-trace 0.178 \\
 over-react & \textbf{0.091} (lowest) & LeWM-v2——过反应放大 obs 噪声致控制失败 \\
-collapse (state) & n/a (静态可达) & MLP 0.172, SpikeDreamer/SLT-free 接近 \dots \\
+collapse (state) & n/a (静态可达) & MLP 0.172, LIF-Transformer/Stacked-LIF-free 接近 \dots \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
@@ -1329,8 +1358,8 @@ STJEWM-rate & 0.478 & 5.16 & $0.05\times$ \\
 STJEWM-no\_trace & 0.465 & 5.16 & $0.05\times$ \\
 STJEWM-leak & 0.477 & 5.23 & $0.05\times$ \\
 STJEWM-membrane & 0.481 & 5.16 & $0.05\times$ \\
-SLT-trace & 2.125 & 10.18 & $0.21\times$ (4.4$\times$ more) \\
-SLT-free & 1.940 & 10.07 & $0.19\times$ (4.2$\times$ more) \\
+Stacked-LIF-trace & 2.125 & 10.18 & $0.21\times$ (4.4$\times$ more) \\
+Stacked-LIF-free & 1.940 & 10.07 & $0.19\times$ (4.2$\times$ more) \\
 LeWM-v2 & 9.770 & 9.77 & $1.0\times$ \\
 GRU & 10.241 & 10.24 & $1.0\times$ \\
 MLP & 9.984 & 9.98 & $1.0\times$ \\
@@ -1344,23 +1373,23 @@ MLP & 9.984 & 9.98 & $1.0\times$ \\
 
 \textbf{负面 \#1：trace 因果角色——0/3 cells 表明不成立（B4）}。B4 做了 6-mode 消融：5 个 history-path trace 消融（baseline / event\_window / non\_event\_window / random\_window / ablate\_all）+ 1 个\textbf{CEM-internal trace 消融}（在 CEM candidate rollout 的内部 \texttt{model.predict} 里把 trace 强制置零——规划器实际消费 trace 的地方）。结果：0/3 cells 显示 CEM-rollout 消融比 history-path 消融伤害更大。Pixel cheetah 上两者都掉 10pp（1 episode 噪声）；state cartpole/cheetah env-SR 全 0（horizon artifact）。\textbf{强因果声明被驳回}：trace 与事件对齐是相关性（(b) 中 $\rho \geq 0.99$），不是因果机制——trace 不是 CEM 优于 baseline 的\textbf{原因}。
 
-\textbf{负面 \#2：event-AUROC 1-epoch——STJEWM $\approx$ chance，SLT-trace 0.67 居首（G2）}。13 模型 × 13 DMC envs × 5 event targets = 325 cells，1-epoch 训练。线性 probe（logistic）拟合 5 类事件标签（contact / high\_motion / low\_motion / future\_k5 / future\_k10）的 AUC：
+\textbf{负面 \#2：event-AUROC 1-epoch——STJEWM $\approx$ chance，Stacked-LIF-trace 0.67 居首（G2）}。13 模型 × 13 DMC envs × 5 event targets = 325 cells，1-epoch 训练。线性 probe（logistic）拟合 5 类事件标签（contact / high\_motion / low\_motion / future\_k5 / future\_k10）的 AUC：
 \begin{adjustbox}{max width=\textwidth}
 \scriptsize
 \begin{tabular}{lrll}
 \toprule
 \textbf{Model} & \textbf{overall AUROC} & \textbf{family} & \textbf{notes} \\
 \midrule
-SLT-trace & \textbf{0.6718} & SNN (8-layer ALIF + trace) & 最高，1-epoch 即可 \\
+Stacked-LIF-trace & \textbf{0.6718} & SNN (8-layer ALIF + trace) & 最高，1-epoch 即可 \\
 LeWM-v2 & 0.6259 & Transformer & P13 3-epoch 0.63 几乎一致 \\
-SLT-free & 0.5872 & SNN (free readout) & 比 trace 低 8.5pp \\
+Stacked-LIF-free & 0.5872 & SNN (free readout) & 比 trace 低 8.5pp \\
 GRU & 0.5460 & RNN (2-layer GRU) & 略高于 chance \\
-SpikeDreamer & 0.5425 & SNN (ALIF + AdaLN Tx) & future\_k10 $\to$ 0.51 \\
+LIF-Transformer & 0.5425 & SNN (ALIF + AdaLN Tx) & future\_k10 $\to$ 0.51 \\
 STJEWM-leak & 0.5145 & SNN (hidden\_leak) & STJEWM 6 最高 \\
 STJEWM-spike & 0.5056 & SNN (spike readout) & \\
 STJEWM-membrane & 0.5048 & SNN (membrane) & \\
 STJEWM-trace & 0.5012 & SNN (trace) & $\approx$ chance \\
-CuBiFAE & 0.5018 & SNN (ALIF 2-layer) & $\approx$ chance \\
+ALIF-timecell & 0.5018 & SNN (ALIF 2-layer) & $\approx$ chance \\
 STJEWM-rate & 0.4995 & SNN (rate) & \\
 MLP & 0.4987 & MLP & chance \\
 STJEWM-no\_trace & 0.4981 & SNN (no trace ablation) & \\
@@ -1368,17 +1397,17 @@ STJEWM-no\_trace & 0.4981 & SNN (no trace ablation) & \\
 \end{tabular}
 \end{adjustbox}
 
-\textbf{为什么 STJEWM $\approx$ chance 而 SLT-trace 0.67}：SLT 的 readout 是 \texttt{moving\_avg → Linear}（线性），把 trace 序列\textbf{线性可解码地}映射到事件类别——线性 probe 立刻能 recover 出来。STJEWM 的 gated trace 是\textbf{非线性门控}（$\alpha_t = \sigma(W[r_{t-1}, s_t, c_t])$），事件信息在 latent 里（(b) 中 $\rho \geq 0.99$ 表明脉冲与 obs 同步），但不在\textbf{线性可分}子空间。\textbf{这是 readout 设计的差异}，不是 trace 的失败。P13（3-epoch 重测）显示 LeWM AUROC 稳定在 0.63（probe-build artifact 修正后），STJEWM 在 1-epoch 的 0.50 是真实低值。
+\textbf{为什么 STJEWM $\approx$ chance 而 Stacked-LIF-trace 0.67}：SLT 的 readout 是 \texttt{moving\_avg → Linear}（线性），把 trace 序列\textbf{线性可解码地}映射到事件类别——线性 probe 立刻能 recover 出来。STJEWM 的 gated trace 是\textbf{非线性门控}（$\alpha_t = \sigma(W[r_{t-1}, s_t, c_t])$），事件信息在 latent 里（(b) 中 $\rho \geq 0.99$ 表明脉冲与 obs 同步），但不在\textbf{线性可分}子空间。\textbf{这是 readout 设计的差异}，不是 trace 的失败。P13（3-epoch 重测）显示 LeWM AUROC 稳定在 0.63（probe-build artifact 修正后），STJEWM 在 1-epoch 的 0.50 是真实低值。
 
 \textbf{负面 \#3：probe R²（B3 + G4）}：13 模型 × 5 targets × 10 envs = 611 cells（linear regression 预测 position / velocity / future\_k / goal\_direction / contact from latent），B3-fix 后随机 train/val split + winsorization。结果：
 \begin{itemize}[leftmargin=2em]
 \item \textbf{LeWM-v2 mean position R² = +0.285}（最强位置可解码性，10 envs 均值）
 \item \textbf{STJEWM 6 readouts mean position R² = $-0.042$}（6 readout 均值在 [-0.053, -0.030]）
-\item \textbf{MLP -0.061, GRU +0.030, CuBiFAE -0.034, SLT-trace +0.007, SLT-free +0.022, SpikeDreamer -0.054}（其他模型也都接近 chance）
+\item \textbf{MLP -0.061, GRU +0.030, ALIF-timecell -0.034, Stacked-LIF-trace +0.007, Stacked-LIF-free +0.022, LIF-Transformer -0.054}（其他模型也都接近 chance）
 \end{itemize}
-\textbf{正确解读}：\textbf{event-vs-position dissociation 不是 STJEWM 独有}——所有循环/局部网络控制器（STJEWM, MLP, GRU, CuBiFAE, SLT-LIF-MPC, SpikeDreamer）位置 R² 都接近 chance。\textbf{LeWM 的位置解码能力是它独有的}，比所有其他模型高 3--10$\times$。这与过反应簇诊断一致：LeWM 把它能解码的信息显式编码进 latent，STJEWM 选择有界 trace 保留事件而非位置。
+\textbf{正确解读}：\textbf{event-vs-position dissociation 不是 STJEWM 独有}——所有循环/局部网络控制器（STJEWM, MLP, GRU, ALIF-timecell, Stacked-LIF, LIF-Transformer）位置 R² 都接近 chance。\textbf{LeWM 的位置解码能力是它独有的}，比所有其他模型高 3--10$\times$。这与过反应簇诊断一致：LeWM 把它能解码的信息显式编码进 latent，STJEWM 选择有界 trace 保留事件而非位置。
 
-\textbf{负面 \#4：cheetah 边缘——"边际优势，分裂依赖"（P22）}。60 episodes × 10 splits 对比 STJEWM-trace vs SLT-trace 在像素 cheetah：
+\textbf{负面 \#4：cheetah 边缘——"边际优势，分裂依赖"（P22）}。60 episodes × 10 splits 对比 STJEWM-trace vs Stacked-LIF-trace 在像素 cheetah：
 \begin{itemize}[leftmargin=2em]
 \item Pooled paired t = $+4.150$ (df=9), p = $0.0025$（统计显著）
 \item Wilcoxon W = $0.0$, p = $0.0078$
@@ -1465,7 +1494,7 @@ MLP 在 5M-aligned 聚合上 LeWM-SR 最高（97.3\%），但 \textbf{div=0.0002
 
 \subsection{两个层次的解释}
 
-STJEWM 之所以在 4 个跨基准族 split 上都优于 CuBiFAE，是因为它在\textbf{两个正交轴}上同时满足约束：
+STJEWM 之所以在 4 个跨基准族 split 上都优于 ALIF-timecell，是因为它在\textbf{两个正交轴}上同时满足约束：
 
 \subsubsection{物理层：trace dynamics 自带校准性}
 
@@ -1532,8 +1561,8 @@ STJEWM 6 个读出口径全部满足这三点（物理层），所以 CEM 规划
 \subsection{三个支持性结论}
 
 \begin{enumerate}[leftmargin=2em]
-    \item \textbf{校准是 SNN 家族属性，不是参数量红利}（13 模型 × 10 splits × 3-seed CI 验证）：STJEWM 6 readouts（trace\_only / spike\_only / rate\_only / no\_trace / hidden\_leak / membrane\_readout；trainable 全部 5.06M，n\_layers=4 公平重跑）在 4 个跨基准族 split + 6 个 oodc split 上 cos\_dist 都落在 $[0.103, 0.123]$，与 \textbf{CuBiFAE}（0.105）、\textbf{SLT-LIF-MPC-trace}（0.106）、\textbf{SLT-LIF-MPC-free}（0.111）严格同一校准簇。校准簇与 \textbf{LeWM-v2}（0.183，过反应）和 \textbf{MLP / GRU / SpikeDreamer}（$\leq 0.020$，坍缩）的 3-seed 95\% CI 两两 disjoint（Cohen's d 分别 $-7$--$-8.5$ 和 $>20$）。当 STJEWM 从 2.70M（n\_layers=2）提到 5.06M（n\_layers=4），每 readout cos\_dist delta $< 0.004$——\textbf{trace dynamics 是 spike + 内容感知衰减的内禀属性，不是堆参数出来的}。event-$\rho$ 验证 spike-based 而非 recurrence（GRU 与 STJEWM 共享循环但 $\rho=-0.007$ vs $0.999$）。
-    \item \textbf{事件对齐源于 spike 表示，GRU 是反向对照}（13 模型 × 4 env × 2 splits = 104 cells）：SNN 家族（STJEWM 6 + CuBiFAE + SLT×2）mean $\rho = 0.9989$，非 SNN 基线（LeWM 0.7515, GRU -0.0074, MLP -0.0233, SpikeDreamer -0.0003）mean $\rho = 0.4788$，gap $+0.5201$。\textbf{GRU 是最干净的控制}：与 STJEWM 共享循环时间聚合（每步门控更新），但 GRU 用连续 gating（$\sigma(W[h, x])$），STJEWM 用二值脉冲 + 离散 trace。一个数量级以上的 $\rho$ gap 唯一归因于\textbf{脉冲表示本身}。这是 SNN 家族属性的\textbf{最干净证言}——任何 RNN 都不该拿"循环"来解释 $\rho$。
+    \item \textbf{校准是 SNN 家族属性，不是参数量红利}（13 模型 × 10 splits × 3-seed CI 验证）：STJEWM 6 readouts（trace\_only / spike\_only / rate\_only / no\_trace / hidden\_leak / membrane\_readout；trainable 全部 5.06M，n\_layers=4 公平重跑）在 4 个跨基准族 split + 6 个 oodc split 上 cos\_dist 都落在 $[0.103, 0.123]$，与 \textbf{ALIF-timecell}（0.105）、\textbf{Stacked-LIF-trace}（0.106）、\textbf{Stacked-LIF-free}（0.111）严格同一校准簇。校准簇与 \textbf{LeWM-v2}（0.183，过反应）和 \textbf{MLP / GRU / LIF-Transformer}（$\leq 0.020$，坍缩）的 3-seed 95\% CI 两两 disjoint（Cohen's d 分别 $-7$--$-8.5$ 和 $>20$）。当 STJEWM 从 2.70M（n\_layers=2）提到 5.06M（n\_layers=4），每 readout cos\_dist delta $< 0.004$——\textbf{trace dynamics 是 spike + 内容感知衰减的内禀属性，不是堆参数出来的}。event-$\rho$ 验证 spike-based 而非 recurrence（GRU 与 STJEWM 共享循环但 $\rho=-0.007$ vs $0.999$）。
+    \item \textbf{事件对齐源于 spike 表示，GRU 是反向对照}（13 模型 × 4 env × 2 splits = 104 cells）：SNN 家族（STJEWM 6 + ALIF-timecell + SLT×2）mean $\rho = 0.9989$，非 SNN 基线（LeWM 0.7515, GRU -0.0074, MLP -0.0233, LIF-Transformer -0.0003）mean $\rho = 0.4788$，gap $+0.5201$。\textbf{GRU 是最干净的控制}：与 STJEWM 共享循环时间聚合（每步门控更新），但 GRU 用连续 gating（$\sigma(W[h, x])$），STJEWM 用二值脉冲 + 离散 trace。一个数量级以上的 $\rho$ gap 唯一归因于\textbf{脉冲表示本身}。这是 SNN 家族属性的\textbf{最干净证言}——任何 RNN 都不该拿"循环"来解释 $\rho$。
     \item \textbf{STJEWM 相对 SLT 的诚实定位}（FLOPs 4.4× 优势 + AUROC 弱）：3-seed CI 显示 STJEWM 与 SLT 在 cos\_dist 上\textbf{统计不可区分}（calibrated 簇内 pairwise CI 重叠）。STJEWM 的真实优势是\textbf{4.4$\times$ 更低的有效 FLOPs}（0.46--0.48 MFLOPs/step vs SLT 1.94--2.13；$\sim 20\times$ vs GRU/MLP/LeWM-v2 9.8--10.2）。SLT 在 1-epoch event-AUROC 上以 0.6718 居首（线性 readout \texttt{moving\_avg→Linear} 让 trace 序列\textbf{线性可解码}；STJEWM 的非线性 gated trace 是 0.50 chance——\textbf{事件信息在 latent 里（$\rho$ 高）但不在线性子空间}）。这是 readout 设计的差异，\textbf{不是 trace 的失败}。cheetah 边缘是"marginal, split-dependent, not a strong edge"（pooled $t=4.15$ 但 4/10 splits 翻转）。STJEWM 不是 SLT 的"升级版"，而是\textbf{不同能效/可解码性权衡点}。
 \end{enumerate}
 
@@ -1549,7 +1578,7 @@ STJEWM 6 个读出口径全部满足这三点（物理层），所以 CEM 规划
 
 \begin{enumerate}[leftmargin=2em]
 \item \textbf{trace dynamics 不具有"因果性"强声明}（B4）：0/3 cells 显示 CEM-internal trace 消融比 history-path trace 消融伤害更大。trace 与事件对齐是相关性，不是 trace 优于 baseline 的因果机制。STJEWM 的"$\rho$ 高 + $\sim 20\times$ FLOPs 优势"成立；"trace 导致"不成立。
-    \item \textbf{event-AUROC probe 上 STJEWM 1-epoch $\approx$ chance}（G2）：STJEWM 6 readouts AUROC 0.50--0.51 vs SLT-trace 0.67、LeWM 0.63。3-epoch 重测尚未补齐所有 STJEWM cells（B3 修复后 ckpt-build mismatch 仍限制部分 env）。LeWM 的 3-epoch 0.63 与 1-epoch 0.63 一致，说明 Transformer 早期就饱和。STJEWM 1-epoch AUROC 是真实低值，可能源于 gated trace 的非线性门控（事件信息在 $\rho$ 高的 latent 里但不在线性可分子空间）。这一限制\textbf{不影响}三簇分界和 event-$\rho$ 结论，但降低了 STJEWM 在"事件类型线性可解码"类下游任务上的预期。
+    \item \textbf{event-AUROC probe 上 STJEWM 1-epoch $\approx$ chance}（G2）：STJEWM 6 readouts AUROC 0.50--0.51 vs Stacked-LIF-trace 0.67、LeWM 0.63。3-epoch 重测尚未补齐所有 STJEWM cells（B3 修复后 ckpt-build mismatch 仍限制部分 env）。LeWM 的 3-epoch 0.63 与 1-epoch 0.63 一致，说明 Transformer 早期就饱和。STJEWM 1-epoch AUROC 是真实低值，可能源于 gated trace 的非线性门控（事件信息在 $\rho$ 高的 latent 里但不在线性可分子空间）。这一限制\textbf{不影响}三簇分界和 event-$\rho$ 结论，但降低了 STJEWM 在"事件类型线性可解码"类下游任务上的预期。
 \end{enumerate}
 
 \subsection{工作标题}
@@ -1557,7 +1586,7 @@ STJEWM 6 个读出口径全部满足这三点（物理层），所以 CEM 规划
 本论文的工作标题：
 
 \begin{quote}
-\textbf{膜电位禁止协议是一种可复用的 SNN 世界模型评测框架；STJEWM 是一种可实施的实现，在 13 个 5M-aligned 模型 × 10 个 split × 3 个 seed 上展示了 calibration 是 SNN 家族属性（STJEWM 6 + CuBiFAE + SLT×2 的 $\rho \geq 0.998$ vs LeWM/GRU/MLP/SpikeDreamer 的 $\rho \leq 0.75$）和 $\sim 20\times$ 事件驱动能效优势（vs GRU/MLP/LeWM-v2）。trace dynamics 不具有因果性（B4 0/3 cells），event-AUROC 在 1-epoch STJEWM 上 $\approx$ chance 但 spike-based event-$\rho$ 是 SNN 家族独有属性。4 指标包（env-SR, div, resp, $\rho$）按构造不可被常数潜状态欺骗，并在合成 ground-truth 上证认了阈值。}
+\textbf{膜电位禁止协议是一种可复用的 SNN 世界模型评测框架；STJEWM 是一种可实施的实现，在 13 个 5M-aligned 模型 × 10 个 split × 3 个 seed 上展示了 calibration 是 SNN 家族属性（STJEWM 6 + ALIF-timecell + SLT×2 的 $\rho \geq 0.998$ vs LeWM/GRU/MLP/LIF-Transformer 的 $\rho \leq 0.75$）和 $\sim 20\times$ 事件驱动能效优势（vs GRU/MLP/LeWM-v2）。trace dynamics 不具有因果性（B4 0/3 cells），event-AUROC 在 1-epoch STJEWM 上 $\approx$ chance 但 spike-based event-$\rho$ 是 SNN 家族独有属性。4 指标包（env-SR, div, resp, $\rho$）按构造不可被常数潜状态欺骗，并在合成 ground-truth 上证认了阈值。}
 \end{quote}
 
 \subsection{跨模态鲁棒性（state $\to$ pixel, 13 模型 × 10 splits × 130 ckpt）}
@@ -1581,8 +1610,8 @@ state 实验在低维 proprioceptive 状态（$\leq 128$-dim，pad 后）上训�
 
 \textbf{实际结果（pixel）}：
 \begin{itemize}[leftmargin=2em]
-\item \textbf{三簇分界在极值上保留}：env-SR 上 LeWM-v2 cartpole 0.0--0.2（最低，过反应放大 obs 噪声致控制失败）；STJEWM/SLT 0.4--0.8（部分控制）；坍缩簇（MLP/SpikeDreamer）在静态可达 env 上偶尔得分高但 env-SR 区分度被静态目标稀释
-\item \textbf{像素 env-SR（静态 goal, 13 模型均值 across 10 splits）}：STJEWM-trace 0.171, SLT-trace 0.178, SLT-free 接近, LeWM-v2 0.091（lowest）, MLP 0.172——三簇保留但 cos\_dist 尺度被 ViT 14×14 patch 放大（pixel 0.6--0.9 vs state 0.05--0.3）
+\item \textbf{三簇分界在极值上保留}：env-SR 上 LeWM-v2 cartpole 0.0--0.2（最低，过反应放大 obs 噪声致控制失败）；STJEWM/SLT 0.4--0.8（部分控制）；坍缩簇（MLP/LIF-Transformer）在静态可达 env 上偶尔得分高但 env-SR 区分度被静态目标稀释
+\item \textbf{像素 env-SR（静态 goal, 13 模型均值 across 10 splits）}：STJEWM-trace 0.171, Stacked-LIF-trace 0.178, Stacked-LIF-free 接近, LeWM-v2 0.091（lowest）, MLP 0.172——三簇保留但 cos\_dist 尺度被 ViT 14×14 patch 放大（pixel 0.6--0.9 vs state 0.05--0.3）
 \item \textbf{fish env 异常}：cos\_dist 3.4--5.4，所有模型都失败，是 frozen ViT 14×14 patch 的\textbf{编码器盲区}（无法捕捉鱼形动态），不是模型差异
 \item \textbf{ball\_in\_cup}：全部 13 模型 1.00（4-DOF 对齐任务 CEM 5 步可解）——\textbf{静态目标可达稀释了 env-SR 的模型区分度}，但 cos\_dist 仍能区分（state 中 0.00 vs pixel 中 0.022--0.029）
 \item \textbf{结论}：trace dynamics 假设\textbf{跨模态保留}在极值排序上（坍缩最低、过反应最高），但 frozen ViT 是表示瓶颈——pixel 的 cos\_dist 区分度主要来自\textbf{控制层面}（env-SR）而非潜变量对齐（cos\_dist 在 pixel 下挤在 0.6--0.9）。这验证了 trace dynamics 的架构内禀性，但同时指出了 frozen ViT 在 0.1 尺度任务特征上的局限。

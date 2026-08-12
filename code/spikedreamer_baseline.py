@@ -1,7 +1,18 @@
-"""SpikeDreamer (Hong et al., 2024 AAAI) baseline world model.
+"""LIF-Transformer baseline (in-house; code id: spikedreamer_baseline).
+
+FUNCTIONAL ROLE (see paper §design): tests design axis 1 + axis 2 —
+event-driven computation confined to the PERCEPTION encoder only, with
+the temporal memory carried by a continuous AdaLN-zero Transformer. It
+is the direct counterpart of Stacked-LIF's pure-spike memory: same LIF
+front-end, continuous (non-event-driven) recurrent memory. If continuous
+memory alone (fed by spike perception) yielded calibrated latents, this
+model would be calibrated; it is not (cos-dist 0.000, collapsed). The
+name is a functional description of this in-house implementation; it
+does NOT reference any external paper or codebase (early citations were
+unverified and are withdrawn).
 
 Hybrid: 2-layer LIF encoder + Transformer world predictor.
-Architecture (per §3.2 of docs/SNN_WORLD_MODEL_SURVEY.md):
+Architecture:
 
   1. State encoder: state_dim -> d_snn=128
   2. 2-layer LIF encoder (atan surrogate, beta=0.9) -> (B,T,d_snn) binary spikes

@@ -1,7 +1,17 @@
-"""CubifAE baseline world model (Kaiser et al., 2024 ICML).
+"""ALIF-timecell baseline (in-house; code id: cubifae_baseline).
 
-Port of the CubifAE multi-timescale ALIF + time-cell readout to the ST-JEWM
-16-env state-input suite. Architecture:
+FUNCTIONAL ROLE (see paper §design): tests design axis 1 (where event-
+driven computation happens) and axis 3 (readout protocol) — a
+multi-timescale Adaptive LIF (ALIF) stack whose temporal aggregation is
+an explicit 1D-convolution time-cell readout, exposing the membrane
+potential to the planner (protocol-violating readout). It asks: does a
+non-trace time aggregation (adaptive threshold + conv time-cell) yield a
+calibrated latent as well as ST-JEWM's gated trace? The name is a
+functional description of this in-house implementation; it does NOT
+reference any external paper or codebase (early citations were
+unverified and are withdrawn).
+
+Architecture:
 
     1. StateProjector : (B, T, state_dim) -> (B, T, d_hid)   [from STJEWM]
     2. ActionMLP      : (B, T, action_dim) -> (B, T, d_hid)

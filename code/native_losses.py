@@ -51,15 +51,13 @@ def cubifae_loss(
     lambda_sparse: float = 1e-3,
     lambda_goal: float = 0.0,
 ) -> tuple[torch.Tensor, dict]:
-    """CubifAE (Kaiser 2024 ICML) native loss.
+    """ALIF-timecell (in-house; code id cubifae_baseline) native loss.
 
     Two terms:
       L_pred  = ||pred - sg(tgt)||^2              # predictive loss on the time-cell readout
       L_sparse = sum over layers of mean(|spikes|) # L1 population sparsity
 
-    The paper's exact L_sparse is the total spike count across all
-    timesteps normalised by batch size, not per-step. For our 1-epoch
-    budget we use mean(|spikes|) which is a faithful relaxation.
+    For our 1-epoch budget we use mean(|spikes|) as population sparsity.
 
     The paper does NOT use a SIGReg or a goal term. The "anchor" readout
     (time-cell 1D-conv over membrane) is the predictive latent z_t.
@@ -93,7 +91,7 @@ def spikedreamer_loss(
     lambda_pred: float = 1.0,
     lambda_sparse: float = 1e-3,
 ) -> tuple[torch.Tensor, dict]:
-    """SpikeDreamer (Hong 2024 AAAI) native loss.
+    """LIF-Transformer (in-house; code id spikedreamer_baseline) native loss.
 
     A hybrid: LIF encoder + Transformer decoder. Total loss is:
       L_recon   = ||obs_recon - sg(obs_target)||^2   (only if pixel obs)
@@ -143,17 +141,16 @@ def slt_lif_mpc_loss(
     lambda_sparse: float = 1e-4,
     lambda_action: float = 0.5,
 ) -> tuple[torch.Tensor, dict]:
-    """SLT-LIF-MPC native loss for a closed-loop LIF controller.
+    """Stacked-LIF (in-house; code id slt_lif_mpc_*) native loss for a closed-loop LIF controller.
 
-    Three terms, matching the canonical closed-loop SNN-MPC recipe
-    (Liu 2024 / Bellec 2020 / various):
+    Three terms, matching the canonical closed-loop SNN-MPC recipe:
 
       L_pred   = ||pred - sg(tgt)||^2              # next-state prediction
       L_sparse = mean(|spikes|)                   # LIF firing-rate prior
       L_action = ||action_pred - action_target||^2  # policy/control loss
                                                    (only if action_pred given)
 
-    SLT-LIF-MPC is a controller, not a pure world model — it
+    Stacked-LIF is a controller, not a pure world model — it
     explicitly trains the SNN to predict the next action (control
     output). For our CEM-eval setup we have no action supervision,
     so lambda_action defaults to 0 and the loss reduces to pred + sparse.

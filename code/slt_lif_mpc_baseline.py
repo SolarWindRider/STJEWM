@@ -1,4 +1,20 @@
-"""SLT-LIF-MPC baseline — Liu et al. 2024 NeurIPS workshop (DECOLLE/STBP-style).
+"""Stacked-LIF baseline (in-house; code id: slt_lif_mpc_*).
+
+FUNCTIONAL ROLE (see paper §design): the closest pure-spike control to
+ST-JEWM — stacked LIF CELLS with pure-spike recurrent memory, differing
+from ST-JEWM only in the time filter on the readout (moving average vs
+ST-JEWM's gated trace). Two readout variants isolate design axis 3
+(readout protocol):
+  - Stacked-LIF-trace (slt_lif_mpc_trace): z_t = moving_avg(s_t, k=4)  ->
+    protocol-compliant (only spikes/trace exposed to planner).
+  - Stacked-LIF-free  (slt_lif_mpc_free):  z_t = concat([s_t, v_t])    ->
+    protocol-violating (membrane potential exposed to planner).
+Both are calibrated (cos-dist 0.106/0.111), showing that within the
+event-driven recurrent family the readout interface does NOT decide
+calibration — the event-driven dynamics do. The name is a functional
+description of this in-house implementation; it does NOT reference any
+external paper or codebase (early citations were unverified and are
+withdrawn).
 
 A minimal pure-SNN predictive model:
     1. StateProjector (low-dim state -> d_in)
