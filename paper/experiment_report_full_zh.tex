@@ -171,48 +171,83 @@
 
 \subsection{三个评测轴（详细定义）}
 
-\textbf{轴 1（DMC 内部子族 gating experiment，6 splits）}
+三个轴共享同一套\textbf{模型集合}与\textbf{评测协议}，仅在\textbf{训练/测试数据划分}上正交地不同：
+
 \begin{itemize}[leftmargin=2em]
-    \item \textbf{每个 split 持有（held-out）的子族}：从 DMC 的 3 个子族（classic control / locomotion / sparse-POMDP）中选 1 个或 2 个，整个子族下的所有 env 完全不进入训练集
-    \item \textbf{训练用的子族}：剩下的 1 个或 2 个子族的所有 env
-    \item \textbf{splits 数}：6 个（3 个 1-subfamily held-out + 3 个 2-subfamily held-out）—— 即 \texttt{oodc\_F1}、\texttt{oodc\_F2}、\texttt{oodc\_F3}、\texttt{oodc\_F1F2}、\texttt{oodc\_F1F3}、\texttt{oodc\_F2F3}
-    \item \textbf{env 数}：14 个 DMC env（评测时所有 14 个 env 都参与，即使训练时见过）
-    \item \textbf{cell 数}：$6 \text{ splits} \times 12 \text{ models} \times 14 \text{ envs} = 1008$ 个 cell
-    \item \textbf{每个 split 的 held-out envs}：
-    \begin{itemize}
-        \item \texttt{oodc\_F1}（classic 训练，locomotion + sparse-POMDP 持有）：\texttt{cheetah, walker, humanoid, humanoid\_CMU, hopper, quadruped, dog, delayed\_t\_maze, cheetah\_velhidden} 等
-        \item \texttt{oodc\_F2}（locomotion 训练，classic + sparse 持有）：\texttt{cartpole\_2d, pendulum\_2d, finger, ball\_in\_cup, reacher} 等
-        \item \texttt{oodc\_F3}（sparse-POMDP 训练，classic + locomotion 持有）
-        \item \texttt{oodc\_F1F2}（classic+locomotion 训练，sparse-POMDP 持有）：\texttt{delayed\_t\_maze, cheetah\_velhidden} 等
-        \item \texttt{oodc\_F1F3}（classic+sparse 训练，locomotion 持有）
-        \item \texttt{oodc\_F2F3}（locomotion+sparse 训练，classic 持有）
-    \end{itemize}
-    \item \textbf{配置文件}：每个 split 的 \texttt{configs/oodc/oodc\_Fx.json} 同时给出 \texttt{train\_envs}、\texttt{eval\_envs}、\texttt{train\_specs}（含 max\_windows=2000）、\texttt{eval\_specs}
+    \item \textbf{模型}：13 个 5M-aligned 世界模型——6 个 STJEWM readout（trace/spike/rate/no-trace/leak/membrane，trainable = 5.06M）+ ALIF-timecell（4.98M）+ Stacked-LIF-trace/free（5.11M/5.05M）+ LeWM-v2（4.97M）+ GRU（5.13M）+ MLP（5.00M）+ LIF-Transformer（5.12M）。pixel 模态另加冻结 ViT-Tiny 5.46M（trainable 仍 5.00M）。所有模型用同一损失（pred + 0.09·sigreg + 0.5·goal）、同一优化器（AdamW, lr=3e-4, batch 32, epoch 1）。
+    \item \textbf{数据生成}：训练数据为 DMControl 交互轨迹（\texttt{data/dm\_control/*.npz}，history\_size=1，goal\_offset=25；pixel 版实时渲染 84×84）。\textbf{无独立验证集}——1-epoch 训练后直接测试，对随机种子的鲁棒性由 3-seed（seed 0/1/2）覆盖；
+    \item \textbf{评测协议}（闭环）：CEM 300×30×10, H=5, budget=50，5 eps，goal 取数据集 t+25 帧的 latent（state）或静态 qpos（pixel）；主指标 \texttt{mean\_cos\_dist}，辅以 env-SR。
 \end{itemize}
+
+\textbf{轴 1（DMC 内部子族 gating experiment，6 splits）}
+
+\textbf{意义}：泛化声明最基础的一层——同一种环境建设范式（DMC 连续控制）内部，模型能否从\textbf{见过的子族}迁移到\textbf{同域未见的子族}（同模态、同动力学、不同任务）。若模型只是按 env 记忆，held-out 子族将坍陷；若学到了可迁移的动力学规则，held-out 子族仍校准。
+
+\textbf{目的}：检验三簇（校准/坍缩/过反应）在\textbf{分布内新任务}上是否成立，以及\textbf{子族持有数}（1 vs 2）是否改变分簇——这是工作标题 \texttt{gating experiment} 的主体。
+
+\textbf{数据划分}：
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{训练数据}：剩余子族的所有 env，\texttt{configs/oodc\_5m/oodc\_F*}.json 指定。每 env \textbf{2000 windows}（max\_windows=2000）：
+    \begin{itemize}
+        \item oodc\_F1（classic 训练）：5 envs = cartpole\_2d, pendulum\_2d, finger, ball\_in\_cup, cheetah
+        \item oodc\_F2（locomotion 训练）：6 envs = walker, humanoid, humanoid\_CMU, hopper, quadruped, dog
+        \item oodc\_F3（sparse 训练）：2 envs = delayed\_t\_maze, cheetah\_velhidden
+        \item oodc\_F1F2：11 envs；oodc\_F1F3：7 envs；oodc\_F2F3：8 envs（双子族训练，单子族持有）
+    \end{itemize}
+    \item \textbf{验证数据}：无显式 val（见上，1-epoch + 3-seed 覆盖）
+    \item \textbf{测试数据}：\textbf{全部 14 个 DMC env}（\texttt{\_eval\_envs}：held-out 子族的看不见 env + 训练过的 env），即每个 split 都在包含 unseen 的完整 DMC 上评测。总 cell = $6 \times 12 \times 14 = 1008$（5M 版 13 模型）。具体 held-out 清单（与 §5.1.1 一致）：
+    \begin{itemize}
+        \item oodc\_F1 held-out：walker, humanoid, humanoid\_CMU, hopper, quadruped, dog, delayed\_t\_maze, cheetah\_velhidden
+        \item oodc\_F2 held-out：cartpole\_2d, pendulum\_2d, finger, ball\_in\_cup, reacher, cheetah
+        \item oodc\_F3 held-out：其余 12 个 DMC envs（classic+locomotion）
+        \item oodc\_F1F2 held-out：delayed\_t\_maze, cheetah\_velhidden
+        \item oodc\_F1F3 held-out：locomotion 族（walker, hopper, quadruped, humanoid, humanoid\_CMU, dog）
+        \item oodc\_F2F3 held-out：classic 族（cartpole\_2d, pendulum\_2d, finger, ball\_in\_cup, reacher）
+    \end{itemize}
+\end{itemize}
+
+\textbf{模型}：上述 13 个 5M-aligned 模型（每个 split 各训一遍，同一 1-epoch 协议）。\textbf{预期}：若三簇是架构属性，则 held-out 子族上仍保持——校准模型在 unseen 任务上校准、坍缩模型仍坍缩。
 
 \textbf{轴 2（跨基准族，4 splits）}
+
+\textbf{意义}：泛化声明\textbf{最强}的一层——在\textbf{不同环境建设范式}（PushT 操作域 / TwoRoom 迷宫 / Reacher 机械臂 / DMC 连续控制）之间转移。观测维度、动作空间与动力学范式都不同，是真正的分布外（OOD）测试。若三簇在 OOD 上也成立，则校准性不是低维 state 或单一域的表象，而是\textbf{架构属性}。
+
+\textbf{目的}：回答\textbf{“三簇是否跨域保留”}——校准/坍缩/过反应是架构内在性质还是数据分布假象；同时为 \texttt{gating experiment} 提供“跨范式”边界条件。
+
+\textbf{数据划分}（每 split 就是一个 (训练族, 持有族) 对）：
 \begin{itemize}[leftmargin=2em]
-    \item \textbf{每个 split 持有的整族}：一个完整的跨基准族（PushT / TwoRoom / Reacher / DMC）完全不在训练集中
-    \item \textbf{训练用的族}：其余三个族的并集（每个 split 都是 15-16 个 env）
-    \item \textbf{splits 数}：4 个（\texttt{cross\_benchmark\_F1, F2, F3, F4}）
-    \item \textbf{env 数 per split}：持有族含 1 个 env（PushT / TwoRoom / Reacher）或 13 个 DMC env；评测只在该持有族上
-    \item \textbf{cell 数}：$4 \text{ splits} \times 12 \text{ models} \times \{1\text{-}13\} \text{ envs} = 192$ 个 cell（具体为 F1=12, F2=12, F3=12, F4=156 = 192 total）
-    \item \textbf{持有族内容}：
+    \item \textbf{训练数据}：其余三个族的并集，\texttt{configs/oodc\_5m/cross\_benchmark\_F*.json}，每 env \textbf{10000 windows}：
     \begin{itemize}
-        \item \textbf{F1 PushT 持有族}：1 env \texttt{pusht}（obs\_dim=7, action\_dim=2）；训练用 DMC × 14 + reacher + tworoom = 16 envs
-        \item \textbf{F2 TwoRoom 持有族}：1 env \texttt{tworoom}（obs\_dim=10, action\_dim=2）；训练用 DMC × 14 + reacher + pusht = 16 envs
-        \item \textbf{F3 Reacher 持有族}：1 env \texttt{reacher}（obs\_dim=4, action\_dim=2）；训练用 DMC × 14 + pusht + tworoom = 16 envs
-        \item \textbf{F4 DMC 持有族}：14 个 DMC env；训练用 pusht + tworoom + reacher = 3 envs
+        \item F1（PushT held-out）：DMC×14 + reacher + tworoom = \textbf{15 envs × 10000 windows}
+        \item F2（TwoRoom held-out）：DMC×14 + reacher + pusht = 15 envs
+        \item F3（Reacher held-out）：DMC×14 + pusht + tworoom = 15 envs
+        \item F4（DMC held-out，早期 12 模型）：pusht + tworoom + reacher = 3 envs
     \end{itemize}
-    \item \textbf{评测 unit 公式}：4 splits × 13 models × 1 held-out env（或 13 DMC env for F4）= 192 cells（与下表 192 cells 一致）
+    \item \textbf{验证数据}：无显式 val（同上，1-epoch + 3-seed）
+    \item \textbf{测试数据}：\textbf{仅 held-out 族}——F1=1 env（pusht）、F2=1 env（tworoom）、F3=1 env（reacher）、F4=13 个 DMC env。总 cell = $3 \times 12 \times 1 + 1 \times 12 \times 13 = 192$（5M 版 13 模型）。held-out 族的 env 在训练中\textbf{完全不可见}。
 \end{itemize}
 
-\textbf{轴 3（同一模型在不同任务规模下保持校准）}
+\textbf{模型}：同轴 1（13 个 5M-aligned）。\textbf{预期与证据}（§实验结果 (a)）：校准簇在 4 个 held-out 族上保持（cos\_dist 0.10--0.12），坍缩恒 0.000、过反应恒 0.18+——三簇\textbf{跨范式}成立。
+
+\textbf{轴 3（同一模型在不同任务规模下保持校准，G4/G8/G16）}
+
+\textbf{意义}：现实部署中模型会持续吸收更多任务。\textbf{任务规模}（同时训练的环境数）增加时，模型是否保持校准——这是\textbf{“非遗忘性”/规模不变性}声明：校准不应是“少任务专用”的偶然行为，也不应在多任务训练中因任务干扰而退化。
+
+\textbf{目的}：回答\textbf{“三簇是否规模不变”}——同一模型在 4→8→16 个 env 的训练规模下，resp/div/$\rho$ 是否保持在校准带；故障模式（坍缩/噪声/过反应）是否因更多数据而“恢复”或“恶化”。
+
+\textbf{数据划分}（嵌套规模 G4 $\subset$ G8 $\subset$ G16）：
 \begin{itemize}[leftmargin=2em]
-    \item \textbf{G4 / G8 / G16}：4、8、16 个 env 同时训练（共享权重）
-    \item \textbf{每个 ckpt}：单次训练，跨所有规模（K 个 env）的 env 上评测
-\item \textbf{cell 数}：13 models × 3 scales × K envs / scale
+    \item \textbf{训练数据}（\texttt{configs/generalist\_G4/G8/16env\_train.json}）：
+    \begin{itemize}
+        \item G4：4 envs（cartpole\_2d, pendulum\_2d, cheetah, pusht）× 2000 windows
+        \item G8：8 envs（G4 + finger, walker, reacher, tworoom）× 2000 windows
+        \item G16：16 envs（全部 DMC×14 + pusht + tworoom）× 10000 windows
+    \end{itemize}
+    \item \textbf{验证数据}：无显式 val
+    \item \textbf{测试数据}：\textbf{全规模环境}——在每个 ckpt 上评测（a）6 个 DMC 诊断 env（cartpole\_2d, pendulum\_2d, finger, ball\_in\_cup, cheetah）的 resp/div/$\rho$；（b）15 个 ID env 的 env-SR。总 cell = $13 \text{ models} \times 3 \text{ scales} \times K \text{ envs/scale}$。
 \end{itemize}
+
+\textbf{模型}：同轴 1（13 个 5M-aligned；本轴为旧版 generalist G4/G8/G16 实验产物）。\textbf{预期与证据}（§实验结果 (i)）：6 STJEWM + ALIF + Stacked-LIF 在\textbf{每一规模}均 calibrated（div 漂移 $\le\pm 0.005$，$\rho \ge 0.98$）；GRU/LeWM/MLP 的故障模式\textbf{规模不变}。env-SR 不区分（66.7--75.6, $\pm 4$pp）。
 
 \subsection{评测指标的"双层"设计（详细数学定义）}
 
