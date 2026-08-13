@@ -134,7 +134,7 @@
     \item \textbf{轴 3：同一模型在不同任务规模下保持校准}。4 / 8 / 16 个环境同时训练。这是 working title 的"非遗忘性"声明。
 \end{enumerate}
 
-本报告聚焦 \textbf{轴 1 + 轴 2}。轴 3 见仓库的其他文档。
+本报告覆盖 \textbf{轴 1 + 轴 2 + 轴 3}。轴 3（任务规模鲁棒性，G4/G8/G16）及其余 support 实验（cross-env 零样本、数据预算、样本效率等）在 §实验结果 (i)(j) 给出完整结果，数据表见 \texttt{results/utility/*.md}。
 
 \subsection{评测指标的"双层"设计}
 
@@ -862,6 +862,18 @@ SNN / 神经形态对照 & ALIF-timecell, LIF-Transformer, Stacked-LIF-trace, St
 \section{训练流程}
 %==========================================================
 
+\subsection{实验环境与可复现性}
+
+\textbf{硬件}：训练与闭环评估在 \textbf{NVIDIA RTX 4090}（24\,GB）与 \textbf{RTX A6000}（49\,GB）GPU 上完成（单卡训练，4 卡并行调度实验）。Spiking-WM 外部对比实验使用 4× RTX 4090。
+
+\textbf{软件环境}：
+\begin{itemize}[leftmargin=2em]
+    \item Python 3.10（\texttt{conda env snn}）；PyTorch 2.6.x；NumPy / SciPy / pandas 标准栈
+    \item MuJoCo 3.11.0 + dm\_control 1.0.44（环境与奖励）；DMControl 像素渲染 84×84（训练用实时渲染，无预生成数据集）
+    \item 文档与图：Tectonic（LaTeX）、Matplotlib；OBS（obs://lixiang01/STJEWM\_NMI/）托管训练数据与检查点备份
+\end{itemize}
+\textbf{可复现命令}：训练 \texttt{code/scripts/generalist\_v0\_7\_5\_5m/train\_one\_5m.sh}；评估 \texttt{eval\_one.sh}；5M 主表聚合脚本见 \texttt{results/journal\_prep/}（各 summary 的 Provenance 段给出逐 cell 命令与 flags）。所有随机种子、数据 split 配置（\texttt{configs/oodc\_5m/*.json}）与检查点存放路径均在仓库内，可直接重放。
+
 \subsection{优化器与学习率调度}
 
 所有 13 个模型使用 \texttt{AdamW}（来自 \texttt{code/train/train.py:176}），$\text{lr} = 3 \times 10^{-4}$，$\text{weight\_decay} = 10^{-3}$。
@@ -1486,6 +1498,51 @@ gru\_baseline & 90.8\% & 0.0304 & $-0.0074$ \\
 \end{adjustbox}
 
 MLP 在 5M-aligned 聚合上 LeWM-SR 最高（97.3\%），但 \textbf{div=0.0002, $\rho=-0.0233$}——潜状态是常数零向量；次高 GRU 90.8\% 同样坍缩。LeWM-SR 是被常数潜状态平凡通过的指标。本节作为 §2.3a 头条\textbf{保留}。每个 LeWM-SR 数字都应在 div 和 $\rho$ 的背景中读，\textbf{绝不单独读}。4 指标包按构造具备"不可被常数潜状态欺骗"的性质。
+
+\subsection{(i) 轴 3：任务规模鲁棒性——G4/G8/G16 校准保持}
+
+\textbf{设计}：同一模型在 \textbf{4 / 8 / 16 个环境同时训练}（共享权重），在全部规模上评测校准诊断（resp / div / $\rho$）\textendash{}这是 working title 的\textbf{“非遗忘性”}/规模不变性声明（\texttt{results/utility/generalist\_scaling\_table.md} 全量）。关键数字（resp / div / $\rho$，G4→G8→G16）：
+
+\begin{adjustbox}{max width=\textwidth}
+\scriptsize
+\begin{tabular}{l rrr rrr rrr}
+\toprule
+\textbf{模型} & \multicolumn{3}{c}{\textbf{resp}} & \multicolumn{3}{c}{\textbf{div}} & \multicolumn{3}{c}{\textbf{$\rho$}} \\
+ & G4 & G8 & G16 & G4 & G8 & G16 & G4 & G8 & G16 \\
+\midrule
+STJEWM-trace & 0.210 & 0.207 & 0.206 & 0.0122 & 0.0112 & 0.0117 & 0.993 & 0.992 & 0.993 \\
+STJEWM-spike & 0.200 & 0.207 & 0.210 & 0.0074 & 0.0122 & 0.0111 & 0.992 & 0.995 & 0.995 \\
+STJEWM-rate & 0.208 & 0.209 & 0.206 & 0.0092 & 0.0129 & 0.0119 & 0.995 & 0.991 & 0.990 \\
+STJEWM-no-trace & 0.202 & 0.196 & 0.201 & 0.0114 & 0.0114 & 0.0112 & 0.994 & 0.994 & 0.993 \\
+STJEWM-leak & 0.202 & 0.206 & 0.202 & 0.0114 & 0.0125 & 0.0125 & 0.993 & 0.997 & 0.993 \\
+STJEWM-membrane & 0.205 & 0.207 & 0.210 & 0.0099 & 0.0121 & 0.0117 & 0.995 & 0.980 & 0.986 \\
+ALIF-timecell & 0.211 & 0.215 & 0.215 & 0.0117 & 0.0121 & 0.0110 & --- & --- & --- \\
+GRU & 28.3 & 22.4 & 31.1 & 0.0068 & 0.0070 & 0.0076 & 0.072 & 0.057 & $-0.029$ \\
+LeWM-v2 & 30.4 & 32.7 & 30.0 & 0.208 & 0.184 & 0.186 & 0.389 & 0.416 & 0.374 \\
+MLP & 0.558 & 0.718 & 0.548 & 0.0002 & 0.0002 & 0.0002 & 0.052 & $-0.016$ & $-0.070$ \\
+Stacked-LIF-trace & 0.206 & 0.200 & 0.209 & 0.0102 & 0.0118 & 0.0108 & --- & --- & --- \\
+Stacked-LIF-free & 0.204 & 0.208 & 0.202 & 0.0121 & 0.0125 & 0.0111 & --- & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\textbf{Regime 分类（G4/G8/G16 三列）}：\textbf{6 个 STJEWM readout + ALIF-timecell + Stacked-LIF×2 在每一规模均为 calibrated}（resp $\in [0.1,1.0]$, div $\in [0.005,0.05]$）；GRU 全为 noise（resp $\approx 22$--$31$、$\rho \approx 0$）；LeWM-v2 全为 over-react（div $\approx 0.18$--$0.21$）；MLP 全为 collapse（div $= 0.0002$）。\textbf{故障模式规模不变}：坍缩/噪声/过反应不会随更多环境数据“恢复”。
+
+\textbf{结论}：STJEWM 的校准是\textbf{规模不变}的——div 跨规模漂移 $\le \pm 0.005$，$\rho$ 始终 $\ge 0.98$。env-SR 不区分 regime（全部在 66.7--75.6 的 $\pm 4$pp 内），再次印证诊断指标（div/resp/$\rho$）才是分簇依据。
+
+\subsection{(j) 支持性实验（utility 系列）}
+
+以下实验补充轴 1--3 之外的诊断侧面，完整数据见 \texttt{results/utility/*.md}（均在 git 跟踪内）：
+
+\begin{enumerate}[leftmargin=2em]
+    \item \textbf{零样本跨环境泛化（cross\_env\_gen）}：G16 训练后直接在\textbf{从未见过的 walker / humanoid} 上闭环；
+    STJEWM-trace 的 held-out env-SR = \textbf{100.0}（in-domain 69--74），div/resp/$\rho$ 全部保持在 in-domain 区间（差距 $\le 0.02$）——\textbf{校准 latent 零样本迁移}。GRU 的 resp 在 held-out 上跳至 11--23（in 25--35），噪声不迁移。
+    \item \textbf{训练数据预算（budget\_scaling）}：0.5×/1×/2× per-env 预算（BASE=10K windows）；STJEWM-trace 的 div 0.0120/0.0117/0.0107、$\rho$ 0.993/0.993/0.994——\textbf{校准对数据量不敏感}。
+    \item \textbf{冻结编码器的样本效率（sample\_efficiency）}：tiny linear policy 用 1\% 数据即可在 cheetah 达到 cos\_terminal $\approx 0.0046$（calibrated）；坍缩 latent 恒 $\approx 0$（策略无法在常数空间中移动）——\textbf{极小数数据下也能利用校准 latent}。
+    \item \textbf{latent-goal MPC 视界（latent\_goal\_mpc）}：H=1→20，STJEWM-trace 在 cheetah 上 cos\_terminal 0.0178→0.0110（\textbf{不随视界退化}）；过反应 latent 随 H 放大。
+    \item \textbf{latent 梯度与奖励梯度对齐（latent\_env\_grad）}：STJEWM-trace 的 mean abs corr 0.46--0.81（cheetah 0.461, walker 0.797, reacher 0.812, finger 0.765）——校准 latent 几何“有意义”
+    \item \textbf{早期 OOD Path-C（ood1，v0.7.13 bug-fixed）}：DMC 容差从 1.0 收紧到 0.1 后 1008 cells 的 env-SR 全为 0（5 步 CEM 够不到 25 步目标）——历史性记录，规范后不再使用该指标单独评判。
+\end{enumerate}
 
 %==========================================================
 %==========================================================
