@@ -22,10 +22,10 @@ MODELS=(
   mlp_baseline
   lewm_baseline_v2
   gru_baseline
-  cubifae_baseline
-  slt_lif_mpc_trace
-  slt_lif_mpc_free
-  spikedreamer_baseline
+  alif_timecell_baseline
+  stacked_lif_trace
+  stacked_lif_free
+  lif_transformer_baseline
 )
 
 SPLITS=(

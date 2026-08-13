@@ -21,7 +21,7 @@ ROOT = Path("/home/lx/snn")
 LOG_DIR = ROOT / "results/journal_prep/B2_multiseed/_logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-MODELS = ["stjewm_trace_only","stjewm_spike_only","slt_lif_mpc_trace","lewm_baseline_v2","mlp_baseline"]
+MODELS = ["stjewm_trace_only","stjewm_spike_only","stacked_lif_trace","lewm_baseline_v2","mlp_baseline"]
 MAP = {
     "stjewm_trace_only":       ("stjewm",            "trace_only"),
     "stjewm_spike_only":       ("stjewm",            "spike_only"),
@@ -30,13 +30,13 @@ MAP = {
     "stjewm_hidden_leak":      ("stjewm",            "hidden_leak"),
     "stjewm_membrane_readout": ("stjewm",            "membrane_readout"),
     "stjewm_raw_spike":        ("stjewm",            "raw_spike"),
-    "cubifae_baseline":        ("cubifae_baseline",  ""),
+    "alif_timecell_baseline":        ("alif_timecell_baseline",  ""),
     "gru_baseline":            ("gru_baseline",      ""),
     "lewm_baseline_v2":        ("lewm_baseline",     "hidden_leak"),
-    "slt_lif_mpc_trace":       ("slt_lif_mpc_trace", ""),
-    "slt_lif_mpc_free":        ("slt_lif_mpc_free",  ""),
+    "stacked_lif_trace":       ("stacked_lif_trace", ""),
+    "stacked_lif_free":        ("stacked_lif_free",  ""),
     "mlp_baseline":            ("mlp_baseline",      ""),
-    "spikedreamer_baseline":   ("spikedreamer_baseline", ""),
+    "lif_transformer_baseline":   ("lif_transformer_baseline", ""),
 }
 SPLITS = ["configs/oodc_5m/cross_benchmark_F1.json",
           "configs/oodc_5m/oodc_F2.json",

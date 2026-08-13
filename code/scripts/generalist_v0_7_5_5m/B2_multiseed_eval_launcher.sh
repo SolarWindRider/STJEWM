@@ -16,7 +16,7 @@ ROOT = Path("/home/lx/snn")
 LOG_DIR = ROOT / "results/journal_prep/B2_multiseed/_eval_logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-MODELS = ["stjewm_trace_only","stjewm_spike_only","slt_lif_mpc_trace","lewm_baseline_v2","mlp_baseline"]
+MODELS = ["stjewm_trace_only","stjewm_spike_only","stacked_lif_trace","lewm_baseline_v2","mlp_baseline"]
 SPLITS = ["configs/oodc_5m/cross_benchmark_F1.json",
           "configs/oodc_5m/oodc_F2.json",
           "configs/oodc_5m/generalist_16env.json"]

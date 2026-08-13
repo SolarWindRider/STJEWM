@@ -5,7 +5,7 @@ set -e
 SPLITS="cross_benchmark_F1 cross_benchmark_F2 cross_benchmark_F3 oodc_F1 oodc_F1F2 oodc_F1F3 oodc_F2 oodc_F2F3 oodc_F3 generalist_16env"
 # 6 STJEWM readouts (need special handling) + 7 baselines
 STJEWM_READOUTS="trace_only hidden_leak spike_only rate_only no_trace membrane_readout"
-BASELINES="cubifae_baseline gru_baseline lewm_baseline_v2 slt_lif_mpc_trace slt_lif_mpc_free spikedreamer_baseline mlp_baseline"
+BASELINES="alif_timecell_baseline gru_baseline lewm_baseline_v2 stacked_lif_trace stacked_lif_free lif_transformer_baseline mlp_baseline"
 SEED=${1:-0}
 IMAGE_SIZE=${2:-84}
 

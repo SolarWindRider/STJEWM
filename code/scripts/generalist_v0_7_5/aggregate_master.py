@@ -29,11 +29,11 @@ GENERALIST_MODELS = [
     "stjewm_no_trace",
     "stjewm_hidden_leak",
     "stjewm_membrane_readout",
-    "cubifae_baseline",
+    "alif_timecell_baseline",
     "gru_baseline",
     "lewm_baseline_v2",
-    "slt_lif_mpc_trace",
-    "slt_lif_mpc_free",
+    "stacked_lif_trace",
+    "stacked_lif_free",
     "mlp_baseline",
 ]
 COLLAPSE_CONTROL = "mlp_baseline"

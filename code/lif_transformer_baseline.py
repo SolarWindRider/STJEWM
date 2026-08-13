@@ -1,4 +1,4 @@
-"""LIF-Transformer baseline (in-house; code id: spikedreamer_baseline).
+"""LIF-Transformer baseline (in-house; code id: lif_transformer_baseline).
 
 FUNCTIONAL ROLE (see paper §design): tests design axis 1 + axis 2 —
 event-driven computation confined to the PERCEPTION encoder only, with
@@ -147,8 +147,8 @@ class _AdaLNZeroBlock(nn.Module):
         return x
 
 
-class SpikeDreamerBaseline(nn.Module):
-    """SpikeDreamer: 2-layer LIF encoder + Transformer world predictor.
+class LIFTransformerBaseline(nn.Module):
+    """LIFTransformer: 2-layer LIF encoder + Transformer world predictor.
 
     Returns emb of shape (B,T,192) where d_tx = embed_dim = 192 (matches STJEWM).
     """
@@ -184,7 +184,7 @@ class SpikeDreamerBaseline(nn.Module):
         # Pixel mode: use frozen ViT-Tiny preprocessor (5.5M frozen + 0.07M proj).
         # The preprocessor outputs `d_snn` so it is a drop-in replacement
         # for the (state_dim -> d_snn) StateProjector. The SNN stack still
-        # runs, preserving the architectural role of SpikeDreamer's LIF encoder.
+        # runs, preserving the architectural role of LIFTransformer's LIF encoder.
         if state_dim >= 100 and image_size > 0:
             from code.core.pixel_pre import FrozenPixelPreprocessor
             self.pixel_pre = FrozenPixelPreprocessor(
@@ -280,7 +280,7 @@ class SpikeDreamerBaseline(nn.Module):
     def predict(self, ctx_emb: torch.Tensor, ctx_act: torch.Tensor) -> torch.Tensor:
         """Per-step prediction over a window. ctx_emb: (B,H,d_tx), ctx_act: (B,H,action_dim).
 
-        SpikeDreamer's predict re-runs the SNN encoder-free path:
+        LIFTransformer's predict re-runs the SNN encoder-free path:
         since ctx_emb already is the fused latent (from forward()), we run
         a lightweight version that re-applies only the Transformer + fuser
         with the spike-projection term estimated as a function of the ctx.
@@ -382,14 +382,14 @@ class SpikeDreamerBaseline(nn.Module):
         return ((z_final - goal_exp) ** 2).sum(-1)
 
 
-def make_spikedreamer(state_dim: int, action_dim: int, **kwargs) -> SpikeDreamerBaseline:
-    """Factory: parameter-matched SpikeDreamer baseline."""
+def make_lif_transformer(state_dim: int, action_dim: int, **kwargs) -> LIFTransformerBaseline:
+    """Factory: parameter-matched LIFTransformer baseline."""
     defaults = dict(
         d_snn=128, d_tx=192, num_layers=4, num_heads=8,
         beta=0.9, v_thresh=0.3, alpha_surr=2.0,
     )
     defaults.update(kwargs)
-    return SpikeDreamerBaseline(
+    return LIFTransformerBaseline(
         state_dim=state_dim, action_dim=action_dim, **defaults,
     )
 
@@ -398,9 +398,9 @@ if __name__ == "__main__":
     import time
     B, T = 2, 8
     state_dim, action_dim = 9, 6
-    model = make_spikedreamer(state_dim, action_dim)
+    model = make_lif_transformer(state_dim, action_dim)
     n = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"SpikeDreamer baseline: {n/1e6:.2f}M trainable params")
+    print(f"LIFTransformer baseline: {n/1e6:.2f}M trainable params")
 
     state = torch.randn(B, T, state_dim)
     action = torch.randn(B, T, action_dim)
@@ -430,4 +430,4 @@ if __name__ == "__main__":
     a_cands = torch.randn(B, K, 6, action_dim)
     c = model.get_cost(info, a_cands)
     print("get_cost:", c.shape)
-    print("SpikeDreamer smoke test OK")
+    print("LIFTransformer smoke test OK")

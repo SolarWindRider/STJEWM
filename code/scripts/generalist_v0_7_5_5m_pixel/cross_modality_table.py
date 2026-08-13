@@ -16,12 +16,12 @@ MODELS = [
     ("stjewm_rate_only", "STJEWM-rate"),
     ("stjewm_no_trace", "STJEWM-no-trace"),
     ("stjewm_membrane_readout", "STJEWM-membrane"),
-    ("cubifae_baseline", "CubifAE"),
-    ("slt_lif_mpc_trace", "SLT-trace"),
-    ("slt_lif_mpc_free", "SLT-free"),
+    ("alif_timecell_baseline", "ALIFTimecell"),
+    ("stacked_lif_trace", "Stacked-LIF-trace"),
+    ("stacked_lif_free", "Stacked-LIF-free"),
     ("gru_baseline", "GRU"),
     ("lewm_baseline_v2", "LeWM-v2"),
-    ("spikedreamer_baseline", "SpikeDreamer"),
+    ("lif_transformer_baseline", "LIFTransformer"),
     ("mlp_baseline", "MLP"),
 ]
 
@@ -134,8 +134,8 @@ def main():
 
     lines.append("")
     lines.append("**Interpretation.**")
-    lines.append("- State cos_dist: lower = better goal-match. The trace family (STJEWM + CuBiFAE + SLT)")
-    lines.append("  should give cos_dist ~ 0.1 (calibrated); collapse (MLP/SpikeDreamer) should give")
+    lines.append("- State cos_dist: lower = better goal-match. The trace family (STJEWM + ALIF-timecell + SLT)")
+    lines.append("  should give cos_dist ~ 0.1 (calibrated); collapse (MLP/LIFTransformer) should give")
     lines.append("  cos_dist ~ 0 (latent=constant); over-react (LeWM-v2) should give cos_dist ~ 0.18.")
     lines.append("- Pixel cos_dist: same interpretation, but the random policy produces larger distances")
     lines.append("  because no real control is happening — the metric still reveals the family partition")

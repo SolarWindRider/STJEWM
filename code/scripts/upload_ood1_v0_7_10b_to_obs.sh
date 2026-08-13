@@ -48,7 +48,7 @@ $OBSUTIL cp results/utility/ood1_table.md "$OODC_BUCKET/ood1_table.md" 2>&1 | ta
 
 # Upload 1 example cell per (split, model) — these prove the path is alive
 for split in oodc_F1 oodc_F1F2 oodc_F1F3 oodc_F2 oodc_F2F3 oodc_F3; do
-    for model in cubifae_baseline stjewm_trace_only gru_baseline lewm_baseline_v2 mlp_baseline; do
+    for model in alif_timecell_baseline stjewm_trace_only gru_baseline lewm_baseline_v2 mlp_baseline; do
         # pick first env cell under each (split, model)
         cell=$(ls results/oodc/${split}/${split}/${model}/seed_0/*.json 2>/dev/null \
               | grep -v "_position\|_velocity\|_future_k\|loss_log\|^.*eval_" \

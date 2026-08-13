@@ -21,7 +21,7 @@ on a single env and are reported with explicit degeneracy caveats.
 
 For each split we train (a) 6 STJEWM readouts (trace/spike/rate/no_trace/
 hidden_leak/membrane) and (b) 4 baselines (mlp_baseline, gru_baseline,
-cubifae_baseline, slt_lif_mpc_trace) per split. That's 12 ckpts x 4 splits
+alif_timecell_baseline, stacked_lif_trace) per split. That's 12 ckpts x 4 splits
 = 48 trainings. At ~25 min/ckpt on 1 CPU = ~20 hr wallclock.
 
 Per-cell output:
@@ -84,8 +84,8 @@ DEFAULT_CKPT_BUDGET = [
     "stjewm_membrane_readout",
     "mlp_baseline",
     "gru_baseline",
-    "cubifae_baseline",
-    "slt_lif_mpc_trace",
+    "alif_timecell_baseline",
+    "stacked_lif_trace",
 ]
 
 

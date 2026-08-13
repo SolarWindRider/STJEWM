@@ -32,11 +32,11 @@ MODELS=(
     stjewm_no_trace
     stjewm_hidden_leak
     stjewm_membrane_readout
-    cubifae_baseline
+    alif_timecell_baseline
     gru_baseline
     lewm_baseline_v2
-    slt_lif_mpc_trace
-    slt_lif_mpc_free
+    stacked_lif_trace
+    stacked_lif_free
     mlp_baseline
 )
 
@@ -49,8 +49,8 @@ mkdir -p "$PROBE_BASE" "$ALT_BASE"
 import json, os, subprocess, sys
 spec = json.loads(open("configs/generalist_probe_eval.json").read())
 models = ["stjewm_trace_only","stjewm_spike_only","stjewm_rate_only","stjewm_no_trace",
-          "stjewm_hidden_leak","stjewm_membrane_readout","cubifae_baseline",
-          "gru_baseline","lewm_baseline_v2","slt_lif_mpc_trace","slt_lif_mpc_free",
+          "stjewm_hidden_leak","stjewm_membrane_readout","alif_timecell_baseline",
+          "gru_baseline","lewm_baseline_v2","stacked_lif_trace","stacked_lif_free",
           "mlp_baseline"]
 n_seeds = int(os.environ.get("N_SEEDS", "3"))
 pad = 128

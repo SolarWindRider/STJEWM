@@ -29,8 +29,8 @@ echo "[build worklist NUL-delimited]"
 import json, os
 spec = json.load(open("configs/generalist_probe_eval.json"))
 models = ["stjewm_trace_only","stjewm_spike_only","stjewm_rate_only","stjewm_no_trace",
-          "stjewm_hidden_leak","stjewm_membrane_readout","cubifae_baseline",
-          "gru_baseline","lewm_baseline_v2","slt_lif_mpc_trace","slt_lif_mpc_free",
+          "stjewm_hidden_leak","stjewm_membrane_readout","alif_timecell_baseline",
+          "gru_baseline","lewm_baseline_v2","stacked_lif_trace","stacked_lif_free",
           "mlp_baseline"]
 probe_base = "$PROBE_BASE"
 ckpt_base = "$CKPT_BASE"

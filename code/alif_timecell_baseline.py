@@ -1,4 +1,4 @@
-"""ALIF-timecell baseline (in-house; code id: cubifae_baseline).
+"""ALIF-timecell baseline (in-house; code id: alif_timecell_baseline).
 
 FUNCTIONAL ROLE (see paper §design): tests design axis 1 (where event-
 driven computation happens) and axis 3 (readout protocol) — a
@@ -150,7 +150,7 @@ class ALIFStackWithTimeCells(nn.Module):
                 )
             )
         # Time-cell readout: 1D conv over the concatenated membrane trace.
-        # The input has n_layers * d_hid channels. The original CubifAE
+        # The input has n_layers * d_hid channels. The original ALIFTimecell
         # paper uses a 1D conv with kernel_size=256, stride=128, yielding
         # 8 anchors per step. To get exactly T out for any T (and avoid
         # huge kernels on short windows where T=2-200), we use kernel=8,
@@ -221,10 +221,10 @@ class ALIFStackWithTimeCells(nn.Module):
 
 
 # ============================================================
-# CubifAEBaseline — the full model. StateProjector + ActionMLP + ALIFStackWithTimeCells.
+# ALIFTimecellBaseline — the full model. StateProjector + ActionMLP + ALIFStackWithTimeCells.
 # ============================================================
-class CubifAEBaseline(nn.Module):
-    """CubifAE multi-timescale ALIF + time-cell readout, ported to LeWM state input."""
+class ALIFTimecellBaseline(nn.Module):
+    """ALIFTimecell multi-timescale ALIF + time-cell readout, ported to LeWM state input."""
 
     def __init__(
         self,
@@ -395,19 +395,19 @@ class CubifAEBaseline(nn.Module):
 # ============================================================
 # Factory: parameter-matched to STJEWM (~3-4M params)
 # ============================================================
-def make_cubifae_baseline(
+def make_alif_timecell_baseline(
     state_dim: int,
     action_dim: int,
     n_layers: int = 4,
     d_hid: int = 192,
     image_size: int = 0,
-) -> CubifAEBaseline:
-    """Build a CubifAEBaseline with the default config.
+) -> ALIFTimecellBaseline:
+    """Build a ALIFTimecellBaseline with the default config.
 
     Set `image_size>0` to use the frozen ViT-Tiny pixel preprocessor
     instead of the low-dim state projector.
     """
-    return CubifAEBaseline(
+    return ALIFTimecellBaseline(
         state_dim=state_dim, action_dim=action_dim,
         d_hid=d_hid, n_layers=n_layers,
         image_size=image_size,
@@ -420,10 +420,10 @@ def make_cubifae_baseline(
 if __name__ == "__main__":
     import time
     print("=" * 60)
-    print("CubifAEBaseline smoke test")
+    print("ALIFTimecellBaseline smoke test")
     print("=" * 60)
     B, T, state_dim, action_dim = 2, 5, 7, 2
-    model = CubifAEBaseline(state_dim=state_dim, action_dim=action_dim, d_hid=192, n_layers=4)
+    model = ALIFTimecellBaseline(state_dim=state_dim, action_dim=action_dim, d_hid=192, n_layers=4)
     n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"Trainable params: {n_params/1e6:.2f}M")
     state = torch.randn(B, T, state_dim)
@@ -443,5 +443,5 @@ if __name__ == "__main__":
     pred = model.predict(ctx_emb, ctx_act)
     print(f"predict output shape: {pred.shape}")
     print("=" * 60)
-    print("CubifAEBaseline smoke test PASSED")
+    print("ALIFTimecellBaseline smoke test PASSED")
     print("=" * 60)

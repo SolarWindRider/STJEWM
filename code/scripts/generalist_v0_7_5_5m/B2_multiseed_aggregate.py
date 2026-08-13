@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path("/home/lx/snn")
 SPLITS = ["cross_benchmark_F1", "oodc_F2", "generalist_16env"]
-MODELS = ["stjewm_trace_only", "stjewm_spike_only", "slt_lif_mpc_trace",
+MODELS = ["stjewm_trace_only", "stjewm_spike_only", "stacked_lif_trace",
           "lewm_baseline_v2", "mlp_baseline"]
 
 # Path resolution: same naming convention as training/eval

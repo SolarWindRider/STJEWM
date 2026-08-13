@@ -580,31 +580,31 @@ def main():
     elif ck_args.get("model", "stjewm") == "mlp_baseline":
         from code.mlp_baseline import make_mlp_baseline
         model = make_mlp_baseline(state_dim=state_dim, action_dim=action_dim)
-    elif ck_args.get("model", "stjewm") == "slt_lif_mpc_trace":
-        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
+    elif ck_args.get("model", "stjewm") == "stacked_lif_trace":
+        from code.stacked_lif_baseline import make_stacked_lif_trace
         n_layers = ck_args.get("n_layers", 4)
-        model = make_slt_lif_mpc_trace(
+        model = make_stacked_lif_trace(
             state_dim=state_dim, action_dim=action_dim,
             d_in=192, embed_dim=192, n_layers=n_layers, trace_beta=0.9, k_avg=4,
         )
-    elif ck_args.get("model", "stjewm") == "slt_lif_mpc_free":
-        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
+    elif ck_args.get("model", "stjewm") == "stacked_lif_free":
+        from code.stacked_lif_baseline import make_stacked_lif_free
         n_layers = ck_args.get("n_layers", 4)
-        model = make_slt_lif_mpc_free(
+        model = make_stacked_lif_free(
             state_dim=state_dim, action_dim=action_dim,
             d_in=192, embed_dim=192, n_layers=n_layers, trace_beta=0.9,
         )
-    elif ck_args.get("model", "stjewm") == "spikedreamer_baseline":
-        from code.spikedreamer_baseline import make_spikedreamer
+    elif ck_args.get("model", "stjewm") == "lif_transformer_baseline":
+        from code.lif_transformer_baseline import make_lif_transformer
         n_layers = ck_args.get("n_layers", 4)
-        model = make_spikedreamer(
+        model = make_lif_transformer(
             state_dim=state_dim, action_dim=action_dim,
             d_snn=128, d_tx=192, num_layers=n_layers, num_heads=8,
         )
-    elif ck_args.get("model", "stjewm") == "cubifae_baseline":
-        from code.cubifae_baseline import CubifAEBaseline
+    elif ck_args.get("model", "stjewm") == "alif_timecell_baseline":
+        from code.alif_timecell_baseline import ALIFTimecellBaseline
         n_layers = ck_args.get("n_layers", 4)
-        model = CubifAEBaseline(
+        model = ALIFTimecellBaseline(
             state_dim=state_dim, action_dim=action_dim,
             d_hid=192, n_layers=n_layers,
         )

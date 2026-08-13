@@ -49,7 +49,7 @@ DMC_DATA = {
 
 
 def build_model_from_ckpt(ck_args: dict, state_dim: int, action_dim: int, device: str):
-    # Use padded obs/action dims from the ckpt so cubifae/slt/etc load with the
+    # Use padded obs/action dims from the ckpt so alif_timecell/slt/etc load with the
     # same dims they were trained on (state_projector expects pad_obs_to, not
     # env-native state_dim).
     pad_obs = ck_args.get("pad_obs_to") or 128
@@ -79,23 +79,23 @@ def build_model_from_ckpt(ck_args: dict, state_dim: int, action_dim: int, device
     if model_name == "mlp_baseline":
         from code.mlp_baseline import make_mlp_baseline
         return make_mlp_baseline(state_dim=state_dim, action_dim=action_dim).to(device)
-    if model_name == "cubifae_baseline":
-        from code.cubifae_baseline import make_cubifae_baseline
-        return make_cubifae_baseline(
+    if model_name == "alif_timecell_baseline":
+        from code.alif_timecell_baseline import make_alif_timecell_baseline
+        return make_alif_timecell_baseline(
             state_dim=train_state_dim, action_dim=train_action_dim,
             d_hid=ck_args.get("embed_dim", 192),
             n_layers=ck_args.get("n_layers", 2),
         ).to(device)
-    if model_name == "slt_lif_mpc_trace":
-        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
-        return make_slt_lif_mpc_trace(
+    if model_name == "stacked_lif_trace":
+        from code.stacked_lif_baseline import make_stacked_lif_trace
+        return make_stacked_lif_trace(
             state_dim=train_state_dim, action_dim=train_action_dim,
             d_in=ck_args.get("embed_dim", 192),
             n_layers=ck_args.get("n_layers", 2),
         ).to(device)
-    if model_name == "slt_lif_mpc_free":
-        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
-        return make_slt_lif_mpc_free(
+    if model_name == "stacked_lif_free":
+        from code.stacked_lif_baseline import make_stacked_lif_free
+        return make_stacked_lif_free(
             state_dim=train_state_dim, action_dim=train_action_dim,
             d_in=ck_args.get("embed_dim", 192),
             n_layers=ck_args.get("n_layers", 2),

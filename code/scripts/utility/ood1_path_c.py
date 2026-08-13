@@ -39,11 +39,11 @@ DEFAULT_CKPT_BUDGET = [
     "stjewm_no_trace",
     "stjewm_hidden_leak",
     "stjewm_membrane_readout",
-    "cubifae_baseline",
+    "alif_timecell_baseline",
     "gru_baseline",
     "lewm_baseline_v2",
-    "slt_lif_mpc_trace",
-    "slt_lif_mpc_free",
+    "stacked_lif_trace",
+    "stacked_lif_free",
     "mlp_baseline",
 ]
 
@@ -330,7 +330,7 @@ def aggregate(out_dir: str):
             f.write(f"| {k[0]} | {k[1]} | {len(vs)} | {avg(ds)} | {avg(rs)} | {avg(hos)} | {avg(srs)} |\n")
         f.write("\n## Per-split, per-family mean\n\n")
         f.write("STJEWM = trace, spike, rate, no_trace, hidden_leak, membrane_readout.\n")
-        f.write("SNN-baselines = cubifae, slt_lif_mpc_trace, slt_lif_mpc_free.\n")
+        f.write("SNN-baselines = alif_timecell, stacked_lif_trace, stacked_lif_free.\n")
         f.write("non-SNN baselines = mlp, gru, lewm.\n\n")
         f.write("| split | family | n_cells | mean_div | mean_resp | mean_rho | mean_env_sr |\n")
         f.write("|---|---|---|---|---|---|---|\n")
@@ -341,9 +341,9 @@ def aggregate(out_dir: str):
             "stjewm_no_trace": "STJEWM",
             "stjewm_hidden_leak": "STJEWM",
             "stjewm_membrane_readout": "STJEWM",
-            "cubifae_baseline": "SNN-baselines",
-            "slt_lif_mpc_trace": "SNN-baselines",
-            "slt_lif_mpc_free": "SNN-baselines",
+            "alif_timecell_baseline": "SNN-baselines",
+            "stacked_lif_trace": "SNN-baselines",
+            "stacked_lif_free": "SNN-baselines",
             "mlp_baseline": "non-SNN",
             "gru_baseline": "non-SNN",
             "lewm_baseline_v2": "non-SNN",

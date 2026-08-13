@@ -46,12 +46,12 @@ from code.train.train import build_model
 
 MODEL_NAMES = (
     "stjewm_trace_only", "stjewm_spike_only", "stjewm_rate_only", "stjewm_no_trace",
-    "stjewm_hidden_leak", "stjewm_membrane_readout", "cubifae_baseline",
-    "slt_lif_mpc_trace", "slt_lif_mpc_free", "spikedreamer_baseline",
+    "stjewm_hidden_leak", "stjewm_membrane_readout", "alif_timecell_baseline",
+    "stacked_lif_trace", "stacked_lif_free", "lif_transformer_baseline",
     "gru_baseline", "mlp_baseline", "lewm_baseline_v2",
 )
 STJEWM_VARIANTS = {name for name in MODEL_NAMES if name.startswith("stjewm_")}
-SPIKING_BASELINES = {"cubifae_baseline", "slt_lif_mpc_trace", "slt_lif_mpc_free", "spikedreamer_baseline"}
+SPIKING_BASELINES = {"alif_timecell_baseline", "stacked_lif_trace", "stacked_lif_free", "lif_transformer_baseline"}
 BASELINE_NAMES = {"gru_baseline", "mlp_baseline", "lewm_baseline_v2"} | SPIKING_BASELINES
 DEFAULT_ROOT = Path("/home/lx/snn")
 DEFAULT_OUT = DEFAULT_ROOT / "results" / "journal_prep" / "P11_energy"
@@ -124,13 +124,13 @@ def _input_and_action_flops(model: nn.Module, model_kind: str) -> Tuple[int, Dic
         else:
             parts["state_encoder"] = _linears_flops(getattr(model, "state_encoder", None))
         parts["action_encoder"] = _linears_flops(getattr(model, "action_encoder", None))
-    elif model_kind in {"cubifae_baseline", "slt_lif_mpc_trace", "slt_lif_mpc_free"}:
+    elif model_kind in {"alif_timecell_baseline", "stacked_lif_trace", "stacked_lif_free"}:
         if getattr(model, "pixel_pre", None) is not None:
             parts["pixel_projector"] = _linears_flops(model.pixel_pre.proj)
         else:
             parts["state_projector"] = _linears_flops(getattr(model, "state_projector", None))
         parts["action_encoder"] = _linears_flops(getattr(model, "action_encoder", None))
-    elif model_kind == "spikedreamer_baseline":
+    elif model_kind == "lif_transformer_baseline":
         if getattr(model, "pixel_pre", None) is not None:
             parts["pixel_projector"] = _linears_flops(model.pixel_pre.proj)
         else:
@@ -220,19 +220,19 @@ def _lewm_dynamic_flops(model: nn.Module, sequence_len: int) -> Tuple[int, Dict[
 
 def _spiking_baseline_dynamic_flops(model: nn.Module, model_kind: str, sequence_len: int) -> Tuple[int, int, Dict[str, int]]:
     """Return total dynamic FLOPs, event-discountable FLOPs, and breakdown."""
-    if model_kind in {"slt_lif_mpc_trace", "slt_lif_mpc_free"}:
+    if model_kind in {"stacked_lif_trace", "stacked_lif_free"}:
         lif = _linears_flops(model.stack)
         readout = _linears_flops(model.readout)
         parts = {"lif_stack": lif, "readout_projection": readout}
         return lif + readout, lif + readout, parts
-    if model_kind == "cubifae_baseline":
+    if model_kind == "alif_timecell_baseline":
         lif = sum(_linears_flops(cell) for cell in model.stack.cells)
         conv = model.stack.time_conv
         time_cells = 2 * int(conv.in_channels) * int(conv.out_channels) * int(conv.kernel_size[0])
         fuse = _linears_flops(model.stack.fuse)
         parts = {"alif_stack": lif, "time_cell_conv": time_cells, "readout_fusion": fuse}
         return lif + time_cells + fuse, lif, parts
-    if model_kind == "spikedreamer_baseline":
+    if model_kind == "lif_transformer_baseline":
         lif = _linears_flops(model.lif_stack)
         spike_proj = _linears_flops(model.spike_proj)
         tx = interactions = 0
@@ -425,8 +425,8 @@ def _build_from_checkpoint(
             hidden_dim=hidden_dim,
             mlp_hidden=mlp_hidden,
             mlp_layers=mlp_layers,
-            slt_layers=_as_optional_int(args.get("slt_layers")),
-            slt_din=_as_optional_int(args.get("slt_din")),
+            stacked_lif_layers=_as_optional_int(args.get("stacked_lif_layers")),
+            stacked_lif_din=_as_optional_int(args.get("stacked_lif_din")),
             image_size=image_size if pixel else 0,
         )
     return model, model_kind

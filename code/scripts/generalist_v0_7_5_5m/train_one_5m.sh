@@ -29,13 +29,13 @@ stjewm_no_trace|stjewm|no_trace|
 stjewm_hidden_leak|stjewm|hidden_leak|
 stjewm_membrane_readout|stjewm|membrane_readout|
 stjewm_raw_spike|stjewm|raw_spike|
-cubifae_baseline|cubifae_baseline||
+alif_timecell_baseline|alif_timecell_baseline||
 gru_baseline|gru_baseline||
 lewm_baseline_v2|lewm_baseline|hidden_leak|
-slt_lif_mpc_trace|slt_lif_mpc_trace||
-slt_lif_mpc_free|slt_lif_mpc_free||
+stacked_lif_trace|stacked_lif_trace||
+stacked_lif_free|stacked_lif_free||
 mlp_baseline|mlp_baseline||
-spikedreamer_baseline|spikedreamer_baseline||
+lif_transformer_baseline|lif_transformer_baseline||
 EOF
 )
 ENTRY=$(echo "$MODEL_FOR" | grep -E "^${MODEL_KIND}\|")

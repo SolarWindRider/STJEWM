@@ -21,7 +21,7 @@ SEED=${4:-0}
 
 # Per-model CLI table. Edit here to add or change variants.
 # NOTE: lewm_baseline_v2 -> --model lewm_baseline (the v2 lives in code, not the CLI flag).
-# NOTE: cubifae / slt variants are "supplementary SNN baselines" — see plan §3.
+# NOTE: alif_timecell / slt variants are "supplementary SNN baselines" — see plan §3.
 MODEL_FOR=$(cat <<'EOF'
 stjewm_trace_only|stjewm|trace_only
 stjewm_spike_only|stjewm|spike_only
@@ -30,11 +30,11 @@ stjewm_no_trace|stjewm|no_trace
 stjewm_hidden_leak|stjewm|hidden_leak
 stjewm_membrane_readout|stjewm|membrane_readout
 stjewm_raw_spike|stjewm|raw_spike
-cubifae_baseline|cubifae_baseline|hidden_leak
+alif_timecell_baseline|alif_timecell_baseline|hidden_leak
 gru_baseline|gru_baseline|
 lewm_baseline_v2|lewm_baseline|hidden_leak
-slt_lif_mpc_trace|slt_lif_mpc_trace|trace_only
-slt_lif_mpc_free|slt_lif_mpc_free|
+stacked_lif_trace|stacked_lif_trace|trace_only
+stacked_lif_free|stacked_lif_free|
 mlp_baseline|mlp_baseline|
 EOF
 )

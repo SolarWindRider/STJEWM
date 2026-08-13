@@ -17,7 +17,7 @@ sys.path.insert(0, "/home/lx/snn")
 G16_CKPTS = [
     "stjewm_trace_only", "stjewm_spike_only", "stjewm_rate_only",
     "stjewm_no_trace", "stjewm_hidden_leak", "stjewm_membrane_readout",
-    "cubifae_baseline", "slt_lif_mpc_trace", "slt_lif_mpc_free",
+    "alif_timecell_baseline", "stacked_lif_trace", "stacked_lif_free",
     "gru_baseline", "mlp_baseline",
 ]
 

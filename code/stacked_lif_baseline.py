@@ -1,13 +1,13 @@
-"""Stacked-LIF baseline (in-house; code id: slt_lif_mpc_*).
+"""Stacked-LIF baseline (in-house; code id: stacked_lif_*).
 
 FUNCTIONAL ROLE (see paper §design): the closest pure-spike control to
 ST-JEWM — stacked LIF CELLS with pure-spike recurrent memory, differing
 from ST-JEWM only in the time filter on the readout (moving average vs
 ST-JEWM's gated trace). Two readout variants isolate design axis 3
 (readout protocol):
-  - Stacked-LIF-trace (slt_lif_mpc_trace): z_t = moving_avg(s_t, k=4)  ->
+  - Stacked-LIF-trace (stacked_lif_trace): z_t = moving_avg(s_t, k=4)  ->
     protocol-compliant (only spikes/trace exposed to planner).
-  - Stacked-LIF-free  (slt_lif_mpc_free):  z_t = concat([s_t, v_t])    ->
+  - Stacked-LIF-free  (stacked_lif_free):  z_t = concat([s_t, v_t])    ->
     protocol-violating (membrane potential exposed to planner).
 Both are calibrated (cos-dist 0.106/0.111), showing that within the
 event-driven recurrent family the readout interface does NOT decide
@@ -140,8 +140,8 @@ class LIFStack(nn.Module):
 # ============================================================
 # Base class — both variants share this
 # ============================================================
-class SLT_LIF_MPCBase(nn.Module):
-    """Base SLT-LIF-MPC model. Subclasses specialize the readout (z_t) shape.
+class StackedLIFBase(nn.Module):
+    """Base Stacked-LIF model. Subclasses specialize the readout (z_t) shape.
 
     Common structure:
         obs -> StateProjector -> emb_pre_cell (B,T,D)
@@ -303,7 +303,7 @@ class SLT_LIF_MPCBase(nn.Module):
 # ============================================================
 # TraceOnly — membrane-forbidden (only s_t + moving_avg exposed)
 # ============================================================
-class SLT_LIF_MPC_TraceOnly(SLT_LIF_MPCBase):
+class StackedLIFTraceOnly(StackedLIFBase):
     """TraceOnly variant: only s_t and a moving-average trace are exposed.
 
     z_t = moving_avg(s_t, k=4) projected to 192
@@ -354,7 +354,7 @@ class SLT_LIF_MPC_TraceOnly(SLT_LIF_MPCBase):
 # ============================================================
 # FreeAccess — membrane-exposed (planner reads v_t directly)
 # ============================================================
-class SLT_LIF_MPC_FreeAccess(SLT_LIF_MPCBase):
+class StackedLIFFreeAccess(StackedLIFBase):
     """FreeAccess variant: continuous membrane potential v_t is exposed.
 
     z_t = concat([s_t, v_t]) projected to 192 (note: 2D -> 192D)
@@ -397,26 +397,26 @@ class SLT_LIF_MPC_FreeAccess(SLT_LIF_MPCBase):
 # ============================================================
 # Factory helpers
 # ============================================================
-def make_slt_lif_mpc_trace(
+def make_stacked_lif_trace(
     state_dim: int, action_dim: int,
     d_in: int = 192, embed_dim: int = 192,
     n_layers: int = 4, trace_beta: float = 0.9, k_avg: int = 4,
     image_size: int = 0,
-) -> SLT_LIF_MPC_TraceOnly:
-    return SLT_LIF_MPC_TraceOnly(
+) -> StackedLIFTraceOnly:
+    return StackedLIFTraceOnly(
         state_dim=state_dim, action_dim=action_dim,
         d_in=d_in, embed_dim=embed_dim,
         n_layers=n_layers, trace_beta=trace_beta, k_avg=k_avg,
         image_size=image_size,
     )
 
-def make_slt_lif_mpc_free(
+def make_stacked_lif_free(
     state_dim: int, action_dim: int,
     d_in: int = 192, embed_dim: int = 192,
     n_layers: int = 4, trace_beta: float = 0.9,
     image_size: int = 0,
-) -> SLT_LIF_MPC_FreeAccess:
-    return SLT_LIF_MPC_FreeAccess(
+) -> StackedLIFFreeAccess:
+    return StackedLIFFreeAccess(
         state_dim=state_dim, action_dim=action_dim,
         d_in=d_in, embed_dim=embed_dim,
         n_layers=n_layers, trace_beta=trace_beta,
@@ -431,15 +431,15 @@ if __name__ == "__main__":
     import time
 
     print("=" * 60)
-    print("SLT-LIF-MPC smoke test")
+    print("Stacked-LIF smoke test")
     print("=" * 60)
 
     B, T, D_obs, D_act = 4, 12, 9, 6
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     for variant_name, factory in [
-        ("TraceOnly", make_slt_lif_mpc_trace),
-        ("FreeAccess", make_slt_lif_mpc_free),
+        ("TraceOnly", make_stacked_lif_trace),
+        ("FreeAccess", make_stacked_lif_free),
     ]:
         print(f"\n--- {variant_name} ---")
         model = factory(state_dim=D_obs, action_dim=D_act).to(device)

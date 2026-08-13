@@ -25,13 +25,13 @@ for r in v14_eval:
 
 print("v0.7.14 (5M-aligned) per-(env, model) LeWM-SR (mean across splits):")
 print(f"{'Env':<14s}", end="")
-for m in ['stjewm_trace_only', 'stjewm_hidden_leak', 'cubifae_baseline', 'gru_baseline', 'lewm_baseline_v2', 'mlp_baseline', 'slt_lif_mpc_trace', 'slt_lif_mpc_free', 'spikedreamer_baseline']:
+for m in ['stjewm_trace_only', 'stjewm_hidden_leak', 'alif_timecell_baseline', 'gru_baseline', 'lewm_baseline_v2', 'mlp_baseline', 'stacked_lif_trace', 'stacked_lif_free', 'lif_transformer_baseline']:
     print(f" {m[:14]:<14s}", end="")
 print()
 envs = sorted({r['env'] for r in v14_eval})
 for env in envs:
     print(f"{env:<14s}", end="")
-    for m in ['stjewm_trace_only', 'stjewm_hidden_leak', 'cubifae_baseline', 'gru_baseline', 'lewm_baseline_v2', 'mlp_baseline', 'slt_lif_mpc_trace', 'slt_lif_mpc_free', 'spikedreamer_baseline']:
+    for m in ['stjewm_trace_only', 'stjewm_hidden_leak', 'alif_timecell_baseline', 'gru_baseline', 'lewm_baseline_v2', 'mlp_baseline', 'stacked_lif_trace', 'stacked_lif_free', 'lif_transformer_baseline']:
         vals = v14_by_em.get((env, m), [])
         if vals:
             mean = sum(vals) / len(vals)

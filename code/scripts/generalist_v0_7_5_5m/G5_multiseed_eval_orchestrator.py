@@ -14,10 +14,10 @@ MODELS = [
     "stjewm_no_trace",
     "stjewm_hidden_leak",
     "stjewm_membrane_readout",
-    "cubifae_baseline",
-    "slt_lif_mpc_free",
+    "alif_timecell_baseline",
+    "stacked_lif_free",
     "gru_baseline",
-    "spikedreamer_baseline",
+    "lif_transformer_baseline",
 ]
 SPLITS = ["configs/oodc_5m/cross_benchmark_F1.json",
           "configs/oodc_5m/oodc_F2.json",

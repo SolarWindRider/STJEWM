@@ -18,8 +18,8 @@ SPLITS = ["cross_benchmark_F1", "oodc_F2", "generalist_16env"]
 MODELS = [
     "stjewm_trace_only", "stjewm_spike_only", "stjewm_rate_only",
     "stjewm_no_trace", "stjewm_hidden_leak", "stjewm_membrane_readout",
-    "cubifae_baseline", "slt_lif_mpc_trace", "slt_lif_mpc_free",
-    "lewm_baseline_v2", "gru_baseline", "mlp_baseline", "spikedreamer_baseline",
+    "alif_timecell_baseline", "stacked_lif_trace", "stacked_lif_free",
+    "lewm_baseline_v2", "gru_baseline", "mlp_baseline", "lif_transformer_baseline",
 ]
 
 SEED_DIRS = {0: "results/5m", 1: "results/5m_seed1", 2: "results/5m_seed2"}

@@ -34,8 +34,8 @@ ENV_TARGETS=(
 MODELS=(
   stjewm_trace_only stjewm_spike_only stjewm_rate_only stjewm_no_trace
   stjewm_hidden_leak stjewm_membrane_readout
-  mlp_baseline lewm_baseline_v2 gru_baseline cubifae_baseline
-  slt_lif_mpc_trace slt_lif_mpc_free spikedreamer_baseline
+  mlp_baseline lewm_baseline_v2 gru_baseline alif_timecell_baseline
+  stacked_lif_trace stacked_lif_free lif_transformer_baseline
 )
 
 # Build worklist: every (env, model, target) where ckpt exists and output missing

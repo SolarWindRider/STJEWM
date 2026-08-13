@@ -104,10 +104,10 @@ def evaluate(args) -> Dict[str, Any]:
     elif ck_args.get("model", "stjewm") == "mlp_baseline":
         from code.mlp_baseline import make_mlp_baseline
         model = make_mlp_baseline(state_dim=state_dim_for_model, action_dim=action_dim_for_model)
-    elif ck_args.get("model", "stjewm") == "cubifae_baseline":
-        from code.cubifae_baseline import CubifAEBaseline
+    elif ck_args.get("model", "stjewm") == "alif_timecell_baseline":
+        from code.alif_timecell_baseline import ALIFTimecellBaseline
         n_layers = ck_args.get("n_layers", 4)
-        model = CubifAEBaseline(state_dim=state_dim_for_model, action_dim=action_dim_for_model,
+        model = ALIFTimecellBaseline(state_dim=state_dim_for_model, action_dim=action_dim_for_model,
                                 d_hid=192, n_layers=n_layers)
     else:
         from code.stjewm import STJEWM

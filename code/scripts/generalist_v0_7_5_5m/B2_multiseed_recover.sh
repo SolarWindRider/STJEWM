@@ -1,7 +1,7 @@
 #!/bin/bash
 # B2 recovery launcher: train the remaining 2 missing ckpts.
 #   seed=2 generalist_16env stjewm_spike_only
-#   seed=2 generalist_16env slt_lif_mpc_trace
+#   seed=2 generalist_16env stacked_lif_trace
 # Uses single GPU (0 or 1) to avoid contention; non-screen-detached via nohup + setsid.
 
 set -e
@@ -12,7 +12,7 @@ mkdir -p "$LOG_DIR"
 
 MODELS=(
   "generalist_16env stjewm_spike_only   stjewm  spike_only   /home/lx/snn/results/5m_seed2/generalist_16env/stjewm_spike_only/seed_0   2"
-  "generalist_16env slt_lif_mpc_trace   slt_lif_mpc_trace  ''   /home/lx/snn/results/5m_seed2/generalist_16env/slt_lif_mpc_trace/seed_0   2"
+  "generalist_16env stacked_lif_trace   stacked_lif_trace  ''   /home/lx/snn/results/5m_seed2/generalist_16env/stacked_lif_trace/seed_0   2"
 )
 
 # Run sequentially to avoid GPU contention

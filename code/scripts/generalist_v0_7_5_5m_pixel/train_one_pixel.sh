@@ -11,9 +11,9 @@ case "$MODEL" in
   lewm_baseline) N_LAYERS=3 ;;
   gru_baseline) N_LAYERS=2 ;;
   mlp_baseline) N_LAYERS=12 ;;
-  slt_lif_mpc_trace|slt_lif_mpc_free) N_LAYERS=8 ;;
-  spikedreamer_baseline) N_LAYERS=3 ;;
-  cubifae_baseline) N_LAYERS=2 ;;
+  stacked_lif_trace|stacked_lif_free) N_LAYERS=8 ;;
+  lif_transformer_baseline) N_LAYERS=3 ;;
+  alif_timecell_baseline) N_LAYERS=2 ;;
   *) echo "Unknown model: $MODEL" && exit 1 ;;
 esac
 

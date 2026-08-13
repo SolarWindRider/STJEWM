@@ -1,6 +1,6 @@
 """Event-Window task: agent reports the modal event of the most recent
 N-step window. Tests whether the trace's content-aware α gate
-outperforms the membrane readout and CuBiFAE's passive decay.
+outperforms the membrane readout and ALIF-timecell's passive decay.
 
 Setup:
 - 5 event types (E0, E1, E2, E3, E4).
@@ -18,7 +18,7 @@ The *trick*: a *switching event* flips the rate pattern at a random
 window boundary (with probability `switch_prob`). If the agent's
 predictor remembers the *previous* rate pattern (content-aware trace),
 it can detect the switch and *ignore* the early-window events from
-the old pattern. If it just decays passively (CuBiFAE), it conflates
+the old pattern. If it just decays passively (ALIF-timecell), it conflates
 pre-switch and post-switch events — and the modal event in the
 switch-window will look like an old-pattern event, leading to a wrong
 guess.
@@ -32,7 +32,7 @@ Why this tests the trace's α gate:
   drops. The trace on the *old* dim decays selectively, while the new
   dim's trace accumulates.
 - The trace therefore acts as a *content-aware rate counter that
-  resets on input change*. CuBiFAE cannot do this (its τ_k is fixed; it
+  resets on input change*. ALIF-timecell cannot do this (its τ_k is fixed; it
   decays both dims at their own rates regardless of which one is
   currently firing).
 - Membrane readout cannot do this either (v_t reflects the current

@@ -41,7 +41,7 @@ def stjewm_loss(
     }
 
 
-def cubifae_loss(
+def alif_timecell_loss(
     pred_emb: torch.Tensor,
     tgt_emb: torch.Tensor,
     spike_layers: list[torch.Tensor],
@@ -51,7 +51,7 @@ def cubifae_loss(
     lambda_sparse: float = 1e-3,
     lambda_goal: float = 0.0,
 ) -> tuple[torch.Tensor, dict]:
-    """ALIF-timecell (in-house; code id cubifae_baseline) native loss.
+    """ALIF-timecell (in-house; code id alif_timecell_baseline) native loss.
 
     Two terms:
       L_pred  = ||pred - sg(tgt)||^2              # predictive loss on the time-cell readout
@@ -78,7 +78,7 @@ def cubifae_loss(
     }
 
 
-def spikedreamer_loss(
+def lif_transformer_loss(
     pred_emb: torch.Tensor,
     tgt_emb: torch.Tensor,
     obs_recon: torch.Tensor | None = None,
@@ -91,7 +91,7 @@ def spikedreamer_loss(
     lambda_pred: float = 1.0,
     lambda_sparse: float = 1e-3,
 ) -> tuple[torch.Tensor, dict]:
-    """LIF-Transformer (in-house; code id spikedreamer_baseline) native loss.
+    """LIF-Transformer (in-house; code id lif_transformer_baseline) native loss.
 
     A hybrid: LIF encoder + Transformer decoder. Total loss is:
       L_recon   = ||obs_recon - sg(obs_target)||^2   (only if pixel obs)
@@ -131,7 +131,7 @@ def spikedreamer_loss(
     }
 
 
-def slt_lif_mpc_loss(
+def stacked_lif_loss(
     pred_emb: torch.Tensor,
     tgt_emb: torch.Tensor,
     spike_count: torch.Tensor | None = None,
@@ -141,7 +141,7 @@ def slt_lif_mpc_loss(
     lambda_sparse: float = 1e-4,
     lambda_action: float = 0.5,
 ) -> tuple[torch.Tensor, dict]:
-    """Stacked-LIF (in-house; code id slt_lif_mpc_*) native loss for a closed-loop LIF controller.
+    """Stacked-LIF (in-house; code id stacked_lif_*) native loss for a closed-loop LIF controller.
 
     Three terms, matching the canonical closed-loop SNN-MPC recipe:
 
@@ -186,8 +186,8 @@ NATIVE_LOSS_DISPATCH = {
     "lewm_baseline_trace_only": stjewm_loss,
     "gru_baseline":          stjewm_loss,           # GRU is JEPA-style in our wrapper
     "mlp_baseline":          stjewm_loss,           # MLP is JEPA-style in our wrapper
-    "cubifae_baseline":      cubifae_loss,
-    "spikedreamer_baseline": spikedreamer_loss,
-    "slt_lif_mpc_trace":     slt_lif_mpc_loss,
-    "slt_lif_mpc_free":      slt_lif_mpc_loss,
+    "alif_timecell_baseline":      alif_timecell_loss,
+    "lif_transformer_baseline": lif_transformer_loss,
+    "stacked_lif_trace":     stacked_lif_loss,
+    "stacked_lif_free":      stacked_lif_loss,
 }

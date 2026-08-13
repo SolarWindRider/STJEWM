@@ -142,8 +142,10 @@ generation of auxiliary checkpoints. Recovery status at `git HEAD f65e2d8`+:
 - **Permanently unrecoverable**: 16 old single-env checkpoints
   (`cheetah_velhidden/finger/stacker/dog/cartpole_2d/cartpole_flicker/fish/tworoom` ×
   `stacked_lif_trace`/`stacked_lif_free`) from early v0.7.x experiments — no training
-  command was recorded for them. Their eval numbers survive in
-  `results/<env>/<model>/eval.json`; the checkpoints themselves cannot be reproduced.
+  command was recorded for them. Their eval numbers are archived in
+  `docs/single_env_historical_eval.md` (the legacy `results/<env>/` directories
+  were removed in the 2026-08 legacy cleanup); the checkpoints themselves cannot
+  be reproduced.
 - **Bug fixed during retraining** (`code/train/train.py`): state-mode runs had
   `image_size` overwritten to 0 after dataset load (build fell back to 84px →
   ViT positional embeddings `(1,37,192)`), mismatching the 5M-main 224px layout

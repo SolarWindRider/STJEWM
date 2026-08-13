@@ -255,42 +255,42 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
             state_dim=state_dim, action_dim=action_dim,
             hidden_dim=hidden_dim, num_layers=num_layers, emb_dim=emb_dim,
         )
-    if model_name.startswith("slt_lif_mpc_trace"):
-        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
+    if model_name.startswith("stacked_lif_trace"):
+        from code.stacked_lif_baseline import make_stacked_lif_trace
         # 5m ckpts were trained with n_layers=8 (see measure_latent_stats_5m.py);
         # args.n_layers=2 is misleading here.
         n_layers = 8
         d_in = _infer_dim_from_state_dict(ck_state_dict, "state_projector.proj.0.weight") or 192
-        return make_slt_lif_mpc_trace(
+        return make_stacked_lif_trace(
             state_dim=state_dim, action_dim=action_dim,
             d_in=d_in, embed_dim=d_in, n_layers=n_layers, trace_beta=0.9, k_avg=4,
         )
-    if model_name.startswith("slt_lif_mpc_free"):
-        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
+    if model_name.startswith("stacked_lif_free"):
+        from code.stacked_lif_baseline import make_stacked_lif_free
         n_layers = 8
         d_in = _infer_dim_from_state_dict(ck_state_dict, "state_projector.proj.0.weight") or 192
-        return make_slt_lif_mpc_free(
+        return make_stacked_lif_free(
             state_dim=state_dim, action_dim=action_dim,
             d_in=d_in, embed_dim=d_in, n_layers=n_layers, trace_beta=0.9,
         )
-    if model_name.startswith("spikedreamer"):
-        from code.spikedreamer_baseline import make_spikedreamer
+    if model_name.startswith("lif_transformer"):
+        from code.lif_transformer_baseline import make_lif_transformer
         # measure_latent_stats_5m.py uses num_layers=3 (hardcoded).
         n_layers = 3
         d_snn = _infer_dim_from_state_dict(ck_state_dict, "state_proj.proj.0.weight") or 128
-        d_tx = d_snn  # SpikeDreamer uses d_snn == d_tx
+        d_tx = d_snn  # LIFTransformer uses d_snn == d_tx
         if ck_state_dict is not None and "pos_embed" in ck_state_dict:
             d_tx = int(ck_state_dict["pos_embed"].shape[2])
-        return make_spikedreamer(
+        return make_lif_transformer(
             state_dim=state_dim, action_dim=action_dim,
             d_snn=d_snn, d_tx=d_tx, num_layers=n_layers, num_heads=8,
         )
-    if model_name.startswith("cubifae"):
-        from code.cubifae_baseline import CubifAEBaseline
+    if model_name.startswith("alif_timecell"):
+        from code.alif_timecell_baseline import ALIFTimecellBaseline
         # measure_latent_stats_5m.py uses n_layers=2.
         n_layers = 2
         d_hid = _infer_dim_from_state_dict(ck_state_dict, "state_projector.0.weight") or 192
-        return CubifAEBaseline(
+        return ALIFTimecellBaseline(
             state_dim=state_dim, action_dim=action_dim,
             d_hid=d_hid, n_layers=n_layers,
         )

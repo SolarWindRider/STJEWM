@@ -56,14 +56,14 @@ def encode_obs(model, obs_pixel_np, device):
 
     Handles the per-model encode contract:
     - STJEWM: _encode_obs returns (B, T, D) tensor
-    - SpikeDreamer: _encode_obs returns (s_proj, spike, lif_out) tuple; use s_proj
+    - LIFTransformer: _encode_obs returns (s_proj, spike, lif_out) tuple; use s_proj
     - Others: encode(obs, action) returns dict with 'emb'
     """
     x = torch.from_numpy(obs_pixel_np).float().unsqueeze(0).unsqueeze(0).to(device)
     with torch.no_grad():
         if hasattr(model, "_encode_obs"):
             z = model._encode_obs(x)
-            # SpikeDreamer returns a tuple (s_proj, spike, lif_out); use s_proj
+            # LIFTransformer returns a tuple (s_proj, spike, lif_out); use s_proj
             if isinstance(z, tuple):
                 z = z[0]
         else:

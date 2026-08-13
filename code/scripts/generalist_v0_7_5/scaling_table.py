@@ -134,7 +134,7 @@ def render(rows: List[Dict[str, Any]], models: List[str]) -> str:
     out.append("Bucket each (model, scale) by the joint signature. A model is")
     out.append("**calibrated** when the two collapse-robust axes are in the")
     out.append("calibrated band (resp ∈ [0.1, 1.0], div ∈ [0.005, 0.05]); ρ is")
-    out.append("confirmatory (≥ 0.9) but is unavailable for slt/cubifae, so")
+    out.append("confirmatory (≥ 0.9) but is unavailable for slt/alif_timecell, so")
     out.append("their bucket is determined by resp+div alone. Other signatures:\n")
     out.append("- **collapse**   : div < 0.005 (MLP signature: 0.0002).")
     out.append("- **over-react** : resp > 5 ∧ div > 0.05 (LeWM signature: ~0.18).")
@@ -154,7 +154,7 @@ def render(rows: List[Dict[str, Any]], models: List[str]) -> str:
             d_ok = (d is not None and 0.005 <= d <= 0.05)
             p_ok = (p is not None and p >= 0.9)
             # Calibrated if the two collapse-robust axes (resp, div) are in the
-            # calibrated band; ρ is confirmatory but absent for slt/cubifae.
+            # calibrated band; ρ is confirmatory but absent for slt/alif_timecell.
             if r_ok and d_ok and (p is None or p_ok):
                 tag = "calibrated"
             elif d is not None and d < 0.005:
@@ -176,7 +176,7 @@ def render(rows: List[Dict[str, Any]], models: List[str]) -> str:
     out.append("  most ±0.005 across scales — the latent is *the same shape* at")
     out.append("  4 envs, 8 envs, and 16 envs. This is the scaling robustness")
     out.append("  leg of the v0.7.8 cross-env claim.\n")
-    out.append("- **cubifae + slt_lif_mpc also hold the calibrated band** for")
+    out.append("- **alif_timecell + stacked_lif also hold the calibrated band** for")
     out.append("  resp + div at every scale (ρ not computed for these families,")
     out.append("  so the cell is `-` rather than a verdict).\n")
     out.append("- **MLP is collapsed at every scale** (div = 0.0002, ρ ≈ 0); the")

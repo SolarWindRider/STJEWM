@@ -56,11 +56,11 @@ G16_MODELS: List[str] = [
     "stjewm_no_trace",
     "stjewm_hidden_leak",
     "stjewm_membrane_readout",
-    "cubifae_baseline",
+    "alif_timecell_baseline",
     "gru_baseline",
     "lewm_baseline_v2",
-    "slt_lif_mpc_trace",
-    "slt_lif_mpc_free",
+    "stacked_lif_trace",
+    "stacked_lif_free",
     "mlp_baseline",
 ]
 
@@ -74,7 +74,7 @@ TABLE_ROWS: List[str] = [
     "stjewm_rate_only",
     "stjewm_hidden_leak",
     "stjewm_membrane_readout",
-    "cubifae_baseline",
+    "alif_timecell_baseline",
     "gru_baseline",
     "mlp_baseline",
     "untrained_trace",

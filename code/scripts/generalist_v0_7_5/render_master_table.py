@@ -31,12 +31,12 @@ def render(rows: List[Dict[str, Any]]) -> str:
     models = [
         "stjewm_trace_only", "stjewm_spike_only", "stjewm_rate_only",
         "stjewm_no_trace", "stjewm_hidden_leak", "stjewm_membrane_readout",
-        "cubifae_baseline", "gru_baseline", "lewm_baseline_v2",
-        "slt_lif_mpc_trace", "slt_lif_mpc_free", "mlp_baseline",
+        "alif_timecell_baseline", "gru_baseline", "lewm_baseline_v2",
+        "stacked_lif_trace", "stacked_lif_free", "mlp_baseline",
     ]
     out = []
     out.append("# Generalist World-Model Evaluation — Master Table (v0.7.5)\n")
-    out.append("**Setup.** Twelve model variants (6 STJEWM readouts + cubifae + gru + lewm")
+    out.append("**Setup.** Twelve model variants (6 STJEWM readouts + alif_timecell + gru + lewm")
     out.append("+ 2 slt variants + mlp collapse-control) trained on three task-scale")
     out.append("suites:\n")
     out.append("- **G4** — 4 envs (cartpole_2d, pendulum_2d, cheetah, pusht), 8K windows total.")
@@ -123,8 +123,8 @@ def render(rows: List[Dict[str, Any]]) -> str:
         "| model | div | interpretation |\n"
         "|---|---|---|\n"
         "| stjewm_trace / spike / no_trace / hidden_leak / membrane / rate_only | 0.011–0.012 | calibrated |\n"
-        "| cubifae_baseline | 0.011 | calibrated (SNN) |\n"
-        "| slt_lif_mpc_trace / free | 0.011 | calibrated (SNN) |\n"
+        "| alif_timecell_baseline | 0.011 | calibrated (SNN) |\n"
+        "| stacked_lif_trace / free | 0.011 | calibrated (SNN) |\n"
         "| **mlp_baseline** | **0.0002** | **collapse (50× lower than STJEWM)** |\n"
         "| **gru_baseline** | 0.008 | noise (responsiveness 30, but ρ ≈ 0) |\n"
         "| **lewm_baseline_v2** | **0.186** | over-reactive (Transformer amplifies obs) |\n\n"

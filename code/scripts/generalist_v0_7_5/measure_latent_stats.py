@@ -5,7 +5,7 @@ the env and record obs and the model's calibrated latent at every step.
 Then compute:
 
 - **responsiveness**: `mean_norm(Δlatent) / mean_norm(Δobs)`. < 0.3 = latent
-  moves less than obs on average (calibrated STJEWM/CubifAE ~0.2,
+  moves less than obs on average (calibrated STJEWM/ALIFTimecell ~0.2,
   collapsed MLP ~0.08). > 1 = latent amplifies obs (LeWM ~8.5, GRU ~3.9,
   which is noise amplified — caught by event-align ρ).
 - **divergence-from-constant**: per-dim std of the latent trajectory,
@@ -29,7 +29,7 @@ Measured on G4 ckpts at cheetah (200 random steps):
 | stjewm_spike_only  | 0.206          | 0.0061     | calibrated             |
 | stjewm_no_trace    | 0.207          | 0.0054     | calibrated             |
 | stjewm_membrane    | 0.193          | 0.0052     | calibrated             |
-| cubifae_baseline   | 0.199          | 0.0056     | calibrated             |
+| alif_timecell_baseline   | 0.199          | 0.0056     | calibrated             |
 | gru_baseline       | 3.905          | 0.0103     | noise (high Δlat)      |
 | lewm_baseline      | 8.524          | 0.1797     | over-reactive          |
 | mlp_baseline       | 0.086          | 0.0004     | COLLAPSE (15× lower)   |
@@ -88,26 +88,26 @@ def load_model(ckpt_path: str, env, device: str = "cpu"):
     elif m == "mlp_baseline":
         from code.mlp_baseline import make_mlp_baseline
         model = make_mlp_baseline(state_dim=state_dim, action_dim=action_dim)
-    elif m == "slt_lif_mpc_trace":
-        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
-        model = make_slt_lif_mpc_trace(
+    elif m == "stacked_lif_trace":
+        from code.stacked_lif_baseline import make_stacked_lif_trace
+        model = make_stacked_lif_trace(
             state_dim=state_dim, action_dim=action_dim,
             d_in=192, embed_dim=192, n_layers=ck_args.get("n_layers", 4),
             trace_beta=0.9, k_avg=4)
-    elif m == "slt_lif_mpc_free":
-        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
-        model = make_slt_lif_mpc_free(
+    elif m == "stacked_lif_free":
+        from code.stacked_lif_baseline import make_stacked_lif_free
+        model = make_stacked_lif_free(
             state_dim=state_dim, action_dim=action_dim,
             d_in=192, embed_dim=192, n_layers=ck_args.get("n_layers", 4),
             trace_beta=0.9)
-    elif m == "cubifae_baseline":
-        from code.cubifae_baseline import CubifAEBaseline
-        model = CubifAEBaseline(
+    elif m == "alif_timecell_baseline":
+        from code.alif_timecell_baseline import ALIFTimecellBaseline
+        model = ALIFTimecellBaseline(
             state_dim=state_dim, action_dim=action_dim,
             d_hid=192, n_layers=ck_args.get("n_layers", 4))
-    elif m == "spikedreamer_baseline":
-        from code.spikedreamer_baseline import make_spikedreamer
-        model = make_spikedreamer(
+    elif m == "lif_transformer_baseline":
+        from code.lif_transformer_baseline import make_lif_transformer
+        model = make_lif_transformer(
             state_dim=state_dim, action_dim=action_dim,
             d_snn=128, d_tx=192, num_layers=ck_args.get("n_layers", 4),
             num_heads=8)

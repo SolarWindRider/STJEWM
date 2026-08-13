@@ -1,8 +1,8 @@
 #!/bin/bash
 # G5 multi-seed launcher: extend B2's 5-model 3-seed coverage to the full 13 models.
 # Trains 8 missing models (stjewm_rate_only, stjewm_no_trace, stjewm_hidden_leak,
-# stjewm_membrane_readout, cubifae_baseline, slt_lif_mpc_free, gru_baseline,
-# spikedreamer_baseline) at seeds {1, 2} across 3 splits (cross_benchmark_F1,
+# stjewm_membrane_readout, alif_timecell_baseline, stacked_lif_free, gru_baseline,
+# lif_transformer_baseline) at seeds {1, 2} across 3 splits (cross_benchmark_F1,
 # oodc_F2, generalist_16env). 8 models x 3 splits x 2 seeds = 48 ckpts.
 #
 # Same protocol as B2_multiseed_launcher.sh (state 5M, --n-layers 2:
@@ -38,10 +38,10 @@ MODELS = [
     "stjewm_no_trace",
     "stjewm_hidden_leak",
     "stjewm_membrane_readout",
-    "cubifae_baseline",
-    "slt_lif_mpc_free",
+    "alif_timecell_baseline",
+    "stacked_lif_free",
     "gru_baseline",
-    "spikedreamer_baseline",
+    "lif_transformer_baseline",
 ]
 MAP = {
     "stjewm_trace_only":       ("stjewm",            "trace_only"),
@@ -51,13 +51,13 @@ MAP = {
     "stjewm_hidden_leak":      ("stjewm",            "hidden_leak"),
     "stjewm_membrane_readout": ("stjewm",            "membrane_readout"),
     "stjewm_raw_spike":        ("stjewm",            "raw_spike"),
-    "cubifae_baseline":        ("cubifae_baseline",  ""),
+    "alif_timecell_baseline":        ("alif_timecell_baseline",  ""),
     "gru_baseline":            ("gru_baseline",      ""),
     "lewm_baseline_v2":        ("lewm_baseline",     "hidden_leak"),
-    "slt_lif_mpc_trace":       ("slt_lif_mpc_trace", ""),
-    "slt_lif_mpc_free":        ("slt_lif_mpc_free",  ""),
+    "stacked_lif_trace":       ("stacked_lif_trace", ""),
+    "stacked_lif_free":        ("stacked_lif_free",  ""),
     "mlp_baseline":            ("mlp_baseline",      ""),
-    "spikedreamer_baseline":   ("spikedreamer_baseline", ""),
+    "lif_transformer_baseline":   ("lif_transformer_baseline", ""),
 }
 SPLITS = ["configs/oodc_5m/cross_benchmark_F1.json",
           "configs/oodc_5m/oodc_F2.json",

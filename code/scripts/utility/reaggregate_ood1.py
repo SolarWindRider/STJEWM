@@ -98,9 +98,9 @@ def main():
             "stjewm_no_trace": "STJEWM",
             "stjewm_hidden_leak": "STJEWM",
             "stjewm_membrane_readout": "STJEWM",
-            "cubifae_baseline": "SNN-baselines",
-            "slt_lif_mpc_trace": "SNN-baselines",
-            "slt_lif_mpc_free": "SNN-baselines",
+            "alif_timecell_baseline": "SNN-baselines",
+            "stacked_lif_trace": "SNN-baselines",
+            "stacked_lif_free": "SNN-baselines",
             "mlp_baseline": "non-SNN",
             "gru_baseline": "non-SNN",
             "lewm_baseline_v2": "non-SNN",
@@ -111,7 +111,7 @@ def main():
             fam_agg[(c["split"], fam)].append((c["div"], c["resp"], c["rho"], c["env_sr"]))
         f.write("\n## Per-split, per-family mean\n\n")
         f.write("STJEWM = trace, spike, rate, no_trace, hidden_leak, membrane_readout.\n")
-        f.write("SNN-baselines = cubifae, slt_lif_mpc_trace, slt_lif_mpc_free.\n")
+        f.write("SNN-baselines = alif_timecell, stacked_lif_trace, stacked_lif_free.\n")
         f.write("non-SNN baselines = mlp, gru, lewm.\n\n")
         f.write("| split | family | n_cells | mean_div | mean_resp | mean_rho | mean_env_sr |\n")
         f.write("|---|---|---|---|---|---|---|\n")

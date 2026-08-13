@@ -1,5 +1,5 @@
 #!/bin/bash
-# High-power rerun: SLT-trace vs STJEWM-trace vs STJEWM-spike
+# High-power rerun: Stacked-LIF-trace vs STJEWM-trace vs STJEWM-spike
 # 10 splits x 3 models, 4 competitive envs (cartpole,p pendulum,finger,cheetah),
 # n_episodes=30, FULL CEM (300x10, budget 50, horizon 5).
 # 4 GPUs round-robin. Each job ~4-8 min (30 eps x 4 envs).
@@ -7,7 +7,7 @@ set -e
 cd /home/lx/snn
 
 SPLITS="cross_benchmark_F1 cross_benchmark_F2 cross_benchmark_F3 oodc_F1 oodc_F1F2 oodc_F1F3 oodc_F2 oodc_F2F3 oodc_F3 generalist_16env"
-MODELS="slt_lif_mpc_trace stjewm_trace_only stjewm_spike_only"
+MODELS="stacked_lif_trace stjewm_trace_only stjewm_spike_only"
 ENVS="cartpole,pendulum,finger,cheetah"
 OUTDIR=results/5m_pixel_highpower
 

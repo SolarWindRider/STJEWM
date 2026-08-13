@@ -42,11 +42,11 @@ The v0.7.5 work was a metric design fix, not a re-training.
 | STJEWM | no_trace | stjewm | no_trace |
 | STJEWM | hidden_leak | stjewm | hidden_leak |
 | STJEWM | membrane_readout | stjewm | membrane_readout |
-| SNN | cubifae_baseline | cubifae_baseline | hidden_leak |
+| SNN | alif_timecell_baseline | alif_timecell_baseline | hidden_leak |
 | RNN | gru_baseline | gru_baseline | (ignored) |
 | TX | lewm_baseline_v2 | lewm_baseline_v2 | (ignored) |
-| SNN-ctrl | slt_lif_mpc_trace | slt_lif_mpc_trace | trace_only |
-| SNN-ctrl | slt_lif_mpc_free | slt_lif_mpc_free | (default) |
+| SNN-ctrl | stacked_lif_trace | stacked_lif_trace | trace_only |
+| SNN-ctrl | stacked_lif_free | stacked_lif_free | (default) |
 | FFN | mlp_baseline *(collapse control)* | mlp_baseline | (ignored) |
 
 ## Config files

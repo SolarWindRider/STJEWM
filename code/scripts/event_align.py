@@ -113,8 +113,8 @@ def _mlp_arch(state_dict):
     return (max(idxs) // 2) if idxs else None, hidden
 
 
-def _slt_arch(state_dict):
-    """Infer (n_layers, d_in) of SLT_LIF_MPC_* from a state_dict."""
+def _stacked_lif_arch(state_dict):
+    """Infer (n_layers, d_in) of StackedLIFBase (trace/free variants) from a state_dict."""
     idxs, d_in = [], None
     for k, v in state_dict.items():
         m = _re.match(r"^stack\.cells\.(\d+)\.", k)
@@ -145,8 +145,8 @@ def _lewm_arch(state_dict):
     return (max(idxs) + 1) if idxs else None, embed
 
 
-def _cubifae_arch(state_dict):
-    """Infer (n_layers, d_hid) of CubifAEBaseline from a state dict."""
+def _alif_timecell_arch(state_dict):
+    """Infer (n_layers, d_hid) of ALIFTimecellBaseline from a state dict."""
     idxs = []
     for key in state_dict:
         match = _re.match(r"^stack\.cells\.(\d+)\.", key)
@@ -157,8 +157,8 @@ def _cubifae_arch(state_dict):
     return (max(idxs) + 1) if idxs else None, d_hid
 
 
-def _spikedreamer_arch(state_dict):
-    """Infer (num_layers, d_snn, d_tx) of SpikeDreamer from a state dict."""
+def _lif_transformer_arch(state_dict):
+    """Infer (num_layers, d_snn, d_tx) of LIFTransformer from a state dict."""
     idxs = []
     for key in state_dict:
         match = _re.match(r"^blocks\.(\d+)\.", key)
@@ -215,42 +215,42 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
             state_dim=state_dim, action_dim=action_dim,
             hidden_dim=hidden_dim, num_layers=num_layers,
         )
-    if m == "cubifae_baseline" or model_name.startswith("cubifae"):
-        from code.cubifae_baseline import make_cubifae_baseline
-        n_layers_inf, d_hid_inf = _cubifae_arch(state_dict or {})
-        return make_cubifae_baseline(
+    if m == "alif_timecell_baseline" or model_name.startswith("alif_timecell"):
+        from code.alif_timecell_baseline import make_alif_timecell_baseline
+        n_layers_inf, d_hid_inf = _alif_timecell_arch(state_dict or {})
+        return make_alif_timecell_baseline(
             state_dim=state_dim, action_dim=action_dim,
             n_layers=_resolve(n_layers_inf, ck_args.get("n_layers"), 4),
             d_hid=_resolve(d_hid_inf, None, 192),
         )
-    if m == "slt_lif_mpc_trace" or model_name.startswith("slt_lif_mpc_trace"):
-        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
+    if m == "stacked_lif_trace" or model_name.startswith("stacked_lif_trace"):
+        from code.stacked_lif_baseline import make_stacked_lif_trace
         n_layers_inf, d_in_inf = (None, None)
         if state_dict is not None:
-            n_layers_inf, d_in_inf = _slt_arch(state_dict)
-        d_in = _resolve(d_in_inf, ck_args.get("slt_d_in"), 672)
+            n_layers_inf, d_in_inf = _stacked_lif_arch(state_dict)
+        d_in = _resolve(d_in_inf, ck_args.get("stacked_lif_d_in"), 672)
         n_layers = _resolve(n_layers_inf, ck_args.get("n_layers"), 8)
-        return make_slt_lif_mpc_trace(
+        return make_stacked_lif_trace(
             state_dim=state_dim, action_dim=action_dim,
             d_in=d_in, embed_dim=d_in, n_layers=n_layers,
             trace_beta=0.9, k_avg=4,
         )
-    if m == "slt_lif_mpc_free" or model_name.startswith("slt_lif_mpc_free"):
-        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
+    if m == "stacked_lif_free" or model_name.startswith("stacked_lif_free"):
+        from code.stacked_lif_baseline import make_stacked_lif_free
         n_layers_inf, d_in_inf = (None, None)
         if state_dict is not None:
-            n_layers_inf, d_in_inf = _slt_arch(state_dict)
-        d_in = _resolve(d_in_inf, ck_args.get("slt_d_in"), 672)
+            n_layers_inf, d_in_inf = _stacked_lif_arch(state_dict)
+        d_in = _resolve(d_in_inf, ck_args.get("stacked_lif_d_in"), 672)
         n_layers = _resolve(n_layers_inf, ck_args.get("n_layers"), 8)
-        return make_slt_lif_mpc_free(
+        return make_stacked_lif_free(
             state_dim=state_dim, action_dim=action_dim,
             d_in=d_in, embed_dim=d_in, n_layers=n_layers,
             trace_beta=0.9,
         )
-    if m == "spikedreamer_baseline" or model_name.startswith("spikedreamer"):
-        from code.spikedreamer_baseline import make_spikedreamer
-        n_layers_inf, d_snn_inf, d_tx_inf = _spikedreamer_arch(state_dict or {})
-        return make_spikedreamer(
+    if m == "lif_transformer_baseline" or model_name.startswith("lif_transformer"):
+        from code.lif_transformer_baseline import make_lif_transformer
+        n_layers_inf, d_snn_inf, d_tx_inf = _lif_transformer_arch(state_dict or {})
+        return make_lif_transformer(
             state_dim=state_dim, action_dim=action_dim,
             num_layers=_resolve(n_layers_inf, ck_args.get("n_layers"), 4),
             d_snn=_resolve(d_snn_inf, None, 128),

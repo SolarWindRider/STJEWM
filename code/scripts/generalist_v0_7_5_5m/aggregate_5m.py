@@ -22,8 +22,8 @@ from typing import Any, Dict, List, Optional
 GENERALIST_MODELS = [
     "stjewm_trace_only", "stjewm_spike_only", "stjewm_rate_only",
     "stjewm_no_trace", "stjewm_hidden_leak", "stjewm_membrane_readout",
-    "cubifae_baseline", "gru_baseline", "lewm_baseline_v2",
-    "slt_lif_mpc_trace", "slt_lif_mpc_free", "mlp_baseline", "spikedreamer_baseline",
+    "alif_timecell_baseline", "gru_baseline", "lewm_baseline_v2",
+    "stacked_lif_trace", "stacked_lif_free", "mlp_baseline", "lif_transformer_baseline",
 ]
 COLLAPSE_CONTROL = "mlp_baseline"
 

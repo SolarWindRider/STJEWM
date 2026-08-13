@@ -15,7 +15,7 @@ cd /home/lx/snn
 
 SPLITS="cross_benchmark_F1 cross_benchmark_F2 cross_benchmark_F3 oodc_F1 oodc_F1F2 oodc_F1F3 oodc_F2 oodc_F2F3 oodc_F3 generalist_16env"
 STJEWM_READOUTS="trace_only hidden_leak spike_only rate_only no_trace membrane_readout"
-BASELINES="cubifae_baseline gru_baseline lewm_baseline_v2 slt_lif_mpc_trace slt_lif_mpc_free spikedreamer_baseline mlp_baseline"
+BASELINES="alif_timecell_baseline gru_baseline lewm_baseline_v2 stacked_lif_trace stacked_lif_free lif_transformer_baseline mlp_baseline"
 
 START_TS=$(date +%s)
 
@@ -53,9 +53,9 @@ run_baseline() {
   case "$MODEL" in
     lewm_baseline_v2) N_LAYERS=3 ;;
     mlp_baseline) N_LAYERS=12 ;;
-    slt_lif_mpc_trace|slt_lif_mpc_free) N_LAYERS=8 ;;
-    spikedreamer_baseline) N_LAYERS=3 ;;
-    cubifae_baseline) N_LAYERS=2 ;;
+    stacked_lif_trace|stacked_lif_free) N_LAYERS=8 ;;
+    lif_transformer_baseline) N_LAYERS=3 ;;
+    alif_timecell_baseline) N_LAYERS=2 ;;
     gru_baseline) N_LAYERS=2 ;;
     stjewm) N_LAYERS=4 ;;
     *) echo "Unknown MODEL: $MODEL"; return 1 ;;

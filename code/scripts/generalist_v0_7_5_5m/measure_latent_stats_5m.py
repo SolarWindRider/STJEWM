@@ -2,7 +2,7 @@
 
 Mirror of code/scripts/generalist_v0_7_5/measure_latent_stats.py but:
   - Reads from results/5m/<split>/<model>/seed_0/final.pt
-  - Uses state-dict inference to handle 5M model dims (e.g. cubifae d_hid=186)
+  - Uses state-dict inference to handle 5M model dims (e.g. alif_timecell d_hid=186)
   - Iterates over (split, model, env) grid
 
 Usage:
@@ -43,8 +43,8 @@ CLO_ENV_MAP = {"cartpole_2d": "cartpole", "pendulum_2d": "pendulum"}
 MODELS = [
     "stjewm_trace_only", "stjewm_spike_only", "stjewm_rate_only",
     "stjewm_no_trace", "stjewm_hidden_leak", "stjewm_membrane_readout",
-    "cubifae_baseline", "gru_baseline", "lewm_baseline_v2",
-    "slt_lif_mpc_trace", "slt_lif_mpc_free", "mlp_baseline", "spikedreamer_baseline",
+    "alif_timecell_baseline", "gru_baseline", "lewm_baseline_v2",
+    "stacked_lif_trace", "stacked_lif_free", "mlp_baseline", "lif_transformer_baseline",
 ]
 
 
@@ -112,33 +112,33 @@ def load_model_5m(ckpt_path: str, env, device: str = "cpu"):
         return (MLPBaseline(state_dim=state_dim, action_dim=action_dim,
                             hidden_dim=hidden_dim, num_layers=num_layers, emb_dim=emb_dim
                             ).to(device).eval(), ck_args, state_dim, action_dim)
-    if m == "slt_lif_mpc_trace":
-        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
+    if m == "stacked_lif_trace":
+        from code.stacked_lif_baseline import make_stacked_lif_trace
         d_in = _infer_dim_from_state_dict(sd, "state_projector.proj.0.weight") or 672
-        return (make_slt_lif_mpc_trace(state_dim=state_dim, action_dim=action_dim,
+        return (make_stacked_lif_trace(state_dim=state_dim, action_dim=action_dim,
                                         d_in=d_in, embed_dim=d_in, n_layers=8,
                                         trace_beta=0.9, k_avg=4
                                         ).to(device).eval(), ck_args, state_dim, action_dim)
-    if m == "slt_lif_mpc_free":
-        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
+    if m == "stacked_lif_free":
+        from code.stacked_lif_baseline import make_stacked_lif_free
         d_in = _infer_dim_from_state_dict(sd, "state_projector.proj.0.weight") or 640
-        return (make_slt_lif_mpc_free(state_dim=state_dim, action_dim=action_dim,
+        return (make_stacked_lif_free(state_dim=state_dim, action_dim=action_dim,
                                        d_in=d_in, embed_dim=d_in, n_layers=8,
                                        trace_beta=0.9
                                        ).to(device).eval(), ck_args, state_dim, action_dim)
-    if m == "cubifae_baseline":
-        from code.cubifae_baseline import CubifAEBaseline
+    if m == "alif_timecell_baseline":
+        from code.alif_timecell_baseline import ALIFTimecellBaseline
         d_hid = _infer_dim_from_state_dict(sd, "state_projector.0.weight") or 186
-        return (CubifAEBaseline(state_dim=state_dim, action_dim=action_dim,
+        return (ALIFTimecellBaseline(state_dim=state_dim, action_dim=action_dim,
                                 d_hid=d_hid, n_layers=2
                                 ).to(device).eval(), ck_args, state_dim, action_dim)
-    if m == "spikedreamer_baseline":
-        from code.spikedreamer_baseline import make_spikedreamer
+    if m == "lif_transformer_baseline":
+        from code.lif_transformer_baseline import make_lif_transformer
         d_snn = _infer_dim_from_state_dict(sd, "state_proj.proj.0.weight") or 288
         d_tx = d_snn
         if "pos_embed" in sd:
             d_tx = int(sd["pos_embed"].shape[2])
-        return (make_spikedreamer(state_dim=state_dim, action_dim=action_dim,
+        return (make_lif_transformer(state_dim=state_dim, action_dim=action_dim,
                                  d_snn=d_snn, d_tx=d_tx, num_layers=3, num_heads=8
                                  ).to(device).eval(), ck_args, state_dim, action_dim)
     from code.stjewm import STJEWM

@@ -44,8 +44,8 @@ OUT.mkdir(exist_ok=True, parents=True)
 #     table now reports the G16 stress / push-t / tworoom success rate
 #     (post-bug-fix numbers):
 #       72.9% : mlp / gru / lewm / stjewm_trace / stjewm_rate / stjewm_hidden_leak
-#       75.0% : cubifae / stjewm_spike / stjewm_membrane
-#       77.1% : slt_lif_mpc_trace / slt_lif_mpc_free / stjewm_no_trace
+#       75.0% : ALIF-timecell / stjewm_spike / stjewm_membrane
+#       77.1% : stacked_lif_trace / stacked_lif_free / stjewm_no_trace
 #     All numbers within ±4pp band — env-SR is still uninformative as a
 #     family separator (as it always was).
 #   - lewm_sr_gap (LeWM@0.1 minus env-SR) → 0 by definition since both are
@@ -62,18 +62,18 @@ GENERALIST = {
     "stjewm_no_trace":         (77.1, 0.196, 0.0114, 0.987, "STJEWM-no-trace"),
     "stjewm_hidden_leak":      (72.9, 0.206, 0.0125, 0.990, "STJEWM-leak"),
     "stjewm_membrane_readout": (75.0, 0.207, 0.0121, 0.998, "STJEWM-membrane"),
-    "cubifae_baseline":        (75.0, 0.215, 0.0121, 0.620, "CuBiFAE"),
+    "alif_timecell_baseline":        (75.0, 0.215, 0.0121, 0.620, "ALIF-timecell"),
     "gru_baseline":            (72.9, 22.432, 0.0071, -0.07, "GRU"),
     "lewm_baseline_v2":        (72.9, 32.728, 0.1842, 0.52,  "LeWM-v2"),
-    "slt_lif_mpc_trace":       (77.1, 0.200, 0.0118, 0.640, "SLT-trace"),
-    "slt_lif_mpc_free":        (77.1, 0.200, 0.0118, 0.640, "SLT-free"),
+    "stacked_lif_trace":       (77.1, 0.200, 0.0118, 0.640, "Stacked-LIF-trace"),
+    "stacked_lif_free":        (77.1, 0.200, 0.0118, 0.640, "Stacked-LIF-free"),
     "mlp_baseline":            (72.9, 0.548, 0.0002, 0.001, "MLP-collapse"),
 }
 LABEL_ORDER = [
     "MLP-collapse", "GRU", "LeWM-v2",
     "STJEWM-membrane", "STJEWM-no-trace", "STJEWM-leak",
     "STJEWM-trace", "STJEWM-spike", "STJEWM-rate",
-    "SLT-trace", "CuBiFAE",
+    "Stacked-LIF-trace", "ALIF-timecell",
 ]
 
 # -------------------------------------------------------------- v0.7.13 OOD
@@ -88,11 +88,11 @@ CROSSBENCH = {
     "stjewm_no_trace":         (0.113, 0.050, 0.089, 0.130, 0.122),
     "stjewm_hidden_leak":      (0.171, 0.066, 0.103, 0.125, 0.123),
     "stjewm_membrane_readout": (0.188, 0.055, 0.121, 0.124, 0.124),
-    "cubifae_baseline":        (0.310, 0.070, 0.109, 0.114, 0.124),
+    "alif_timecell_baseline":        (0.310, 0.070, 0.109, 0.114, 0.124),
     "gru_baseline":            (0.406, 0.114, 0.001, 0.008, 0.039),
     "lewm_baseline_v2":        (0.365, 0.058, 0.230, 0.225, 0.224),
-    "slt_lif_mpc_trace":       (0.160, 0.070, 0.078, 0.120, 0.117),
-    "slt_lif_mpc_free":        (0.249, 0.062, 0.093, 0.125, 0.127),
+    "stacked_lif_trace":       (0.160, 0.070, 0.078, 0.120, 0.117),
+    "stacked_lif_free":        (0.249, 0.062, 0.093, 0.125, 0.127),
     "mlp_baseline":            (0.155, 0.046, 0.000, 0.001, 0.014),
 }
 
@@ -106,10 +106,10 @@ SPECIALIST = [
     ("STJEWM-no-trace",     66.3, 25.0, 61.8, 52.5, 0.688, 0.624),
     ("STJEWM-leak",        64.0, 25.5, 61.4, 54.5, 0.690, 0.620),
     ("STJEWM-membrane",    64.5, 25.5, 60.8, 49.5, 0.554, 0.615),
-    ("CuBiFAE",            69.5, 25.5, 76.3, 52.5, 0.569, 0.638),
-    ("SpikeDreamer",       68.3, 41.5, None,  None,  0.474, None),
-    ("SLT-trace",          68.6, 25.0, 72.6, 47.5, 0.533, 0.636),
-    ("SLT-free",           65.7, 26.5, 66.7, 66.5, 0.504, 0.640),
+    ("ALIF-timecell",            69.5, 25.5, 76.3, 52.5, 0.569, 0.638),
+    ("LIF-Transformer",       68.3, 41.5, None,  None,  0.474, None),
+    ("Stacked-LIF-trace",          68.6, 25.0, 72.6, 47.5, 0.533, 0.636),
+    ("Stacked-LIF-free",           65.7, 26.5, 66.7, 66.5, 0.504, 0.640),
     # ─── non-SNN baselines ───
     ("LeWM-v2",            68.2, 25.5, 76.9, 56.5, 0.166, 0.160),
     ("GRU",                66.6, 42.0, 78.8, 51.0, 0.574, -0.011),
@@ -127,8 +127,8 @@ PER_SUITE = {
     "STJEWM-no-trace":  (0.0112, 0.0114, 0.0114, 0.201,  0.202,  0.196),
     "STJEWM-leak":      (0.0125, 0.0114, 0.0125, 0.202,  0.202,  0.206),
     "STJEWM-membrane":  (0.0117, 0.0099, 0.0121, 0.210,  0.205,  0.207),
-    "CuBiFAE":          (0.0110, 0.0117, 0.0121, 0.215,  0.211,  0.215),
-    "SLT-trace":        (0.0108, 0.0102, 0.0118, 0.209,  0.206,  0.200),
+    "ALIF-timecell":          (0.0110, 0.0117, 0.0121, 0.215,  0.211,  0.215),
+    "Stacked-LIF-trace":        (0.0108, 0.0102, 0.0118, 0.209,  0.206,  0.200),
 }
 
 mpl.rcParams.update({
@@ -230,9 +230,9 @@ def fig2():
         "STJEWM-no-trace":"#2ca02c",
         "STJEWM-leak":    "#2ca02c",
         "STJEWM-membrane":"#2ca02c",
-        "CuBiFAE":        "#1f77b4",
-        "SLT-trace":      "#1f77b4",
-        "SLT-free":       "#1f77b4",
+        "ALIF-timecell":        "#1f77b4",
+        "Stacked-LIF-trace":      "#1f77b4",
+        "Stacked-LIF-free":       "#1f77b4",
     }
 
     # data: (x = G16 divergence-from-constant, y = cross-bench mean_cos_dist)
@@ -274,15 +274,15 @@ def fig2():
     # Cluster centre annotation
     cluster_pts = [pt for pt in points
                    if pt[0].startswith("STJEWM") or
-                   pt[0] in ("CuBiFAE", "SLT-trace", "SLT-free")]
+                   pt[0] in ("ALIF-timecell", "Stacked-LIF-trace", "Stacked-LIF-free")]
     cx, cy = np.mean([p[1] for p in cluster_pts]), np.mean([p[2] for p in cluster_pts])
 
     # Annotation: calibrated cluster (right side of plot, points to cluster centre)
     ax.annotate(
         "calibrated SNN cluster\n"
-        "(STJEWM 6 readouts + CuBiFAE + SLT)\n"
+        "(STJEWM 6 readouts + ALIF-timecell + Stacked-LIF)\n"
         "div ≈ 0.012, cos ≈ 0.11–0.13\n"
-        "10–20% below CuBiFAE on cos",
+        "10–20% below ALIF-timecell on cos",
         xy=(cx, cy), xytext=(0.090, 0.16),
         fontsize=8.5, color="#2ca02c", ha="left", va="center",
         bbox=dict(facecolor="#e8f3e0", edgecolor="#2ca02c", pad=4),
@@ -331,7 +331,7 @@ def fig3():
     for name in rows:
         if name.startswith("STJEWM"):
             family_color.append("#2ca02c")
-        elif name in ("CuBiFAE", "SpikeDreamer", "SLT-trace", "SLT-free"):
+        elif name in ("ALIF-timecell", "LIF-Transformer", "Stacked-LIF-trace", "Stacked-LIF-free"):
             family_color.append("#1f77b4")
         else:
             family_color.append("#d62728")
@@ -389,7 +389,7 @@ def fig3():
 
     # Band separators (STJEWM vs SNN vs non-SNN)
     n_stje = sum(1 for r in rows if r.startswith("STJEWM"))
-    n_snn  = sum(1 for r in rows if r in ("CuBiFAE", "SpikeDreamer", "SLT-trace", "SLT-free"))
+    n_snn  = sum(1 for r in rows if r in ("ALIF-timecell", "LIF-Transformer", "Stacked-LIF-trace", "Stacked-LIF-free"))
     for j in range(6):
         axes[j].axhline(n_stje, color="#999", lw=0.6, ls=":")
         axes[j].axhline(n_stje + n_snn, color="#999", lw=0.6, ls=":")
@@ -425,7 +425,7 @@ def fig4():
             return "#9467bd"
         if m.startswith("STJEWM"):
             return "#2ca02c"
-        if m in ("CuBiFAE", "SLT-trace"):
+        if m in ("ALIF-timecell", "Stacked-LIF-trace"):
             return "#1f77b4"
         return "#7f7f7f"
 
@@ -450,7 +450,7 @@ def fig4():
                 "STJEWM-trace": 0.994, "STJEWM-spike": 0.998,
                 "STJEWM-rate": 0.997, "STJEWM-no-trace": 0.987,
                 "STJEWM-leak": 0.990, "STJEWM-membrane": 0.998,
-                "CuBiFAE": 0.62, "SLT-trace": 0.64,
+                "ALIF-timecell": 0.62, "Stacked-LIF-trace": 0.64,
             }
             values = {m: ([rho_lookup[m]] * 3) for m in families}
 

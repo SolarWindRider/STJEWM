@@ -83,34 +83,34 @@ def _build_stjewm(readout: str) -> Callable[..., Any]:
     return _builder
 
 
-def _build_cubifae(state_dim, action_dim, n_layers, embed_dim, **_ignored):
-    from code.cubifae_baseline import CubifAEBaseline
-    return CubifAEBaseline(
+def _build_alif_timecell(state_dim, action_dim, n_layers, embed_dim, **_ignored):
+    from code.alif_timecell_baseline import ALIFTimecellBaseline
+    return ALIFTimecellBaseline(
         state_dim=state_dim, action_dim=action_dim,
         d_hid=embed_dim, n_layers=n_layers,
     )
 
 
-def _build_spikedreamer(state_dim, action_dim, n_layers, embed_dim, **_ignored):
-    from code.spikedreamer_baseline import make_spikedreamer
-    return make_spikedreamer(
+def _build_lif_transformer(state_dim, action_dim, n_layers, embed_dim, **_ignored):
+    from code.lif_transformer_baseline import make_lif_transformer
+    return make_lif_transformer(
         state_dim=state_dim, action_dim=action_dim,
         d_snn=128, d_tx=embed_dim, num_layers=n_layers, num_heads=8,
     )
 
 
-def _build_slt_trace(state_dim, action_dim, n_layers, embed_dim, **_ignored):
-    from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
-    return make_slt_lif_mpc_trace(
+def _build_stacked_lif_trace(state_dim, action_dim, n_layers, embed_dim, **_ignored):
+    from code.stacked_lif_baseline import make_stacked_lif_trace
+    return make_stacked_lif_trace(
         state_dim=state_dim, action_dim=action_dim,
         d_in=embed_dim, embed_dim=embed_dim, n_layers=n_layers,
         trace_beta=0.9, k_avg=4,
     )
 
 
-def _build_slt_free(state_dim, action_dim, n_layers, embed_dim, **_ignored):
-    from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
-    return make_slt_lif_mpc_free(
+def _build_stacked_lif_free(state_dim, action_dim, n_layers, embed_dim, **_ignored):
+    from code.stacked_lif_baseline import make_stacked_lif_free
+    return make_stacked_lif_free(
         state_dim=state_dim, action_dim=action_dim,
         d_in=embed_dim, embed_dim=embed_dim, n_layers=n_layers,
         trace_beta=0.9,
@@ -164,17 +164,17 @@ MODELS: List[Dict[str, Any]] = [
      "notes": "h.detach() (treat h as discrete latent)"},
 
     # --- 7 baselines ---
-    {"name": "cubifae_baseline", "dir": "cubifae_baseline",
-     "build": _build_cubifae, "canonical": dict(CANONICAL),
+    {"name": "alif_timecell_baseline", "dir": "alif_timecell_baseline",
+     "build": _build_alif_timecell, "canonical": dict(CANONICAL),
      "notes": "ALIF + time-cell readout"},
-    {"name": "spikedreamer_baseline", "dir": "spikedreamer_baseline",
-     "build": _build_spikedreamer, "canonical": dict(CANONICAL),
+    {"name": "lif_transformer_baseline", "dir": "lif_transformer_baseline",
+     "build": _build_lif_transformer, "canonical": dict(CANONICAL),
      "notes": "2-layer LIF + AdaLN-zero Transformer"},
-    {"name": "slt_lif_mpc_trace", "dir": "slt_lif_mpc_trace",
-     "build": _build_slt_trace, "canonical": dict(CANONICAL),
+    {"name": "stacked_lif_trace", "dir": "stacked_lif_trace",
+     "build": _build_stacked_lif_trace, "canonical": dict(CANONICAL),
      "notes": "DECOLLE LIF, trace-only readout"},
-    {"name": "slt_lif_mpc_free", "dir": "slt_lif_mpc_free",
-     "build": _build_slt_free, "canonical": dict(CANONICAL),
+    {"name": "stacked_lif_free", "dir": "stacked_lif_free",
+     "build": _build_stacked_lif_free, "canonical": dict(CANONICAL),
      "notes": "DECOLLE LIF, free-access readout"},
     {"name": "lewm_transformer_baseline", "dir": "lewm_baseline_v2",
      "build": _build_lewm, "canonical": dict(LEWM_CANONICAL),

@@ -34,7 +34,7 @@ rho = [d[1] for d in DATA]
 eff = [d[2] for d in DATA]
 dense = [d[3] for d in DATA]
 
-colors = ["#1a9850" if "STJEWM" in m else "#66bd63" if m in ("CuBiFAE", "SLT-trace", "SLT-free")
+colors = ["#1a9850" if "STJEWM" in m else "#66bd63" if m in ("ALIF-timecell", "Stacked-LIF-trace", "Stacked-LIF-free")
           else "#d73027" if m in ("LeWM-v2",) else "#fdae61" if m == "GRU"
           else "#a50026" if m == "MLP" else "#878787"
           for m in models]
