@@ -34,17 +34,17 @@ from code.sigreg import SIGReg
 from code.native_losses import (
     NATIVE_LOSS_DISPATCH,
     stjewm_loss,
-    cubifae_loss,
-    spikedreamer_loss,
-    slt_lif_mpc_loss,
+    alif_timecell_loss,
+    lif_transformer_loss,
+    stacked_lif_loss,
 )
 
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--model", choices=["stjewm", "lewm_baseline", "gru_baseline", "mlp_baseline",
-                                       "slt_lif_mpc_trace", "slt_lif_mpc_free",
-                                       "spikedreamer_baseline",
-                                       "cubifae_baseline"], required=True,
+                                       "stacked_lif_trace", "stacked_lif_free",
+                                       "lif_transformer_baseline",
+                                       "alif_timecell_baseline"], required=True,
                    help="Which model architecture to train")
     p.add_argument("--env-kind", required=False, default=None,
                    help="Loader kind: pusht, tworoom, reacher_4d, reacher_lewm, "
@@ -87,10 +87,10 @@ def parse_args():
                    help="Override for MLP hidden_dim specifically (default=512 for ~5M).")
     p.add_argument("--mlp-layers", type=int, default=None,
                    help="Override for MLP num_layers specifically (default=13 for ~5M).")
-    p.add_argument("--slt-layers", type=int, default=None,
-                   help="Override for SLT-LIF-MPC n_layers specifically (default=8 for ~5M).")
-    p.add_argument("--slt-din", type=int, default=None,
-                   help="Override for SLT-LIF-MPC d_in specifically (default=672 trace / 640 free).")
+    p.add_argument("--stacked-lif-layers", type=int, default=None,
+                   help="Override for Stacked-LIF n_layers specifically (default=8 for ~5M).")
+    p.add_argument("--stacked-lif-din", type=int, default=None,
+                   help="Override for Stacked-LIF d_in specifically (default=672 trace / 640 free).")
     p.add_argument("--lambda-sigreg", type=float, default=0.09)
     p.add_argument("--lambda-goal", type=float, default=0.5)
     p.add_argument("--goal-offset", type=int, default=5)
@@ -121,7 +121,7 @@ def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int,
                 readout_mode: str = "hidden_leak", embed_dim: Optional[int] = None,
                 hidden_dim: Optional[int] = None,
                 mlp_hidden: Optional[int] = None, mlp_layers: Optional[int] = None,
-                slt_layers: Optional[int] = None, slt_din: Optional[int] = None,
+                stacked_lif_layers: Optional[int] = None, stacked_lif_din: Optional[int] = None,
                 image_size: int = 0):
     """5M-aligned builders (v0.7.14).
     All non-STJEWM baselines can be widened/deepened via per-model flags to
@@ -130,10 +130,15 @@ def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int,
     """
     if model_kind == "stjewm":
         from code.stjewm import STJEWM
-        # In pixel mode (image_size > 0), force state_dim=None so the
+        # Route on pixel geometry, NOT on image_size>0: a state run may carry
+        # --image-size (e.g. 224) purely to size the frozen ViT so ckpts match
+        # the 5M-main 257-patch layout. Forcing state_dim=None whenever
+        # image_size>0 made state vectors feed the ViT (crash) in such runs.
+        # Pixel mode (obs_dim == 3*H^2) passes state_dim=None so the
         # state_dim heuristic inside STJEWM doesn't double-treat pixel as
-        # state. In state mode, pass state_dim=obs_dim.
-        stjewm_state_dim = None if image_size > 0 else obs_dim
+        # state.
+        is_pixel = image_size > 0 and obs_dim == 3 * image_size * image_size
+        stjewm_state_dim = None if is_pixel else obs_dim
         return STJEWM(
             d_hid=192, embed_dim=192,
             action_dim=action_dim, action_emb_dim=192,
@@ -167,34 +172,34 @@ def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int,
             num_layers=(mlp_layers if mlp_layers is not None else 12),
             image_size=image_size,
         )
-    if model_kind == "slt_lif_mpc_trace":
-        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_trace
+    if model_kind == "stacked_lif_trace":
+        from code.stacked_lif_baseline import make_stacked_lif_trace
         # 5M: d_in=672 num_layers=8 -> 5.11M
-        return make_slt_lif_mpc_trace(
+        return make_stacked_lif_trace(
             state_dim=obs_dim, action_dim=action_dim,
-            d_in=(slt_din or 672), embed_dim=(slt_din or 672),
-            n_layers=(slt_layers or 8), trace_beta=0.9, k_avg=4,
+            d_in=(stacked_lif_din or 672), embed_dim=(stacked_lif_din or 672),
+            n_layers=(stacked_lif_layers or 8), trace_beta=0.9, k_avg=4,
             image_size=image_size,
         )
-    if model_kind == "slt_lif_mpc_free":
-        from code.slt_lif_mpc_baseline import make_slt_lif_mpc_free
-        return make_slt_lif_mpc_free(
+    if model_kind == "stacked_lif_free":
+        from code.stacked_lif_baseline import make_stacked_lif_free
+        return make_stacked_lif_free(
             state_dim=obs_dim, action_dim=action_dim,
-            d_in=(slt_din or 640), embed_dim=(slt_din or 640),
-            n_layers=(slt_layers or 8), trace_beta=0.9,
+            d_in=(stacked_lif_din or 640), embed_dim=(stacked_lif_din or 640),
+            n_layers=(stacked_lif_layers or 8), trace_beta=0.9,
             image_size=image_size,
         )
-    if model_kind == "spikedreamer_baseline":
-        from code.spikedreamer_baseline import make_spikedreamer
+    if model_kind == "lif_transformer_baseline":
+        from code.lif_transformer_baseline import make_lif_transformer
         # 5M: d_snn=288 d_tx=288 num_layers=3 -> 5.12M
-        return make_spikedreamer(
+        return make_lif_transformer(
             state_dim=obs_dim, action_dim=action_dim,
             d_snn=288, d_tx=288, num_layers=3, num_heads=8,
             image_size=image_size,
         )
-    if model_kind == "cubifae_baseline":
-        from code.cubifae_baseline import CubifAEBaseline
-        return CubifAEBaseline(
+    if model_kind == "alif_timecell_baseline":
+        from code.alif_timecell_baseline import ALIFTimecellBaseline
+        return ALIFTimecellBaseline(
             state_dim=obs_dim, action_dim=action_dim,
             d_hid=186, n_layers=2,
             image_size=image_size,
@@ -215,9 +220,9 @@ def train(
     Loss dispatch (v0.7+): each SNN baseline uses its native loss via
     code.native_losses.NATIVE_LOSS_DISPATCH.
         - stjewm / lewm_baseline / gru / mlp: 3-term pred + sigreg + goal
-        - cubifae_baseline: 2-term pred + L1 spike sparsity
-        - spikedreamer_baseline: 4-term pred + KL + recon + sparse
-        - slt_lif_mpc_{trace,free}: 3-term pred + sparse + action (action=0 in CEM-eval)
+        - alif_timecell_baseline: 2-term pred + L1 spike sparsity
+        - lif_transformer_baseline: 4-term pred + KL + recon + sparse
+        - stacked_lif_{trace,free}: 3-term pred + sparse + action (action=0 in CEM-eval)
     """
     from code.sigreg import SIGReg
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-3)
@@ -260,7 +265,7 @@ def train(
                 # trainer dispatches on args.model and uses the appropriate
                 # function from code/native_losses. STJEWM and the
                 # Transformer/RNN/MLP baselines still use the 3-term loss
-                # (pred + sigreg + goal). CubifAE, SpikeDreamer, SLT-LIF-MPC
+                # (pred + sigreg + goal). ALIFTimecell, LIFTransformer, Stacked-LIF
                 # use their paper-native losses.
                 model_kind = args.model
                 loss_fn = NATIVE_LOSS_DISPATCH.get(model_kind, stjewm_loss)
@@ -285,7 +290,7 @@ def train(
                         goal_pred, goal_emb_target,
                         args.lambda_sigreg, args.lambda_goal,
                     )
-                elif loss_fn is cubifae_loss:
+                elif loss_fn is alif_timecell_loss:
                     # 2-term: pred + L1 spike sparsity. No sigreg / no goal.
                     loss, parts = loss_fn(
                         pred_emb, tgt_emb,
@@ -293,7 +298,7 @@ def train(
                         goal_pred=None, goal_emb=None,
                         lambda_pred=1.0, lambda_sparse=1e-3, lambda_goal=0.0,
                     )
-                elif loss_fn is spikedreamer_loss:
+                elif loss_fn is lif_transformer_loss:
                     # 4-term: pred + KL + recon + sparse. State-based obs
                     # means no recon. LIF encoder is deterministic (no VAE),
                     # so mu=logvar=None and lambda_kl * 0 is fine.
@@ -306,7 +311,7 @@ def train(
                         lambda_recon=0.0, lambda_kl=1e-3,
                         lambda_pred=1.0, lambda_sparse=1e-3,
                     )
-                elif loss_fn is slt_lif_mpc_loss:
+                elif loss_fn is stacked_lif_loss:
                     # 3-term: pred + sparse + action. No action supervision
                     # in CEM-eval, so action term is 0. Reduces to pred + sparse.
                     loss, parts = loss_fn(
@@ -331,8 +336,8 @@ def train(
                 sparsity = 1.0 - out["spike"].float().mean().item() if "spike" in out else None
                 sparsity_str = f" sparsity={sparsity:.3f}" if sparsity is not None else ""
                 # Build a flat string from whatever loss terms are in `parts`.
-                # STJEWM/JePA: pred/sigreg/goal. CubifAE: pred/sparse.
-                # SpikeDreamer: pred/kl/recon/sparse. SLT-LIF-MPC: pred/sparse/action.
+                # STJEWM/JePA: pred/sigreg/goal. ALIFTimecell: pred/sparse.
+                # LIFTransformer: pred/kl/recon/sparse. Stacked-LIF: pred/sparse/action.
                 def _fmt(p: dict) -> str:
                     keys = ("pred", "sigreg", "goal", "sparse", "kl", "recon", "action")
                     return " ".join(
@@ -459,13 +464,18 @@ def main():
     # pixel and (W, D) for state. Batched is (B, T, 3, H, W) and (B, T, D).
     obs_first = sample["state"]
     is_pixel_obs = (obs_first.ndim == 4 and obs_first.shape[-3] == 3)
-    image_size = obs_first.shape[-1] if is_pixel_obs else 0
+    # State (non-pixel) mode: honor the CLI --image-size (default 84) instead
+    # of forcing 0. Forcing 0 made STJEWM fall back to 84 internally while
+    # recording the CLI value in args, producing ckpts whose positional
+    # embeddings (37 patches) mismatch the 224px 5M-main ckpts (257) used by
+    # event_align/eval. Pixel mode keeps inferring from the obs shape.
+    image_size = obs_first.shape[-1] if is_pixel_obs else (getattr(args, "image_size", 0) or 0)
     model = build_model(
         args.model, obs_dim, action_dim, n_layers, args.readout_mode,
         embed_dim=args.embed_dim,
         hidden_dim=args.hidden_dim,
         mlp_hidden=args.mlp_hidden, mlp_layers=args.mlp_layers,
-        slt_layers=args.slt_layers, slt_din=args.slt_din,
+        stacked_lif_layers=args.stacked_lif_layers, stacked_lif_din=args.stacked_lif_din,
         image_size=image_size,
     ).to(device)
     assert_model_compatible(model)

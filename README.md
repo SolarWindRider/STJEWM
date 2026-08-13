@@ -130,6 +130,28 @@ CEM eval with static (reachable) goals:
 | Cheetah edge (P22) | 2 models × 10 splits × 60 eps | paired | done |
 | sigreg sweep | 4 weights × 2 splits | 8 ckpts | done |
 
+### Checkpoint recovery (2026-08)
+
+A batch text-replacement accident (non-text files opened in text mode) corrupted a
+generation of auxiliary checkpoints. Recovery status at `git HEAD f65e2d8`+:
+
+- **Retrained from scratch with the original commands**: `5m_seed1` (39), `5m_pixel`
+  (130 + 4 post-hoc: 3 lewm + 1 hidden_leak), `sigreg` (8). All pass
+  `torch.load` integrity checks — the full tree (`results/**/*.pt`, 1174 files) is
+  **0 corrupt**.
+- **Permanently unrecoverable**: 16 old single-env checkpoints
+  (`cheetah_velhidden/finger/stacker/dog/cartpole_2d/cartpole_flicker/fish/tworoom` ×
+  `stacked_lif_trace`/`stacked_lif_free`) from early v0.7.x experiments — no training
+  command was recorded for them. Their eval numbers survive in
+  `results/<env>/<model>/eval.json`; the checkpoints themselves cannot be reproduced.
+- **Bug fixed during retraining** (`code/train/train.py`): state-mode runs had
+  `image_size` overwritten to 0 after dataset load (build fell back to 84px →
+  ViT positional embeddings `(1,37,192)`), mismatching the 5M-main 224px layout
+  `(1,257,192)` used by `event_align`. Now the CLI `--image-size` (default 84) is
+  honored in state mode, and STJEWM's `state_dim` routing keys off pixel geometry
+  (`obs_dim == 3·H²`) instead of `image_size > 0`. Event-alignment spot-checks after
+  retraining: `corr_obs_latent` 0.9991 (seed1) / 0.9999 (sigreg), consistent with G1.
+
 ## Repository layout
 
 ```
