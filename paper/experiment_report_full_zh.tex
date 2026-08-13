@@ -1226,7 +1226,7 @@ Stacked-LIF-free & 中 & 中 & 0.9997 & 校准（SNN） \\
 
 \subsection{概述：13 模型 × 10 splits × 3 seeds 的全套证据}
 
-\textbf{本节呈现的是 v0.7.17--0.7.19 期间完成的所有实验证据}，涵盖 13 个 5M-aligned 的世界模型（6 个 STJEWM readout + ALIF-timecell + 2 个 Stacked-LIF + LeWM-v2 + GRU + MLP + LIF-Transformer）在 10 个训练 split（3 个跨基准族 F1/F2/F3 + 6 个 oodc 子族 gating split + 1 个 generalist 16-env 并集）上的 closed-loop 评测，state 模态 130 个 ckpt / 1157 个 eval cell（\texttt{MAIN\_TABLE\_5M\_STATE\_FULL.md}），辅以 pixel 模态 130 个 ckpt / 1690 个 eval cell、3 个随机种子（seed=0/1/2）、补全实验（B1--B4 + P11/P12/P13/P22 + G1--G5）的横向证据。
+\textbf{本节呈现的是 v0.7.17--0.7.19 期间完成的所有实验证据}，涵盖 13 个 5M-aligned 的世界模型（6 个 STJEWM readout + ALIF-timecell + 2 个 Stacked-LIF + LeWM-v2 + GRU + MLP + LIF-Transformer）在 10 个训练 split（3 个跨基准族 F1/F2/F3 + 6 个 oodc 子族 gating split + 1 个 generalist 16-env 并集）上的 closed-loop 评测，state 模态 130 个 ckpt / 1157 个 eval cell（\texttt{MAIN\_TABLE\_5M\_STATE\_FULL.md}），辅以 pixel 模态 130 个 ckpt / 1690 个 eval cell、3 个随机种子（seed=0/1/2）、补全实验（B1--B4 + P11/P12/P13/P22 + G1--G5）的横向证据。\textbf{2026-08-13 数据更新}：重训事故中损坏的 5m\_seed1（39）、5m\_pixel（65+4）与 sigreg（8）checkpoint 已按原命令重训，并对重训 checkpoints 全部重新完成 closed-loop 评估——本节 3-seed CI（§(a)）、pixel（§(c)）与 sigreg（§(f)）数字均为重训后重新评估的结果；seed-0/seed-2 与 5M 主表（state）权重未变，沿用原评估。
 
 \textbf{本节按证据强度排序}：(a) 三簇分界（state，per-model cos\_dist 表 + 3-seed CI）→ (b) SNN 家族属性（event-ρ 13 模型全表 + GRU 对照）→ (c) 跨模态保留（pixel env-SR 模式）→ (d) 能效（FLOPs）→ (e) 诚实负面（trace 因果、AUROC、probe R²、cheetah 边缘）→ (f) 度量学贡献（sigreg 扫描、合成验证、多 epoch 稳定性）→ (g) env-SR 修正后的"易/难"二分模式。
 
@@ -1269,16 +1269,16 @@ LeWM-v2 & 4.97 & 0.183 & over-react \\
 \toprule
 \textbf{cluster / model} & \textbf{cos\_dist mean $\pm$ std} & \textbf{95\% CI (n=3)} & \textbf{Cohen's d vs LeWM-v2} \\
 \midrule
-calibrated: STJEWM-trace & 0.119 $\pm$ 0.002 & [0.115, 0.123] & $-7.3$ \\
-calibrated: STJEWM-spike & 0.114 $\pm$ 0.010 & [0.088, 0.139] & $-7.0$ \\
-calibrated: Stacked-LIF-trace & 0.115 $\pm$ 0.004 & [0.104, 0.125] & $-8.5$ \\
-over-react: LeWM-v2 & 0.194 $\pm$ 0.012 & [0.166, 0.223] & -- \\
-collapse: MLP & 0.004 $\pm$ 0.001 & [0.001, 0.006] & $>20$ \\
+calibrated: STJEWM-trace & 0.116 $\pm$ 0.004 & [0.107, 0.125] & $-8.9$ \\
+calibrated: STJEWM-spike & 0.118 $\pm$ 0.006 & [0.104, 0.132] & $-8.2$ \\
+calibrated: Stacked-LIF-trace & 0.115 $\pm$ 0.002 & [0.110, 0.119] & $-9.4$ \\
+over-react: LeWM-v2 & 0.192 $\pm$ 0.012 & [0.164, 0.221] & -- \\
+collapse: MLP & 0.006 $\pm$ 0.001 & [0.003, 0.008] & $>20$ \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
 
-\textbf{3-seed verdict}：calibrated 簇内 pairwise CI 重叠（STJEWM-trace 与 Stacked-LIF-trace、STJEWM-spike 不可区分）；calibrated vs over-react 与 calibrated vs collapse 的 CI disjoint（Cohen's d 分别 $-7$--$-8.5$ 和 $>20$）。三簇在 3-seed 分辨率下\textbf{统计独立}。
+\textbf{3-seed verdict}：calibrated 簇内 pairwise CI 重叠（STJEWM-trace 与 Stacked-LIF-trace、STJEWM-spike 不可区分）；calibrated vs over-react 与 calibrated vs collapse 的 CI disjoint（Cohen's d 分别 $8$--$9.4$ 和 $>20$）。三簇在 3-seed 分辨率下\textbf{统计独立}。（数字基于 2026-08-13 重训后的 seed-1 checkpoint 重新评估；未损坏的 seed-0/seed-2 沿用原评估。）
 
 \textbf{Per-env cos\_dist 矩阵}（节选，cross\_benchmark\_F1 / oodc\_F1 / G16，见 \texttt{results/journal\_prep/MAIN\_TABLE\_5M\_STATE\_FULL.md} 全表 90 行）：\textbf{易 env（ball\_in\_cup, cartpole\_2d, cheetah, finger）}所有 SNN 校准模型 cos\_dist 0.00--0.10；\textbf{难 env（dog, humanoid, quadruped, stacker, tworoom）}校准簇 cos\_dist 0.10--0.30，LeWM-v2 一致 0.20+，MLP/GRU/LIF-Transformer 全部 $\leq 0.005$（坍缩）。cos\_dist 对难易敏感，主导模型区分度；env-SR 难 env 全 0（horizon artifact，详见 (g)）。
 
@@ -1319,9 +1319,9 @@ LIF-Transformer & SNN (ALIF+Tx hybrid) & $-0.0003$ & 2 \\
 \textbf{env-SR 真实模式（pixel，静态 goal 可达，3 簇分界在控制信号上有真实区分度）}：
 \begin{itemize}[leftmargin=2em]
 \item \textbf{ball\_in\_cup}：全部 13 模型 1.00（4-DOF 对齐任务 CEM 5 步可解）
-\item \textbf{cartpole}：STJEWM 0.4--0.8 vs LeWM-v2 \textbf{0.0--0.2}（过反应模型的控制失败——放大了 obs 噪声）
-\item \textbf{cheetah}：Stacked-LIF-trace 0.40 vs LeWM-v2 0.00 vs STJEWM 0.60（局部）
-\item \textbf{pendulum}：Stacked-LIF-free 最高 1.00，LeWM-v2 0.00
+\item \textbf{cartpole}：STJEWM 0.6--0.8 vs LeWM-v2 \textbf{0.0--0.2}（过反应模型的控制失败——放大了 obs 噪声）
+\item \textbf{cheetah}：STJEWM-trace 0.3 vs Stacked-LIF-trace 0.16 vs LeWM-v2 0.00（局部）
+\item \textbf{pendulum}：STJEWM-trace 0.22, Stacked-LIF-free 0.3, LeWM-v2 0.04（LeWM 最低）
 \item \textbf{dog/fish/hopper/humanoid/quadruped/stacker/walker}：全部 0.00（5 步 CEM 够不到长程目标）
 \end{itemize}
 
@@ -1332,9 +1332,9 @@ LIF-Transformer & SNN (ALIF+Tx hybrid) & $-0.0003$ & 2 \\
 \toprule
 \textbf{cluster} & \textbf{env-SR mean} & \textbf{代表} \\
 \midrule
-calibrated (SNN) & 0.171--0.178 & STJEWM-trace 0.171, Stacked-LIF-trace 0.178 \\
+calibrated (SNN) & 0.162--0.172 & STJEWM-trace 0.172, Stacked-LIF-trace 0.162 \\
 over-react & \textbf{0.091} (lowest) & LeWM-v2——过反应放大 obs 噪声致控制失败 \\
-collapse (state) & n/a (静态可达) & MLP 0.172, LIF-Transformer/Stacked-LIF-free 接近 \dots \\
+collapse (state) & n/a (静态可达) & MLP 0.178, LIF-Transformer 0.175 接近 \dots \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
@@ -1422,8 +1422,8 @@ STJEWM-no\_trace & 0.4981 & SNN (no trace ablation) & \\
 \textbf{贡献 1：sigreg 权重扫描（v0.7.18.8）}。STJEWM-trace, $\lambda_{\text{sigreg}} \in \{0.09, 0.01, 0.001, 0.0\}$, 2 splits × 8 ckpt + 76 eval。结果：
 \begin{itemize}[leftmargin=2em]
 \item \textbf{prediction loss 在 4 个权重下完全一致（$\approx 0.0005$）}：sigreg 是独立正则项，不干涉 pred 收敛
-\item cos\_dist: F1 上 $0.117 / 0.100 / 0.124 / 0.112$（best at 0.01）, oodc\_F2 上 $0.127 / 0.115 / 0.112 / 0.131$
-\item paired t（0.09 vs 0.01）= $+1.54$（ns, $|t|>2.16$ 阈值）
+\item cos\_dist: F1 上 $0.1162 / 0.1146 / 0.1065 / 0.1054$（best at 0.0）, oodc\_F2 上 $0.1236 / 0.1117 / 0.1364 / 0.1202$（best at 0.01）
+\item paired t（0.09 vs 0.01）= $+1.31$（ns, $|t|>2.16$ 阈值）
 \end{itemize}
 \textbf{判决}："sigreg hijacks optimization" 假设被驳回。STJEWM vs Stacked-LIF 在 cos\_dist 上的差异完全在 3-seed CI 噪声内（(a) B2 已显示 calibrated 簇内 CI 重叠）。STJEWM 真实优势是\textbf{4.4$\times$ 更低的有效 FLOPs}（(d)），不是 sigreg 工程。
 
@@ -1611,7 +1611,7 @@ state 实验在低维 proprioceptive 状态（$\leq 128$-dim，pad 后）上训�
 \textbf{实际结果（pixel）}：
 \begin{itemize}[leftmargin=2em]
 \item \textbf{三簇分界在极值上保留}：env-SR 上 LeWM-v2 cartpole 0.0--0.2（最低，过反应放大 obs 噪声致控制失败）；STJEWM/Stacked-LIF 0.4--0.8（部分控制）；坍缩簇（MLP/LIF-Transformer）在静态可达 env 上偶尔得分高但 env-SR 区分度被静态目标稀释
-\item \textbf{像素 env-SR（静态 goal, 13 模型均值 across 10 splits）}：STJEWM-trace 0.171, Stacked-LIF-trace 0.178, Stacked-LIF-free 接近, LeWM-v2 0.091（lowest）, MLP 0.172——三簇保留但 cos\_dist 尺度被 ViT 14×14 patch 放大（pixel 0.6--0.9 vs state 0.05--0.3）
+\item \textbf{像素 env-SR（静态 goal, 13 模型均值 across 10 splits）}：STJEWM-trace 0.172, Stacked-LIF-trace 0.162, Stacked-LIF-free 0.157, LeWM-v2 0.091（lowest）, MLP 0.178——三簇保留但 cos\_dist 尺度被 ViT 14×14 patch 放大（pixel 0.6--0.9 vs state 0.05--0.3）
 \item \textbf{fish env 异常}：cos\_dist 3.4--5.4，所有模型都失败，是 frozen ViT 14×14 patch 的\textbf{编码器盲区}（无法捕捉鱼形动态），不是模型差异
 \item \textbf{ball\_in\_cup}：全部 13 模型 1.00（4-DOF 对齐任务 CEM 5 步可解）——\textbf{静态目标可达稀释了 env-SR 的模型区分度}，但 cos\_dist 仍能区分（state 中 0.00 vs pixel 中 0.022--0.029）
 \item \textbf{结论}：trace dynamics 假设\textbf{跨模态保留}在极值排序上（坍缩最低、过反应最高），但 frozen ViT 是表示瓶颈——pixel 的 cos\_dist 区分度主要来自\textbf{控制层面}（env-SR）而非潜变量对齐（cos\_dist 在 pixel 下挤在 0.6--0.9）。这验证了 trace dynamics 的架构内禀性，但同时指出了 frozen ViT 在 0.1 尺度任务特征上的局限。

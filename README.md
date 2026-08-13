@@ -36,7 +36,7 @@ noise σ=0.02→inliers, σ=0.05→noise.
 |---|---|---|
 | **Calibrated** | STJEWM 6 readouts + Stacked-LIF-trace/free + ALIF-timecell | 0.10–0.14, CIs pairwise overlap |
 | **Collapse** | MLP, GRU, LIF-Transformer | ≈ 0.000–0.02 (constant latent) |
-| **Over-reactive** | LeWM-v2 | 0.19 (CI disjoint, Cohen's d −7…−8.5 vs calibrated) |
+| **Over-reactive** | LeWM-v2 | 0.19 (CI disjoint, Cohen's d 8–9.4 vs calibrated) |
 
 - **Parameter-robust**: STJEWM retrained 2.70M→5.06M (n_layers=4),
   cos_dist delta < 0.004 — calibration is an architecture property,
@@ -90,7 +90,7 @@ Pixel (frozen ViT-Tiny 5.46M + trainable 5.00M), 13 DMC envs × 10 splits,
 CEM eval with static (reachable) goals:
 - Cluster ordering preserved at the extremes (collapse lowest, over-react highest).
 - **LeWM-v2 fails control on pixel**: env-SR 0.091, lowest of all models
-  (STJEWM-trace 0.171, Stacked-LIF-trace 0.178, MLP 0.172).
+  (STJEWM-trace 0.172, Stacked-LIF-trace 0.162, MLP 0.178).
 - Frozen ViT is a representational bottleneck (cos scale 0.6–0.9 vs state 0.1);
   fish env is a ViT blind spot (cos 3.4–5.4).
 

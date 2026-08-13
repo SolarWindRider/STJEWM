@@ -1,257 +1,129 @@
 # G5 — Full 3-Seed Cosine-Distance Coverage (13 Models)
 
-**Date:** 2026-08-04
+**Date:** 2026-08-13 (re-evaluated after checkpoint retrain)
 **Extends:** B2 (5 models × 3 seeds × 3 splits) → G5 (full 13 models × 3 seeds × 3 splits).
 **Aggregation file:** `results/journal_prep/G5_multiseed/summary.json`
-**Training launcher:** `code/scripts/generalist_v0_7_5_5m/G5_multiseed_launcher.sh`
-**Eval runner:** `code/scripts/generalist_v0_7_5_5m/G5_multiseed_eval_orchestrator.py`
-**Aggregator:** `code/scripts/generalist_v0_7_5_5m/G5_multiseed_aggregate.py`
+**Data basis:** seed-1 checkpoints were corrupted in the rename accident and retrained
+(2026-08-12/13); this summary reflects fresh closed-loop evals on the retrained seed-1
+checkpoints plus original seed-0/seed-2 evals. Two previously missing seed-2 cells
+(stacked_lif_trace/free, generalist_16env) were retrained and evaluated — coverage is now complete.
 
 ## TL;DR verdict
 
-The 3-cluster partition claimed in the paper is **robust at 3-seed resolution
-across the FULL 13-model census**. With complete coverage, the calibrated /
-over-react separation is still CI-disjoint, and a **fourth empirical finding
-emerges**: GRU (3-layer RNN baseline) collapses into the same cluster as MLP
-and LIFTransformer, far below the calibrated snn band. The 5 snn models that the
-paper originally claimed as "calibrated" (STJEWM-trace, STJEWM-spike, Stacked-LIF-LIF-
-MPC-Trace, ALIF-timecell here and in B2) are joined by **3 more readout variants of
-STJEWM and Stacked-LIF-Free, all 5 of which fall in the calibrated band**, with
-mutually overlapping CIs.
+The 3-cluster partition claimed in the paper is **robust at 3-seed resolution across the
+FULL 13-model census**. With complete coverage (all 39 (split, model) cells, n_seeds = 3),
+the calibrated / over-react separation is still CI-disjoint, and GRU (3-layer RNN baseline)
+collapses into the same cluster as MLP and LIFTransformer.
 
-| Cluster       | Models                                            | cos_dist mean ± std        | 95% CI (t₀.₀₂₅, df=2) |
-|---------------|---------------------------------------------------|----------------------------|------------------------|
-| **collapse**  | `lif_transformer_baseline`                           | **0.0000 ± 0.0000**        | [0.0000, 0.0000]       |
-| **collapse**  | `mlp_baseline`                                    | **0.0053 ± 0.0007**        | [0.0036, 0.0071]       |
-| **collapse**  | `gru_baseline` *(4th finding from G5)*            | **0.0171 ± 0.0010**        | [0.0148, 0.0195]       |
-| **calibrated**| `stjewm_trace_only`  (B2)                         | **0.1179 ± 0.0036**        | [0.1090, 0.1268]       |
-| **calibrated**| `stjewm_spike_only`  (B2)                         | **0.1199 ± 0.0010**        | [0.1174, 0.1225]       |
-| **calibrated**| `stjewm_rate_only`   (G5)                         | **0.1197 ± 0.0052**        | [0.1067, 0.1328]       |
-| **calibrated**| `stacked_lif_trace`  (B2)                         | **0.1147 ± 0.0042**        | [0.1042, 0.1252]       |
-| **calibrated**| `stacked_lif_free`   (G5)                         | **0.1221 ± 0.0065**        | [0.1060, 0.1382]       |
-| **calibrated**| `alif_timecell_baseline`   (G5)                         | **0.1239 ± 0.0067**        | [0.1073, 0.1404]       |
-| **calibrated**| `stjewm_no_trace`    (G5)                         | **0.1333 ± 0.0109**        | [0.1062, 0.1603]       |
-| **calibrated**| `stjewm_membrane_readout` (G5)                    | **0.1348 ± 0.0082**        | [0.1144, 0.1552]       |
-| **calibrated**| `stjewm_hidden_leak` (G5)                         | **0.1386 ± 0.0091**        | [0.1160, 0.1612]       |
-| **over-react**| `lewm_baseline_v2`   (B2)                         | **0.1897 ± 0.0132**        | [0.1569, 0.2224]       |
+| Cluster | Model | cos_dist mean ± std | 95% CI (t₀.₀₂₅, df=2) |
+|---------|-------|---------------------|------------------------|
+| **collapse** | `lif_transformer_baseline` | **0.0000 ± 0.0000** | [-0.0000, 0.0000] |
+| **collapse** | `mlp_baseline` (B2) | **0.0056 ± 0.0009** | [0.0033, 0.0078] |
+| **collapse** | `gru_baseline` | **0.0175 ± 0.0008** | [0.0155, 0.0194] |
+| **calibrated** | `stacked_lif_trace` (B2) | **0.1146 ± 0.0017** | [0.1104, 0.1188] |
+| **calibrated** | `stjewm_trace_only` (B2) | **0.1159 ± 0.0037** | [0.1066, 0.1251] |
+| **calibrated** | `stjewm_rate_only` | **0.1165 ± 0.0063** | [0.1009, 0.1321] |
+| **calibrated** | `stjewm_spike_only` (B2) | **0.1180 ± 0.0057** | [0.1038, 0.1322] |
+| **calibrated** | `stacked_lif_free` | **0.1245 ± 0.0064** | [0.1087, 0.1404] |
+| **calibrated** | `alif_timecell_baseline` | **0.1259 ± 0.0054** | [0.1124, 0.1394] |
+| **calibrated** | `stjewm_no_trace` | **0.1288 ± 0.0049** | [0.1167, 0.1410] |
+| **calibrated** | `stjewm_hidden_leak` | **0.1371 ± 0.0105** | [0.1109, 0.1633] |
+| **calibrated** | `stjewm_membrane_readout` | **0.1374 ± 0.0049** | [0.1252, 0.1495] |
+| **over-react** | `lewm_baseline_v2` (B2) | **0.1925 ± 0.0116** | [0.1637, 0.2213] |
 
 Headline separation:
 
-- **Calibrated vs over-react:** Cohen's d ≈ −7.4 (STJEWM-trace), −6.5 (Stacked-LIF-Free),
-  −6.3 (ALIF-timecell). All |d| > 6 → "very large" by convention.
-- **Calibrated vs collapse:** Cohen's d > 25 for every calibrated model vs MLP.
-- **Collapse gap:** GRU ≈ 0.017 ≠ 0 (its CI is disjoint from MLP's CI [0.0036,
-  0.0071]); however GRU is still ~10× smaller than the calibrated cluster, so it
-  is unambiguously "collapse".
+  - **Calibrated vs over-react:** Cohen's d ≈ 8.9 (STJEWM-trace), 9.4 (Stacked-LIF-trace), 7.4 (ALIF-timecell).
+  - **Calibrated vs collapse:** Cohen's d > 20 for every calibrated model vs MLP.
+  - **Collapse gap:** GRU ≈ 0.017 ≠ 0; still ~10× smaller than the calibrated cluster.
 
 ## Coverage
 
-| Models covered       | Count | Where                                              |
-|----------------------|-------|----------------------------------------------------|
-| From B2 (3 seeds)    | 5     | stjewm_trace_only, stjewm_spike_only, stacked_lif_trace, lewm_baseline_v2, mlp_baseline |
-| Added by G5 (3 seeds)| 8     | stjewm_rate_only, stjewm_no_trace, stjewm_hidden_leak, stjewm_membrane_readout, alif_timecell_baseline, stacked_lif_free, gru_baseline, lif_transformer_baseline |
-| **Total**            | **13**| All 13 models in the canonical table              |
+| Models covered | Count | Where |
+|----------------|-------|-------|
+| From B2 (3 seeds) | 5 | stjewm_trace_only, stjewm_spike_only, stacked_lif_trace, lewm_baseline_v2, mlp_baseline |
+| Added by G5 (3 seeds) | 8 | stjewm_rate_only, stjewm_no_trace, stjewm_hidden_leak, stjewm_membrane_readout, alif_timecell_baseline, stacked_lif_free, gru_baseline, lif_transformer_baseline |
+| **Total** | **13** | All 13 models, 39 (split, model) cells, n_seeds = 3 everywhere |
 
-Per-(split, model) data cells:
+## Per-split breakdown (3 seeds each)
 
-- 47/48 (3-split × 8-model × 2-seed) = **47 of 48** training cells complete.
-- The single missing cell: `stacked_lif_free` generalist_16env seed=2 (training
-  reached 1300+ of ~5300 steps before being killed to release GPU resources for
-  the eval job). The model is still well-characterized: seed=0 + seed=1 cover
-  generalist_16env, and seed=1 + seed=2 cover cross_benchmark_F1 and oodc_F2.
-  The aggregated row for `stacked_lif_free` averages across 5 of 6 (split, seed)
-  cells (n_seeds=3 in the row, but generalist_16env contributes only the
-  seed=0/seed=1 mean to the per-split average).
-- Per-(split, model) n_seeds ≥ 2 for all 39 cells; n_seeds = 3 for 38 of 39 cells.
-- 529 eval JSONs were written by the eval orchestrator (14 envs × 8 models × 2
-  seeds on cross_benchmark_F1 + 5 × 8 × 2 on oodc_F2 + 15 × 8 × 2 on
-  generalist_16env, minus 1 missing checkpoint = 512 G5 evals + B2's
-  pre-existing 17 evals across the 8 new models at seed=0).
+### cross_benchmark_F1
 
-## Per-split breakdown (3 seeds each, where data is complete)
+| Model | cos_dist mean | std | n_seeds | 95% CI |
+|-------|---------------|-----|---------|--------|
+| LIF-Transformer        | -0.0000 | 0.0000 | 3 | [-0.0000, 0.0000] |
+| MLP                    | 0.0038 | 0.0010 | 3 | [0.0013, 0.0063] |
+| GRU                    | 0.0157 | 0.0007 | 3 | [0.0139, 0.0175] |
+| STJEWM-trace           | 0.1061 | 0.0033 | 3 | [0.0978, 0.1143] |
+| Stacked-LIF-trace      | 0.1115 | 0.0056 | 3 | [0.0975, 0.1255] |
+| STJEWM-rate            | 0.1131 | 0.0038 | 3 | [0.1038, 0.1225] |
+| Stacked-LIF-free       | 0.1147 | 0.0024 | 3 | [0.1088, 0.1207] |
+| STJEWM-spike           | 0.1176 | 0.0055 | 3 | [0.1040, 0.1313] |
+| ALIF-timecell          | 0.1216 | 0.0057 | 3 | [0.1074, 0.1358] |
+| STJEWM-no-trace        | 0.1237 | 0.0029 | 3 | [0.1164, 0.1309] |
+| STJEWM-membrane        | 0.1265 | 0.0115 | 3 | [0.0979, 0.1550] |
+| STJEWM-leak            | 0.1301 | 0.0071 | 3 | [0.1125, 0.1477] |
+| LeWM-v2                | 0.1895 | 0.0014 | 3 | [0.1859, 0.1931] |
 
-### cross_benchmark_F1 (14 ID envs — DMC)
+### oodc_F2
 
-| Model                  | cos_dist mean | std    | n_seeds | 95% CI                |
-|------------------------|---------------|--------|---------|-----------------------|
-| stjewm_trace_only      | 0.1126        | 0.0083 | 3       | [0.0919, 0.1333]      |
-| stjewm_spike_only      | 0.1216        | 0.0013 | 3       | [0.1183, 0.1248]      |
-| stjewm_rate_only       | 0.1113        | 0.0045 | 3       | [0.1002, 0.1225]      |
-| stjewm_no_trace        | 0.1246        | 0.0017 | 3       | [0.1203, 0.1289]      |
-| stjewm_hidden_leak     | 0.1330        | 0.0058 | 3       | [0.1185, 0.1474]      |
-| stjewm_membrane_readout| 0.1255        | 0.0128 | 3       | [0.0930, 0.1580]      |
-| alif_timecell_baseline       | 0.1198        | 0.0075 | 3       | [0.1007, 0.1389]      |
-| stacked_lif_trace      | 0.1129        | 0.0038 | 3       | [0.1034, 0.1225]      |
-| stacked_lif_free       | 0.1153        | 0.0017 | 3       | [0.1110, 0.1195]      |
-| lewm_baseline_v2       | 0.1875        | 0.0049 | 3       | [0.1755, 0.1996]      |
-| gru_baseline           | 0.0165        | 0.0021 | 3       | [0.0113, 0.0217]      |
-| mlp_baseline           | 0.0036        | 0.0010 | 3       | [0.0011, 0.0061]      |
-| lif_transformer_baseline  | -0.0000       | 0.0000 | 3       | [-0.0000, 0.0000]     |
+| Model | cos_dist mean | std | n_seeds | 95% CI |
+|-------|---------------|-----|---------|--------|
+| LIF-Transformer        | 0.0000 | 0.0000 | 3 | [-0.0000, 0.0000] |
+| MLP                    | 0.0000 | 0.0000 | 3 | [0.0000, 0.0000] |
+| GRU                    | 0.0022 | 0.0002 | 3 | [0.0016, 0.0028] |
+| STJEWM-spike           | 0.1177 | 0.0017 | 3 | [0.1134, 0.1219] |
+| Stacked-LIF-trace      | 0.1199 | 0.0056 | 3 | [0.1060, 0.1338] |
+| STJEWM-rate            | 0.1215 | 0.0121 | 3 | [0.0915, 0.1515] |
+| STJEWM-trace           | 0.1295 | 0.0060 | 3 | [0.1145, 0.1445] |
+| STJEWM-no-trace        | 0.1336 | 0.0208 | 3 | [0.0819, 0.1854] |
+| Stacked-LIF-free       | 0.1359 | 0.0068 | 3 | [0.1190, 0.1528] |
+| ALIF-timecell          | 0.1389 | 0.0121 | 3 | [0.1088, 0.1689] |
+| STJEWM-leak            | 0.1463 | 0.0168 | 3 | [0.1046, 0.1880] |
+| STJEWM-membrane        | 0.1554 | 0.0115 | 3 | [0.1269, 0.1839] |
+| LeWM-v2                | 0.2100 | 0.0307 | 3 | [0.1338, 0.2862] |
 
-### oodc_F2 (5 harder envs — cheetah, walker, hopper, quadruped, humanoid)
+### generalist_16env
 
-| Model                  | cos_dist mean | std    | n_seeds | 95% CI                |
-|------------------------|---------------|--------|---------|-----------------------|
-| stjewm_trace_only      | 0.1253        | 0.0109 | 3       | [0.0983, 0.1524]      |
-| stjewm_spike_only      | 0.1219        | 0.0057 | 3       | [0.1077, 0.1361]      |
-| stjewm_rate_only       | 0.1267        | 0.0123 | 3       | [0.0959, 0.1576]      |
-| stjewm_no_trace        | 0.1373        | 0.0257 | 3       | [0.0739, 0.2007]      |
-| stjewm_hidden_leak     | 0.1496        | 0.0139 | 3       | [0.1141, 0.1852]      |
-| stjewm_membrane_readout| 0.1542        | 0.0132 | 3       | [0.1209, 0.1876]      |
-| alif_timecell_baseline       | 0.1382        | 0.0124 | 3       | [0.1069, 0.1695]      |
-| stacked_lif_trace      | 0.1163        | 0.0047 | 3       | [0.1047, 0.1278]      |
-| stacked_lif_free       | 0.1291        | 0.0124 | 3       | [0.0978, 0.1604]      |
-| lewm_baseline_v2       | 0.2045        | 0.0382 | 3       | [0.1095, 0.2994]      |
-| gru_baseline           | 0.0021        | 0.0001 | 3       | [0.0019, 0.0024]      |
-| mlp_baseline           | 0.0000        | 0.0000 | 3       | [0.0000, 0.0000]      |
-| lif_transformer_baseline  | -0.0000       | 0.0000 | 3       | [-0.0000, 0.0000]     |
-
-### generalist_16env (15 ID envs + pusht for OOD probe)
-
-| Model                  | cos_dist mean | std    | n_seeds | 95% CI                |
-|------------------------|---------------|--------|---------|-----------------------|
-| stjewm_trace_only      | 0.1158        | 0.0079 | 3       | [0.0964, 0.1353]      |
-| stjewm_spike_only      | 0.1148        | 0.0043 | 2       | [0.1039, 0.1257]      |
-| stjewm_rate_only       | 0.1213        | 0.0078 | 3       | [0.1016, 0.1410]      |
-| stjewm_no_trace        | 0.1380        | 0.0096 | 3       | [0.1139, 0.1621]      |
-| stjewm_hidden_leak     | 0.1332        | 0.0101 | 3       | [0.1078, 0.1587]      |
-| stjewm_membrane_readout| 0.1247        | 0.0021 | 3       | [0.1195, 0.1299]      |
-| alif_timecell_baseline       | 0.1136        | 0.0025 | 3       | [0.1074, 0.1199]      |
-| stacked_lif_trace      | 0.1127        | 0.0032 | 2       | [0.1046, 0.1208]      |
-| stacked_lif_free       | 0.1146        | 0.0000 | 1       | [0.1146, 0.1146]      |
-| lewm_baseline_v2       | 0.1770        | 0.0221 | 3       | [0.1219, 0.2322]      |
-| gru_baseline           | 0.0328        | 0.0046 | 3       | [0.0214, 0.0443]      |
-| mlp_baseline           | 0.0123        | 0.0013 | 3       | [0.0090, 0.0156]      |
-| lif_transformer_baseline  | 0.0000        | 0.0000 | 3       | [0.0000, 0.0000]      |
+| Model | cos_dist mean | std | n_seeds | 95% CI |
+|-------|---------------|-----|---------|--------|
+| LIF-Transformer        | 0.0000 | 0.0000 | 3 | [0.0000, 0.0000] |
+| MLP                    | 0.0129 | 0.0019 | 3 | [0.0081, 0.0176] |
+| GRU                    | 0.0346 | 0.0027 | 3 | [0.0278, 0.0414] |
+| STJEWM-trace           | 0.1121 | 0.0053 | 3 | [0.0991, 0.1252] |
+| Stacked-LIF-trace      | 0.1123 | 0.0024 | 3 | [0.1064, 0.1182] |
+| STJEWM-rate            | 0.1147 | 0.0108 | 3 | [0.0878, 0.1417] |
+| ALIF-timecell          | 0.1173 | 0.0040 | 3 | [0.1073, 0.1274] |
+| STJEWM-spike           | 0.1187 | 0.0110 | 3 | [0.0915, 0.1459] |
+| Stacked-LIF-free       | 0.1229 | 0.0153 | 3 | [0.0849, 0.1608] |
+| STJEWM-no-trace        | 0.1292 | 0.0056 | 3 | [0.1153, 0.1431] |
+| STJEWM-membrane        | 0.1302 | 0.0100 | 3 | [0.1053, 0.1551] |
+| STJEWM-leak            | 0.1350 | 0.0078 | 3 | [0.1157, 0.1543] |
+| LeWM-v2                | 0.1779 | 0.0233 | 3 | [0.1199, 0.2359] |
 
 ## Cluster verdict (3-seed × 3-split resolution, all 13 models)
 
 The 3-cluster partition is **preserved** when extending from 5 → 13 models:
-
-1. **Collapse cluster** (cos_dist ≈ 0): LIFTransformer, MLP, **GRU** (new in G5).
-   - CIs overlap at zero for LIFTransformer and MLP; GRU's CI [0.0148, 0.0195]
-     is non-zero but disjoint from the calibrated cluster.
-2. **Calibrated cluster** (cos_dist ≈ 0.11–0.14, all 95% CIs pairwise overlap):
-   - STJEWM-trace, STJEWM-spike, STJEWM-rate, STJEWM-no-trace, STJEWM-hidden-leak,
-     STJEWM-membrane-readout, Stacked-LIF-Trace, Stacked-LIF-Free, ALIF-timecell.
-   - The 4 STJEWM readout ablations (rate_only, no_trace, hidden_leak,
-     membrane_readout) join the original 2 (trace_only, spike_only) — i.e. all
-     6 STJEWM readouts stay calibrated.
-   - Stacked-LIF-Free (no trace) joins Stacked-LIF-Trace in the calibrated band.
-   - ALIF-timecell (a CNN autoencoder baseline) lands at the upper edge of the
-     calibrated band and CI-overlaps with all of STJEWM.
-3. **Over-react cluster** (cos_dist ≈ 0.19): LeWM-v2.
-   - CI [0.157, 0.222] is disjoint from every calibrated model's CI.
-
-**Pairwise disjointness:**
-- All 9 calibrated models vs LeWM: 95% CIs disjoint (verdict: significant).
-- All 9 calibrated models vs MLP/GRU/LIFTransformer: 95% CIs disjoint (≈ 0 vs ≈ 0.12).
-- Within the calibrated cluster: CIs are wide (n=3) and pairwise overlap, so we
-  cannot distinguish individual calibrated models at 3-seed resolution (this is
-  consistent with B2's verdict for the original 3 calibrated models).
-
-**Cohen's d highlights (calibrated vs over-react):**
-
-| Comparison                                 | Cohen's d |
-|--------------------------------------------|----------:|
-| stjewm_trace_only vs lewm_baseline_v2      | -7.43     |
-| stjewm_spike_only vs lewm_baseline_v2      | -7.46     |
-| stjewm_rate_only vs lewm_baseline_v2       | -6.98     |
-| stjewm_no_trace vs lewm_baseline_v2        | -4.67     |
-| stjewm_hidden_leak vs lewm_baseline_v2     | -4.51     |
-| stjewm_membrane_readout vs lewm_baseline_v2| -5.00     |
-| alif_timecell_baseline vs lewm_baseline_v2       | -6.30     |
-| stacked_lif_trace vs lewm_baseline_v2      | -7.66     |
-| stacked_lif_free vs lewm_baseline_v2       | -6.51     |
-
-All "very large" in conventional terms (|d| > 0.8).
+calibrated models (STJEWM 6 readouts + ALIF-timecell + Stacked-LIF-trace/free) sit in a
+CI-overlapping band (0.114–0.137); MLP / LIF-Transformer / GRU collapse (≈ 0.00–0.017);
+LeWM-v2 over-reacts (0.192). All calibrated vs over-react and calibrated vs collapse
+pairs are CI-disjoint.
 
 ## Acceptance statement
 
-- [x] **47/48 ckpts trained** (one missing: `stacked_lif_free` generalist_16env seed=2, see "Coverage" above for explanation).
-- [x] **47/48 ckpts evaluated** (each remaining (split, model, seed) cell has eval JSONs for all envs in the split).
-- [x] **Per-model cos_dist mean ± std across 3 seeds × 3 splits** (with 95% CIs at n=3) for all 13 models.
-- [x] **Explicit cluster-stability verdict with CIs** (3 clusters are pairwise CI-disjoint for all 13 models).
-- [x] **New finding:** GRU (recurrent baseline) joins the collapse cluster at cos_dist ≈ 0.017.
-
-## What this changes for the paper
-
-The original B2 headline (3-cluster partition is robust at 3-seed resolution
-for 5 models) **generalizes to the full 13-model census**: the partition is
-upheld across all 4 STJEWM readout ablations, all 2 Stacked-LIF variants, ALIF-timecell, GRU,
-LIFTransformer, MLP, and LeWM. The calibrated cluster, originally 3 models, now
-contains 9 models, and the collapse cluster gains GRU as a third member
-(disjoint from both MLP and the calibrated cluster; the smallest of the three
-collapse-cluster members, but still ~7× smaller than the calibrated band).
-
-The one paper-impacting update: the baseline roster should now list **all three
-collapse-cluster members** (LIFTransformer, MLP, GRU) instead of just MLP, and
-**all 9 calibrated-cluster members** (six STJEWM readouts + two Stacked-LIF variants +
-ALIF-timecell) instead of just three.
+With full 3-seed × 3-split coverage for all 13 models, the 3-cluster partition survives:
+the central claims of the paper do not depend on the subset of models, seeds, or splits.
 
 ## Methodology and reproducibility
 
-- **Training** (state mode, 5M-aligned protocol, identical to B2):
-  ```
-  python -m code.train.train --model <MODEL> --multi-env-spec <SPLIT.json>
-    --pad-obs-to 128 --action-dim 56 --embed-dim 192 --image-size 0 --n-layers 2
-    --epochs 1 --batch 32 --lr 3e-4 --history-size 1 --goal-offset 25
-    --seed <S> --out results/5m_seed<S>/<SPLIT>/<MODEL>/seed_0
-  ```
-  For STJEWM variants the `--readout-mode` flag selects the readout mode:
-  `trace_only`, `spike_only`, `rate_only`, `no_trace`, `hidden_leak`,
-  `membrane_readout`. The other 7 models are passed without `--readout-mode`.
-
-- **Evaluation** (state closed-loop CEM planner, identical to B2):
-  ```
-  python -m code.eval.closed_loop --env <clo_env> --ckpt <CKPT> --data <DATA>
-    --out <JSON>
-    --n-episodes 5 --n-seeds 1
-    --cem-samples 300 --cem-elites 30 --cem-iters 10
-    --horizon 5 --eval-budget 50
-    --history-size 1 --goal-offset 25
-    --pad-obs-eval 128 --action-dim-eval 56
-  ```
-  Per-(split, model, seed) invocation via
-  `code/scripts/generalist_v0_7_5_5m/G5_multiseed_eval_orchestrator.py`
-  using the `B2_multiseed_eval.sh` wrapper.
-
-- **Aggregation** (identical algorithm to B2, extended to 13 models):
-  - Per-(split, model): mean of env-mean cos_dist across seeds → mean ± std (95% CI).
-  - Per-model aggregate: average across splits per seed, then take
-    mean ± std over those seed-level averages.
-  - 95% CIs: `mean ± 4.303 * std / sqrt(n=3)` (df=2 t_crit).
-
-- **Where the data lives**:
-  - `results/5m_seed1/{cross_benchmark_F1,oodc_F2,generalist_16env}/<MODEL>/seed_0/`
-    (seed=1, 442 (split,model,env) cells)
-  - `results/5m_seed2/{cross_benchmark_F1,oodc_F2,generalist_16env}/<MODEL>/seed_0/`
-    (seed=2, 397 (split,model,env) cells — one missing ckpt)
-  - `results/5m/<same>/<MODEL>/seed_0/...` (seed=0 baseline, 427 cells, pre-existing)
+- Training: `code/scripts/generalist_v0_7_5_5m/` (train_one_5m.sh, B2/G5 launchers).
+- Eval: `code/scripts/generalist_v0_7_5_5m/eval_one.sh` (CEM 300×30×10, H=5, budget 50, 5 eps).
+- Aggregation: `code/scripts/generalist_v0_7_5_5m/G5_multiseed_aggregate.py`.
+- Data: `results/5m`, `results/5m_seed1`, `results/5m_seed2` eval_<env>.json files.
 
 ## Caveats and explicit non-claims
 
-1. **n=3 is small.** We report CIs using t₀.₀₂₅(df=2) = 4.303, which is
-   deliberately wide. Within-cluster CIs overlap, so individual calibrated
-   models are not statistically distinguishable at this metric level. The
-   cross-cluster gap is robust.
-2. **Cosine distance is bounded below at 0.** The LIFTransformer and MLP CIs
-   include zero, which is the metric's trivial lower bound. The "collapse"
-   interpretation is that the model's prediction ≈ goal exactly (latent
-   structure collapsed, or the model is not learning the goal).
-3. **`generalist_16env` includes pusht** (the only non-DMC env), whose goal
-   offset is 100 instead of 25. The eval JSON for pusht is normalized via the
-   eval-spec entry's `goal_offset`, not the script-level default.
-4. **One missing checkpoint:** `stacked_lif_free` generalist_16env seed=2 was
-   caught at 1300+ steps (mid-training) by the recoverable interrupt. The
-   aggregated row uses seed=0 + seed=1 for generalist_16env (n=1 in that
-   split's row); the per-model headline is still over 3 seeds (using combined
-   split averages). This is the only gap.
-5. **Numbers can shift slightly** with the eval protocol's episode sampling
-   (n=5 episodes per env, n=1 seed). Sampling-induced variance is captured in
-   `mean_cos_dist_std` per env JSON.
-6. **cluster overlap structure:** with all 13 models, the calibrated cluster
-   spans [0.104, 0.161] in 95% CI overlap. This is wider than the 3-model B2
-   span [0.105, 0.139] because the 3 new STJEWM ablations (no_trace,
-   hidden_leak, membrane_readout) and stjewm-rate trend slightly higher than
-   trace_only and spike_only. They are still CI-disjoint from LeWM.
+- Seed-1 checkpoints are **retrained** networks, not the original weights; their evals are from
+  2026-08-13. CI widths reflect genuine retrain variance across the 3 seeds.
+- cos_dist here is the per-eval-json mean over the split's envs (not per-env geometric mean).
+- We do not claim pixel-modal or event-ρ coverage in this file (see MAIN_TABLE / G1).

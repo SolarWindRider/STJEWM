@@ -464,12 +464,18 @@ def main():
     # pixel and (W, D) for state. Batched is (B, T, 3, H, W) and (B, T, D).
     obs_first = sample["state"]
     is_pixel_obs = (obs_first.ndim == 4 and obs_first.shape[-3] == 3)
-    # State (non-pixel) mode: honor the CLI --image-size (default 84) instead
-    # of forcing 0. Forcing 0 made STJEWM fall back to 84 internally while
-    # recording the CLI value in args, producing ckpts whose positional
-    # embeddings (37 patches) mismatch the 224px 5M-main ckpts (257) used by
-    # event_align/eval. Pixel mode keeps inferring from the obs shape.
-    image_size = obs_first.shape[-1] if is_pixel_obs else (getattr(args, "image_size", 0) or 0)
+    # State (non-pixel) mode: only STJEWM honors the CLI --image-size (default
+    # 84) to size its frozen ViT so ckpts match the 224px 5M-main layout (257
+    # patches) used by event_align. Other models must keep image_size=0 in state
+    # mode — several baselines (e.g. StackedLIFBase) branch on `image_size > 0`
+    # to route through their pixel encoder and would crash on 2D state obs
+    # otherwise. Pixel mode keeps inferring from the obs shape.
+    if is_pixel_obs:
+        image_size = obs_first.shape[-1]
+    elif args.model == "stjewm":
+        image_size = getattr(args, "image_size", 0) or 0
+    else:
+        image_size = 0
     model = build_model(
         args.model, obs_dim, action_dim, n_layers, args.readout_mode,
         embed_dim=args.embed_dim,
