@@ -109,8 +109,8 @@ CEM eval with static (reachable) goals:
 
 ## Paper
 
-- `paper/experiment_report_full_zh.tex` + `.pdf` — Chinese experiment report (current, v0.7.19)
-- English Nature Machine Intelligence draft — superseded; current English narrative is the Chinese report structure (see `experiment_report_full_zh.tex`)
+- `experiment_report_full_zh.{tex,pdf}` — Chinese experiment report (current, v0.7.19)。**OBS-only**：`obs://lixiang01/STJEWM_NMI/paper/`，不上传 GitHub。红字标注尚未完成的实验（held-out 评测、F4 split、CubifA 表等，见报告内红字）
+- English Nature Machine Intelligence draft — superseded; current English narrative is the Chinese report structure
 - Compile the PDF with Tectonic: `tectonic experiment_report_full_zh.tex`
 
 ## Experiments
@@ -164,7 +164,7 @@ results/5m/                    # state evals (baselines)
 results/5m_5mpar/              # state evals (fair STJEWM 5.06M)
 results/5m_pixel/              # pixel evals (CEM summaries)
 results/journal_prep/          # AUTHORITATIVE aggregated tables
-paper/                         # experiment_report_full_zh.{tex,pdf} (中文实验报告, current)
+paper/                         # figs + 报告源文件（报告 PDF 仅 OBS: obs://lixiang01/STJEWM_NMI/paper/）
 docs/                          # rebuttal letter + pixel status (current only)
 ```
 
