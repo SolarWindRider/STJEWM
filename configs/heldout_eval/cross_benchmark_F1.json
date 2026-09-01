@@ -1,0 +1,11 @@
+{
+ "_split_name": "heldout_cross_benchmark_F1",
+ "specs": [
+  {
+   "env_id": "pusht",
+   "path": "/home/lx/LeWM/data/pusht_expert_train.h5",
+   "goal_offset": 100,
+   "clo_env": "pusht"
+  }
+ ]
+}

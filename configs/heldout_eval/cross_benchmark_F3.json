@@ -1,0 +1,11 @@
+{
+ "_split_name": "heldout_cross_benchmark_F3",
+ "specs": [
+  {
+   "env_id": "reacher",
+   "path": "data/dm_control/3d_rollouts_250k/reacher_250k.npz",
+   "goal_offset": 25,
+   "clo_env": "reacher"
+  }
+ ]
+}

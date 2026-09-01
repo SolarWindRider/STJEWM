@@ -1,0 +1,11 @@
+{
+ "_split_name": "heldout_cross_benchmark_F2",
+ "specs": [
+  {
+   "env_id": "tworoom",
+   "path": "/home/lx/LeWM/data/tworoom_extract/tworoom.h5",
+   "goal_offset": 100,
+   "clo_env": "tworoom"
+  }
+ ]
+}

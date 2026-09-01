@@ -1,0 +1,71 @@
+{
+ "_split_name": "heldout_oodc_F3",
+ "specs": [
+  {
+   "env_id": "cartpole_2d",
+   "path": "data/dm_control/cartpole_250k.npz",
+   "goal_offset": 25,
+   "clo_env": "cartpole"
+  },
+  {
+   "env_id": "pendulum_2d",
+   "path": "data/dm_control/pendulum_250k.npz",
+   "goal_offset": 25,
+   "clo_env": "pendulum"
+  },
+  {
+   "env_id": "finger",
+   "path": "data/dm_control/3d_rollouts_250k/finger_250k.npz",
+   "goal_offset": 25,
+   "clo_env": "finger"
+  },
+  {
+   "env_id": "ball_in_cup",
+   "path": "data/dm_control/3d_rollouts_250k/ball_in_cup_250k.npz",
+   "goal_offset": 25,
+   "clo_env": "ball_in_cup"
+  },
+  {
+   "env_id": "cheetah",
+   "path": "data/dm_control/3d_rollouts_250k/cheetah_250k.npz",
+   "goal_offset": 25,
+   "clo_env": "cheetah"
+  },
+  {
+   "env_id": "walker",
+   "path": "data/dm_control/3d_rollouts_250k/walker_250k.npz",
+   "goal_offset": 25,
+   "clo_env": "walker"
+  },
+  {
+   "env_id": "humanoid",
+   "path": "data/dm_control/3d_rollouts_250k/humanoid_250k.npz",
+   "goal_offset": 25,
+   "clo_env": "humanoid"
+  },
+  {
+   "env_id": "humanoid_CMU",
+   "path": "data/dm_control/3d_rollouts_250k/humanoid_CMU_250k.npz",
+   "goal_offset": 25,
+   "clo_env": "humanoid_cmu"
+  },
+  {
+   "env_id": "hopper",
+   "path": "data/dm_control/3d_rollouts_250k/hopper_250k.npz",
+   "goal_offset": 25,
+   "clo_env": "hopper"
+  },
+  {
+   "env_id": "quadruped",
+   "path": "data/dm_control/3d_rollouts_250k/quadruped_250k.npz",
+   "goal_offset": 25,
+   "clo_env": "quadruped"
+  },
+  {
+   "env_id": "dog",
+   "path": "data/dm_control/3d_rollouts_250k/dog_250k.npz",
+   "goal_offset": 25,
+   "clo_env": "dog"
+  }
+ ]
+}

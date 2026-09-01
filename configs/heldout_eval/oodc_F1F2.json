@@ -1,0 +1,17 @@
+{
+ "_split_name": "heldout_oodc_F1F2",
+ "specs": [
+  {
+   "env_id": "delayed_t_maze",
+   "path": "data/delayed_t_maze_30k.npz",
+   "goal_offset": 25,
+   "clo_env": "delayed_t_maze"
+  },
+  {
+   "env_id": "cheetah_velhidden",
+   "path": "data/dm_control/3d_rollouts_250k/cheetah_250k.npz",
+   "goal_offset": 25,
+   "clo_env": "cheetah_velhidden"
+  }
+ ]
+}
