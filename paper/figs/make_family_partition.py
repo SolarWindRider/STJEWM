@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 """Figure: 4-family failure-mode partition via the 4-metric package.
 
-Data source (v0.7.19, 5M-aligned):
-  env-SR / LeWM-SR(cos<0.1) / cos_dist : aggregated from results/5m_5mpar +
-      results/5m eval JSONs (89 cells per baseline model, 178 for STJEWM-trace)
+Data source (2026-09-04, 5M-aligned after gap-retrain full re-eval):
+  env-SR / LeWM-SR(cos<0.1) / cos_dist : aggregated from results/5m_5mpar
+      eval JSONs (cells per model: 62-96; see results/journal_prep/reload_summary.md)
   div / resp                          : results/5m_stats/ latent_stats JSONs
       (50 cells per model, 200-step random policy)
   rho (event-alignment)               : G1, results/journal_prep/G1_event_align_complete
 
-Values (2026-08):
-  MLP        env 0.362  div 0.0002  resp 0.00  rho -0.0233  lewm 97.3  cos 0.007
-  GRU        env 0.364  div 0.0304  resp 26.5  rho -0.0074  lewm 90.8  cos 0.020
-  LeWM-v2    env 0.360  div 0.204   resp 13.1  rho  0.7515  lewm 34.2  cos 0.183
-  STJEWM-trc env 0.367  div 0.0106  resp 0.20  rho  0.9987  lewm 58.7  cos 0.104
+Values (2026-09-04):
+  LIF-Tx     env 0.319  div 0.0804  resp 60.4  rho -0.0003  lewm 100.0  cos 0.000
+  MLP        env 0.330  div 0.0002  resp 0.00  rho -0.0233  lewm  89.6  cos 0.036
+  GRU        env 0.321  div 0.0304  resp 26.5  rho -0.0074  lewm  50.5  cos 0.149
+  LeWM-v2    env 0.325  div 0.2039  resp 13.1  rho  0.7515  lewm  22.8  cos 0.252
+  STJEWM-trc env 0.338  div 0.0106  resp 0.20  rho  0.9987  lewm  48.5  cos 0.286
 """
 from pathlib import Path
 import matplotlib.pyplot as plt
@@ -22,13 +23,13 @@ PAPER = ROOT / "paper"
 OUT = PAPER / "figs" / "fig_four_family_falsification.png"
 
 families = {
-    'mlp_baseline': dict(env=36.2, div=0.0002, resp=0.00, rho=-0.0233, lewm=97.3,
-                          color='#a50026', label='MLP\n(collapsed)'),
-    'gru_baseline': dict(env=36.4, div=0.0304, resp=26.5, rho=-0.0074, lewm=90.8,
-                          color='#fdae61', label='GRU\n(noisy)'),
-    'lewm_baseline_v2': dict(env=36.0, div=0.204, resp=13.1, rho=0.7515, lewm=34.2,
+    'lif_transformer_baseline': dict(env=31.9, div=0.0804, resp=60.39, rho=-0.0003, lewm=100.0,
+                          color='#a50026', label='LIF-Tx\n(collapsed)'),
+    'mlp_baseline': dict(env=33.0, div=0.0002, resp=0.00, rho=-0.0233, lewm=89.6,
+                          color='#fdae61', label='MLP\n(collapsed)'),
+    'lewm_baseline_v2': dict(env=32.5, div=0.2039, resp=13.1, rho=0.7515, lewm=22.8,
                               color='#d7191c', label='LeWM-v2\n(over-react)'),
-    'stjewm_trace_only': dict(env=36.7, div=0.0106, resp=0.20, rho=0.9987, lewm=58.7,
+    'stjewm_trace_only': dict(env=33.8, div=0.0106, resp=0.20, rho=0.9987, lewm=48.5,
                               color='#1a9850', label='STJEWM-trace\n(calibrated)'),
 }
 
@@ -68,15 +69,15 @@ for ax, (key, title, note, scale) in zip(axes, metric_meta):
     ax.set_ylabel(note, fontsize=8)
 
 fig.suptitle(
-    "Four-metric package distinguishes 4 failure modes (5M-aligned, 89 cells/model)\n"
-    "MLP has LeWM-SR = 97.3% (highest) yet div = 0.0002 and ρ = -0.02. "
+    "Four-metric package distinguishes 4 failure modes (5M-aligned, 2026-09-04 re-eval)\n"
+    "LIF-Tx has LeWM-SR = 100.0% (highest, cos_dist = 0) and MLP 89.6% yet div = 0.0002 and rho = -0.02. "
     "A single latent metric cannot diagnose calibration -- §2.3a falsification.",
     fontsize=11, y=1.05)
 
 fig.text(0.5, -0.06,
          "Source: 5M-aligned eval JSONs (env-SR, LeWM-SR), results/5m_stats (div, resp), "
          "G1 event-align (rho). "
-         "MLP: div=0.0002 (collapsed) yet LeWM-SR=97.3% -> LeWM-SR is foolable by a constant latent. "
+         "MLP: div=0.0002 (collapsed) yet LeWM-SR=89.6%; LIF-Tx: cos_dist=0 yet LeWM-SR=100.0% -> LeWM-SR is foolable by a constant latent. "
          "STJEWM-trace: div=0.0106, resp=0.20, rho=0.9987 -- calibrated on all axes.",
          ha='center', fontsize=9, style='italic')
 
