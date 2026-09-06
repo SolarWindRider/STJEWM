@@ -20,12 +20,16 @@ PAD=${PAD:-128}
 ACTION_DIM=${ACTION_DIM:-56}
 N_EPISODES=${N_EPISODES:-5}
 N_SEEDS=${N_SEEDS:-1}
-HORIZON=${HORIZON:-5}
+# LeWM App. D/F.1 protocol: planning horizon covers goal_offset (frame-skip 5 x H5 = 25 env
+# steps), the whole optimized sequence is executed before replanning, budget=50, goal=t+25.
+HORIZON=${HORIZON:-25}
 EVAL_BUDGET=${EVAL_BUDGET:-50}
 HISTORY_SIZE=${HISTORY_SIZE:-1}
-# OUT_DIR is a parent; <split> comes from the eval_spec _split_name field
-OUT_PARENT=${OUT_PARENT:-/home/lx/snn/results/5m}
-STRESS_OUT_PARENT=${STRESS_OUT_PARENT:-/home/lx/snn/results/5m_stress}
+# CEM: 300 samples / 30 elites / 30 iters for PushT, 10 iters otherwise (LeWM App. D)
+CEM_ITERS=${CEM_ITERS:-0}   # 0 = auto per-env (pusht:30, others:10)
+# Out-of-repo scratch dir for all retrain/eval artifacts (data-generation reset 2026-09-06)
+OUT_PARENT=${OUT_PARENT:-/data/lx/tmp/results/5m}
+STRESS_OUT_PARENT=${STRESS_OUT_PARENT:-/data/lx/tmp/results/5m_stress}
 
 /home/lx/miniconda3/envs/snn/bin/python - <<PY
 import json, os, subprocess, sys
@@ -45,11 +49,13 @@ n_episodes = $N_EPISODES
 n_seeds = $N_SEEDS
 horizon = $HORIZON
 eval_budget = $EVAL_BUDGET
+action_dim = $ACTION_DIM
+cem_iters_cfg = $CEM_ITERS
 history_size = $HISTORY_SIZE
 pad = $PAD
 action_dim = $ACTION_DIM
 
-clo_env_map = {"cartpole_2d": "cartpole", "pendulum_2d": "pendulum"}
+clo_env_map = {"cartpole_2d": "cartpole", "pendulum_2d": "pendulum", "humanoid_CMU": "humanoid_cmu", "humanoid_cmu": "humanoid_cmu"}
 stress_out_dir = os.path.join("$STRESS_OUT_PARENT", split_name, "$MODEL", "seed_$SEED")
 os.makedirs(stress_out_dir, exist_ok=True)
 
@@ -73,6 +79,7 @@ for i, entry in enumerate(spec):
         "--horizon", str(horizon), "--eval-budget", str(eval_budget),
         "--history-size", str(history_size), "--goal-offset", str(goal_offset),
         "--pad-obs-eval", str(pad), "--action-dim-eval", str(action_dim),
+        "--cem-iters", str(30 if (cem_iters_cfg == 0 and clo_env.startswith("pusht")) or cem_iters_cfg == 30 else (cem_iters_cfg or 10)),
     ]
     cmd.extend(extra)
     print(f"[eval {i+1}/{n_total}] {env_id} -> {out_json}", flush=True)

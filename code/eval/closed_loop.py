@@ -231,6 +231,7 @@ def eval_closed_loop(
 
             # CEM plan + step
             actions_taken = 0
+            _episode_reward = 0.0
             best_actions = None
             t_start = time.time()
             # z_history is (history_size, D); for CEM.plan we need z_init (D,) and z_goal (D,).
@@ -251,8 +252,6 @@ def eval_closed_loop(
                         done = True
                         _step_reward = 0.0
                     actions_taken += 1
-                    if "_episode_reward" not in locals():
-                        _episode_reward = 0.0
                     _episode_reward += _step_reward
                     if done:
                         break
@@ -306,7 +305,7 @@ def eval_closed_loop(
                 "env_success": bool(env_success),
                 "phys_dist": float(phys_dist),
                 "plan_time_sec": plan_time,
-                "episode_reward": float(_episode_reward) if "_episode_reward" in locals() else 0.0,
+                "episode_reward": float(_episode_reward),
             }
             seed_episodes.append(ep_dict)
             per_episode_all.append(ep_dict)
@@ -553,6 +552,30 @@ def main():
     env = make_env(args.env, args.data, flicker_mask_ratio=args.flicker_mask_ratio,
                      delay_length=args.delay_length, cue_visibility=args.cue_visibility)
 
+    # [FIX 2026-09-02] PushT/TwoRoom raw states are in pixel-scale units
+    # (±500 / ±250). Training data is rescaled by the same constants inside
+    # load_pusht/load_tworoom, so the closed-loop env must return identically
+    # scaled observations (check_success still receives raw units).
+    if args.env in ("pusht", "tworoom"):
+        _scale = 500.0 if args.env == "pusht" else 250.0
+
+        class _ScaleObsWrapper:
+            def __init__(self, base, scale):
+                self._base = base
+                self.spec = base.spec
+                self._scale = scale
+            def reset(self, seed=None, **kw):
+                return self._scale_obs(self._base.reset(seed=seed, **kw))
+            def step(self, action):
+                obs, r, d, info = self._base.step(action)
+                return self._scale_obs(obs), r, d, info
+            def get_state(self):
+                return self._scale_obs(self._base.get_state())
+            def check_success(self, s, g):
+                return self._base.check_success(s * self._scale, g * self._scale)
+            def _scale_obs(self, arr):
+                return np.asarray(arr, dtype=np.float32) / self._scale
+        env = _ScaleObsWrapper(env, _scale)
     # If --pad-obs-eval was passed, wrap env to pad every obs to the target dim.
     # The model will be built with this padded dim; load_dataset below will also pad
     # its init/goal samples to match.
@@ -564,61 +587,55 @@ def main():
     ck_args = ck.get("args", {})
     # Prefer ckpt-side dims (recorded by train.py via vars(args)) when present.
     # Otherwise fall back to the env's native dims.
-    state_dim = (ck_args.get("pad_obs_to") or pad_obs_eval or env.spec.obs_dim)
-    action_dim = (ck_args.get("action_dim") or action_dim_override or env.spec.action_dim)
+    # [FIX 2026-09-06] The authoritative input dims come from the checkpoint's
+    # weight shapes (state_projector input = obs_dim, action_encoder input =
+    # action_dim): ck_args.pad_obs_to is None for unpadded runs, so args alone
+    # cannot recover the trained dims and strict load would fail.
+    def _infer_proj_in_dim(sd, needle):
+        for k, v in sd.items():
+            if needle in k and hasattr(v, "shape") and v.ndim == 2:
+                return int(v.shape[1])
+        return None
+    _sd = ck.get("model", {})
+    state_dim = (_infer_proj_in_dim(_sd, "state_projector.proj.0.weight")
+                 or ck_args.get("pad_obs_to") or pad_obs_eval or env.spec.obs_dim)
+    action_dim = (_infer_proj_in_dim(_sd, "action_encoder.proj.weight")
+                  or ck_args.get("action_dim") or action_dim_override or env.spec.action_dim)
     if state_dim > env.spec.obs_dim:
         # Wrap env so all returned obs are padded to state_dim.
         env = _PadObsWrapper(env, state_dim)
-    if ck_args.get("model", "stjewm") == "lewm_baseline":
-        from code.lewm_transformer_baseline import LeWMTransformerBaseline
-        embed_dim = ck_args.get("embed_dim", 256)
-        model = LeWMTransformerBaseline(state_dim=state_dim, action_dim=action_dim, embed_dim=embed_dim,
-                                         num_layers=ck_args.get("n_layers", 4))
-    elif ck_args.get("model", "stjewm") == "gru_baseline":
-        from code.gru_baseline import GRUBaseline
-        model = GRUBaseline(state_dim=state_dim, action_dim=action_dim)
-    elif ck_args.get("model", "stjewm") == "mlp_baseline":
-        from code.mlp_baseline import make_mlp_baseline
-        model = make_mlp_baseline(state_dim=state_dim, action_dim=action_dim)
-    elif ck_args.get("model", "stjewm") == "stacked_lif_trace":
-        from code.stacked_lif_baseline import make_stacked_lif_trace
-        n_layers = ck_args.get("n_layers", 4)
-        model = make_stacked_lif_trace(
-            state_dim=state_dim, action_dim=action_dim,
-            d_in=192, embed_dim=192, n_layers=n_layers, trace_beta=0.9, k_avg=4,
-        )
-    elif ck_args.get("model", "stjewm") == "stacked_lif_free":
-        from code.stacked_lif_baseline import make_stacked_lif_free
-        n_layers = ck_args.get("n_layers", 4)
-        model = make_stacked_lif_free(
-            state_dim=state_dim, action_dim=action_dim,
-            d_in=192, embed_dim=192, n_layers=n_layers, trace_beta=0.9,
-        )
-    elif ck_args.get("model", "stjewm") == "lif_transformer_baseline":
-        from code.lif_transformer_baseline import make_lif_transformer
-        n_layers = ck_args.get("n_layers", 4)
-        model = make_lif_transformer(
-            state_dim=state_dim, action_dim=action_dim,
-            d_snn=128, d_tx=192, num_layers=n_layers, num_heads=8,
-        )
-    elif ck_args.get("model", "stjewm") == "alif_timecell_baseline":
-        from code.alif_timecell_baseline import ALIFTimecellBaseline
-        n_layers = ck_args.get("n_layers", 4)
-        model = ALIFTimecellBaseline(
-            state_dim=state_dim, action_dim=action_dim,
-            d_hid=192, n_layers=n_layers,
-        )
-    else:
-        n_layers = ck_args.get("n_layers", 4)
-        # ReadoutMode: read from ckpt args (added by Workstream A)
-        ck_readout_mode = ck_args.get("readout_mode", "hidden_leak")
-        from code.stjewm import STJEWM
-        model = STJEWM(
-            d_hid=192, embed_dim=192, action_dim=action_dim, action_emb_dim=192,
-            state_dim=state_dim, cell_n_layers=n_layers, n_d=3,
-            trace_beta=0.9, freeze_encoder=True,
-            readout_mode=ck_readout_mode,
-        )
+    # [FIX 2026-09-01] Weight-loading bug: this file previously built a fresh
+    # random-init model and NEVER called load_state_dict, so every closed-loop
+    # metric reflected random initialisation instead of the trained weights.
+    # Build with the trainer's own build_model (same shape logic as training;
+    # the matching image_size is probed against the checkpoint) and load
+    # strictly — any shape mismatch must crash loudly instead of silently
+    # evaluating a random model.
+    from code.train.train import build_model as _train_build_model
+    last_err = None
+    model = None
+    isz_cands = []
+    if ck_args.get("image_size"):
+        isz_cands.append(ck_args["image_size"])
+    isz_cands += [0, 84, 128, 224]
+    for isz in isz_cands:
+        try:
+            model = _train_build_model(
+                ck_args.get("model", "stjewm"), obs_dim=state_dim,
+                action_dim=action_dim, n_layers=ck_args.get("n_layers", 4),
+                readout_mode=ck_args.get("readout_mode", "hidden_leak"),
+                embed_dim=ck_args.get("embed_dim"), hidden_dim=ck_args.get("hidden_dim"),
+                mlp_hidden=ck_args.get("mlp_hidden"), mlp_layers=ck_args.get("mlp_layers"),
+                image_size=isz)
+            model.load_state_dict(ck["model"])  # strict
+            print(f"[closed_loop] ckpt weights loaded (strict, image_size={isz})", flush=True)
+            break
+        except Exception as e:
+            last_err = e
+            model = None
+    if model is None:
+        raise RuntimeError(
+            f"[closed_loop] no build matches ckpt weights ({args.ckpt}): {last_err}")
     # Move the model to the eval device so encode_obs/encode_history (which
     # move inputs to `device`) see matching tensor devices. Without this, when
     # CUDA is available but the trainer saved the ckpt on CPU (or map_location
@@ -683,9 +700,8 @@ def main():
         horizon=args.horizon, eval_budget=args.eval_budget,
         device=device,
         goal_offset_override=goal_offset_override,
-        split=args.split,
-        pad_obs_to=(args.pad_obs_eval or (ck_args.get("pad_obs_to") if ck_args else None)),
-        model_action_dim=(ck_args.get("action_dim") if ck_args else None),
+        pad_obs_to=state_dim,
+        model_action_dim=action_dim,
     )
     # Save
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)

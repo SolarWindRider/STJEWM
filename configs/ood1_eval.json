@@ -3,8 +3,8 @@
   "split_name": "ood1_eval",
   "eval_families": ["pusht", "reacher_4d", "tworoom"],
   "specs": [
-    {"env_kind": "pusht",    "path": "/home/lx/LeWM/data/pusht_expert_train.h5",         "history_size": 1, "goal_offset": 100, "max_windows": 2000, "env_id": "pusht"},
+    {"env_kind": "pusht",    "path": "/home/lx/LeWM/data/pusht_expert_train.h5",         "history_size": 1, "goal_offset": 25, "max_windows": 2000, "env_id": "pusht"},
     {"env_kind": "reacher_4d","path": "data/dm_control/reacher_250k.npz",                "history_size": 1, "goal_offset": 25,  "max_windows": 2000, "env_id": "reacher_4d"},
-    {"env_kind": "tworoom",   "path": "/home/lx/LeWM/data/tworoom_extract/tworoom.h5","history_size": 1, "goal_offset": 100, "max_windows": 2000, "env_id": "tworoom"}
+    {"env_kind": "tworoom",   "path": "/home/lx/LeWM/data/tworoom_extract/tworoom.h5","history_size": 1, "goal_offset": 25, "max_windows": 2000, "env_id": "tworoom"}
   ]
 }

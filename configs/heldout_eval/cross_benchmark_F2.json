@@ -4,7 +4,7 @@
   {
    "env_id": "tworoom",
    "path": "/home/lx/LeWM/data/tworoom_extract/tworoom.h5",
-   "goal_offset": 100,
+   "goal_offset": 25,
    "clo_env": "tworoom"
   }
  ]

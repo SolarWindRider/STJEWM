@@ -11,6 +11,6 @@
    "probe_targets": ["event_contact", "event_persistent", "event_high_motion", "event_low_motion", "event_future_k5", "event_future_k10", "event_vel_above_median"]},
   {"env_kind": "dmc", "path": "data/dm_control/3d_rollouts_250k/ball_in_cup_250k.npz", "history_size": 1, "goal_offset": 25, "env_id": "ball_in_cup",
    "probe_targets": ["event_contact", "event_persistent", "event_high_motion", "event_low_motion", "event_future_k5", "event_future_k10", "event_vel_above_median"]},
-  {"env_kind": "pusht", "path": "/home/lx/LeWM/data/pusht_expert_train.h5", "history_size": 1, "goal_offset": 100, "env_id": "pusht",
+  {"env_kind": "pusht", "path": "/home/lx/LeWM/data/pusht_expert_train.h5", "history_size": 1, "goal_offset": 25, "env_id": "pusht",
    "probe_targets": ["event_contact", "event_persistent", "event_block_near_target", "event_future_k5", "event_future_k10"]}
 ]

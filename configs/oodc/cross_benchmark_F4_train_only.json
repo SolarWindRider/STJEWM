@@ -11,7 +11,7 @@
     "env_kind": "pusht",
     "path": "/home/lx/LeWM/data/pusht_expert_train.h5",
     "history_size": 1,
-    "goal_offset": 100,
+    "goal_offset": 25,
     "max_windows": 10000,
     "env_id": "pusht"
   },
@@ -19,7 +19,7 @@
     "env_kind": "tworoom",
     "path": "/home/lx/LeWM/data/tworoom_extract/tworoom.h5",
     "history_size": 1,
-    "goal_offset": 100,
+    "goal_offset": 25,
     "max_windows": 10000,
     "env_id": "tworoom"
   }
