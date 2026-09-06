@@ -87,24 +87,25 @@ class PushTEnv(BaseEnv):
     def check_success(self, state: np.ndarray, goal_state: np.ndarray) -> Tuple[bool, float]:
         """Block-in-target-pose check on the 7D state vector.
 
-        state layout (swm/PushT-v1, from lejepa swm_pushT):
+        state layout (swm/PushT-v1):
             [agent_x, agent_y, agent_vx, agent_vy, block_x, block_y, block_angle]
-        goal_state has the same layout. We measure block (x, y, angle) distance
-        to the goal. The "tolerance" comes from stable_worldmodel's PushT task
-        definition (default: 0.07 m for x/y, 1.0 rad for angle).
+        (positions in px, angle in degrees). goal_state has the same layout.
+
+        Success criterion aligned with upstream stable_worldmodel PushT
+        eval_state: joint agent+block position difference < 20 px and block
+        angle difference < pi/9 (20 deg). The previous tolerances (0.07 / 1.0)
+        were written as if the state were meters/radians, but the state is
+        px/degrees, which made env-SR identically 0 -- fixed 2026-09-04.
         """
-        # Block pose is in indices 4, 5, 6
-        diff = state[4:7] - goal_state[4:7]
-        # Position (x, y) tolerance 0.07 m, angle tolerance 1.0 rad
-        pos_tol = 0.07
-        ang_tol = 1.0
-        dist = float(np.linalg.norm(diff[:2]))
-        ang_dist = float(abs(diff[2]))
-        # Normalized: how many tolerances exceeded
-        if dist < pos_tol and ang_dist < ang_tol:
+        # Agent position (indices 0:2), block pose (indices 4:7)
+        pos_diff = float(np.linalg.norm(np.concatenate([state[0:2] - goal_state[0:2],
+                                                        state[4:6] - goal_state[4:6]])))
+        ang_diff = float(abs(state[6] - goal_state[6]))
+        ang_diff = min(ang_diff, 360.0 - ang_diff)
+        if pos_diff < 20.0 and ang_diff < 20.0:  # 20 px, pi/9 rad = 20 deg
             return True, 0.0
-        # Use the max of (dist/pos_tol, ang_dist/ang_tol) as the distance
-        return False, max(dist / pos_tol, ang_dist / ang_tol)
+        # Use the max of normalized exceedances as the distance
+        return False, max(pos_diff / 20.0, ang_diff / 20.0)
 
     def close(self):
         self._env.close()
@@ -163,8 +164,11 @@ class TwoRoomEnv(BaseEnv):
         diff = state[:4] - goal_state[:4]
         # 2D Euclidean distance between agent and target
         dist = float(np.linalg.norm(diff[:2]))
-        # Tolerance: 1.0 unit (TwoRoom room is ~5x5 units, door at x=0)
-        return dist < 1.0, dist
+        # Tolerance aligned with upstream stable_worldmodel TwoRoom
+        # (terminated = agent-to-target dist < 16.0 in env px). The previous
+        # 1.0 was written as if the state were meters -- env-SR was
+        # identically 0. Fixed 2026-09-04.
+        return dist < 16.0, dist
 
     def close(self):
         self._env.close()

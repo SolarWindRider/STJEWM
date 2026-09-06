@@ -9,10 +9,10 @@ Data source (2026-09-04, 5M-aligned after gap-retrain full re-eval):
   rho (event-alignment)               : G1, results/journal_prep/G1_event_align_complete
 
 Values (2026-09-04):
-  LIF-Tx     env 0.319  div 0.0804  resp 60.4  rho -0.0003  lewm 100.0  cos 0.000
-  MLP        env 0.330  div 0.0002  resp 0.00  rho -0.0233  lewm  89.6  cos 0.036
-  GRU        env 0.321  div 0.0304  resp 26.5  rho -0.0074  lewm  50.5  cos 0.149
-  LeWM-v2    env 0.325  div 0.2039  resp 13.1  rho  0.7515  lewm  22.8  cos 0.252
+  LIF-Tx     env 0.317  div 0.0804  resp 60.4  rho -0.0003  lewm 100.0  cos 0.000
+  MLP        env 0.344  div 0.0002  resp 0.00  rho -0.0233  lewm  91.7  cos 0.030
+  GRU        env 0.317  div 0.0304  resp 26.5  rho -0.0074  lewm  50.2  cos 0.149
+  LeWM-v2    env 0.319  div 0.2039  resp 13.1  rho  0.7515  lewm  32.9  cos 0.220
   STJEWM-trc env 0.338  div 0.0106  resp 0.20  rho  0.9987  lewm  48.5  cos 0.286
 """
 from pathlib import Path
@@ -23,11 +23,11 @@ PAPER = ROOT / "paper"
 OUT = PAPER / "figs" / "fig_four_family_falsification.png"
 
 families = {
-    'lif_transformer_baseline': dict(env=31.9, div=0.0804, resp=60.39, rho=-0.0003, lewm=100.0,
+    'lif_transformer_baseline': dict(env=31.7, div=0.0804, resp=60.39, rho=-0.0003, lewm=100.0,
                           color='#a50026', label='LIF-Tx\n(collapsed)'),
-    'mlp_baseline': dict(env=33.0, div=0.0002, resp=0.00, rho=-0.0233, lewm=89.6,
+    'mlp_baseline': dict(env=34.4, div=0.0002, resp=0.00, rho=-0.0233, lewm=91.7,
                           color='#fdae61', label='MLP\n(collapsed)'),
-    'lewm_baseline_v2': dict(env=32.5, div=0.2039, resp=13.1, rho=0.7515, lewm=22.8,
+    'lewm_baseline_v2': dict(env=31.9, div=0.2039, resp=13.1, rho=0.7515, lewm=32.9,
                               color='#d7191c', label='LeWM-v2\n(over-react)'),
     'stjewm_trace_only': dict(env=33.8, div=0.0106, resp=0.20, rho=0.9987, lewm=48.5,
                               color='#1a9850', label='STJEWM-trace\n(calibrated)'),
@@ -69,15 +69,15 @@ for ax, (key, title, note, scale) in zip(axes, metric_meta):
     ax.set_ylabel(note, fontsize=8)
 
 fig.suptitle(
-    "Four-metric package distinguishes 4 failure modes (5M-aligned, 2026-09-04 re-eval)\n"
-    "LIF-Tx has LeWM-SR = 100.0% (highest, cos_dist = 0) and MLP 89.6% yet div = 0.0002 and rho = -0.02. "
+    "Four-metric package distinguishes 4 failure modes (5M-aligned, 2026-09-04 re-eval, G16 completed)\n"
+    "LIF-Tx has LeWM-SR = 100.0% (highest, cos_dist = 0) and MLP 91.7% yet div = 0.0002 and rho = -0.02. "
     "A single latent metric cannot diagnose calibration -- §2.3a falsification.",
     fontsize=11, y=1.05)
 
 fig.text(0.5, -0.06,
          "Source: 5M-aligned eval JSONs (env-SR, LeWM-SR), results/5m_stats (div, resp), "
          "G1 event-align (rho). "
-         "MLP: div=0.0002 (collapsed) yet LeWM-SR=89.6%; LIF-Tx: cos_dist=0 yet LeWM-SR=100.0% -> LeWM-SR is foolable by a constant latent. "
+         "MLP: div=0.0002 (collapsed) yet LeWM-SR=91.7%; LIF-Tx: cos_dist=0 yet LeWM-SR=100.0% -> LeWM-SR is foolable by a constant latent. "
          "STJEWM-trace: div=0.0106, resp=0.20, rho=0.9987 -- calibrated on all axes.",
          ha='center', fontsize=9, style='italic')
 
