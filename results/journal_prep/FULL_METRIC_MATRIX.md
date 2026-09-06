@@ -92,3 +92,4 @@
 - **effFLOPs**: STJEWM 0.46-0.48 vs Stacked-LIF 1.9-2.1 vs dense 9.8-10.2 MFLOPs/step (~20× cheaper).
 - **posR²**: STJEWM ≈ -0.03..-0.07 (chance), LeWM +0.29 — event-vs-position dissociation.
 - **LeWM@0.05 falsified** (MLP 0.948 with div=0.0002): included for the falsification narrative only.
+- **External baseline: Spiking-WM (PNAS 2025, Brain-Cog-Lab)** — 唯一真实外部竞品（28.5M, pixels-free proprio 配置）。Its native episode returns and event-ρ (0.05–0.80 over 12 DMC tasks, mean 0.47, vs STJEWM ≥ 0.9986 on every task) live in `MAIN_TABLE_5M_STATE_FULL.md` §"External comparison" — 指标语义不同（native return vs CEM env-SR/cos），故不并入本横截面表。

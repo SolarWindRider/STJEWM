@@ -259,3 +259,54 @@ readout + 7 个 baseline）在 10 个任务组合（split）下训练并闭环�
 | GRU | 5.13 | 1.00/0.000 | 1.00/0.001 | 1.00/0.000 | 0.00/0.003 | 1.00/0.001 | 0.20/0.097 | 0.20/0.001 | 0.00/0.003 | 0.20/0.000 | 0.00/0.323 | 0.00/0.002 | 0.00/0.001 | 0.00/0.001 | 0.00/0.130 | 0.00/0.001 |
 | MLP | 5.00 | 1.00/0.000 | 1.00/0.000 | 1.00/0.000 | 0.00/0.000 | 1.00/0.000 | 0.20/0.002 | 0.20/0.000 | 0.00/0.000 | 0.20/0.000 | 0.00/0.108 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.054 | 0.00/0.000 |
 | LIFTransformer | 5.12 | 1.00/0.000 | 1.00/0.000 | 1.00/0.000 | 0.00/0.000 | 0.80/0.000 | 0.20/0.000 | 0.20/0.000 | 0.00/0.000 | 0.60/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 |
+
+## External comparison: Spiking-WM（PNAS 2025，唯一真实外部竞品）
+
+**Spiking-WM**（Sun, Zhao, Lv & Zeng，Brain-Cog-Lab，中科院自动化所；PNAS 2025,
+doi:10.1073/pnas.2513319122；arXiv:2503.00713；开源代码 Brain-Cog-Lab/Spiking-WM, MIT）
+是 13 个模型中唯一有论文、有公开代码、可独立验证的第三方系统：full spiking Dreamer，
+循环状态为 multi-compartment 神经元（MCN）发出的 spike 序列——事件驱动动力学满足
+协议要求，但规划器读由 spike 序列导出的**连续 posterior mean**（违反 membrane-forbidden
+读出合约）。
+
+**协议差异（为什么不并入上面的 per-env 表）**：Spiking-WM 评测用其原生
+episode return（max 1000，500 步 time limit），训练预算按难度 2–5×10⁵ env steps
+（pendulum/cup/reacher 2×10⁵，hopper/fish 3×10⁵，其余 5×10⁵），seed 0，28.5M
+可训练参数，MCRNN spike rate 0.8%；ST-JEWM 列为 goal-conditioned CEM 的
+env-SR / cos_dist（F1 checkpoint，walker 为其 held-out family）。两套指标语义
+不同，**数字不可直接比**——本节只做定向定性对照。
+
+| Task | SpWM return | ST env-SR | ST cos-dist | SpWM ρ | SpWM ρ_stoch | SpWM ρ_spike | SpWM rate |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| cartpole_swingup | 229.7 | 1.00 | 0.112 | 0.392 | 0.150 | −0.002 | 0.008 |
+| cheetah_run | 105.1 | 1.00 | 0.006 | 0.560 | 0.222 | 0.005 | 0.008 |
+| walker_walk | 211.8 | 0.00* | 0.091 | 0.456 | 0.216 | 0.000 | 0.008 |
+| finger_spin | 229.8 | 1.00 | 0.125 | 0.656 | 0.395 | −0.002 | 0.008 |
+| pendulum_swingup | 0.0 | 0.20 | 0.064 | 0.521 | −0.000 | 0.017 | 0.008 |
+| cup_catch | 758.8 | 1.00 | 0.000 | 0.797 | 0.298 | −0.013 | 0.008 |
+| reacher_easy | 421.0 | 0.00 | 0.124 | 0.778 | 0.459 | −0.001 | 0.008 |
+| hopper_hop | 0.0 | 0.20 | 0.068 | 0.581 | 0.273 | −0.034 | 0.008 |
+| quadruped_walk | 26.6 | 0.00 | 0.079 | 0.213 | 0.026 | −0.023 | 0.008 |
+| dog_walk | 10.8 | 0.00 | 0.176 | 0.051 | −0.006 | 0.021 | 0.008 |
+| fish_swim | 48.3 | 0.20 | 0.352 | 0.436 | 0.100 | −0.013 | 0.008 |
+| humanoid_run | 1.4 | 0.00 | 0.141 | 0.239 | 0.058 | 0.027 | 0.008 |
+
+\* walker_walk 是 F1 checkpoint 的 held-out family（ST-JEWM 未见过 walker 数据；
+Spiking-WM 直接训练 walker）。
+
+**两条结论**：
+
+1. **控制侧 mixed**：Spiking-WM 解易任务（cup_catch 758.8、reacher 421.0）并学习
+   中间任务（cartpole 229.7、walker 211.8、finger 229.8、cheetah 105.1，且只用了
+   其发表预算的一半 + 降频更新），难任务失败（pendulum 0.0、hopper 0.0、
+   humanoid 1.4、dog 10.8）。
+2. **对齐诊断跨全部 12 任务成立**：Spiking-WM latent event-ρ = 0.05–0.80（均值
+   0.47），全面低于 ST-JEWM 家族在任一任务上的 ≥ 0.9986；两系统的 raw spike-rate
+   对齐均为 chance（SpWM −0.034–0.027，ST-JEWM 0.000–0.017）——差异不在"是否
+   脉冲"，而在协议暴露的 gated trace 上。MCN spike 序列（均值 0.8% 激活）比协议
+   trace 稀疏一个数量级。
+
+数据出处：SpWM return = `results/spiking_wm/logs_<task>/metrics.jsonl` 最后一条
+eval_return（12/12 与 NMI Table 2 逐格精确）；SpWM ρ/ρ_stoch/ρ_spike =
+`results/spiking_wm/` 协议评测（2000 随机策略步）；ST env-SR/cos = F1 checkpoint
+对应 env cell（见上文 F1 表）。
