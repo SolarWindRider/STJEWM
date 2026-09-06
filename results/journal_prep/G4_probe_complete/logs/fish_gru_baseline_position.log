@@ -1,2 +1,0 @@
-[probe] WARN: 6 target dim(s) were near-constant on val; reporting R^2=0 for them.
-[probe] fish/gru_baseline/position: R^2=-0.0028  (n_train=160, n_val=40, 3.0s)

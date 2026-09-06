@@ -1,7 +1,0 @@
-/home/lx/miniconda3/envs/snn/lib/python3.10/runpy.py:126: RuntimeWarning: 'code.train.train' found in sys.modules after import of package 'code.train', but prior to execution of 'code.train.train'; this may result in unpredictable behaviour
-  warn(RuntimeWarning(msg))
-[train/stjewm] cmd: {'model': 'stjewm', 'env_kind': None, 'image_size': 0, 'multi_env_spec': 'configs/oodc_5m/oodc_F2.json', 'pad_obs_to': 128, 'action_dim': 56, 'embed_dim': 192, 'data': None, 'out': '/home/lx/snn/results/5m_seed1/oodc_F2/stjewm_rate_only/seed_0', 'epochs': 1, 'batch': 32, 'lr': 0.0003, 'num_workers': 0, 'save_every': 2000, 'log_every': 200, 'seed': 1, 'n_layers': 2, 'hidden_dim': None, 'mlp_hidden': None, 'mlp_layers': None, 'slt_layers': None, 'slt_din': None, 'lambda_sigreg': 0.09, 'lambda_goal': 0.5, 'goal_offset': 25, 'history_size': 1, 't_pred': 3, 'max_windows': None, 'n_episodes': 50, 'max_steps_per_ep': 200, 'readout_mode': 'rate_only'}
-[train/stjewm] STJEWM params total=8.16M trainable=2.70M, 12000 windows/epoch, batch=32, epochs=1, lr=0.0003, lambda_sigreg=0.09, lambda_goal=0.5, goal_offset=25, history=1
-[train/stjewm] ep 1/1 step 200 pred=0.0114 sigreg=10.7609 goal=0.0128 total=0.9863 speed=11.08/s ETA=0.0h sparsity=0.913
-[train/stjewm] final saved /home/lx/snn/results/5m_seed1/oodc_F2/stjewm_rate_only/seed_0/final.pt
-[train/stjewm] loss log saved /home/lx/snn/results/5m_seed1/oodc_F2/stjewm_rate_only/seed_0/loss_log.json
