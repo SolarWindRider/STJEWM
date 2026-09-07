@@ -58,14 +58,24 @@ pix_job () {
   echo "done pixel $split $model rc=$?" >> "$LOG_DIR/phase2_progress.log"
 }
 
+# Round A: non-stjewm models (fit 4/GPU alongside each other)
 i=0
 for split in $PIX_SPLITS; do
   for entry in $MODEL_LAYERS; do
     model=${entry%%:*}; nl=${entry##*:}
+    [ "$model" = "stjewm" ] && continue
     pix_job "$model" "$split" "$nl" $((i % 4)) &
     i=$((i + 1))
-    if (( i % 16 == 0 )); then wait; fi
+    if (( i % 12 == 0 )); then wait; fi
   done
+done
+wait
+# Round B: pixel stjewm needs ~45GB (ViT fwd on 21168-dim input) -> ONE per GPU
+i=0
+for split in $PIX_SPLITS; do
+  pix_job "stjewm" "$split" 4 $i &
+  i=$((i + 1))
+  if (( i % 4 == 0 )); then wait; fi
 done
 wait
 echo "[phase2] pixel train done $(date)" | tee -a "$LOG_DIR/run_all.log"
