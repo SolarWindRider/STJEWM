@@ -63,7 +63,7 @@ worker () {
   local gpu=$1
   local tag="gpu$gpu"
   while IFS=$'\t' read -r model ckpt spec sp seed; do
-    out_parent="$OUT_ROOT/$(basename "$(dirname "$(dirname "$(dirname "$ckpt")")")")"
+    out_parent="$OUT_ROOT/$(basename "$(dirname "$(dirname "$(dirname "$(dirname "$ckpt")")")")")"
     CUDA_VISIBLE_DEVICES=$gpu OUT_PARENT=$out_parent N_SEEDS=1 \
       bash "$DISPATCH/eval_one.sh" "$model" "$ckpt" "$spec" "$seed" \
       >> "$LOG_DIR/eval_$tag.log" 2>&1
