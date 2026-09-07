@@ -74,3 +74,4 @@ worker () {
 for gpu in 0 1 2 3; do worker $gpu & done
 wait
 echo "[run_all] ALL DONE $(date)" | tee -a "$LOG_DIR/run_all.log"
+touch "$LOG_DIR/RUN_ALL_DONE"
