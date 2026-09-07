@@ -259,10 +259,20 @@ def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
     # default: STJEWM
     n_layers = ck_args.get("n_layers", 4)
     from code.stjewm import STJEWM
+    # [FIX 2026-09-07] image_size must match the checkpoint's frozen-ViT layout or
+    # strict load fails (257 vs 37 patches). Infer from position_embeddings length.
+    isz = ck_args.get("image_size") or 84
+    if state_dict is not None:
+        for k, v in state_dict.items():
+            if "position_embeddings" in k and hasattr(v, "shape") and v.ndim == 3:
+                n_patches = int(v.shape[1]) - 1
+                isz = int(round((n_patches ** 0.5) * 14)) if n_patches > 0 else 84
+                break
     return STJEWM(
         d_hid=192, embed_dim=192, action_dim=action_dim, action_emb_dim=192,
         state_dim=state_dim, cell_n_layers=n_layers, n_d=3,
         trace_beta=0.9, freeze_encoder=True,
+        image_size=isz,
         readout_mode=ck_args.get("readout_mode", "hidden_leak"),
     )
 
