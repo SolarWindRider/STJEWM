@@ -61,12 +61,18 @@ def make_goal_state_for(env_kind: str):
 
 
 def encode_obs(model, obs_pixel_np, action_dim, device="cpu"):
-    """Encode a single pixel obs (3, H, W) into a (D,) latent."""
-    x = torch.from_numpy(obs_pixel_np).float().unsqueeze(0).unsqueeze(0).to(device)  # (1, 1, 3, H, W)
+    """Encode a single pixel obs into a (D,) latent, model-agnostic.
+
+    Uses the training forward path (model(x, a) -> emb) so every 5M-aligned
+    family (STJEWM ViT encoder, MLP/GRU flat-pixel projectors, SNN baselines)
+    shares one code path. Single frame, zero action — matches the trainer's
+    goal-state encoding."""
+    x = torch.from_numpy(np.asarray(obs_pixel_np)).float().reshape(1, 1, -1).to(device)
+    a = torch.zeros(1, 1, action_dim, device=device)
     with torch.no_grad():
-        z = model._encode_obs(x)  # (1, 1, D) for STJEWM
-    # Flatten to (D,) regardless of extra leading singleton dims
-    return z.reshape(-1)
+        out = model(x, a)
+    emb = out["emb"] if isinstance(out, dict) else out
+    return emb[0, -1].reshape(-1)
 
 
 def main():
@@ -178,7 +184,14 @@ def main():
                 lewm_cos_dists.append(lewm_cos_dist)
                 # Check env success
                 state = env.get_state()
-                suc, phys = env.check_success(state, goal_state)
+                # [FIX 2026-09-07] goal_state 维度与各 env state 对齐(静态 goal 表
+                # 的维度与 DMCPixelEnv get_state 不一致的 env 按零补齐/截断)
+                g = goal_state
+                if g.shape[0] < state.shape[0]:
+                    g = np.pad(g, (0, state.shape[0] - g.shape[0]))
+                elif g.shape[0] > state.shape[0]:
+                    g = g[: state.shape[0]]
+                suc, phys = env.check_success(state, g)
                 if suc:
                     success_count += 1
                 cos_dists.append(phys)  # legacy name compat
