@@ -61,3 +61,19 @@
 2. **STJEWM 三轴跨 readout 方差几乎为零**(校准是家族属性,非单 readout 特性)
 3. **cos 轴重新定位**:STJEWM cos 0.23–0.27 偏高,但 MLP/LIF-Tx cos≈0 且 LeWM-SR 0.91–0.98 平凡命中——cos 低≠好,校准的度量是三轴诊断(论文论点)
 4. env-SR 全员 0.31–0.35(易 env 饱和/难 env 0),区分度在三轴诊断
+
+## pixel 三轴(2026-09-09,120 cells/模型系,4 env × 200 步)
+
+| Model(family) | resp | div | 备注 |
+|---|---:|---:|---|
+| STJEWM-trace | 0.384 | 0.0024 | 幅度小、方向有信息(CEM cos 0.225 非 0) |
+| ALIF | 184.8 | 0.0527 | 近常数(CEM cos=0.000、LeWM-SR=1.00) |
+| SLIF-trace/free | 61.4 / 175.6 | 0.0103 / 0.0268 | 近常数 |
+| LeWM | 49.8 | 0.0230 | 近常数 |
+| GRU | 1176.8 | 0.7837 | 发散 |
+| MLP | 0.000 | 0.0000 | 绝对常数 |
+| LIF-Tx | 11.8 | 0.0033 | 近常数 |
+
+pixel 判读:对照家族的 pixel latent 幅度被压到近常数(CEM 里表现为 cos_dist 恰 0.000、LeWM-SR 平凡满分);STJEWM latent 幅度小但**方向携带可规划信息**(CEM cos 非 0、跨 env 有变化)。resp 的绝对值跨模型不可比(latent 尺度任意),判定以 div+CEM 行为联合为准。
+
+数据:`/data/lx/tmp/results/5m_pixel_stats/`;脚本 `code/scripts/measure_pixel_stats.py`。
