@@ -1,315 +1,220 @@
-# Experiment 1: 5M-aligned STATE — FULL per-env main table (FAIR, STJEWM 5.06M)
+# Experiment 1: 5M-aligned STATE — FULL per-env main table (v2 retrain, backward-fixed)
 
-
-> <span style="color:red">**【数据作废公告 2026-09-06】** 因数据代际重置,本文件所有实验数字已作废并标记为待定——所有实验将统一重新训练+评测后回填。新数据落盘前请勿引用本文件任何数值。协议、模型与表格结构保留。</span>
+> <span style="color:red">**【旧数据作废公告 2026-09-06】** 旧表(基于 no-backward 时代的随机权重评测)已删除。本表由 2026-09-09 评测落盘数据生成:训练修复(loss.backward)、评测修复(strict 载入)、判定修复(swm 官方容差)、协议对齐 LeWM(goal_offset=25、horizon 25)。</span>
 
 ## 实验是什么
+**5M 参数对齐的低维状态观测跨任务实验**:13 个世界模型(6 STJEWM readout + 7 baseline)× 10 splits,闭环 CEM 评测,cell = env-SR / cos_dist。
 
-**5M 参数对齐的低维状态观测跨任务实验**：13 个世界模型（6 个 STJEWM
-readout + 7 个 baseline）在 10 个任务组合（split）下训练并闭环评估，
-每个 split 是不同环境的训练/留出组合。这是论文的**主实验**——
-回答「在可训练参数量对齐（~5M）时，不同架构的潜状态校准质量如何」。
+## 方法
+- 训练:1 epoch, batch 32, AdamW lr 3e-4, seed 0(+seed1/2 于 3 splits), goal_offset=25, pad 128/action 56, loss=pred+0.09·sigreg+0.5·goal(STJEWM/LeWM/GRU/MLP)或 native loss(ALIF/SLIF/LIF-Tx)
+- 评测:CEM 300×30×10, **horizon 25 env steps(LeWM App.D 等效:H5×frame-skip5)**, budget 50, goal=t+25(同轨迹), 5 eps;SR 判定:PushT 20px+π/9、TwoRoom 16px、DMC L2/√nq≤0.1(官方容差)
+- 口径:STJEWM←5m_5mpar、baselines←5m;**pusht/tworoom env-SR 在新协议下为真实可达性数字(不再恒 0)**
 
-## 方法（训练）
+> Protocol: CEM 300×30×10, H=25, budget 50, goal_offset=25, 5 eps × 1 seed. Cell: **env-SR / cos_dist**.
 
-- **模型**：13 个，全部可训练参数 4.97–5.13M（±3.2%）
-  - STJEWM 6 readout（trace/spike/rate/no-trace/leak/membrane），n_layers=4，
-    **5.06M**（v0.7.18.4 公平重跑；原 2.70M 版本结果一致，delta<<span style="color:red">**待定**</span>）
-  - ALIF-timecell 4.98M, Stacked-LIF-trace 5.11M, Stacked-LIF-free 5.05M, LeWM-v2 4.97M,
-    GRU 5.13M, MLP 5.00M, LIFTransformer 5.12M
-- **数据**：`configs/oodc_5m/<split>.json` 指定的 dm_control 离线数据集
-  （250k 步 npz），低维状态向量（pad 到 128 维）+ 56 维动作
-- **训练协议**：1 epoch, batch 32, AdamW lr=3e-4, seed 0, history_size=1,
-  goal_offset=25, loss = pred + 0.09·sigreg + 0.5·goal（STJEWM 系）
+## F1 (PushT held out) (15 envs)
 
-## 方法（评估）
+| Model | Trn(M) | ball_in_cup | cartpole_2d | cheetah | dog | finger | fish | hopper | humanoid | humanoid_CMU | pendulum_2d | quadruped | reacher | stacker | tworoom | walker |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| STJEWM-trace | 5.06 | 1.00/0.002 | 1.00/0.416 | 1.00/0.355 | 0.00/0.119 | 0.80/0.734 | 0.20/0.337 | 0.20/0.104 | 0.00/0.208 | 0.00/0.130 | 0.60/0.165 | 0.00/0.167 | 0.00/0.409 | 0.00/0.357 | 0.20/0.071 | 0.00/0.208 |
+| STJEWM-spike | 5.06 | 1.00/0.000 | 1.00/0.280 | 1.00/0.175 | 0.00/0.154 | 1.00/0.600 | 0.00/0.262 | 0.00/0.171 | 0.00/0.190 | 0.00/0.183 | 0.60/0.200 | 0.00/0.087 | 0.00/0.398 | 0.00/0.355 | 0.20/0.049 | 0.00/0.171 |
+| STJEWM-rate | 5.06 | 1.00/0.004 | 1.00/0.327 | 1.00/0.148 | 0.00/0.104 | 1.00/0.662 | 0.20/0.331 | 0.20/0.239 | 0.00/0.192 | 0.00/0.145 | 0.00/0.722 | 0.00/0.178 | 0.00/0.368 | 0.00/0.343 | 0.00/0.070 | 0.00/0.110 |
+| STJEWM-no_trace | 5.06 | 1.00/0.033 | 1.00/0.141 | 1.00/0.485 | 0.00/0.182 | 0.40/0.498 | 0.00/0.336 | 0.00/0.351 | 0.00/0.266 | 0.00/0.102 | 0.00/0.697 | 0.00/0.117 | 0.00/0.617 | 0.00/0.318 | 0.00/0.048 | 0.00/0.209 |
+| STJEWM-leak | 5.06 | 1.00/0.028 | 1.00/0.135 | 1.00/0.497 | 0.00/0.161 | 0.40/0.491 | 0.00/0.431 | 0.00/0.340 | 0.00/0.241 | 0.00/0.082 | 0.20/0.497 | 0.00/0.162 | 0.00/0.721 | 0.00/0.314 | 0.00/0.051 | 0.00/0.216 |
+| STJEWM-membrane | 5.06 | 1.00/0.006 | 1.00/0.384 | 1.00/0.300 | 0.00/0.144 | 1.00/0.709 | 0.00/0.462 | 0.00/0.085 | 0.00/0.187 | 0.00/0.122 | 0.00/0.626 | 0.00/0.181 | 0.00/0.595 | 0.00/0.337 | 0.00/0.074 | 0.00/0.132 |
+| ALIF-timecell | 4.98 | 1.00/0.000 | 1.00/0.051 | 1.00/0.042 | 0.00/0.015 | 0.80/0.617 | 0.20/0.428 | 0.20/0.075 | 0.00/0.047 | 0.00/0.062 | 0.40/0.274 | 0.00/0.048 | 0.00/0.531 | 0.00/0.103 | 0.00/0.011 | 0.00/0.037 |
+| Stacked-LIF-trace | 5.11 | 1.00/0.000 | 1.00/0.298 | 1.00/0.001 | 0.00/0.014 | 0.80/0.230 | 0.00/0.094 | 0.00/0.087 | 0.00/0.008 | 0.00/0.051 | 0.40/0.068 | 0.00/0.003 | 0.00/0.127 | 0.00/0.117 | 0.20/0.001 | 0.00/0.044 |
+| Stacked-LIF-free | 5.05 | 1.00/0.000 | 1.00/0.216 | 1.00/0.102 | 0.00/0.029 | 0.80/0.502 | 0.00/0.227 | 0.20/0.205 | 0.00/0.343 | 0.00/0.031 | 0.40/0.333 | 0.00/0.052 | 0.00/0.410 | 0.00/0.156 | 0.00/0.018 | 0.00/0.145 |
+| LeWM-v2 | 4.97 | 1.00/0.007 | 1.00/0.148 | 1.00/0.040 | 0.00/0.101 | 0.60/0.190 | 0.20/0.144 | 0.20/0.184 | 0.00/0.084 | 0.00/0.111 | 0.40/0.126 | 0.00/0.119 | 0.00/0.171 | 0.00/0.143 | 0.20/0.112 | 0.20/0.201 |
+| GRU | 5.13 | 1.00/0.003 | 1.00/0.200 | 1.00/0.202 | 0.00/0.066 | 0.80/0.277 | 0.20/0.202 | 0.20/0.111 | 0.00/0.116 | 0.00/0.271 | 0.00/0.303 | 0.00/0.077 | 0.00/0.269 | 0.00/0.235 | 0.00/0.034 | 0.00/0.155 |
+| MLP | 5.00 | 1.00/0.000 | 1.00/0.197 | 1.00/0.000 | 0.00/0.197 | 1.00/0.589 | 0.20/0.198 | 0.20/0.392 | 0.00/0.196 | 0.00/0.388 | 0.40/0.390 | 0.00/0.381 | 0.00/0.197 | 0.00/0.199 | 0.20/0.000 | 0.00/-0.000 |
+| LIFTransformer | 5.12 | 1.00/0.000 | 1.00/0.000 | 1.00/0.000 | 0.00/0.105 | 1.00/0.000 | 0.20/0.297 | 0.00/0.000 | 0.00/0.151 | 0.00/0.000 | 0.20/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.20/0.000 | 0.00/0.000 |
 
-- **CEM 规划器**：300 样本 × 30 elites × 10 迭代, horizon=5, budget=50
-- **goal 来源**：数据集内**同轨迹 t+25 步的真实状态**（动态目标，需长程预测）
-- **每 cell**：1 个（split, 模型, env）组合 = 5 episodes × 1 seed
-- **每 split 的 env 集**：F1/F2/F3 各 14 envs（含 1 个留出族），oodc 系列 5–10 envs，
-  G16 为 15 envs 并集
+## F2 (TwoRoom held out) (15 envs)
 
-## 指标（每个 cell 两个数，格式 `env-SR / cos_dist`）
+| Model | Trn(M) | ball_in_cup | cartpole_2d | cheetah | dog | finger | fish | hopper | humanoid | humanoid_CMU | pendulum_2d | pusht | quadruped | reacher | stacker | walker |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| STJEWM-trace | 5.06 | 1.00/0.001 | 1.00/0.263 | 1.00/0.226 | 0.00/0.170 | 1.00/0.910 | 0.20/0.376 | 0.20/0.118 | 0.00/0.191 | 0.00/0.114 | 0.00/0.458 | 0.00/0.138 | 0.00/0.146 | 0.00/0.379 | 0.00/0.323 | 0.20/0.241 |
+| STJEWM-spike | 5.06 | 1.00/0.000 | 1.00/0.379 | 1.00/0.077 | 0.00/0.282 | 0.80/0.646 | 0.00/0.326 | 0.20/0.114 | 0.00/0.278 | 0.00/0.150 | 0.00/0.299 | 0.00/0.070 | 0.00/0.075 | 0.00/0.392 | 0.00/0.341 | 0.00/0.252 |
+| STJEWM-rate | 5.06 | 1.00/0.001 | 1.00/0.380 | 1.00/0.162 | 0.00/0.151 | 1.00/0.783 | 0.00/0.537 | 0.20/0.174 | 0.00/0.271 | 0.00/0.111 | 0.20/0.591 | 0.00/0.144 | 0.00/0.156 | 0.00/0.473 | 0.00/0.321 | 0.20/0.115 |
+| STJEWM-no_trace | 5.06 | 1.00/0.016 | 1.00/0.129 | 1.00/0.629 | 0.00/0.255 | 0.40/0.484 | 0.00/0.447 | 0.00/0.249 | 0.00/0.329 | 0.00/0.079 | 0.00/0.606 | 0.00/0.121 | 0.00/0.117 | 0.00/0.347 | 0.00/0.288 | 0.00/0.269 |
+| STJEWM-leak | 5.06 | 1.00/0.025 | 1.00/0.134 | 1.00/0.653 | 0.00/0.208 | 0.40/0.477 | 0.20/0.366 | 0.00/0.373 | 0.00/0.259 | 0.00/0.093 | 0.00/0.610 | 0.00/0.171 | 0.00/0.099 | 0.00/0.616 | 0.00/0.308 | 0.00/0.253 |
+| STJEWM-membrane | 5.06 | 1.00/0.003 | 1.00/0.433 | 1.00/0.196 | 0.00/0.206 | 1.00/0.628 | 0.20/0.383 | 0.00/0.115 | 0.00/0.196 | 0.00/0.102 | 0.00/0.496 | 0.00/0.078 | 0.00/0.148 | 0.00/0.702 | 0.00/0.308 | 0.00/0.111 |
+| ALIF-timecell | 4.98 | 1.00/0.000 | 1.00/0.167 | 1.00/0.003 | 0.00/0.014 | 1.00/0.195 | 0.00/0.338 | 0.20/0.087 | 0.00/0.051 | 0.00/0.024 | 0.00/0.082 | 0.00/0.032 | 0.00/0.165 | 0.00/0.156 | 0.00/0.120 | 0.00/0.084 |
+| Stacked-LIF-trace | 5.11 | 1.00/0.000 | 1.00/0.434 | 1.00/0.085 | 0.00/0.008 | 1.00/0.427 | 0.20/0.400 | 0.20/0.145 | 0.00/0.068 | 0.00/0.089 | 0.00/0.712 | 0.00/0.005 | 0.00/0.011 | 0.00/0.356 | 0.00/0.194 | 0.00/0.465 |
+| Stacked-LIF-free | 5.05 | 1.00/0.000 | 1.00/0.178 | 1.00/0.101 | 0.00/0.078 | 1.00/0.490 | 0.00/0.510 | 0.20/0.086 | 0.00/0.097 | 0.00/0.016 | 0.20/0.217 | 0.00/0.156 | 0.00/0.074 | 0.00/0.242 | 0.00/0.264 | 0.00/0.227 |
+| LeWM-v2 | 4.97 | 1.00/0.007 | 1.00/0.274 | 1.00/0.065 | 0.00/0.109 | 1.00/0.305 | 0.20/0.132 | 0.20/0.231 | 0.00/0.124 | 0.00/0.114 | 0.00/0.198 | 0.00/0.179 | 0.00/0.109 | 0.00/0.184 | 0.00/0.163 | 0.00/0.144 |
+| GRU | 5.13 | 1.00/0.000 | 1.00/0.206 | 1.00/0.081 | 0.00/0.114 | 0.80/0.352 | 0.20/0.158 | 0.20/0.144 | 0.00/0.158 | 0.00/0.252 | 0.40/0.171 | 0.00/0.155 | 0.00/0.109 | 0.00/0.102 | 0.00/0.269 | 0.00/0.111 |
+| MLP | 5.00 | 1.00/0.000 | 1.00/0.020 | 1.00/0.034 | 0.00/0.003 | 1.00/0.032 | 0.00/0.613 | 0.40/0.083 | 0.00/0.011 | 0.00/0.183 | 0.00/0.003 | 0.00/0.011 | 0.00/0.154 | 0.00/0.018 | 0.00/0.024 | 0.20/0.160 |
+| LIFTransformer | 5.12 | 1.00/0.000 | 1.00/0.000 | 1.00/0.000 | 0.00/0.434 | 1.00/0.000 | 0.20/0.287 | 0.40/0.000 | 0.00/0.289 | 0.00/0.000 | 0.40/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 |
 
-| 指标 | 定义 | 方向 | 备注 |
-|---|---|---|---|
-| **env-SR** | 闭环成功率：最终状态是否在 goal 的 tolerance 内 | 高=好 | v0.7.18.1 修复聚合 bug 前的真实值；易 env 饱和 1.0，难 env 为 0 |
-| **cos_dist** | 最终潜状态与目标潜状态的余弦距离（1−cos）/2 | 低=好 | **主指标**；不受 env-SR 饱和影响，能区分三簇 |
+## F3 (Reacher held out) (15 envs)
 
-## 怎么读这张表
-
-- **每行一个模型**（含可训练参数 Trn(M)），每列一个 env，cell = `env-SR / cos_dist`
-- **按 cos_dist 看三簇**（跨 env 一致）：
-  - 校准簇（cos <span style="color:red">**待定**</span>）：STJEWM 6 + Stacked-LIF 2 + ALIF-timecell——潜状态与目标成比例
-  - 坍缩簇（cos ≈ <span style="color:red">**待定**</span>）：GRU / MLP / LIFTransformer——常数潜变量，env-SR 的
-    <span style="color:red">**待定**</span> 是静态可达的假象，cos_dist 才是真相
-  - 过反应簇（cos <span style="color:red">**待定**</span>）：LeWM-v2——潜变量放大观测差异
-- **按 env 看两级分化**：易 env（ball_in_cup/cartpole/cheetah/finger）所有模型
-  env-SR≈<span style="color:red">**待定**</span>（CEM 5 步够得着）；难 env（dog/humanoid/quadruped/reacher/stacker/
-  tworoom）所有模型 env-SR=0（需要长程协调，5 步规划够不到）——env-SR 不区分
-  模型，区分度在 cos_dist
-
-## 数据说明了什么（结论）
-
-1. **三簇分界跨 10 splits 稳定**：校准/坍缩/过反应在任何 split 都不交换位置
-2. **校准是 SNN 家族属性**：STJEWM（6 readout）、Stacked-LIF（2 变体）、ALIF-timecell 都校准，
-   与 readout 协议无关（校准不变性）
-3. **连续 RNN/Transformer 失败模式不同**：GRU/MLP 坍缩，LeWM 过反应——
-   单指标（如 LeWM-SR）无法区分这两种失败，需要多指标包
-4. **参数公平后结论不变**：STJEWM 从 2.70M 提到 5.06M，cos_dist 变化 < <span style="color:red">**待定**</span>
-   ——校准是架构属性，不是参数量红利
-5. **env-SR 是「易/难」二分，不是模型质量**：所有模型在易 env 成功、难 env
-   失败——env-SR 测的是 CEM 规划能力天花板，不是潜状态质量
-
-## 重要 caveat
-
-- **env-SR 全部经过 v0.7.18.1 修复**（聚合 bug 曾把顶层写成 <span style="color:red">**待定**</span>）；per_seed
-  数值一直正确，修复后顶层与 per_seed 一致
-- **STJEWM 行来自 5.06M 公平重跑**（`results/5m_5mpar/`），baseline 行来自原
-  5m 运行——同一协议，可横向对比
-- **与 pixel 表不可直接比 env-SR**（pixel 用静态 goal，此处用 t+25 动态 goal）；
-  cos_dist 可比（同一目标函数下的潜状态质量）
-
-## 数据出处
-
-- evals: `results/5m/<split>/<model>/seed_0/eval_<env>.json`（baselines）+
-  `results/5m_5mpar/<split>/stjewm_<readout>/seed_0/`（fair STJEWM）
-- 训练: `results/5m/_logs/` + `results/5m_5mpar/_logs/`
-- 聚合逻辑: `results/journal_prep/`（FULL_METRIC_MATRIX.md 有 13 模型 × 14 指标横截面）
-
-> Protocol: CEM 300×30×10, H=5, budget 50, goal_offset=25, 5 eps × 1 seed. Cell: **env-SR** / cos_dist.
-> **FAIR rerun (v0.7.18.4)**: STJEWM 6 readouts retrained at n_layers=4 (trainable 5.06M,
-> matching baselines ~5M). Original 2.70M run showed identical cos_dist (delta < <span style="color:red">**待定**</span>) —
-> calibration is parameter-robust. Baselines unchanged from original 5m run.
-
-## F1 (PushT held out) (14 envs)
-
-| Model | Trn(M) | ball_in_cup | cartpole_2d | cheetah | dog | finger | fish | hopper | humanoid | pendulum_2d | quadruped | reacher | stacker | tworoom | walker |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| STJEWM-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-spike | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-rate | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-no-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-leak | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-membrane | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| ALIF-timecell | 4.98 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-trace | 5.11 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-free | 5.05 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LeWM-v2 | 4.97 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| GRU | 5.13 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| MLP | 5.00 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LIFTransformer | 5.12 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-
-## F2 (TwoRoom held out) (14 envs)
-
-| Model | Trn(M) | ball_in_cup | cartpole_2d | cheetah | dog | finger | fish | hopper | humanoid | pendulum_2d | pusht | quadruped | reacher | stacker | walker |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| STJEWM-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-spike | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-rate | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-no-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-leak | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-membrane | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| ALIF-timecell | 4.98 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-trace | 5.11 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-free | 5.05 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LeWM-v2 | 4.97 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| GRU | 5.13 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| MLP | 5.00 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LIFTransformer | 5.12 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-
-## F3 (Reacher held out) (14 envs)
-
-| Model | Trn(M) | ball_in_cup | cartpole_2d | cheetah | dog | finger | fish | hopper | humanoid | pendulum_2d | pusht | quadruped | stacker | tworoom | walker |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| STJEWM-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-spike | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-rate | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-no-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-leak | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-membrane | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| ALIF-timecell | 4.98 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-trace | 5.11 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-free | 5.05 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LeWM-v2 | 4.97 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| GRU | 5.13 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| MLP | 5.00 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LIFTransformer | 5.12 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
+| Model | Trn(M) | ball_in_cup | cartpole_2d | cheetah | dog | finger | fish | hopper | humanoid | humanoid_CMU | pendulum_2d | pusht | quadruped | stacker | tworoom | walker |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| STJEWM-trace | 5.06 | 1.00/0.001 | 1.00/0.379 | 1.00/0.129 | 0.00/0.141 | 1.00/0.708 | 0.20/0.339 | 0.20/0.069 | 0.00/0.161 | 0.00/0.131 | 0.20/0.351 | 0.00/0.150 | 0.00/0.200 | 0.00/0.337 | 0.00/0.110 | 0.00/0.180 |
+| STJEWM-spike | 5.06 | 1.00/0.000 | 1.00/0.207 | 1.00/0.115 | 0.00/0.115 | 0.80/0.526 | 0.20/0.216 | 0.20/0.073 | 0.00/0.189 | 0.00/0.238 | 0.00/0.818 | 0.00/0.153 | 0.00/0.078 | 0.00/0.352 | 0.20/0.062 | 0.00/0.229 |
+| STJEWM-rate | 5.06 | 1.00/0.001 | 1.00/0.227 | 1.00/0.116 | 0.00/0.191 | 0.80/0.921 | 0.20/0.353 | 0.00/0.149 | 0.00/0.227 | 0.00/0.126 | 0.40/0.264 | 0.00/0.112 | 0.00/0.192 | 0.00/0.347 | 0.00/0.104 | 0.00/0.205 |
+| STJEWM-no_trace | 5.06 | 1.00/0.017 | 1.00/0.406 | 1.00/0.093 | 0.00/0.155 | 0.40/0.843 | 0.00/0.506 | 0.40/0.124 | 0.00/0.216 | 0.00/0.134 | 0.00/0.620 | 0.00/0.110 | 0.00/0.076 | 0.00/0.409 | 0.00/0.068 | 0.00/0.368 |
+| STJEWM-leak | 5.06 | 1.00/0.018 | 1.00/0.226 | 1.00/0.137 | 0.00/0.258 | 0.60/0.637 | 0.00/0.446 | 0.00/0.230 | 0.00/0.266 | 0.00/0.115 | 0.00/0.453 | 0.00/0.072 | 0.00/0.071 | 0.00/0.413 | 0.20/0.057 | 0.00/0.445 |
+| STJEWM-membrane | 5.06 | 1.00/0.003 | 1.00/0.317 | 1.00/0.061 | 0.00/0.211 | 1.00/0.725 | 0.20/0.352 | 0.20/0.085 | 0.00/0.155 | 0.00/0.126 | 0.00/0.660 | 0.00/0.206 | 0.00/0.175 | 0.00/0.336 | 0.40/0.106 | 0.40/0.094 |
+| ALIF-timecell | 4.98 | 1.00/0.000 | 1.00/0.188 | 1.00/0.013 | 0.00/0.017 | 1.00/0.566 | 0.00/0.587 | 0.00/0.143 | 0.00/0.107 | 0.00/0.049 | 0.00/0.097 | 0.00/0.043 | 0.00/0.038 | 0.00/0.179 | 0.20/0.003 | 0.00/0.148 |
+| Stacked-LIF-trace | 5.11 | 1.00/0.000 | 1.00/0.222 | 1.00/0.003 | 0.00/0.009 | 0.80/0.134 | 0.20/0.115 | 0.00/0.096 | 0.00/0.012 | 0.00/0.008 | 0.00/0.043 | 0.00/0.003 | 0.00/0.002 | 0.00/0.141 | 0.00/0.001 | 0.00/0.072 |
+| Stacked-LIF-free | 5.05 | 1.00/0.000 | 1.00/0.124 | 1.00/0.016 | 0.00/0.002 | 1.00/0.192 | 0.20/0.365 | 0.20/0.035 | 0.00/0.159 | 0.00/0.005 | 0.40/0.124 | 0.00/0.049 | 0.00/0.031 | 0.00/0.110 | 0.20/0.008 | 0.00/0.062 |
+| LeWM-v2 | 4.97 | 1.00/0.001 | 1.00/0.148 | 1.00/0.075 | 0.00/0.104 | 1.00/0.227 | 0.00/0.158 | 0.20/0.141 | 0.00/0.115 | 0.00/0.109 | 0.20/0.149 | 0.00/0.177 | 0.00/0.151 | 0.00/0.238 | 0.20/0.124 | 0.00/0.177 |
+| GRU | 5.13 | 1.00/0.002 | 1.00/0.299 | 1.00/0.108 | 0.00/0.160 | 0.80/0.306 | 0.20/0.193 | 0.20/0.142 | 0.00/0.194 | 0.00/0.189 | 0.20/0.236 | 0.00/0.116 | 0.00/0.088 | 0.00/0.214 | 0.20/0.051 | 0.20/0.149 |
+| MLP | 5.00 | 1.00/0.001 | 1.00/0.001 | 1.00/0.001 | 0.00/0.001 | 1.00/0.000 | 0.00/-0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.001 | 0.00/0.000 | 0.00/-0.000 | 0.00/0.001 | 0.00/0.000 | 0.20/-0.000 | 0.00/0.000 |
+| LIFTransformer | 5.12 | 1.00/0.000 | 1.00/0.000 | 1.00/0.000 | 0.00/0.000 | 1.00/0.000 | 0.20/0.000 | 0.20/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.20/0.000 | 0.00/0.000 |
 
 ## oodc_F1 (5 envs)
 
 | Model | Trn(M) | ball_in_cup | cartpole_2d | cheetah | finger | pendulum_2d |
 |---|---|---|---|---|---|---|
-| STJEWM-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-spike | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-rate | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-no-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-leak | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-membrane | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| ALIF-timecell | 4.98 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-trace | 5.11 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-free | 5.05 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LeWM-v2 | 4.97 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| GRU | 5.13 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| MLP | 5.00 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LIFTransformer | 5.12 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
+| STJEWM-trace | 5.06 | 1.00/0.048 | 1.00/0.522 | 1.00/0.593 | 0.80/0.798 | 0.20/0.598 |
+| STJEWM-spike | 5.06 | 1.00/0.330 | 1.00/0.474 | 1.00/0.461 | 1.00/0.600 | 0.00/0.992 |
+| STJEWM-rate | 5.06 | 1.00/0.044 | 1.00/0.532 | 1.00/0.198 | 1.00/0.949 | 0.00/0.601 |
+| STJEWM-no_trace | 5.06 | 1.00/0.275 | 1.00/0.271 | 1.00/0.360 | 1.00/0.786 | 0.00/0.796 |
+| STJEWM-leak | 5.06 | 1.00/0.014 | 1.00/0.268 | 1.00/0.379 | 1.00/0.998 | 0.20/0.598 |
+| STJEWM-membrane | 5.06 | 1.00/0.054 | 1.00/0.733 | 1.00/0.578 | 1.00/0.798 | 0.00/0.797 |
+| ALIF-timecell | 4.98 | 1.00/0.000 | 1.00/0.207 | 1.00/0.036 | 0.80/0.580 | 0.60/0.142 |
+| Stacked-LIF-trace | 5.11 | 1.00/0.000 | 1.00/0.035 | 1.00/0.003 | 1.00/0.122 | 0.20/0.035 |
+| Stacked-LIF-free | 5.05 | 1.00/0.000 | 1.00/0.137 | 1.00/0.002 | 1.00/0.106 | 0.20/0.118 |
+| LeWM-v2 | 4.97 | 1.00/0.017 | 1.00/0.323 | 1.00/0.105 | 0.80/0.450 | 0.00/0.593 |
+| GRU | 5.13 | 1.00/0.132 | 1.00/0.275 | 1.00/0.394 | 1.00/0.288 | 0.00/0.198 |
+| MLP | 5.00 | 1.00/0.000 | 1.00/0.000 | 1.00/0.000 | 1.00/0.000 | 0.20/0.000 |
+| LIFTransformer | 5.12 | 1.00/0.000 | 1.00/0.000 | 1.00/0.000 | 0.80/0.000 | 0.00/0.000 |
 
-## oodc_F1F2 (10 envs)
+## oodc_F2 (6 envs)
 
-| Model | Trn(M) | ball_in_cup | cartpole_2d | cheetah | dog | finger | hopper | humanoid | pendulum_2d | quadruped | walker |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| STJEWM-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-spike | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-rate | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-no-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-leak | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-membrane | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| ALIF-timecell | 4.98 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-trace | 5.11 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-free | 5.05 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LeWM-v2 | 4.97 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| GRU | 5.13 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| MLP | 5.00 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LIFTransformer | 5.12 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
+| Model | Trn(M) | dog | hopper | humanoid | humanoid_CMU | quadruped | walker |
+|---|---|---|---|---|---|---|---|
+| STJEWM-trace | 5.06 | 0.00/0.029 | 0.20/0.087 | 0.00/0.222 | 0.00/0.039 | 0.00/0.011 | 0.20/0.056 |
+| STJEWM-spike | 5.06 | 0.00/0.040 | 0.20/0.039 | 0.00/0.133 | 0.00/0.027 | 0.00/0.010 | 0.00/0.092 |
+| STJEWM-rate | 5.06 | 0.00/0.052 | 0.20/0.047 | 0.00/0.204 | 0.00/0.036 | 0.00/0.010 | 0.00/0.078 |
+| STJEWM-no_trace | 5.06 | 0.00/0.033 | 0.40/0.098 | 0.00/0.147 | 0.00/0.032 | 0.00/0.007 | 0.00/0.085 |
+| STJEWM-leak | 5.06 | 0.00/0.021 | 0.20/0.082 | 0.00/0.162 | 0.00/0.035 | 0.00/0.008 | 0.00/0.063 |
+| STJEWM-membrane | 5.06 | 0.00/0.038 | 0.00/0.062 | 0.00/0.230 | 0.00/0.039 | 0.00/0.009 | 0.00/0.080 |
+| ALIF-timecell | 4.98 | 0.00/0.105 | 0.20/0.014 | 0.00/0.389 | 0.00/0.047 | 0.00/0.021 | 0.00/0.061 |
+| Stacked-LIF-trace | 5.11 | 0.00/0.025 | 0.20/0.027 | 0.00/0.017 | 0.00/0.016 | 0.00/0.009 | 0.00/0.014 |
+| Stacked-LIF-free | 5.05 | 0.00/0.037 | 0.20/0.040 | 0.00/0.033 | 0.00/0.024 | 0.00/0.014 | 0.00/0.018 |
+| LeWM-v2 | 4.97 | 0.00/0.352 | 0.20/0.466 | 0.00/0.326 | 0.00/0.385 | 0.00/0.369 | 0.20/0.414 |
+| GRU | 5.13 | 0.00/0.090 | 0.00/0.185 | 0.00/0.277 | 0.00/0.064 | 0.00/0.045 | 0.00/0.096 |
+| MLP | 5.00 | 0.00/-0.000 | 0.20/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/-0.000 |
+| LIFTransformer | 5.12 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.20/0.000 |
+
+## oodc_F1F2 (11 envs)
+
+| Model | Trn(M) | ball_in_cup | cartpole_2d | cheetah | dog | finger | hopper | humanoid | humanoid_CMU | pendulum_2d | quadruped | walker |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| STJEWM-trace | 5.06 | 1.00/0.001 | 1.00/0.282 | 1.00/0.179 | 0.00/0.075 | 0.80/0.716 | 0.20/0.039 | 0.00/0.105 | 0.00/0.022 | 0.20/0.463 | 0.00/0.032 | 0.20/0.049 |
+| STJEWM-spike | 5.06 | 1.00/0.001 | 1.00/0.199 | 1.00/0.261 | 0.00/0.053 | 1.00/0.889 | 0.20/0.058 | 0.00/0.100 | 0.00/0.033 | 0.00/0.686 | 0.00/0.022 | 0.00/0.056 |
+| STJEWM-rate | 5.06 | 1.00/0.001 | 1.00/0.352 | 1.00/0.326 | 0.00/0.039 | 1.00/0.831 | 0.20/0.058 | 0.00/0.115 | 0.00/0.023 | 0.00/0.729 | 0.00/0.032 | 0.00/0.046 |
+| STJEWM-no_trace | 5.06 | 1.00/0.003 | 1.00/0.669 | 1.00/0.433 | 0.00/0.058 | 1.00/0.765 | 0.00/0.106 | 0.00/0.140 | 0.00/0.016 | 0.00/0.299 | 0.00/0.017 | 0.00/0.036 |
+| STJEWM-leak | 5.06 | 1.00/0.011 | 1.00/0.278 | 1.00/0.156 | 0.00/0.038 | 0.80/0.785 | 0.20/0.052 | 0.00/0.349 | 0.00/0.019 | 0.40/0.362 | 0.00/0.018 | 0.00/0.029 |
+| STJEWM-membrane | 5.06 | 1.00/0.002 | 1.00/0.548 | 1.00/0.234 | 0.00/0.061 | 1.00/0.675 | 0.00/0.047 | 0.00/0.153 | 0.00/0.020 | 0.00/0.583 | 0.00/0.032 | 0.00/0.049 |
+| ALIF-timecell | 4.98 | 1.00/0.000 | 1.00/0.147 | 1.00/0.012 | 0.00/0.057 | 1.00/0.374 | 0.20/0.153 | 0.00/0.159 | 0.00/0.044 | 0.40/0.073 | 0.00/0.015 | 0.00/0.160 |
+| Stacked-LIF-trace | 5.11 | 1.00/0.000 | 1.00/0.030 | 1.00/0.003 | 0.00/0.042 | 1.00/0.116 | 0.20/0.036 | 0.00/0.034 | 0.00/0.031 | 0.20/0.032 | 0.00/0.016 | 0.00/0.021 |
+| Stacked-LIF-free | 5.05 | 1.00/0.000 | 1.00/0.054 | 1.00/0.001 | 0.00/0.009 | 1.00/0.112 | 0.20/0.006 | 0.00/0.006 | 0.00/0.003 | 0.00/0.120 | 0.00/0.010 | 0.00/0.011 |
+| LeWM-v2 | 4.97 | 1.00/0.004 | 1.00/0.188 | 1.00/0.084 | 0.00/0.323 | 1.00/0.374 | 0.20/0.278 | 0.00/0.326 | 0.00/0.386 | 0.00/0.604 | 0.00/0.287 | 0.00/0.275 |
+| GRU | 5.13 | 1.00/0.004 | 1.00/0.369 | 1.00/0.050 | 0.00/0.245 | 1.00/0.464 | 0.20/0.037 | 0.00/0.082 | 0.00/0.131 | 0.00/0.229 | 0.00/0.073 | 0.20/0.075 |
+| MLP | 5.00 | 1.00/0.000 | 1.00/0.000 | 1.00/0.000 | 0.00/0.000 | 0.80/0.000 | 0.20/0.000 | 0.00/0.000 | 0.00/0.000 | 0.20/0.000 | 0.00/-0.000 | 0.00/0.000 |
+| LIFTransformer | 5.12 | 1.00/0.000 | 1.00/0.000 | 1.00/0.000 | 0.00/0.000 | 1.00/0.000 | 0.20/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 |
 
 ## oodc_F1F3 (5 envs)
 
 | Model | Trn(M) | ball_in_cup | cartpole_2d | cheetah | finger | pendulum_2d |
 |---|---|---|---|---|---|---|
-| STJEWM-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-spike | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-rate | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-no-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-leak | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-membrane | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| ALIF-timecell | 4.98 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-trace | 5.11 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-free | 5.05 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LeWM-v2 | 4.97 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| GRU | 5.13 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| MLP | 5.00 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LIFTransformer | 5.12 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
+| STJEWM-trace | 5.06 | 1.00/0.083 | 1.00/0.591 | 1.00/0.563 | 1.00/0.800 | 0.00/0.601 |
+| STJEWM-spike | 5.06 | 1.00/0.011 | 1.00/0.430 | 1.00/0.611 | 1.00/0.602 | 0.00/0.794 |
+| STJEWM-rate | 5.06 | 1.00/0.124 | 1.00/0.753 | 1.00/0.565 | 1.00/0.448 | 0.00/0.610 |
+| STJEWM-no_trace | 5.06 | 1.00/0.138 | 1.00/0.861 | 1.00/0.393 | 0.80/0.998 | 0.20/0.401 |
+| STJEWM-leak | 5.06 | 1.00/0.045 | 1.00/0.011 | 1.00/0.069 | 0.80/0.800 | 0.60/0.202 |
+| STJEWM-membrane | 5.06 | 1.00/0.110 | 1.00/0.599 | 1.00/0.406 | 0.60/0.600 | 0.00/0.798 |
+| ALIF-timecell | 4.98 | 1.00/0.000 | 1.00/0.347 | 1.00/0.005 | 0.80/0.330 | 0.20/0.394 |
+| Stacked-LIF-trace | 5.11 | 1.00/0.000 | 1.00/0.091 | 1.00/0.004 | 1.00/0.129 | 0.20/0.036 |
+| Stacked-LIF-free | 5.05 | 1.00/0.002 | 1.00/0.375 | 1.00/0.028 | 0.80/0.572 | 0.20/0.398 |
+| LeWM-v2 | 4.97 | 1.00/0.019 | 1.00/0.275 | 1.00/0.117 | 1.00/0.568 | 0.20/0.168 |
+| GRU | 5.13 | 1.00/0.022 | 1.00/0.191 | 1.00/0.024 | 1.00/0.162 | 0.20/0.185 |
+| MLP | 5.00 | 1.00/0.000 | 1.00/0.000 | 1.00/0.000 | 0.80/0.000 | 0.00/0.000 |
+| LIFTransformer | 5.12 | 1.00/0.000 | 1.00/0.000 | 1.00/0.000 | 0.80/0.000 | 0.60/0.000 |
 
-## oodc_F2 (5 envs)
+## oodc_F2F3 (7 envs)
 
-| Model | Trn(M) | dog | hopper | humanoid | quadruped | walker |
-|---|---|---|---|---|---|---|
-| STJEWM-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-spike | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-rate | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-no-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-leak | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-membrane | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| ALIF-timecell | 4.98 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-trace | 5.11 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-free | 5.05 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LeWM-v2 | 4.97 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| GRU | 5.13 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| MLP | 5.00 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LIFTransformer | 5.12 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-
-## oodc_F2F3 (6 envs)
-
-| Model | Trn(M) | cheetah | dog | hopper | humanoid | quadruped | walker |
-|---|---|---|---|---|---|---|---|
-| STJEWM-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-spike | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-rate | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-no-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-leak | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-membrane | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| ALIF-timecell | 4.98 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-trace | 5.11 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-free | 5.05 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LeWM-v2 | 4.97 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| GRU | 5.13 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| MLP | 5.00 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LIFTransformer | 5.12 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
+| Model | Trn(M) | cheetah | dog | hopper | humanoid | humanoid_CMU | quadruped | walker |
+|---|---|---|---|---|---|---|---|---|
+| STJEWM-trace | 5.06 | 1.00/0.188 | 0.00/0.032 | 0.20/0.118 | 0.00/0.066 | 0.00/0.087 | 0.00/0.017 | 0.00/0.147 |
+| STJEWM-spike | 5.06 | 1.00/0.241 | 0.00/0.046 | 0.20/0.088 | 0.00/0.100 | 0.00/0.106 | 0.00/0.013 | 0.20/0.068 |
+| STJEWM-rate | 5.06 | 1.00/0.299 | 0.00/0.043 | 0.20/0.057 | 0.00/0.060 | 0.00/0.098 | 0.00/0.015 | 0.00/0.061 |
+| STJEWM-no_trace | 5.06 | 1.00/0.141 | 0.00/0.022 | 0.20/0.072 | 0.00/0.162 | 0.00/0.069 | 0.00/0.015 | 0.00/0.038 |
+| STJEWM-leak | 5.06 | 1.00/0.223 | 0.00/0.023 | 0.00/0.061 | 0.00/0.129 | 0.00/0.064 | 0.00/0.012 | 0.00/0.054 |
+| STJEWM-membrane | 5.06 | 1.00/0.099 | 0.00/0.044 | 0.20/0.080 | 0.00/0.168 | 0.00/0.101 | 0.00/0.016 | 0.00/0.089 |
+| ALIF-timecell | 4.98 | 1.00/0.008 | 0.00/0.025 | 0.20/0.037 | 0.00/0.035 | 0.00/0.029 | 0.00/0.036 | 0.00/0.021 |
+| Stacked-LIF-trace | 5.11 | 1.00/0.003 | 0.00/0.030 | 0.20/0.054 | 0.00/0.020 | 0.00/0.018 | 0.00/0.010 | 0.00/0.014 |
+| Stacked-LIF-free | 5.05 | 1.00/0.003 | 0.00/0.035 | 0.20/0.103 | 0.00/0.020 | 0.00/0.023 | 0.00/0.006 | 0.20/0.014 |
+| LeWM-v2 | 4.97 | 1.00/0.164 | 0.00/0.396 | 0.20/0.225 | 0.00/0.310 | 0.00/0.345 | 0.00/0.306 | 0.00/0.356 |
+| GRU | 5.13 | 1.00/0.058 | 0.00/0.077 | 0.20/0.017 | 0.00/0.046 | 0.00/0.026 | 0.00/0.083 | 0.20/0.016 |
+| MLP | 5.00 | 1.00/0.000 | 0.00/-0.000 | 0.20/0.000 | 0.00/0.000 | 0.00/-0.000 | 0.00/-0.000 | 0.00/0.000 |
+| LIFTransformer | 5.12 | 1.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 |
 
 ## oodc_F3 (1 envs)
 
 | Model | Trn(M) | cheetah |
 |---|---|---|
-| STJEWM-trace | 5.06 | <span style="color:red">**待定**</span> |
-| STJEWM-spike | 5.06 | <span style="color:red">**待定**</span> |
-| STJEWM-rate | 5.06 | <span style="color:red">**待定**</span> |
-| STJEWM-no-trace | 5.06 | <span style="color:red">**待定**</span> |
-| STJEWM-leak | 5.06 | <span style="color:red">**待定**</span> |
-| STJEWM-membrane | 5.06 | <span style="color:red">**待定**</span> |
-| ALIF-timecell | 4.98 | <span style="color:red">**待定**</span> |
-| Stacked-LIF-trace | 5.11 | <span style="color:red">**待定**</span> |
-| Stacked-LIF-free | 5.05 | <span style="color:red">**待定**</span> |
-| LeWM-v2 | 4.97 | <span style="color:red">**待定**</span> |
-| GRU | 5.13 | <span style="color:red">**待定**</span> |
-| MLP | 5.00 | <span style="color:red">**待定**</span> |
-| LIFTransformer | 5.12 | <span style="color:red">**待定**</span> |
+| STJEWM-trace | 5.06 | 1.00/0.002 |
+| STJEWM-spike | 5.06 | 1.00/0.002 |
+| STJEWM-rate | 5.06 | 1.00/0.001 |
+| STJEWM-no_trace | 5.06 | 1.00/0.001 |
+| STJEWM-leak | 5.06 | 1.00/0.002 |
+| STJEWM-membrane | 5.06 | 1.00/0.003 |
+| ALIF-timecell | 4.98 | 1.00/0.006 |
+| Stacked-LIF-trace | 5.11 | 1.00/0.003 |
+| Stacked-LIF-free | 5.05 | 1.00/0.005 |
+| LeWM-v2 | 4.97 | 1.00/0.113 |
+| GRU | 5.13 | 1.00/0.000 |
+| MLP | 5.00 | 1.00/0.000 |
+| LIFTransformer | 5.12 | 1.00/0.000 |
 
-## G16 (15 envs)
+## G16 (15 envs) (16 envs)
 
-| Model | Trn(M) | ball_in_cup | cartpole_2d | cheetah | dog | finger | fish | hopper | humanoid | pendulum_2d | pusht | quadruped | reacher | stacker | tworoom | walker |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| STJEWM-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-spike | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-rate | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-no-trace | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-leak | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-membrane | 5.06 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| ALIF-timecell | 4.98 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-trace | 5.11 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-free | 5.05 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LeWM-v2 | 4.97 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| GRU | 5.13 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| MLP | 5.00 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LIFTransformer | 5.12 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
+| Model | Trn(M) | ball_in_cup | cartpole_2d | cheetah | dog | finger | fish | hopper | humanoid | humanoid_CMU | pendulum_2d | pusht | quadruped | reacher | stacker | tworoom | walker |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| STJEWM-trace | 5.06 | 1.00/0.001 | 1.00/0.301 | 1.00/0.114 | 0.00/0.127 | 0.80/0.658 | 0.20/0.346 | 0.20/0.209 | 0.00/0.257 | 0.00/0.131 | 0.20/0.529 | 0.00/0.272 | 0.00/0.177 | 0.00/0.433 | 0.00/0.313 | 0.20/0.111 | 0.00/0.122 |
+| STJEWM-spike | 5.06 | 1.00/0.000 | 1.00/0.274 | 1.00/0.152 | 0.00/0.176 | 1.00/0.511 | 0.20/0.171 | 0.20/0.168 | 0.00/0.213 | 0.00/0.183 | 0.00/0.433 | 0.00/0.098 | 0.00/0.075 | 0.00/0.402 | 0.00/0.326 | 0.00/0.051 | 0.00/0.149 |
+| STJEWM-rate | 5.06 | 1.00/0.001 | 1.00/0.442 | 1.00/0.119 | 0.00/0.136 | 0.80/0.740 | 0.00/0.499 | 0.20/0.082 | 0.00/0.334 | 0.00/0.148 | 0.00/0.511 | 0.00/0.147 | 0.00/0.182 | 0.00/0.464 | 0.00/0.329 | 0.20/0.106 | 0.00/0.151 |
+| STJEWM-no_trace | 5.06 | 1.00/0.000 | 1.00/0.357 | 1.00/0.071 | 0.00/0.134 | 1.00/0.435 | 0.00/0.335 | 0.40/0.113 | 0.00/0.287 | 0.00/0.191 | 0.40/0.354 | 0.00/0.057 | 0.00/0.076 | 0.00/0.356 | 0.00/0.308 | 0.20/0.060 | 0.00/0.319 |
+| STJEWM-leak | 5.06 | 1.00/0.002 | 1.00/0.207 | 1.00/0.071 | 0.00/0.170 | 0.80/0.545 | 0.00/0.325 | 0.00/0.142 | 0.00/0.282 | 0.00/0.268 | 0.20/0.505 | 0.00/0.124 | 0.00/0.087 | 0.00/0.204 | 0.00/0.347 | 0.00/0.066 | 0.00/0.294 |
+| STJEWM-membrane | 5.06 | 1.00/0.001 | 1.00/0.429 | 1.00/0.093 | 0.00/0.184 | 1.00/0.827 | 0.20/0.363 | 0.00/0.232 | 0.00/0.173 | 0.00/0.132 | 0.00/0.564 | 0.00/0.248 | 0.00/0.166 | 0.00/0.621 | 0.00/0.313 | 0.00/0.111 | 0.00/0.176 |
+| ALIF-timecell | 4.98 | 1.00/0.000 | 1.00/0.148 | 1.00/0.013 | 0.00/0.039 | 1.00/0.446 | 0.20/0.323 | 0.20/0.160 | 0.00/0.123 | 0.00/0.058 | 0.20/0.186 | 0.00/0.036 | 0.00/0.069 | 0.00/0.367 | 0.00/0.109 | 0.20/0.011 | 0.20/0.060 |
+| Stacked-LIF-trace | 5.11 | 1.00/0.000 | 1.00/0.028 | 1.00/0.002 | 0.00/0.024 | 1.00/0.057 | 0.20/0.096 | 0.00/0.104 | 0.00/0.015 | 0.00/0.011 | 0.00/0.014 | 0.00/0.003 | 0.00/0.002 | 0.00/0.029 | 0.00/0.146 | 0.00/0.001 | 0.00/0.042 |
+| Stacked-LIF-free | 5.05 | 1.00/0.000 | 1.00/0.390 | 1.00/0.071 | 0.00/0.018 | 0.80/0.378 | 0.20/0.174 | 0.20/0.188 | 0.00/0.018 | 0.00/0.054 | 0.00/0.216 | 0.00/0.005 | 0.00/0.004 | 0.00/0.279 | 0.00/0.154 | 0.00/0.007 | 0.00/0.301 |
+| LeWM-v2 | 4.97 | 1.00/0.019 | 1.00/0.095 | 1.00/0.047 | 0.00/0.105 | 0.80/0.217 | 0.00/0.171 | 0.00/0.214 | 0.00/0.100 | 0.00/0.107 | 0.00/0.208 | 0.00/0.172 | 0.00/0.151 | 0.00/0.208 | 0.00/0.192 | 0.40/0.066 | 0.20/0.108 |
+| GRU | 5.13 | 1.00/0.002 | 1.00/0.171 | 1.00/0.088 | 0.00/0.096 | 1.00/0.231 | 0.00/0.274 | 0.20/0.068 | 0.00/0.161 | 0.00/0.090 | 0.20/0.191 | 0.00/0.084 | 0.00/0.069 | 0.00/0.242 | 0.00/0.136 | 0.00/0.033 | 0.00/0.059 |
+| MLP | 5.00 | 1.00/0.000 | 1.00/0.034 | 1.00/0.000 | 0.00/0.172 | 1.00/0.016 | 0.20/0.000 | 0.20/0.000 | 0.00/0.106 | 0.00/0.102 | 0.20/0.031 | 0.00/0.029 | 0.00/0.000 | 0.00/0.174 | 0.00/-0.000 | 0.20/0.045 | 0.00/0.257 |
+| LIFTransformer | 5.12 | 1.00/0.000 | 1.00/0.000 | 1.00/0.000 | 0.00/0.000 | 1.00/0.000 | 0.20/0.000 | 0.20/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.00/0.000 | 0.20/0.000 | 0.00/0.000 |
 
-## External comparison: Spiking-WM（PNAS 2025，唯一真实外部竞品）
+## 每模型汇总(跨 split 全 cells)
 
-**Spiking-WM**（Sun, Zhao, Lv & Zeng，Brain-Cog-Lab，中科院自动化所；PNAS 2025,
-doi:10.1073/pnas.2513319122；arXiv:2503.00713；开源代码 Brain-Cog-Lab/Spiking-WM, MIT）
-是 13 个模型中唯一有论文、有公开代码、可独立验证的第三方系统：full spiking Dreamer，
-循环状态为 multi-compartment 神经元（MCN）发出的 spike 序列——事件驱动动力学满足
-协议要求，但规划器读由 spike 序列导出的**连续 posterior mean**（违反 membrane-forbidden
-读出合约）。
+| Model | cells | cos | env-SR |
+|---|---:|---:|---:|
+| STJEWM-trace | 96 | 0.246 | 0.35 |
+| STJEWM-spike | 96 | 0.233 | 0.34 |
+| STJEWM-rate | 96 | 0.257 | 0.34 |
+| STJEWM-no_trace | 96 | 0.262 | 0.31 |
+| STJEWM-leak | 96 | 0.239 | 0.31 |
+| STJEWM-membrane | 96 | 0.267 | 0.33 |
+| ALIF-timecell | 96 | 0.128 | 0.35 |
+| Stacked-LIF-trace | 96 | 0.073 | 0.34 |
+| Stacked-LIF-free | 96 | 0.120 | 0.34 |
+| LeWM-v2 | 96 | 0.196 | 0.34 |
+| GRU | 96 | 0.146 | 0.34 |
+| MLP | 96 | 0.059 | 0.35 |
+| LIFTransformer | 96 | 0.016 | 0.35 |
 
-**协议差异（为什么不并入上面的 per-env 表）**：Spiking-WM 评测用其原生
-episode return（max 1000，500 步 time limit），训练预算按难度 2–5×10⁵ env steps
-（pendulum/cup/reacher 2×10⁵，hopper/fish 3×10⁵，其余 5×10⁵），seed 0，28.5M
-可训练参数，MCRNN spike rate 0.8%；ST-JEWM 列为 goal-conditioned CEM 的
-env-SR / cos_dist（F1 checkpoint，walker 为其 held-out family）。两套指标语义
-不同，**数字不可直接比**——本节只做定向定性对照。
+## 数据说明了什么(判读,详见 DIAG_RELOAD_SUMMARY.md)
+1. 三簇结构成立(坍缩=MLP/LIF-Tx;校准=STJEWM 全 readout+ALIF+SLIF;过反应/噪声=LeWM/GRU),度量以三轴诊断为准
+2. env-SR 需按易/难 env 分读;pusht/tworoom 在 goal25 协议下非恒 0(与 LeWM 可比)
+3. cos_dist 低可被坍缩平凡取得(LeWM-SR 证伪),校准判据=div/resp/ρ 三轴
 
-| Task | SpWM return | ST env-SR | ST cos-dist | SpWM ρ | SpWM ρ_stoch | SpWM ρ_spike | SpWM rate |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| cartpole_swingup | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| cheetah_run | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| walker_walk | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| finger_spin | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| pendulum_swingup | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| cup_catch | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| reacher_easy | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| hopper_hop | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| quadruped_walk | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| dog_walk | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| fish_swim | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| humanoid_run | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-
-\* walker_walk 是 F1 checkpoint 的 held-out family（ST-JEWM 未见过 walker 数据；
-Spiking-WM 直接训练 walker）。
-
-**两条结论**：
-
-1. **控制侧 mixed**：Spiking-WM 解易任务（cup_catch <span style="color:red">**待定**</span>、reacher <span style="color:red">**待定**</span>）并学习
-   中间任务（cartpole <span style="color:red">**待定**</span>、walker <span style="color:red">**待定**</span>、finger <span style="color:red">**待定**</span>、cheetah <span style="color:red">**待定**</span>，且只用了
-   其发表预算的一半 + 降频更新），难任务失败（pendulum <span style="color:red">**待定**</span>、hopper <span style="color:red">**待定**</span>、
-   humanoid <span style="color:red">**待定**</span>、dog <span style="color:red">**待定**</span>）。
-2. **对齐诊断跨全部 12 任务成立**：Spiking-WM latent event-ρ = <span style="color:red">**待定**</span>（均值
-   <span style="color:red">**待定**</span>），全面低于 ST-JEWM 家族在任一任务上的 ≥ <span style="color:red">**待定**</span>；两系统的 raw spike-rate
-   对齐均为 chance（SpWM −<span style="color:red">**待定**</span>，ST-JEWM <span style="color:red">**待定**</span>）——差异不在"是否
-   脉冲"，而在协议暴露的 gated trace 上。MCN spike 序列（均值 0.8% 激活）比协议
-   trace 稀疏一个数量级。
-
-数据出处：SpWM return = `results/spiking_wm/logs_<task>/metrics.jsonl` 最后一条
-eval_return（12/12 与 NMI Table 2 逐格精确）；SpWM ρ/ρ_stoch/ρ_spike =
-`results/spiking_wm/` 协议评测（2000 随机策略步）；ST env-SR/cos = F1 checkpoint
-对应 env cell（见上文 F1 表）。
+## 数据出处
+- evals: `/data/lx/tmp/results/{5m_5mpar,5m}/<split>/<model>/seed_0/eval_<env>.json`(2026-09-08/09)
+- 脚本: `code/scripts/generalist_v0_7_5_5m/{train_dispatcher,eval_one,run_all_v2}.sh`
