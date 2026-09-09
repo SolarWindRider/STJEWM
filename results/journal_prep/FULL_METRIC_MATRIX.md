@@ -96,3 +96,10 @@
 - **posR²**: STJEWM ≈ <span style="color:red">**待定**</span>..<span style="color:red">**待定**</span> (chance), LeWM +<span style="color:red">**待定**</span> — event-vs-position dissociation.
 - **LeWM@0.05 falsified** (MLP <span style="color:red">**待定**</span> with div=<span style="color:red">**待定**</span>): included for the falsification narrative only.
 - **External baseline: Spiking-WM (PNAS 2025, Brain-Cog-Lab)** — 唯一真实外部竞品（28.5M, pixels-free proprio 配置）。Its native episode returns and event-ρ (<span style="color:red">**待定**</span> over 12 DMC tasks, mean <span style="color:red">**待定**</span>, vs STJEWM ≥ <span style="color:red">**待定**</span> on every task) live in `MAIN_TABLE_5M_STATE_FULL.md` §"External comparison" — 指标语义不同（native return vs CEM env-SR/cos），故不并入本横截面表。
+
+> **【2026-09-09 数据重置更新】** 本表数字为红字待定(旧代际作废)。新数据已落盘并回填至:
+> `MAIN_TABLE_5M_STATE_FULL.md`(1248 cells)、`MAIN_TABLE_5M_PIXEL_FULL.md`(130×13 env)、
+> `DIAG_RELOAD_SUMMARY.md`(G1 event-ρ + div/resp)、`SCALE_INVARIANCE.md`(G4/G8/G16)。
+> state 侧核心数字:STJEWM resp 0.204–0.208 / div 0.0134–0.0146 / ρ≥0.9984(跨 readout 零方差);
+> pixel 侧:除 STJEWM 外 7 对照 latent 全塌缩(cos=0.000、LeWM-SR 平凡满分)。
+> G4/G8/G16 scale-invariance 见 `SCALE_INVARIANCE.md`(全部 12 模型规模不变)。
