@@ -1,0 +1,54 @@
+{
+ "LeWM": {
+  "n": 7,
+  "mean": 0.6489
+ },
+ "GRU": {
+  "n": 7,
+  "mean": 0.4634
+ },
+ "LIF-Tx": {
+  "n": 7,
+  "mean": -0.0026
+ },
+ "SLIF-trace": {
+  "n": 7,
+  "mean": 0.2674
+ },
+ "MLP": {
+  "n": 7,
+  "mean": -0.0011
+ },
+ "SLIF-free": {
+  "n": 7,
+  "mean": 0.3296
+ },
+ "ALIF": {
+  "n": 7,
+  "mean": 0.2529
+ },
+ "STJEWM-leak": {
+  "n": 7,
+  "mean": 0.2942
+ },
+ "STJEWM-membrane": {
+  "n": 7,
+  "mean": 0.2613
+ },
+ "STJEWM-rate": {
+  "n": 7,
+  "mean": 0.2467
+ },
+ "STJEWM-spike": {
+  "n": 7,
+  "mean": 0.2612
+ },
+ "STJEWM-no_trace": {
+  "n": 7,
+  "mean": 0.2676
+ },
+ "STJEWM-trace": {
+  "n": 7,
+  "mean": 0.2714
+ }
+}
