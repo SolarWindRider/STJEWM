@@ -25,7 +25,7 @@ for m in $STJ $BASE; do
     CUDA_VISIBLE_DEVICES=$((i % 4)) $PY -m code.scripts.probe \
       --env "$env" --model "$m" \
       --ckpt "/data/lx/tmp/results/$root/$( [ "$root" = 5m_5mpar ] && echo oodc_F1 || echo oodc_F1)/$m/seed_0/final.pt" \
-      --out "$out" --epochs 1 --pad-obs-to 128 --action-dim-eval 56 \
+      --probe-target position --out "$out" --epochs 1 --pad-obs-to 128 --action-dim-eval 56 \
       > /dev/null 2>&1
     echo "done g2 $root $m $env rc=$?" >> "$LOG_DIR/phase7_progress.log"
     i=$((i + 1))
