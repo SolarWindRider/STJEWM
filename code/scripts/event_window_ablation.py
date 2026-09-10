@@ -138,11 +138,18 @@ def build_ckpt_model(ckpt_path, device, pixel=False):
         )
     else:
         from code.stjewm import STJEWM
+        # [FIX 2026-09-09] image_size 从 position_embeddings 推断(37=84px)。
+        isz = 84
+        for k, v in ck["model"].items():
+            if "position_embeddings" in k and hasattr(v, "shape") and v.ndim == 3:
+                n_patches = int(v.shape[1]) - 1
+                isz = int(round((n_patches ** 0.5) * 14)) if n_patches > 0 else 84
+                break
         model = STJEWM(
             d_hid=192, embed_dim=192, action_dim=args.get("action_dim", 56),
             action_emb_dim=192, state_dim=args.get("pad_obs_to", 128),
             cell_n_layers=args.get("n_layers", 4), n_d=3, trace_beta=0.9,
-            freeze_encoder=True, image_size=224,
+            freeze_encoder=True, image_size=isz,
             readout_mode=args.get("readout_mode", "hidden_leak"),
         )
     model.load_state_dict(ckpt["model"])
