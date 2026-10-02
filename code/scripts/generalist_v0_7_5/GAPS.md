@@ -26,8 +26,8 @@ edits. **All items are closed** as of v0.7.4 commit `8cc7e22` /
 | File | Change |
 |---|---|
 | `code/scripts/generalist_v0_7_5/aggregate_master.py` | Per-cell row now includes `responsiveness_mean` and `divergence_mean` from per-(model, env) latent_stats JSONs. |
-| `code/scripts/generalist_v0_7_5/aggregate_master.py` | New `--merge-all` flag emits `generalist_master_table.{md,json}` directly (no per-suite `_{G4,G8,G16}.{md,json}` files). |
-| `code/scripts/generalist_v0_7_5/aggregate_align.py` | New `--out-name` flag; always writes a JSON companion. |
+| `code/scripts/generalist_v0_7_5/aggregate_master.py` | Historical `--merge-all` interface removed. Current CLI requires `--training-manifest`, one or more `--state-run` directories, and a fresh `--out` path. |
+| `code/scripts/generalist_v0_7_5/aggregate_align.py` | Historical `--out-name` interface removed. Current CLI requires `--training-manifest`, `--diagnostic-run`, `--group`, and a fresh `--out` path; writes a JSON companion. |
 | `code/scripts/upload_master_table_to_obs.sh` | Only uploads the consolidated v0.7.5 outputs (6 files). |
 | `MASTER_TABLE.md` §9 | v0.7.4 → v0.7.5: 8 sub-sections with the corrected 5-column collapse diagnostic and metric design rationale. |
 | `README.md` | Version line v0.7.4 → v0.7.5; Status table bumped; claim ladder updated (MLP collapse claim now REFUTED v0.7.5). |
@@ -43,3 +43,13 @@ edits. **All items are closed** as of v0.7.4 commit `8cc7e22` /
 
 These are the same items deferred from v0.7.4 and remain deferred in
 v0.7.5; the metric design fix did not introduce new ones.
+
+## Current command interface
+
+The historical commands above are not final-repair completion evidence.
+Use the [manifest-gated examples in README.md](README.md#current-manifest-gated-entry-points):
+state tables consume completed state plans; diagnostics consume completed
+auxiliary plans. The final `training_final_repair_manifest.json` binds the
+checkpoint generation, and every requested report path must be fresh.
+No aggregator accepts directory-discovered historical subsets, substitutes
+zero for undefined `event_rho`, or estimates a seed interval from one seed.

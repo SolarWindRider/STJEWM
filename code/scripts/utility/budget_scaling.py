@@ -1,334 +1,137 @@
-"""Training-data-budget scaling sweep (v0.7.8 utility experiment, was v0.7.7's 'data-budget compression').
+"""Evaluate audited data-budget checkpoints into a new, explicit result root.
 
-For each (model, budget-fraction) cell, train a new generalist checkpoint with
-a scaled per-entry `max_windows` (=0.5x, 1.0x, or 2.0x of the G16 baseline) and
-then evaluate the four collapse-robust diagnostics:
-
-- env-SR (env-native closed-loop success rate)
-- div  (latent per-dim std, mean across dims)
-- resp (mean |delta-lat| / mean |delta-obs|)
-- event-align rho = corr(obs, latent) at first differences
-
-The 1.0x baseline re-uses the existing G16 ckpt at
-results/generalist_G16/<model>/seed_0/final.pt. The 0.5x and 2.0x ckpts are
-trained fresh into results/generalist_G16_budget_scaling/<model>/<frac>/seed_0/.
-
-NOTE on the rename: this experiment only changes the *training-data budget*
-(number of windows per env), never the model dimensionality, the latent
-capacity, or the dataset. It is NOT a compression experiment in the model-
-compression / latent-dim-reduction / dataset-distillation sense. Rename
-was made in v0.7.9 after reviewer feedback.
-
-Usage (per cell):
-    python -m code.scripts.utility.budget_scaling \\
-        --model stjewm_trace_only \\
-        --frac 0.5 \\
-        --out results/utility/budget_scaling/stjewm_trace_only/0.5.json
+Training is owned by the consolidated training repair orchestrator. This consumer
+never substitutes the 1x checkpoint for a requested 0.5x/2x cell and never reuses
+unversioned historical diagnostics.
 """
 from __future__ import annotations
 
 import argparse
 import json
-import os
 import subprocess
 import sys
-import time
 from pathlib import Path
-from typing import Any, Dict, List
 
-sys.path.insert(0, "/home/lx/snn")
+from code.scripts.audited_results import (
+    ROOT, TrainingAudit, load_json, metric, require, sha256, summarize,
+    validate_closed_loop, validate_diagnostic, write_new_json,
+)
 
-
-# 6 DMC envs shared with measure_latent_stats / event_align so that
-# 1.0x numbers can be re-used from results/generalist_G16/.
-DMC_ENVS = [
-    "cheetah",
-    "walker",
-    "cartpole_2d",
-    "pendulum_2d",
-    "finger",
-    "ball_in_cup",
-]
-
-# Where the existing 1.0x G16 ckpts + their diagnostics live.
-G16_BASELINE_DIR = "results/generalist_G16"
-
-# Per-env max_windows used for the 1.0x G16 training (from
-# configs/generalist_G16_train.json). We scale this for the sweep:
-#   0.5x -> BASE_PER_ENV // 2
-#   1.0x -> BASE_PER_ENV
-#   2.0x -> BASE_PER_ENV * 2
-BASE_PER_ENV = 10000
+DMC_ENVS = ("cheetah", "walker", "cartpole_2d", "pendulum_2d", "finger", "ball_in_cup")
+CLO_ENVS = {"cartpole_2d": "cartpole", "pendulum_2d": "pendulum", "humanoid_CMU": "humanoid_cmu"}
 
 
-def write_spec(frac: float, out_path: Path) -> int:
-    """Write a multi-env JSON spec with per-entry max_windows = frac * BASE_PER_ENV.
-
-    Returns the per-entry max_windows used.
-    """
-    base = json.loads(Path("configs/generalist_G16_train.json").read_text())
-    per_env = int(round(BASE_PER_ENV * frac))
-    for entry in base:
-        entry["max_windows"] = per_env
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(base, indent=2))
-    return per_env
-def train_one_ckpt(model: str, frac: float, frac_label: str, base_seed: int = 0) -> Path:
-    """Train a fresh generalist ckpt at frac x BASE_PER_ENV windows/env.
-
-    Re-uses code/scripts/generalist_v0_7_5/train_one.sh -- only the spec
-    file changes between cells. Writes to
-        results/generalist_G16_compression/<model>/<frac_label>/seed_<seed>/
-
-    NOTE on the directory name: the on-disk directory keeps the historical
-    name "_G16_compression" (the rename in v0.7.9 is at the *narrative*
-    layer; changing this path would force a re-train of the 6 ckpts we
-    already have). Existing JSONs + markdown tables under that path
-    remain valid.
-    """
-    out_dir = Path(f"results/generalist_G16_compression/{model}/{frac_label}/seed_{base_seed}")
-    ckpt = out_dir / "final.pt"
-    if ckpt.exists():
-        print(f"[train] {model}/frac={frac_label}: ckpt already exists, skipping")
-        return ckpt
-
-    spec_path = Path(f"configs/_budget_scaling_{model}_{frac_label}.json")
-    per_env = write_spec(frac, spec_path)
-    print(f"[train] {model}/frac={frac_label}: spec per-env max_windows={per_env}")
-
-    out_dir.mkdir(parents=True, exist_ok=True)
-    cmd = [
-        "/bin/bash",
-        "code/scripts/generalist_v0_7_5/train_one.sh",
-        model,
-        str(spec_path),
-        str(out_dir),
-        str(base_seed),
-    ]
-    t0 = time.time()
-    rc = subprocess.call(cmd)
-    dt = time.time() - t0
-    if rc != 0 or not ckpt.exists():
-        raise RuntimeError(f"train failed for {model}/{frac_label}: rc={rc} (no ckpt at {ckpt})")
-    print(f"[train] {model}/{frac_label}: done in {dt/60:.1f} min -> {ckpt}")
-    return ckpt
+def native_env_id(env):
+    return {"pusht": "swm/PushT-v1", "tworoom": "swm/TwoRoom-v1"}.get(env, "mujoco/" + CLO_ENVS.get(env, env))
 
 
-def run_one_env(model_dir: Path, env: str, base_seed: int = 0) -> Dict[str, float]:
-    """Return {div, resp, rho, env_sr} for one (ckpt, env) cell.
+def eval_entries(path):
+    entries = [entry for entry in load_json(path) if not entry.get("extra_flags")]
+    require(len({entry["env_id"] for entry in entries}) == len(entries), "Duplicate evaluation environments")
+    return entries
 
-    div/resp come from measure_latent_stats; rho comes from event_align;
-    env_sr comes from the closed_loop eval JSON. Each sub-tool is invoked
-    via subprocess so we mirror the existing run_*.sh conventions.
-    """
-    ckpt = model_dir / "final.pt"
-    pad_obs = 128
-    action_dim = 56
 
-    # div / resp
-    stats_out = model_dir / f"latent_stats_{env}.json"
-    if not stats_out.exists():
-        cmd = [
-            "/home/lx/miniconda3/envs/snn/bin/python",
-            "-m", "code.scripts.generalist_v0_7_5.measure_latent_stats",
-            "--ckpt", str(ckpt),
-            "--env", env,
-            "--out", str(stats_out),
-            "--n-steps", "200",
-            "--seed", str(base_seed),
-            "--device", "cpu",
-        ]
-        rc = subprocess.call(cmd)
-        if rc != 0:
-            return {"error": f"measure_latent_stats rc={rc}"}
-    stats = json.loads(stats_out.read_text())
-    div = float(stats.get("divergence", 0.0))
-    resp = float(stats.get("responsiveness", 0.0))
+def evaluate_checkpoint(checkpoint, model, out_root, audit, entries, diagnostic_envs,
+                        *, seed=0, episodes=3, steps=200, device="cpu"):
+    checkpoint, out_root = Path(checkpoint).resolve(), Path(out_root).resolve()
+    require(episodes > 0 and steps >= 6, "Invalid evaluation budget")
+    require(set(diagnostic_envs) <= {entry["env_id"] for entry in entries}, "Missing diagnostic environment in eval spec")
+    provenance = audit.provenance(checkpoint)
+    source_names = ("code/scripts/event_align.py", "code/scripts/latent_rollout.py", "code/eval/closed_loop.py")
+    source_hashes = {name: sha256(ROOT / name) for name in source_names}
+    provenance["evaluation_source_sha256"] = source_hashes
+    provenance["budget"] = {"episodes": episodes, "steps": steps, "seed": seed}
+    audit.protect_output(out_root)
+    out_root.mkdir(parents=True, exist_ok=False)
+    rows = []
 
-    # event-align rho
-    align_out = model_dir / f"align_{env}.json"
-    if not align_out.exists():
-        cmd = [
-            "/home/lx/miniconda3/envs/snn/bin/python",
-            "-m", "code.scripts.event_align",
-            "--env", env,
-            "--model", model_dir.parent.name,
-            "--ckpt", str(ckpt),
-            "--out", str(align_out),
-            "--n-steps", "100",
-            "--pad-obs-to", str(pad_obs),
-            "--action-dim-eval", str(action_dim),
-        ]
-        rc = subprocess.call(cmd)
-        if rc != 0:
-            rho = float("nan")
-        else:
-            rho = float(json.loads(align_out.read_text()).get("corr_obs_latent", 0.0))
+    def produce(command, path, validator):
+        require(not path.exists(), f"Refusing existing result: {path}")
+        with path.with_suffix(".log").open("x") as log:
+            subprocess.run(command, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, check=True)
+        require(audit.checkpoint(checkpoint)["sha256"] == provenance["checkpoint_sha256"], "Checkpoint changed during evaluation")
+        require(all(sha256(ROOT / name) == value for name, value in source_hashes.items()), "Evaluation source changed during execution")
+        payload = load_json(path)
+        validator(payload)
+        payload["repair_provenance"] = provenance
+        path.write_text(json.dumps(payload, indent=2, allow_nan=False) + "\n")
+        return payload
+
+    for entry in entries:
+        env = entry["env_id"]
+        eval_path = out_root / f"eval_{env}.json"
+        command = [sys.executable, "-m", "code.eval.closed_loop", "--ckpt", str(checkpoint),
+                   "--env", entry.get("clo_env", CLO_ENVS.get(env, env)), "--data", entry["path"],
+                   "--out", str(eval_path), "--n-episodes", str(episodes), "--n-seeds", "1",
+                   "--horizon", "5", "--eval-budget", "50", "--history-size", str(entry["history_size"]),
+                   "--goal-offset", str(entry["goal_offset"]), "--pad-obs-eval", "128", "--action-dim-eval", "56",
+                   "--device", device]
+        ev = produce(command, eval_path, lambda value: validate_closed_loop(value, episodes=episodes))
+        require(ev["protocol"].get("checkpoint") == str(checkpoint), "Evaluation used a different checkpoint")
+        require(ev["env_id"] == native_env_id(entry.get("clo_env", env)),
+                "Evaluation used a different native environment")
+        require(ev["protocol"].get("data_loader_protocol") == audit.payload["evaluation_data_protocol_version"],
+                "Wrong evaluation data generation")
+        row = {"env": env, "env-SR": metric(ev, "success_rate_env"),
+               "eval_source": str(eval_path), "eval_sha256": sha256(eval_path)}
+        if env in diagnostic_envs:
+            diagnostic_path = out_root / f"align_{env}.json"
+            diagnostic = produce([
+                sys.executable, "-m", "code.scripts.event_align", "--ckpt", str(checkpoint),
+                "--model", model, "--env", env, "--out", str(diagnostic_path),
+                "--n-steps", str(steps), "--n-resets", "2", "--seed", str(seed),
+                "--pad-obs-to", "128", "--action-dim-eval", "56", "--device", device,
+            ], diagnostic_path, lambda value: validate_diagnostic(value, env=env, model=model, seed=seed))
+            require(diagnostic["n_steps"] == steps, "Incomplete diagnostic budget")
+            row.update(div=metric(diagnostic, "divergence"),
+                       resp=metric(diagnostic, "responsiveness", nullable=True),
+                       event_rho=metric(diagnostic, "event_rho", nullable=True),
+                       diagnostic_source=str(diagnostic_path), diagnostic_sha256=sha256(diagnostic_path))
+        rows.append(row)
+    return rows, provenance
+
+
+def aggregate(per_env, expected_envs=DMC_ENVS):
+    require(len(per_env) == len(expected_envs) and {row["env"] for row in per_env} == set(expected_envs),
+            "Missing/duplicate budget evaluation cells")
+    return {key: summarize(metric(row, key, nullable=key in ("resp", "event_rho")) for row in per_env)
+            for key in ("env-SR", "div", "resp", "event_rho")}
+
+
+def evaluate_budget(model, frac, checkpoint, out_root, audit, *, seed=0, episodes=3, steps=200, device="cpu"):
+    checkpoint = Path(checkpoint).resolve()
+    require(frac in (0.5, 1.0, 2.0), "Unsupported data-budget fraction")
+    if frac == 1.0:
+        require(checkpoint.parent.parent.name == model and checkpoint.parent.parent.parent.name == "generalist_G16",
+                "The 1x cell must use its audited full-G16 checkpoint")
     else:
-        rho = float(json.loads(align_out.read_text()).get("corr_obs_latent", 0.0))
-
-    # env-SR (env-native success on a 3-episode CEM rollout)
-    eval_out = model_dir / f"eval_{env}.json"
-    if not eval_out.exists():
-        # Map event-align env names to closed_loop env names.
-        clo_env = {"cartpole_2d": "cartpole", "pendulum_2d": "pendulum"}.get(env, env)
-        # Find the matching data path from the base spec.
-        base_spec = json.loads(Path("configs/generalist_G16_train.json").read_text())
-        data_path = None
-        for entry in base_spec:
-            if entry["env_id"] == env:
-                data_path = entry["path"]
-                break
-        if data_path is None:
-            return {"error": f"no data path for env={env}"}
-        cmd = [
-            "/home/lx/miniconda3/envs/snn/bin/python",
-            "-m", "code.eval.closed_loop",
-            "--env", clo_env,
-            "--ckpt", str(ckpt),
-            "--data", data_path,
-            "--out", str(eval_out),
-            "--n-episodes", "3",
-            "--n-seeds", "1",
-            "--horizon", "5",
-            "--eval-budget", "50",
-            "--history-size", "1",
-            "--goal-offset", "25",
-            "--pad-obs-eval", str(pad_obs),
-            "--action-dim-eval", str(action_dim),
-        ]
-        rc = subprocess.call(cmd)
-        if rc != 0 or not eval_out.exists():
-            env_sr = float("nan")
-        else:
-            env_sr = float(json.loads(eval_out.read_text()).get("success_rate_env", 0.0))
-    else:
-        env_sr = float(json.loads(eval_out.read_text()).get("success_rate_env", 0.0))
-
-    return {"env-SR": env_sr, "div": div, "resp": resp, "rho": rho}
-
-
-def aggregate(per_env: List[Dict[str, float]]) -> Dict[str, float]:
-    """Average the four diagnostics across the 6 DMC envs, ignoring NaNs."""
-    import math
-    out = {}
-    for key in ("env-SR", "div", "resp", "rho"):
-        vals = [float(v[key]) for v in per_env if key in v and not math.isnan(float(v[key]))]
-        if vals:
-            avg = sum(vals) / len(vals)
-            # std across envs (unbiased)
-            if len(vals) > 1:
-                mu = avg
-                var = sum((x - mu) ** 2 for x in vals) / (len(vals) - 1)
-                std = var ** 0.5
-            else:
-                std = 0.0
-            out[f"{key}_avg"] = avg
-            out[f"{key}_std"] = std
-        else:
-            out[f"{key}_avg"] = float("nan")
-            out[f"{key}_std"] = float("nan")
-    out["n_envs"] = len(per_env)
-    return out
-
-
-def run_for_1x_baseline(model: str, out_path: Path) -> Dict[str, Any]:
-    """Re-use the 1.0x G16 baselines — train_one is unnecessary.
-
-    The 6-DMC latent_stats / event-align / closed_loop eval JSONs already exist
-    under results/generalist_G16/<model>/seed_0/. We just aggregate them.
-    """
-    model_dir = Path(f"results/generalist_G16/{model}/seed_0")
-    if not (model_dir / "final.pt").exists():
-        return {"error": f"no 1.0x ckpt at {model_dir}"}
-
-    per_env: List[Dict[str, float]] = []
-    for env in DMC_ENVS:
-        stats_p = model_dir / f"latent_stats_{env}.json"
-        align_p = model_dir / f"align_{env}.json"
-        eval_p = model_dir / f"eval_{env}.json"
-
-        # For 1.0x, align JSONs live under results/generalist_G16/event_align/.
-        if not align_p.exists():
-            align_path = Path(f"results/generalist_G16/event_align/{env}_{model}_seed0.json")
-            if align_path.exists():
-                align_p = align_path
-        row: Dict[str, float] = {}
-        if stats_p.exists():
-            stats = json.loads(stats_p.read_text())
-            row["div"] = float(stats.get("divergence", 0.0))
-            row["resp"] = float(stats.get("responsiveness", 0.0))
-        if align_p.exists():
-            row["rho"] = float(json.loads(align_p.read_text()).get("corr_obs_latent", 0.0))
-        if eval_p.exists():
-            row["env-SR"] = float(json.loads(eval_p.read_text()).get("success_rate_env", 0.0))
-        per_env.append({"env": env, **row})
-
-    summary = aggregate(per_env)
-    summary["model"] = model
-    summary["frac"] = 1.0
-    summary["frac_label"] = "1.0"
-    summary["per_env"] = per_env
-    summary["source"] = "results/generalist_G16"
-
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(summary, indent=2))
-    print(f"[1.0x] {model}: env-SR_avg={summary['env-SR_avg']:.3f} "
-          f"div={summary['div_avg']:.4f} resp={summary['resp_avg']:.3f} "
-          f"rho={summary['rho_avg']:.3f}")
+        require(checkpoint.parent.parent.name == str(frac) and checkpoint.parent.parent.parent.name == model,
+                "Requested data-budget fraction does not match checkpoint identity")
+    entries = [entry for entry in eval_entries(ROOT / "configs/generalist_G16_eval.json") if entry["env_id"] in DMC_ENVS]
+    rows, provenance = evaluate_checkpoint(checkpoint, model, out_root, audit, entries, DMC_ENVS,
+                                          seed=seed, episodes=episodes, steps=steps, device=device)
+    summary = {"status": "completed", "protocol_version": 2, "measurement_object": "forward.emb",
+               "model": model, "frac": frac, "seed": seed, "n_envs": len(rows), "per_env": rows,
+               "metrics": aggregate(rows), "repair_provenance": provenance}
+    write_new_json(Path(out_root) / "summary.json", summary)
     return summary
 
 
-def run_for_new_ckpt(model: str, frac: float, frac_label: str,
-                     out_path: Path, base_seed: int = 0) -> Dict[str, Any]:
-    """Train (if needed), eval on the 6 DMC envs, aggregate, dump JSON."""
-    ckpt = train_ckpt(model, frac, frac_label, base_seed)
-    model_dir = ckpt.parent
-
-    per_env: List[Dict[str, float]] = []
-    for env in DMC_ENVS:
-        row = run_one_env(model_dir, env, base_seed)
-        per_env.append({"env": env, **row})
-        print(f"  [eval] {model}/{frac_label}/{env}: {row}")
-
-    summary = aggregate(per_env)
-    summary["model"] = model
-    summary["frac"] = frac
-    summary["frac_label"] = frac_label
-    summary["per_env"] = per_env
-    summary["source"] = str(model_dir)
-
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(summary, indent=2))
-    return summary
-
-
-def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser()
-    p.add_argument("--model", required=True)
-    p.add_argument("--frac", type=float, required=True,
-                   help="data-budget fraction relative to G16 baseline")
-    p.add_argument("--frac-label", default=None,
-                   help="directory/file label (e.g. '0.5'). Defaults to str(frac).")
-    p.add_argument("--out", required=True)
-    p.add_argument("--seed", type=int, default=0)
-    p.add_argument("--baseline", action="store_true",
-                   help="Read existing 1.0x G16 outputs without training.")
-    return p.parse_args()
-
-
-def main() -> int:
-    args = parse_args()
-    frac_label = args.frac_label or str(args.frac)
-    out_path = Path(args.out)
-
-    t0 = time.time()
-    if args.baseline or args.frac == 1.0:
-        result = run_for_1x_baseline(args.model, out_path)
-    else:
-        result = run_for_new_ckpt(args.model, args.frac, frac_label, out_path, args.seed)
-    print(f"[done] {args.model}/frac={frac_label} in {(time.time() - t0)/60:.1f} min -> {out_path}")
-    return 0 if "error" not in result else 1
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--model", required=True)
+    parser.add_argument("--frac", type=float, required=True, choices=(0.5, 1.0, 2.0))
+    parser.add_argument("--ckpt", type=Path, required=True)
+    parser.add_argument("--training-manifest", type=Path, required=True)
+    parser.add_argument("--out-root", type=Path, required=True)
+    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--n-episodes", type=int, default=3)
+    parser.add_argument("--n-steps", type=int, default=200)
+    parser.add_argument("--device", default="cpu")
+    args = parser.parse_args()
+    evaluate_budget(args.model, args.frac, args.ckpt, args.out_root, TrainingAudit(args.training_manifest),
+                    seed=args.seed, episodes=args.n_episodes, steps=args.n_steps, device=args.device)
+    return 0
 
 
 if __name__ == "__main__":

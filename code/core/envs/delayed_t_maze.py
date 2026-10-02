@@ -212,29 +212,12 @@ class DelayedTMazeEnv(BaseEnv):
         return self._last_obs_dict["state"].copy()
 
     def check_success(self, state: np.ndarray, goal_state: np.ndarray) -> Tuple[bool, float]:
-        """T-Maze success criterion.
-
-        The goal is to be on the cue-side of the T at the decision frame. The
-        recorded goal state encodes the cue side in the cue_x channel:
-        goal_state[2] = -GOAL_OFFSET_X for left, +GOAL_OFFSET_X for right.
-        Success is achieved if the agent's terminal choice matches this.
-
-        For evaluation convenience we also accept a match on the agent's y
-        position being at the corridor end.
-        """
-        # First try to recover the cue side from the goal state.
-        cue_side_goal = 0
-        if goal_state.shape[0] >= 3:
-            cue_side_goal = -1 if goal_state[2] < 0.0 else (1 if goal_state[2] > 0.0 else 0)
-        # The agent's choice is sign(action[1]) — but we don't have it here.
-        # Fall back to a tolerance check on (cue_x, agent_y).
-        diff = state - goal_state
-        dist = float(np.linalg.norm(diff) / np.sqrt(len(state)))
-        # If the goal cue side is clearly left/right and the agent has reached
-        # the corridor end (state[1] >= delay_length), we count that as
-        # success. Otherwise fall back to a distance check.
-        at_end = state[1] >= self.cfg.delay_length - 0.5
-        return (cue_side_goal != 0 and at_end and dist < 2.0), dist
+        """Require an actual terminal decision matching the recorded goal cue."""
+        if len(goal_state) < 3 or float(goal_state[2]) not in (-GOAL_OFFSET_X, GOAL_OFFSET_X):
+            raise ValueError("Maze task goals must record the true left/right cue")
+        goal_side = -1 if goal_state[2] < 0 else 1
+        success = self._reward_given and self._terminal_choice == goal_side
+        return bool(success), 0.0 if success else 1.0
 
     # -----------------------------------------------------------
     # Internals

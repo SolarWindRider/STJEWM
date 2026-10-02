@@ -27,7 +27,7 @@ PYTHONPATH=/home/lx/snn /home/lx/miniconda3/envs/snn/bin/python -m code.train.tr
   --multi-env-spec configs/oodc_5m_pixel/${SPLIT}.json \
   --pad-obs-to 21168 \
   --action-dim 56 \
-  --embed-dim 192 \
+  --embed-dim "$( [ "$MODEL" = lewm_baseline ] && echo 288 || echo 192 )" \
   --image-size $IMAGE_SIZE \
   --n-layers $N_LAYERS \
   --epochs 1 --batch 32 --lr 3e-4 \

@@ -53,6 +53,7 @@ def resolve_env_kind(env_id: str) -> str:
         "cartpole_2d": "cartpole",
         "pendulum_2d": "pendulum",
         "humanoid_CMU": "humanoid_cmu",
+        "cheetah_velhidden": "cheetah_qpos_masked",
     }
     return mapping.get(env_id, env_id)
 
@@ -113,8 +114,8 @@ def measure_diagnostic_dmc(
     from code.scripts.utility.latent_goal_mpc import build_model_from_ckpt
     from code.core.encode import encode_obs as _encode_obs
 
-    env_kind = resolve_env_kind(env_id)
-    env = make_env(env_kind=env_kind, data_path=env_path)
+    env_id = resolve_env_kind(env_id)
+    env = make_env(env_kind=env_id, data_path=env_path)
     if hasattr(env, "seed"):
         env.seed(seed)
 
@@ -185,17 +186,14 @@ def measure_env_sr(
 
     Critical: env_kind must be lowercase (closed_loop dispatch table is
     lowercase, so "humanoid_CMU" fails but "humanoid_cmu" works).
-    Stress envs need their specific CLI flag (--vel-hidden-mask-obs-ratio
-    for cheetah_velhidden; --flicker-mask-ratio for flicker variants).
-    For cartpole_2d/pendulum_2d we omit --goal-offset so closed_loop uses
-    its per-env default (25) — passing --goal-offset 25 collides with the
-    dataset's own goal_offset metadata and causes eval to fail.
+    Preserved source-spec names are translated at this boundary. The runtime
+    condition is masked qpos, never hidden velocity.
     """
+    env_id = resolve_env_kind(env_id)
     out_json = Path(ckpt_path).parent / f"eval_{env_id}.json"
-    env_kind_lower = env_id.lower() if env_id != "delayed_t_maze" else env_id
     cmd = [
         "/home/lx/miniconda3/envs/snn/bin/python", "-m", "code.eval.closed_loop",
-        "--env", env_kind_lower,
+        "--env", env_id,
         "--ckpt", str(ckpt_path),
         "--data", str(env_path),
         "--out", str(out_json),
@@ -208,13 +206,10 @@ def measure_env_sr(
         "--eval-budget", "30",
         "--history-size", "1",
     ]
-    # Per-env goal offset for envs that need it; skip for cartpole/pendulum
-    # (closed_loop uses dataset's own goal_offset metadata there)
-    if env_id not in ("cartpole_2d", "pendulum_2d"):
-        cmd += ["--goal-offset", "25"]
+    cmd += ["--goal-offset", "25"]
     # Stress envs need their specific mask flag
-    if env_id == "cheetah_velhidden":
-        cmd += ["--vel-hidden-mask-obs-ratio", "0.0"]
+    if env_id == "cheetah_qpos_masked":
+        cmd += ["--qpos-mask-obs-ratio", "0.0"]
     if env_id == "cartpole_flicker":
         cmd += ["--flicker-mask-ratio", "0.5"]
     try:
@@ -239,7 +234,10 @@ def run_one_cell(
     ckpt: Path, env_id: str, env_path: str,
     seed: int, n_steps: int = 200, n_episodes: int = 3,
 ) -> Dict[str, Any]:
-    out = {"ckpt": str(ckpt), "env_id": env_id, "env_path": env_path}
+    out = {
+        "ckpt": str(ckpt), "env_id": resolve_env_kind(env_id),
+        "source_env_id": env_id, "env_path": env_path,
+    }
     try:
         out.update(measure_diagnostic_dmc(str(ckpt), env_id, env_path, n_steps=n_steps, seed=seed))
     except Exception as e:
@@ -395,7 +393,7 @@ def main() -> int:
                     env_path = env_entry["path"]
                     cell = run_one_cell(ckpt, env_id, env_path, args.seed,
                                           n_steps=args.n_steps, n_episodes=args.n_episodes)
-                    out_json = Path(args.out_dir) / split / model / f"seed_{args.seed}" / f"{env_id}.json"
+                    out_json = Path(args.out_dir) / split / model / f"seed_{args.seed}" / f"{resolve_env_kind(env_id)}.json"
                     out_json.parent.mkdir(parents=True, exist_ok=True)
                     out_json.write_text(json.dumps(cell, indent=2))
                     print(f"  [{model}/{env_id}] div={cell.get('divergence', 'NA')} "

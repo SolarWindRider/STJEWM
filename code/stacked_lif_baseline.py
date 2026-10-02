@@ -23,12 +23,13 @@ A minimal pure-SNN predictive model:
     4. Two readout variants:
          - TraceOnly :   z_t = moving_avg(s_t, k=4) projected to 192
                          (membrane-forbidden; only s_t + trace exposed)
+                         (causal k-step history, zero-padded on the left)
          - FreeAccess:   z_t = concat([s_t, v_t]) projected to 192
                          (membrane-exposed; planner reads v_t directly)
 
 Contract (same as STJEWM / GRU / LeWM):
     model.encode(obs, action) -> dict with key 'emb' (B, T, 192)
-    model.predict(ctx_emb, ctx_act) -> Tensor (B, 192)
+    model.predict(ctx_emb, ctx_act) -> Tensor (B, H, embed_dim)
     model.forward() returns dict with
         'emb'           (B, T, 192)         predicted latent
         'emb_pre_cell'  (B, T, d_in)        pre-stack state embedding (for SIGReg)
@@ -215,7 +216,7 @@ class StackedLIFBase(nn.Module):
 
     # ============== Forward ==============
     def forward(self, x: torch.Tensor, a: torch.Tensor) -> dict:
-        """Full forward. Returns dict matching STJEWM contract.
+        """Prefix-causal forward from reset cell state, matching STJEWM contract.
 
         `emb`            = post-readout latent (B, T, 192) — what planner sees
         `emb_pre_cell`   = pre-stack state embedding (B, T, D) — for SIGReg
@@ -265,9 +266,9 @@ class StackedLIFBase(nn.Module):
 
     # ============== Per-step prediction ==============
     def predict(self, ctx_emb: torch.Tensor, ctx_act: torch.Tensor) -> torch.Tensor:
-        """Per-step prediction. ctx_emb: (B, H, D), ctx_act: (B, H, A or D).
+        """Prefix-causal prediction. ctx_emb: (B, H, D), ctx_act: (B, H, A or D).
 
-        Returns the last-timestep readout of (B, embed_dim).
+        Returns all per-step readouts (B, H, embed_dim) from reset cell state.
         """
         if ctx_act.shape[-1] == self.d_in:
             act_emb = ctx_act
@@ -304,9 +305,10 @@ class StackedLIFBase(nn.Module):
 # TraceOnly — membrane-forbidden (only s_t + moving_avg exposed)
 # ============================================================
 class StackedLIFTraceOnly(StackedLIFBase):
-    """TraceOnly variant: only s_t and a moving-average trace are exposed.
+    """TraceOnly variant: only spikes and a causal moving-average readout.
 
-    z_t = moving_avg(s_t, k=4) projected to 192
+    z_t = sum(s[max(0, t-k+1):t+1]) / k projected to embed_dim, k=k_avg.
+    Unavailable history is zero-padded; the divisor remains k at the boundary.
     'h' = s_t (NOT v_t; protocol forbids membrane)
     'trace' = moving_avg(s_t, k=4)
     """
@@ -336,19 +338,13 @@ class StackedLIFTraceOnly(StackedLIFBase):
         return self.d_in
 
     def _readout(self, h: torch.Tensor, v: torch.Tensor, s: torch.Tensor) -> torch.Tensor:
-        # z = moving_avg(s, k=4) projected to embed_dim
-        s_t = s.transpose(1, 2)                  # (B, D, T)
-        pooled = F.avg_pool1d(s_t, kernel_size=self.k_avg, stride=1,
-                              padding=self.k_avg // 2)
-        avg_s = pooled.transpose(1, 2)[:, : s.shape[1], :]  # (B, T, D)
-        return self.readout(avg_s)
+        return self.readout(self._trace(h, v, s))
 
     def _trace(self, h, v, s):
-        # Same moving_avg, exposed as 'trace' for probe.py
-        s_t = s.transpose(1, 2)
-        pooled = F.avg_pool1d(s_t, kernel_size=self.k_avg, stride=1,
-                              padding=self.k_avg // 2)
-        return pooled.transpose(1, 2)[:, : s.shape[1], :]
+        # Fixed-width causal spike average, also exposed as 'trace' to probes.
+        s_t = F.pad(s.transpose(1, 2), (self.k_avg - 1, 0))
+        pooled = F.avg_pool1d(s_t, kernel_size=self.k_avg, stride=1)
+        return pooled.transpose(1, 2)
 
 
 # ============================================================

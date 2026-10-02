@@ -1,93 +1,117 @@
-"""Run the frozen-encoder sample efficiency sweep across 12 G16 ckpts.
+"""Run or aggregate the complete audited 12-model sample-efficiency sweep.
 
-Output: results/utility/sample_efficiency/<model>/<env>.json + table md.
+Cells missing from a completed producer run fail the table; there is no
+silently skipped checkpoint, environment, or fraction.
 """
 from __future__ import annotations
 
 import argparse
-import json
-import os
-import sys
-import time
 from pathlib import Path
 
-sys.path.insert(0, "/home/lx/snn")
+from code.scripts.audited_results import TrainingAudit, load_json, metric, require, write_new_json
 
-
-G16_CKPTS = [
+G16_CKPTS = (
     "stjewm_trace_only", "stjewm_spike_only", "stjewm_rate_only",
     "stjewm_no_trace", "stjewm_hidden_leak", "stjewm_membrane_readout",
     "alif_timecell_baseline", "stacked_lif_trace", "stacked_lif_free",
-    "gru_baseline", "mlp_baseline",
-]
+    "lewm_baseline_v2", "gru_baseline", "mlp_baseline",
+)
+ENVS = ("cheetah", "walker", "reacher", "finger")
+FRACTION_KEYS = ("0.010", "0.050", "0.100", "0.250", "1.000")
 
-ENVS = ["cheetah", "walker", "reacher", "finger"]
+
+def read_cell(path, audit, model, env):
+    payload = load_json(path)
+    require(payload.get("status") == "completed" and payload.get("protocol_version") == 2
+            and payload.get("measurement_object") == "forward.emb" and payload.get("weights_loaded_strict") is True,
+            f"Obsolete sample-efficiency producer output: {path}")
+    require((payload["model"], payload["env"]) == (model, env), f"Identity mismatch: {path}")
+    checkpoint = audit.results_root / "generalist_G16" / model / "seed_0" / "final.pt"
+    audit.validate_provenance(payload, checkpoint)
+    require(str(Path(payload["ckpt"]).resolve()) == payload["repair_provenance"]["checkpoint"], "Wrong checkpoint")
+    fractions = payload["per_fraction"]
+    require(set(fractions) == set(FRACTION_KEYS), f"Incomplete fraction sweep: {path}")
+    heldout = payload.get("heldout_indices")
+    require(isinstance(heldout, list) and heldout and len(set(heldout)) == len(heldout) == payload["n_steps"],
+            "Missing/invalid fixed held-out indices")
+    n_total = payload["n_total"]
+    pool_size = n_total - len(heldout)
+    require(payload["training_pool_size"] == pool_size > 0
+            and payload["fraction_denominator"] == "nonheldout_training_windows", "Wrong fraction denominator")
+    require(all(type(index) is int and 0 <= index < n_total for index in heldout), "Invalid held-out index")
+    training = payload.get("training_indices_by_fraction", {})
+    require(set(training) == set(FRACTION_KEYS), "Missing training-index audit")
+    for key, indices in training.items():
+        require(len(indices) == len(set(indices)) == max(1, int(pool_size * float(key))),
+                f"Wrong training size for fraction {key}")
+        require(all(type(index) is int and 0 <= index < n_total for index in indices), "Invalid training index")
+        require(not set(indices) & set(heldout), f"Fraction {key} leaked held-out samples into training")
+    require(set(training["1.000"]) | set(heldout) == set(range(n_total)), "Full fraction omits legal training windows")
+    for earlier, later in zip(FRACTION_KEYS, FRACTION_KEYS[1:]):
+        require(set(training[earlier]) <= set(training[later]), "Unpaired training fractions")
+    for key, row in fractions.items():
+        require((row["data_fraction"], row["n_train"]) == (float(key), len(training[key])),
+                f"Fraction identity mismatch: {path}/{key}")
+        require(row["n_eval"] == len(heldout) and row["training_pool_size"] == pool_size, "Fraction evaluation coverage mismatch")
+        require(0 <= metric(row, "env_success") <= 1 and 0 <= metric(row, "mean_cos_dist_terminal") <= 1
+                and metric(row, "mean_phys_dist") >= 0, "Invalid held-out policy metric")
+        for field in ("env_success", "mean_phys_dist", "mean_cos_dist_terminal"):
+            require(metric(row, field) is not None, f"Undefined {field}: {path}/{key}")
+    return payload
 
 
-def aggregate(out_dir, out_path):
-    fracs = ["0.010", "0.050", "0.100", "0.250", "1.000"]
-    lines = [
-        "# Frozen-encoder sample efficiency (v0.7.7 utility experiment 3)",
-        "",
-        "**Hypothesis**: a calibrated latent should be usable by a tiny linear policy even with little data. A collapse / noise / over-reactive latent should need more data.",
-        "",
-        "## mean_cos_dist_terminal per (model × env × data fraction)",
-        "",
-        "Lower is better. The collapse latent (MLP) gives ~0.0 at all fractions because the policy can't move in a constant latent space.",
-        "",
-    ]
+def aggregate(out_dir, table_path, audit, out_json_path):
+    rows, lines = [], ["# Audited frozen-encoder sample efficiency", "",
+                       "Every cell uses a strict-load audited checkpoint, an env-native policy rollout, and a fixed",
+                       "disjoint held-out set drawn once before any training fraction. Success is env-native.", "",
+                       "| env | model | fraction | env-native SR | physical distance | terminal cosine distance |",
+                       "|---|---|---|---|---|---|"]
+    paired_holdouts = {}
     for env in ENVS:
-        lines.append(f"### env = {env}")
-        lines.append("")
-        lines.append("| model | " + " | ".join([f"{f} data" for f in fracs]) + " |")
-        lines.append("|---|" + "|".join(["---"] * len(fracs)) + "|")
         for model in G16_CKPTS:
-            p = out_dir / model / f"{env}.json"
-            if not p.exists():
-                continue
-            with open(p) as f:
-                d = json.load(f)
-            cells = []
-            for fkey in fracs:
-                v = d.get("per_fraction", {}).get(fkey, {}).get("mean_cos_dist_terminal", float("nan"))
-                cells.append(f"{v:.4f}" if not (v != v) else "nan")
-            lines.append(f"| {model} | " + " | ".join(cells) + " |")
-        lines.append("")
-    out_path = Path("results/utility/sample_efficiency_table.md")
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(out_path, "w") as f:
-        f.write("\n".join(lines))
-    print(f"[done] {out_path}")
+            payload = read_cell(Path(out_dir) / model / f"{env}.json", audit, model, env)
+            signature = (payload["heldout_indices"], payload["training_indices_by_fraction"], payload["n_total"])
+            require(env not in paired_holdouts or paired_holdouts[env] == signature, "Models used different train/holdout partitions")
+            paired_holdouts[env] = signature
+            rows.append(payload)
+            for key in FRACTION_KEYS:
+                row = payload["per_fraction"][key]
+                lines.append(f"| {env} | {model} | {key} | {row['env_success']:.3f} | "
+                             f"{row['mean_phys_dist']:.4f} | {row['mean_cos_dist_terminal']:.4f} |")
+    audit.protect_output(table_path)
+    audit.protect_output(out_json_path)
+    write_new_json(out_json_path, {"status": "completed", "training_manifest": str(audit.path),
+                   "training_manifest_sha256": audit.digest, "planned_cells": len(G16_CKPTS) * len(ENVS), "rows": rows})
+    Path(table_path).parent.mkdir(parents=True, exist_ok=True)
+    with Path(table_path).open("x") as handle:
+        handle.write("\n".join(lines) + "\n")
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--results-dir", default="results/generalist_G16")
-    parser.add_argument("--out-dir", default="results/utility/sample_efficiency")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--training-manifest", type=Path, required=True)
+    parser.add_argument("--out-root", type=Path, required=True)
+    parser.add_argument("--table-path", type=Path, required=True)
+    parser.add_argument("--json-path", type=Path, required=True)
+    parser.add_argument("--aggregate-only", action="store_true")
     parser.add_argument("--n-steps", type=int, default=30)
-    parser.add_argument("--fractions", type=str, default="0.01,0.05,0.1,0.25,1.0")
-    parser.add_argument("--skip-eval", action="store_true")
+    parser.add_argument("--fractions", default="0.01,0.05,0.1,0.25,1.0")
+    parser.add_argument("--device", default="cpu")
     args = parser.parse_args()
-
-    out_dir = Path(args.out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
-    fractions = tuple(float(f) for f in args.fractions.split(","))
-
-    if not args.skip_eval:
+    audit = TrainingAudit(args.training_manifest)
+    if not args.aggregate_only:
         from code.scripts.utility.sample_efficiency import run_one
+        audit.protect_output(args.out_root)
+        fractions = tuple(float(value) for value in args.fractions.split(","))
+        require({f"{value:.3f}" for value in fractions} == set(FRACTION_KEYS), "The complete five-fraction sweep is required")
         for model in G16_CKPTS:
-            ckpt = f"{args.results_dir}/{model}/seed_0/final.pt"
-            if not os.path.exists(ckpt):
-                print(f"[skip] {model}")
-                continue
+            checkpoint = audit.results_root / "generalist_G16" / model / "seed_0" / "final.pt"
             for env in ENVS:
-                try:
-                    run_one(ckpt, env, args.n_steps, fractions, "cpu", str(out_dir / model / f"{env}.json"))
-                except Exception as e:
-                    print(f"[err] {model} on {env}: {e}")
-
-    aggregate(out_dir, None)
+                run_one(checkpoint, model, env, args.n_steps, fractions, args.device,
+                        args.out_root / model / f"{env}.json", args.training_manifest)
+    aggregate(args.out_root, args.table_path, audit, args.json_path)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

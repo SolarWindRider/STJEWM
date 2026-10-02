@@ -1,105 +1,74 @@
-# Full Metric Matrix — 13 models × all experiments, COMPLETE + FAIR (v0.7.18.4)
+# Full Metric Matrix — 13 models × 11 metric columns, COMPLETE + FAIR(final repair 回填版)
 
+> **Regenerated 2026-09-17** from the final repaired evidence (20260916 final repair, `causal_grad_sigreg_B_20260916`). All values are copied from the source files listed below — no legacy numbers.
+> Training manifest: `/data/lx/tmp/results/_repair_archive/20260916T102154Z/training_final_repair_manifest.json` — sha256 `4376bb14c50e30e12c3a1d47435b17489568f148b6f0abd57592efe5936e1f09`.
+> Freeze v7: `4ba90480e09d93d61d442be9569a03c020f6bbed9906af915015b3eb2dded834`.
 
-> <span style="color:red">**【数据作废公告 2026-09-06】** 因数据代际重置,本文件所有实验数字已作废并标记为待定——所有实验将统一重新训练+评测后回填。新数据落盘前请勿引用本文件任何数值。协议、模型与表格结构保留。</span>
+> Evidence sources:
+> - `/data/lx/tmp/results/state_final_corrected_20260916/audit/aggregated_state_cells.json` — sha256 `723e09a40dca4b478ebd9685987ce5848c60628791067f0ea14e017afeb6c282`
+> - `/data/lx/tmp/results/5m_stats` — 490 JSON files (state latent stats (event-rho/div/resp, 910 files))
+> - `/data/lx/tmp/results/5m_stats_fair` — 420 JSON files (state latent stats fair (STJEWM, 420 files))
+> - `/data/lx/tmp/results/g2_probe` — 91 JSON files (position probes (91 files))
+> - `/data/lx/tmp/results/journal_prep/P11_energy_final/measurements.json` — sha256 `af71f8611f88c2cec9f2cd1e2c1cc84d497e578b1a784e33d30f80cb6c96e8ca`
+> - `/data/lx/tmp/results/agg_final/g5_multiseed.json` — sha256 `f407e0a9480de73fd9325727a6bd1714758cbdf60085c4472d58f223df0c2b29`
+
 
 ## 这是什么表
 
-**13 个世界模型 × 14 个指标的横截面总览表**。每一行是一个模型，每一列
-来自一个独立实验（G1–G5 补全实验 + B2 多种子 + P11 能效 + G4 探测）。
-它把分散在 `results/journal_prep/` 各实验 summary 里的数字汇聚到一张表，
-用于：(1) 快速回答「某个模型整体怎么样」；(2) 三簇分界的横向对比；
-(3) 论文 Table 1 的候选。**不包含 per-env 细节**——那些在
-`MAIN_TABLE_5M_STATE_FULL.md`（state，10 splits × 每 env）和
-`MAIN_TABLE_5M_PIXEL_FULL.md`（pixel，13 envs）里。
+**13 个世界模型 × 11 指标的横截面总览表**。每行一个模型,每列来自一个独立实验
+(E1 state 主线 + E6 三轴诊断 + E8 position probe + G3/P11 能效代理 + G5 3-seed)。
+不含 per-env 细节——见 `MAIN_TABLE_5M_STATE_FULL.md`(state)与 `MAIN_TABLE_5M_PIXEL_FULL.md`(pixel)。
 
-## 数据来源（每列一个实验，全部实际跑过）
+## 数据来源(每列一个实验,全部 20260916 final repair 落盘)
 
 | 列 | 含义 | 来源 | 协议 |
 |---|---|---|---|
-| `n` | 参与聚合的 eval cell 数 | state 5m | <span style="color:red">**待定**</span> |
-| `cos↓` | 平均 cos_dist（潜变量-目标余弦距离，低=校准好） | state 5m | CEM 300×30×10, H=5, budget 50, goal_offset=25, 5 eps |
-| <span style="color:red">**待定**</span> | cos_dist<0.05 命中率（**被证伪的指标**，仅叙事用） | state 5m | 同上 |
-| `envSR` | 真实 env-SR（v0.7.18.1 聚合 bug 修复后） | state 5m | 同上 |
-| `event-ρ` | 观测事件↔潜变量一阶差分的 Pearson 相关 | G1（104 cells） | 200 步随机策略, 4 envs × 2 splits |
-| `AUROC` | 事件类型线性探测 AUC（跨 5 目标平均） | G2（325 cells） | 13 DMC envs × 5 targets, **1-epoch 训练** |
-| `effFLOP` | 有效 FLOPs/step（M），含事件驱动折扣 | G3（13 模型） | state, 实测 sparsity |
-| `dense` | 稠密 FLOPs/step（M） | G3 | 同上 |
-| `spar%` | 实测 spike 稀疏度（1−活跃率） | G3 | 2 batch × 2 sample 前向 |
-| `trnM` | 可训练参数量（M） | 实测 | STJEWM 为 v0.7.18.4 公平重跑（5.06M） |
-| `3seed cos±` | 3 种子 × 3 splits 的 cos_dist 均值±std | <span style="color:red">**待定**</span> | **2.70M era（见下方一致性说明）** |
-| `posR² / futR² / goalR²` | 线性探测 R²（位置/未来步/目标方向） | G4（611 cells） | B3 修复后, cross_benchmark_F1 |
+| `n` | 参与聚合的 E1 eval cell 数 | `state_final_corrected_20260916/audit/aggregated_state_cells.json` | CEM 300×30×10, H=25, budget 50, goal_offset=25, 5 eps |
+| `cos↓` | 平均 cos_dist(低≠好,可被坍缩平凡取得) | 同上 | 同上 |
+| `LeWM@.05` | cos_dist<0.05 命中率(**被证伪的指标**,仅叙事用) | 同上 | 同上 |
+| `envSR` | 真实 env-SR | 同上 | 同上 |
+| `event-ρ` | 观测事件↔潜变量一阶差分 Pearson 相关(readout) | `5m_stats` + `5m_stats_fair`(910 cells) | 200 步随机策略,7 env × 10 splits |
+| `posR²` | position 线性探测 R²(**E8 取代旧 AUROC 列**) | `g2_probe`(91 cells) | 7 env, linear probe, raw_unclipped_r2 |
+| `effFLOP` | 假想 soma-稀疏加权代理(MFLOP/step) | `journal_prep/P11_energy_final/measurements.json` | random-input 4×4 forwards;**非实测能耗/FLOPs** |
+| `dense` | 解析稠密 ledger(MFLOP/step) | 同上 | 同上 |
+| `spar%` | 实测 soma 稀疏度 | 同上 | dense baseline 无测量(—) |
+| `trnM` | 可训练参数量(M) | 同上 | STJEWM 5.06M fair(n_layers=4) |
+| `3seed cos±` | seeds 0/1/2 × 3 splits 的 cos mean±std | `agg_final/g5_multiseed.json` | Student-t 聚合,见该 json |
 
-## 如何读这张表（三簇结构）
+**相对旧表删除的列**:`AUROC`(G2 事件类型探测未重跑,E8 position probe 取代)、`futR²`/`goalR²`(probe grid 仅含 position 目标)、`2.70M era` 一致性小节(全部 ckpt 已统一为 fair 5M 系)。
 
-按 `cos` 列从低到高：
-- **坍缩簇**（cos ≈ 0）：MLP <span style="color:red">**待定**</span>, GRU <span style="color:red">**待定**</span>, LIFTransformer <span style="color:red">**待定**</span> —— 常数潜变量，
-  任何目标都「命中」（LeWM@.05 <span style="color:red">**待定**</span> 是假阳性）。
-- **校准簇**（cos <span style="color:red">**待定**</span>）：STJEWM 6 变体 + Stacked-LIF×2 + ALIF-timecell —— 潜变量与目标成比例，
-  event-ρ ≥ <span style="color:red">**待定**</span>（事件对齐），3-seed CI 互相重叠（统计上不可区分）。
-- **过反应簇**（cos <span style="color:red">**待定**</span>）：LeWM-v2 —— 潜变量放大观测（posR² <span style="color:red">**待定**</span> 最强位置记忆，
-  但校准差）。
+## 表(数据)
 
-## 一致性说明（重要）
+| Model | n | cos↓ | LeWM@.05 | envSR | event-ρ | posR² | effFLOP | dense | spar% | trnM | 3seed cos± |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 
-1. **参数量**：STJEWM 的 `cos`/`envSR`/`LeWM@.05` 列来自 v0.7.18.4 公平重跑
-   （5.06M，n_layers=4）；`3seed` 列来自 G5（**2.70M era**，n_layers=2）。两者
-   的 cos_dist 差异 < <span style="color:red">**待定**</span>（fair rerun 验证），分簇结论不变，故未重跑 3-seed。
-2. **AUROC 是 1-epoch 训练** 的值；P13 显示 3-epoch 时 LeWM 恢复到 <span style="color:red">**待定**</span>
-   （1-epoch ~<span style="color:red">**待定**</span> 部分是 probe 构建假象），STJEWM 的 1-epoch ~<span style="color:red">**待定**</span> 是真实的。
-3. **env-SR** 是修复后的真实值（聚合 bug 曾全部写成 <span style="color:red">**待定**</span>）：易 env 饱和 <span style="color:red">**待定**</span>，
-   难 env 为 0，模型均值 <span style="color:red">**待定**</span> —— 区分度低，主指标是 `cos`。
-4. **LeWM@.05** 是 §2.3a 被证伪的指标（MLP <span style="color:red">**待定**</span> 但 div=<span style="color:red">**待定**</span>），仅保留
-   作为 falsification 叙事证据，不用于模型排序。
-
-## 各列的详细实验出处
-
-- state evals: `results/5m/`（baselines）+ `results/5m_5mpar/`（fair STJEWM）
-- G1 event-ρ: `results/journal_prep/G1_event_align_complete/summary.md`
-- G2 AUROC: `results/journal_prep/G2_auroc_complete/summary.md`
-- G3 FLOPs: `results/journal_prep/G3_energy_complete/summary.md`
-- G4 probe R²: `results/journal_prep/G4_probe_complete/summary.md`
-- G5 3-seed: `results/journal_prep/G5_multiseed/summary.md`
-- 完整证据映射: `results/journal_prep/JOURNAL_STORY.md`
-
-## 表（数据）
-
-> **Zero gaps, parameter-fair.** STJEWM state rows from the 5.06M fair rerun
-> (`results/5m_5mpar/`, n_layers=4); baselines from original 5m run. env-SR is
-> the FIXED value (aggregation bug resolved v0.7.18.1). Sources: cos/LeWM/env-SR =
-> state evals (10 splits, seed 0); event-ρ = G1 (104 cells); AUROC = G2 (325 cells);
-> FLOPs = G3 (13 models, state); probe R² = G4 (611 cells); 3-seed = G5+B2.
-
-| Model | n | cos↓ | LeWM@.05 | envSR | event-ρ | AUROC | effFLOP | dense | spar% | trnM | 3seed cos± | posR² | futR² | goalR² |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| STJEWM-trace | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-spike | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-rate | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-no-trace | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-leak | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| STJEWM-membrane | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| ALIF-timecell | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-trace | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| Stacked-LIF-free | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LeWM-v2 | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| GRU | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| MLP | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
-| LIFTransformer | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> | <span style="color:red">**待定**</span> |
+| STJEWM-trace | 100 | 0.109 | 0.37 | 0.31 | 0.034 | -0.001 | 3.37 | 9.95 | 67.1% | 5.06 | 0.118±0.012 |
+| STJEWM-spike | 100 | 0.208 | 0.16 | 0.25 | 0.129 | 0.158 | 3.10 | 9.88 | 69.7% | 5.06 | 0.213±0.016 |
+| STJEWM-rate | 100 | 0.050 | 0.73 | 0.26 | 0.004 | 0.048 | 4.15 | 9.88 | 58.8% | 5.06 | 0.047±0.007 |
+| STJEWM-no_trace | 100 | 0.086 | 0.70 | 0.20 | 0.376 | 0.257 | 4.38 | 9.88 | 56.5% | 5.06 | 0.074±0.013 |
+| STJEWM-leak | 100 | 0.086 | 0.71 | 0.18 | 0.385 | 0.254 | 4.65 | 9.95 | 54.1% | 5.06 | 0.079±0.012 |
+| STJEWM-membrane | 100 | 0.086 | 0.70 | 0.20 | 0.376 | 0.257 | 4.56 | 9.88 | 54.6% | 5.06 | 0.074±0.013 |
+| ALIF-timecell | 100 | 0.010 | 0.95 | 0.21 | 0.221 | 0.242 | 9.70 | 9.96 | 96.1% | 4.98 | 0.028±0.021 |
+| Stacked-LIF-trace | 100 | 0.017 | 0.94 | 0.28 | 0.071 | -0.013 | 5.05 | 10.18 | 63.2% | 5.11 | 0.017±0.009 |
+| Stacked-LIF-free | 100 | 0.034 | 0.85 | 0.25 | 0.130 | 0.113 | 3.66 | 10.07 | 78.2% | 5.05 | 0.030±0.002 |
+| LeWM | 100 | 0.203 | 0.23 | 0.15 | 0.527 | 0.729 | 9.76 | 9.76 | — | 4.97 | 0.196±0.018 |
+| GRU | 100 | 0.084 | 0.58 | 0.16 | 0.225 | 0.465 | 10.24 | 10.24 | — | 5.13 | 0.079±0.008 |
+| MLP | 100 | 0.070 | 0.88 | 0.25 | 0.138 | -0.001 | 9.98 | 9.98 | — | 5.00 | 0.061±0.016 |
+| LIFTransformer | 100 | 0.000 | 1.00 | 0.31 | -0.011 | -0.001 | 9.57 | 10.06 | 98.4% | 5.12 | 0.001±0.002 |
 
 ## Notes
 
-- **env-SR now FIXED** (was aggregation bug writing <span style="color:red">**待定**</span>). True values: easy envs saturate <span style="color:red">**待定**</span> (ball_in_cup, cartpole, cheetah, finger), hard envs 0 (dog, humanoid, quadruped, reacher, stacker, tworoom). Per-model <span style="color:red">**待定**</span> — low discrimination, cos_dist is the discriminating metric.
-- **FAIR params**: STJEWM retrained at 5.06M (n_layers=4); cos_dist delta < <span style="color:red">**待定**</span> vs old 2.70M run — calibration is parameter-robust.
-- **event-ρ**: STJEWM 6 + Stacked-LIF 2 + ALIF-timecell ≥ <span style="color:red">**待定**</span> (spike-based); LeWM <span style="color:red">**待定**</span>; GRU <span style="color:red">**待定**</span>; MLP <span style="color:red">**待定**</span>; LIFTransformer <span style="color:red">**待定**</span>.
-- **AUROC** (1-epoch): Stacked-LIF-trace <span style="color:red">**待定**</span> best, LeWM <span style="color:red">**待定**</span>, STJEWM ≈ <span style="color:red">**待定**</span> chance; LeWM recovers <span style="color:red">**待定**</span> at 3-epoch (P13).
-- **effFLOPs**: STJEWM <span style="color:red">**待定**</span> vs Stacked-LIF <span style="color:red">**待定**</span> vs dense <span style="color:red">**待定**</span> MFLOPs/step (~20× cheaper).
-- **posR²**: STJEWM ≈ <span style="color:red">**待定**</span>..<span style="color:red">**待定**</span> (chance), LeWM +<span style="color:red">**待定**</span> — event-vs-position dissociation.
-- **LeWM@0.05 falsified** (MLP <span style="color:red">**待定**</span> with div=<span style="color:red">**待定**</span>): included for the falsification narrative only.
-- **External baseline: Spiking-WM (PNAS 2025, Brain-Cog-Lab)** — 唯一真实外部竞品（28.5M, pixels-free proprio 配置）。Its native episode returns and event-ρ (<span style="color:red">**待定**</span> over 12 DMC tasks, mean <span style="color:red">**待定**</span>, vs STJEWM ≥ <span style="color:red">**待定**</span> on every task) live in `MAIN_TABLE_5M_STATE_FULL.md` §"External comparison" — 指标语义不同（native return vs CEM env-SR/cos），故不并入本横截面表。
+- **LeWM@0.05 falsified**:坍缩模型(cos≈0 行)LeWM@.05 同时拉高——假命中;仅保留作证伪叙事,不用于排序。
+- **effFLOPs 是假想代理**:P11 明示非硬件能耗、非速度、非严格 FLOPs;STJEWM 代理 3.1–4.6 vs dense 9.9–10.0,ALIF/LIF-Tx/GRU/MLP/LeWM 代理≈dense(无节省)。数字读 `P11_energy_final/measurements.json`。
+- **event-ρ 勘误**:旧叙事「STJEWM ρ mean 0.948–0.962」作废,本批 readout ρ 见 DIAG_RELOAD_SUMMARY(0.00–0.53);obs-embedding 同批均值 0.814,非恒 1。
+- **External baseline(E11 Spiking-WM, PNAS 2025)**:12 DMC 任务 strict-load 完成(82–96 tensors,见 `spiking_wm_final_20260916/grid_status.json`);within-episode event-ρ(posterior_categorical_mode)−0.483–0.649、(encoder_spike_time_mean)0.097–0.835,任务级数值见 `/data/lx/tmp/results/agg_final/HEADLINE_NUMBERS.md` §E11。指标语义与 CEM env-SR/cos 不同,不并入本表。
 
-> **【2026-09-09 数据重置更新】** 本表数字为红字待定(旧代际作废)。新数据已落盘并回填至:
-> `MAIN_TABLE_5M_STATE_FULL.md`(1248 cells)、`MAIN_TABLE_5M_PIXEL_FULL.md`(130×13 env)、
-> `DIAG_RELOAD_SUMMARY.md`(G1 event-ρ + div/resp)、`SCALE_INVARIANCE.md`(G4/G8/G16)。
-> state 侧核心数字:STJEWM resp 0.204–0.208 / div 0.0134–0.0146 / ρ≥0.9984(跨 readout 零方差);
-> pixel 侧:除 STJEWM 外 7 对照 latent 全塌缩(cos=0.000、LeWM-SR 平凡满分)。
-> G4/G8/G16 scale-invariance 见 `SCALE_INVARIANCE.md`(全部 12 模型规模不变)。
+## 各列的详细实验出处(全部实际路径)
+
+- E1 state cells: `/data/lx/tmp/results/state_final_corrected_20260916/audit/aggregated_state_cells.json`(落盘 `.../E1/<split>/<model>/seed_0/eval_<env>.json`)
+- event-ρ / div / resp: `/data/lx/tmp/results/5m_stats/`(baselines)+ `/data/lx/tmp/results/5m_stats_fair/`(STJEWM);汇总 `results/journal_prep/DIAG_RELOAD_SUMMARY.md`
+- position probe(旧 G2 AUROC 的替代): `/data/lx/tmp/results/g2_probe/`;汇总 `results/journal_prep/g2_summary.json`
+- FLOPs/params/sparsity: `/data/lx/tmp/results/journal_prep/P11_energy_final/{measurements.json,energy_summary.md}`
+- 3-seed: `/data/lx/tmp/results/agg_final/g5_multiseed.json`(13 模型 × seeds 0/1/2 × 3 splits);E2(seeds 1/2 全 13 模型)见主表
+- pixel 对照: `/data/lx/tmp/results/agg_final/pixel_cells.json` 与 `agg_final/cross_modality_paired.json`(1105 paired cells)
+- 旧引用路径 `results/journal_prep/{G1_event_align_complete,G2_auroc_complete,G3_energy_complete,G4_probe_complete,G5_multiseed,JOURNAL_STORY.md}` 均已不存在,已全部重定向到上列实际路径。

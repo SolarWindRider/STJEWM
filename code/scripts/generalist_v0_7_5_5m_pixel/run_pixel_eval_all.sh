@@ -1,67 +1,126 @@
 #!/bin/bash
-# run_pixel_eval_all.sh — closed-loop eval for ALL 130 pixel ckpts (13 models x 10 splits),
-# 3 jobs per GPU (eval uses <1GB). Protocol matches the legacy pixel main table:
-# static-qpos goal, CEM 300x30x10, horizon 5, budget 50, 5 episodes.
-set -u
+# Full final pixel grid: 13 models x 10 splits x 13 environments.
+# Bounded independent checkpoint workers share physical GPU2 by default.
+# CUDA and EGL use the same GPU. Native actions and corrected physical goals
+# change the old protocol; old summaries are never used as completion markers.
+# Usage: EVAL_ROOT=/data/lx/tmp/results/5m_pixel_final_RUN \
+#        TRAINING_MANIFEST=/data/lx/tmp/results/_repair_archive/20260916T102154Z/training_final_repair_manifest.json bash "$0"
+set -euo pipefail
 cd /home/lx/snn
-export OUT_ROOT=${OUT_ROOT:-/data/lx/tmp/results}
-LOG_DIR=/data/lx/tmp/logs
 PY=/home/lx/miniconda3/envs/snn/bin/python
-EV=code/scripts/generalist_v0_7_5_5m_pixel/eval_pixel_ckpt.py
-PIX_SPLITS="oodc_F1 oodc_F2 oodc_F3 oodc_F1F2 oodc_F1F3 oodc_F2F3 cross_benchmark_F1 cross_benchmark_F2 cross_benchmark_F3 generalist_16env"
-MODELS="stjewm stjewm_spike_only stjewm_rate_only stjewm_no_trace stjewm_hidden_leak stjewm_membrane_readout alif_timecell_baseline gru_baseline lewm_baseline stacked_lif_trace stacked_lif_free mlp_baseline lif_transformer_baseline"
+CKPT_ROOT=${CKPT_ROOT:-${OUT_ROOT:-/data/lx/tmp/results}/5m_pixel}
+: "${EVAL_ROOT:?Set EVAL_ROOT to a fresh output root before launching}"
+: "${TRAINING_MANIFEST:?Set TRAINING_MANIFEST to the final repair manifest before launching}"
+GPU=${GPU:-2}
+WORKERS=${WORKERS:-8}
+export OMP_NUM_THREADS=${OMP_NUM_THREADS:-2}
+export MKL_NUM_THREADS=${MKL_NUM_THREADS:-2}
+export CUDA_VISIBLE_DEVICES="$GPU"
+export MUJOCO_EGL_DEVICE_ID="$GPU"
+export MUJOCO_GL=egl
+export PYTHONPATH=/home/lx/snn
 
-echo "[pixel_eval] start $(date)" | tee -a "$LOG_DIR/run_all.log"
+exec "$PY" - "$CKPT_ROOT" "$EVAL_ROOT" "$WORKERS" "$TRAINING_MANIFEST" <<'PY'
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import json
+import subprocess
+import sys
+from pathlib import Path
+from code.scripts.generalist_v0_7_5_5m_pixel.eval_pixel_ckpt import DMC_ENVS
+from code.scripts.audited_results import TrainingAudit, sha256, validate_pixel_summary
 
-# ---- build job list (skip finished) ----
-JOBS=()
-for split in $PIX_SPLITS; do
-  for m in $MODELS; do
-    out="$OUT_ROOT/5m_pixel/$split/$m/seed_0"
-    [ -f "$out/eval_summary.json" ] && continue
-    [ -f "$out/final.pt" ] || continue
-    JOBS+=("$m $split")
-  done
-done
-echo "[pixel_eval] jobs: ${#JOBS[@]}"
+checkpoint_root = Path(sys.argv[1]).resolve()
+output_root = Path(sys.argv[2]).resolve()
+workers = int(sys.argv[3])
+training_manifest_path = Path(sys.argv[4]).resolve()
+audit = TrainingAudit(training_manifest_path)
+training_manifest_sha256 = audit.digest
+training_protocol_version = audit.payload["required_checkpoint_metadata"]["training_protocol_version"]
+audit.protect_output(output_root)
+if workers < 1:
+    raise ValueError("WORKERS must be positive")
+splits = (
+    "oodc_F1", "oodc_F2", "oodc_F3", "oodc_F1F2", "oodc_F1F3", "oodc_F2F3",
+    "cross_benchmark_F1", "cross_benchmark_F2", "cross_benchmark_F3", "generalist_16env",
+)
+models = (
+    "stjewm", "stjewm_spike_only", "stjewm_rate_only", "stjewm_no_trace",
+    "stjewm_hidden_leak", "stjewm_membrane_readout", "alif_timecell_baseline",
+    "gru_baseline", "lewm_baseline", "stacked_lif_trace", "stacked_lif_free",
+    "mlp_baseline", "lif_transformer_baseline",
+)
+jobs = []
+for split in splits:
+    for model in models:
+        relative = Path(split) / model / "seed_0"
+        checkpoint = checkpoint_root / relative / "final.pt"
+        admitted = audit.checkpoint(checkpoint)
+        jobs.append((checkpoint, output_root / relative, admitted["sha256"]))
 
-Q=(/tmp/pev_q0.tsv /tmp/pev_q1.tsv /tmp/pev_q2.tsv /tmp/pev_q3.tsv)
-: > "${Q[0]}"; : > "${Q[1]}"; : > "${Q[2]}"; : > "${Q[3]}"
-i=0
-for t in "${JOBS[@]}"; do
-  echo "$t" >> "${Q[$((i % 4))]}"
-  i=$((i + 1))
-done
+# A unique root is mandatory: no raw checkpoint, result or log is replaced.
+output_root.mkdir(parents=True, exist_ok=False)
+planned_cells = len(jobs) * len(DMC_ENVS)
+print(f"[pixel_eval] {len(jobs)} checkpoints / {planned_cells} planned cells", flush=True)
+def evaluate(job):
+    checkpoint, output_dir, checkpoint_hash = job
+    record = {
+        "checkpoint": str(checkpoint),
+        "checkpoint_sha256": checkpoint_hash,
+        "output": str(output_dir),
+        "returncode": None,
+        "summary_sha256": None,
+        "status": "failed",
+        "error": None,
+    }
+    try:
+        if audit.checkpoint(checkpoint)["sha256"] != checkpoint_hash:
+            raise ValueError("Checkpoint changed after grid admission")
+        output_dir.mkdir(parents=True, exist_ok=False)
+        command = [
+            sys.executable, "-u", "code/scripts/generalist_v0_7_5_5m_pixel/eval_pixel_ckpt.py",
+            "--ckpt", str(checkpoint), "--out_dir", str(output_dir),
+            "--training-manifest", str(audit.path),
+            "--n_episodes", "5", "--samples", "300", "--elites", "30",
+            "--cem_iters", "10", "--horizon", "5", "--device", "cuda:0",
+        ]
+        print(f"[pixel_eval] START {checkpoint}", flush=True)
+        with (output_dir / "eval.log").open("x") as log:
+            result = subprocess.run(command, stdout=log, stderr=subprocess.STDOUT)
+        record["returncode"] = result.returncode
+        summary_path = output_dir / "eval_summary.json"
+        if summary_path.is_file():
+            record["summary_sha256"] = sha256(summary_path)
+        if result.returncode:
+            raise RuntimeError(f"Evaluation exited {result.returncode}")
+        if audit.checkpoint(checkpoint)["sha256"] != checkpoint_hash:
+            raise ValueError("Checkpoint changed during evaluation")
+        summary = json.loads(summary_path.read_text())
+        if summary["training_protocol_version"] != training_protocol_version:
+            raise ValueError("Summary lacks the final training protocol version")
+        audit.validate_provenance(summary, checkpoint)
+        validate_pixel_summary(summary, checkpoint, output_dir, DMC_ENVS)
+        record["status"] = "completed"
+    except Exception as error:
+        record["error"] = f"{type(error).__name__}: {error}"
+    print(f"[pixel_eval] {record['status'].upper()} {output_dir}", flush=True)
+    return record
 
-worker () { # gpu queuefile slot
-  local gpu=$1 q=$2
-  while IFS=' ' read -r m split; do
-    out="$OUT_ROOT/5m_pixel/$split/$m/seed_0"
-    CUDA_VISIBLE_DEVICES=$gpu $PY "$EV" \
-      --ckpt "$out/final.pt" --out_dir "$out" \
-      --n_episodes 5 --samples 300 --elites 30 --cem_iters 10 --horizon 5 \
-      --device cuda:0 > "$out/eval.log" 2>&1
-    echo "done pixel-eval $split $m rc=$?" >> "$LOG_DIR/pixel_eval_progress.log"
-  done < "$q"
-  echo "WORKER_gpu${gpu}_DONE" >> "$LOG_DIR/pixel_eval_progress.log"
-}
-# 12 workers: GPUs 0-3, 3 queues each — round-robin job pulling via fd-locked lines
-for g in 0 1 2 3; do
-  for s in 0 1 2; do
-    # split each GPU queue into 3 slice files
-    :
-  done
-done
-# simpler: re-split round-robin into 12 slice files
-rm -f /tmp/pev_w*.tsv
-i=0
-while IFS= read -r line; do
-  echo "$line" >> "/tmp/pev_w$((i % 12)).tsv"
-  i=$((i + 1))
-done < <(cat "${Q[@]}")
-for w in 0 1 2 3 4 5 6 7 8 9 10 11; do
-  worker $((w % 4)) "/tmp/pev_w${w}.tsv" &
-done
-wait
-echo "[pixel_eval] ALL DONE $(date)" | tee -a "$LOG_DIR/run_all.log"
-touch "$LOG_DIR/PIXEL_EVAL_DONE"
+outcomes = []
+with ThreadPoolExecutor(max_workers=workers) as pool:
+    for future in as_completed([pool.submit(evaluate, job) for job in jobs]):
+        outcomes.append(future.result())
+with (output_root / "grid_status.json").open("x") as handle:
+    json.dump({"protocol_version": 2,
+               "training_protocol_version": training_protocol_version,
+               "training_manifest": str(training_manifest_path),
+               "training_manifest_sha256": training_manifest_sha256,
+               "planned_checkpoints": len(jobs),
+               "planned_cells": planned_cells,
+               "planned_envs": list(DMC_ENVS),
+               "outcomes": outcomes},
+              handle, indent=2, allow_nan=False)
+failures = [row for row in outcomes if row["status"] != "completed"]
+if failures:
+    raise SystemExit(f"[pixel_eval] Failed checkpoint evaluations: {len(failures)}; see grid_status.json")
+print(f"[pixel_eval] COMPLETE: {planned_cells} planned cells in {output_root}", flush=True)
+PY

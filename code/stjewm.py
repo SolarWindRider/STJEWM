@@ -45,16 +45,16 @@ class ReadoutMode(str, Enum):
     cannot read the full continuous hidden state. We support:
         - HIDDEN_LEAK       (default, legacy): z_final = h + trace_proj(trace)
         - TRACE_ONLY        (NMI requirement): z_final = trace_proj(trace)
-        - MEMBRANE_READOUT  : z_final = h_post_cell.detach()  # discrete state
+        - MEMBRANE_READOUT  : z_final = h_post_cell  # legacy hidden-readout control
         - SPIKE_GATED       : z_final = h * spike.float().detach()
                               # continuous hidden × binary mask (legacy "SPIKE_ONLY"
                               # behavior, now renamed to be unambiguous)
-        - RAW_SPIKE         : z_final = raw_spike_proj(spike.float()).detach()
+        - RAW_SPIKE         : z_final = raw_spike_proj(spike.float())
                               # raw binary-event predictive state; learns a
                               # Linear(d, d) over the spike train so the latent
                               # depends only on spikes, not on the continuous h
                               # (honors membrane-forbidden protocol)
-        - RATE_ONLY         : z_final = moving_average(spike).detach()
+        - RATE_ONLY         : z_final = causal_moving_average(spike)
         - NO_TRACE          : z_final = h  # ablation: no trace branch
 
     Back-compat: the string "spike_only" is accepted by `STJEWM.__init__` and
@@ -360,14 +360,13 @@ class STJEWM(nn.Module):
 
         - HIDDEN_LEAK:       z = h + trace_proj(trace)                       (legacy)
         - TRACE_ONLY:        z = trace_proj(trace)                          (NMI)
-        - MEMBRANE_READOUT:  z = h.detach()                                 (treat h as discrete latent)
+        - MEMBRANE_READOUT:  z = h                                          (legacy hidden-readout control)
         - SPIKE_GATED:       z = h * spike.float().detach()                 (continuous hidden × binary mask)
-        - RAW_SPIKE:         z = raw_spike_proj(spike.float()).detach()     (pure spike * linear projection;
+        - RAW_SPIKE:         z = raw_spike_proj(spike.float())              (pure spike * linear projection;
                                                                             no `h` is read at all — honors
                                                                             membrane-forbidden protocol)
-        - RATE_ONLY:         z = F.avg_pool1d(spike.float().detach().transpose(1,2),
-                             kernel_size=4, stride=1, padding=2).transpose(1,2)[:,:h.shape[1],:]
-                             (moving-average spike rate along time, detached — no h)
+        - RATE_ONLY:         z = causal four-step mean of surrogate-gradient spikes
+                             (left zero padding; no continuous hidden readout)
         - NO_TRACE:          z = h                                          (ablation)
         """
         mode = self.readout_mode
@@ -376,7 +375,7 @@ class STJEWM(nn.Module):
         if mode == ReadoutMode.TRACE_ONLY:
             return self.trace_proj(trace)
         if mode == ReadoutMode.MEMBRANE_READOUT:
-            return h.detach()
+            return h
         if mode == ReadoutMode.SPIKE_GATED:
             # Legacy "spike_only" math: continuous hidden state gated by the
             # binary spike train. The gating is detached so spikes act as a
@@ -388,16 +387,13 @@ class STJEWM(nn.Module):
             # `h` is NEVER read here, satisfying the membrane-forbidden
             # protocol. `raw_spike_proj` is instantiated in __init__ only when
             # this mode is selected.
-            return self.raw_spike_proj(spike.float()).detach()
+            return self.raw_spike_proj(spike.float())
         if mode == ReadoutMode.RATE_ONLY:
-            # Causal-ish moving-average spike rate along time.
-            # Reads the SPIKE TRAIN, not h — honors the RATE_ONLY docstring and
-            # the membrane-forbidden protocol (rate is a population count, not
-            # the continuous hidden).
-            sp = spike.float().detach()                # (B, T, D)
-            sp_t = sp.transpose(1, 2)                  # (B, D, T)
-            pooled = F.avg_pool1d(sp_t, kernel_size=4, stride=1, padding=2)
-            return pooled.transpose(1, 2)[:, : h.shape[1], :]
+            # Only the current and previous three spikes enter this readout.
+            # Keep online surrogate gradients; losses detach teacher targets.
+            sp_t = spike.float().transpose(1, 2)       # (B, D, T)
+            pooled = F.avg_pool1d(F.pad(sp_t, (3, 0)), kernel_size=4, stride=1)
+            return pooled.transpose(1, 2)
         if mode == ReadoutMode.NO_TRACE:
             return h
         raise ValueError(f"Unknown readout mode: {mode}")

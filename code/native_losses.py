@@ -30,7 +30,7 @@ def stjewm_loss(
     L = ||pred - sg(tgt)||^2 + lambda_sigreg * SIGReg(emb_pre) + lambda_goal * ||goal_pred - sg(goal_emb)||^2
     """
     pred_loss = F.mse_loss(pred_emb, tgt_emb.detach())
-    sigreg_loss = sigreg_fn(emb_pre.transpose(0, 1))  # (B,T,D) -> (B, knots)
+    sigreg_loss = sigreg_fn(emb_pre.transpose(0, 1))  # (T, B, D) -> scalar
     goal_loss = F.mse_loss(goal_pred, goal_emb.detach())
     total = pred_loss + lambda_sigreg * sigreg_loss + lambda_goal * goal_loss
     return total, {

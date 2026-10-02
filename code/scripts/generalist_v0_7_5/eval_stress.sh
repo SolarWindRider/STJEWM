@@ -64,7 +64,5 @@ for MODEL in "${MODELS[@]}"; do
     done
 done
 
-/home/lx/miniconda3/envs/snn/bin/python -m code.scripts.generalist_v0_7_5.aggregate_master \
-    --suite "$SUITE-stress" \
-    --results-dir "$SUITE_DIR" \
-    --stress-dir "$STRESS_DIR"
+echo "[eval_stress] Historical raw outputs only; automatic publication was removed."
+echo "[eval_stress] Use master_aggregate.sh with --training-manifest, --state-run and --out."

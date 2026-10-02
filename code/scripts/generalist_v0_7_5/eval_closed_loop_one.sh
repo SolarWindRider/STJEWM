@@ -6,8 +6,8 @@
 #
 # Reads each entry of the eval spec, applies clo_env mapping and stress
 # extra_flags, and writes:
-#   results/generalist/<model>/seed_<s>/eval_<env>.json
-set -e
+#   $OUT_BASE/<model>/seed_<s>/eval_<env>.json (suite root supplied by run_suite.sh)
+set -euo pipefail
 cd /home/lx/snn
 
 MODEL=${1:?usage: eval_closed_loop_one.sh <model_name> <ckpt_path> <eval_spec.json> <seed>}
@@ -83,5 +83,5 @@ for i, entry in enumerate(spec):
     print(f"[eval {i+1}/{n_total}] {env_id} -> {out_json}", flush=True)
     rc = subprocess.call(cmd)
     if rc != 0:
-        print(f"[WARN] eval for {env_id} exited rc={rc}", file=sys.stderr, flush=True)
+        raise RuntimeError(f"eval for {env_id} exited rc={rc}")
 PY

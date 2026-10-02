@@ -1,151 +1,104 @@
-#!/usr/bin/env python3
-"""Build the cross-modality (state vs pixel) table - using mean_cos_dist for both."""
-import json
+"""Describe paired state/pixel cells from complete audited primary manifests.
+
+The goals, initialization and planning protocols differ; this is not a
+controlled modality-only comparison and emits no prewritten model verdicts.
+"""
+from __future__ import annotations
+
+import argparse
 from pathlib import Path
 
-ROOT = Path("/home/lx/snn")
-STATE_BASE = ROOT / "results/5m"
-PIXEL_BASE = ROOT / "results/5m_pixel"
-OUT = ROOT / "results/aggregate/cross_modality_table.md"
-OUT.parent.mkdir(parents=True, exist_ok=True)
+from code.scripts.audited_results import TrainingAudit, fmt, metric, require, sha256, write_new_json
+from code.scripts.generalist_v0_7_5.aggregate_master import collect_runs
+from code.scripts.generalist_v0_7_5_5m_pixel.aggregate_pixel import collect
 
-MODELS = [
-    ("stjewm_trace_only", "STJEWM-trace"),
-    ("stjewm_hidden_leak", "STJEWM-leak"),
-    ("stjewm_spike_only", "STJEWM-spike"),
-    ("stjewm_rate_only", "STJEWM-rate"),
-    ("stjewm_no_trace", "STJEWM-no-trace"),
-    ("stjewm_membrane_readout", "STJEWM-membrane"),
-    ("alif_timecell_baseline", "ALIFTimecell"),
-    ("stacked_lif_trace", "Stacked-LIF-trace"),
-    ("stacked_lif_free", "Stacked-LIF-free"),
-    ("gru_baseline", "GRU"),
-    ("lewm_baseline_v2", "LeWM-v2"),
-    ("lif_transformer_baseline", "LIFTransformer"),
-    ("mlp_baseline", "MLP"),
-]
-
-SPLITS = [
-    "cross_benchmark_F1", "cross_benchmark_F2", "cross_benchmark_F3",
-    "oodc_F1", "oodc_F1F2", "oodc_F1F3", "oodc_F2", "oodc_F2F3", "oodc_F3",
-    "generalist_16env",
-]
+MODEL_MAP = {"stjewm_trace_only": "stjewm", "lewm_baseline_v2": "lewm_baseline"}
+ENV_MAP = {"cartpole_2d": "cartpole", "pendulum_2d": "pendulum"}
+METRICS = ("success_rate_env", "success_rate_lewm_005", "mean_cos_dist")
 
 
-def get_state_metric(model, split, metric):
-    """State: read per-env JSONs and aggregate."""
-    if metric == "cos_dist":
-        key = "mean_cos_dist"
-    elif metric == "lewm_005":
-        key = "success_rate_lewm_005"
-    elif metric == "env_sr":
-        key = "success_rate_env"
-    else:
-        return []
-    results = []
-    ckpt_dir = STATE_BASE / split / model / "seed_0"
-    if not ckpt_dir.exists():
-        return results
-    for f in ckpt_dir.glob("eval_*.json"):
-        try:
-            d = json.load(open(f))
-            v = d.get(key)
-            if v is not None:
-                results.append(v)
-        except Exception:
-            pass
-    return results
+def paired_records(state_runs, pixel_run, audit):
+    state = collect_runs(state_runs, audit)
+    pixel = collect(pixel_run, audit)
+    pixel_envs = {row["env"] for row in pixel}
+    pixels = {(row["split"], row["model"], row["env"]): row for row in pixel}
+    require(len(pixels) == len(pixel), "Duplicate pixel comparison cell")
+    pairs, excluded_state, used_pixel = [], [], set()
+    for row in state:
+        if row["experiment"] != "E1":
+            continue
+        require(row["seed"] == 0, "Primary comparison requires the original seed-zero state grid")
+        env = ENV_MAP.get(row["env"], row["env"])
+        if env not in pixel_envs:
+            excluded_state.append({"id": row["id"], "reason": "no equivalent native pixel condition in the planned grid"})
+            continue
+        model = MODEL_MAP.get(row["model"], row["model"])
+        key = (row["split"], model, env)
+        require(key in pixels and key not in used_pixel, f"Missing/duplicate paired pixel cell: {key}")
+        used_pixel.add(key)
+        other = pixels[key]
+        pairs.append({"split": row["split"], "state_model": row["model"], "pixel_model": model,
+                      "env": env, "state_env": row["env"], "seed": 0,
+                      "state": {key: metric(row["metrics"], key) for key in METRICS},
+                      "pixel": {key: metric(other["metrics"], key) for key in METRICS},
+                      "state_budget": {key: row["metrics"][key] for key in ("horizon", "eval_budget", "n_episodes")},
+                      "pixel_budget": {key: other["metrics"][key] for key in ("horizon", "eval_budget", "n_episodes")},
+                      "sources": {"state": row["source"], "state_sha256": row["source_sha256"],
+                                  "pixel": other["source"], "pixel_sha256": other["source_sha256"]}})
+    require(pairs, "The supplied complete state manifests have no primary E1 comparison cells")
+    lattices = {}
+    for model in sorted({row["state_model"] for row in pairs}):
+        lattices[model] = {(row["split"], row["env"]) for row in pairs if row["state_model"] == model}
+    require(len(lattices) == 13 and all(cells == next(iter(lattices.values())) for cells in lattices.values()),
+            "Unpaired model/environment/split comparison coverage")
+    exclusions = {"state": excluded_state,
+                  "pixel": [{"split": split, "model": model, "env": env,
+                             "reason": "no matching E1 state cell in its planned split"}
+                            for split, model, env in sorted(set(pixels) - used_pixel)]}
+    return pairs, exclusions
 
 
-def get_pixel_metric(model, split, metric):
-    """Pixel: read summary JSON."""
-    if metric == "cos_dist":
-        key = "mean_cos_dist"
-    elif metric == "env_sr":
-        key = "success_rate_env"
-    else:
-        return []
-    results = []
-    ckpt_dir = PIXEL_BASE / split / model / "seed_0"
-    if not ckpt_dir.exists():
-        return results
-    summary = ckpt_dir / "eval_summary.json"
-    if not summary.exists():
-        return results
-    try:
-        d = json.load(open(summary))
-        for env, r in d.get("results_per_env", {}).items():
-            if "error" in r:
-                continue
-            v = r.get(key)
-            if v is not None:
-                results.append(v)
-    except Exception:
-        pass
-    return results
+def parser():
+    result = argparse.ArgumentParser(description=__doc__)
+    result.add_argument("--training-manifest", type=Path, required=True)
+    result.add_argument("--state-run", type=Path, action="append", required=True)
+    result.add_argument("--pixel-run", type=Path, required=True)
+    result.add_argument("--out", type=Path, required=True)
+    return result
+
+
+def publish(args, audit, pairs, exclusions, lines, summaries=None):
+    audit.protect_output(args.out)
+    audit.protect_output(args.out.with_suffix(".json"))
+    write_new_json(args.out.with_suffix(".json"), {
+        "status": "completed", "training_manifest": str(audit.path), "training_manifest_sha256": audit.digest,
+        "pixel_grid_sha256": sha256(args.pixel_run / "grid_status.json"),
+        "comparison": "descriptive paired native environments; different goal/init/planning protocols",
+        "paired_cells": len(pairs), "excluded_unpaired_scope": exclusions,
+        "training_seed_std": None, "rows": pairs, "summaries": summaries,
+    })
+    with args.out.open("x") as handle:
+        handle.write("\n".join(lines) + "\n")
 
 
 def main():
-    lines = []
-    lines.append("# Cross-Modality Table (state vs pixel, v0.7.15)")
-    lines.append("")
-    lines.append("> Generated by `code/scripts/generalist_v0_7_5_5m_pixel/cross_modality_table.py`.")
-    lines.append("> Compares per-ckpt state (v0.7.14) and pixel (v0.7.15) eval results.")
-    lines.append("> Both use 5M-aligned trainable params, 1 epoch, 1 seed, batch 32.")
-    lines.append("> State eval: CEM with 5 episodes, mean_cos_dist reported.")
-    lines.append("> Pixel eval: random policy with 2 episodes × 50 steps, mean_cos_dist reported.")
-    lines.append("> env-SR=0 across the board for both (5-step CEM horizon vs 25-step goal is")
-    lines.append("> the v0.7.13 bug #3 artifact, NOT a model failure).")
-    lines.append("> Training is in progress — table will be filled as 130 ckpts finish.")
-    lines.append("")
-
-    # Per-model aggregate: mean across all splits
-    lines.append("## Per-model summary (mean mean_cos_dist across splits, lower=better)")
-    lines.append("")
-    lines.append("| Model | state cos_dist | pixel cos_dist | n_state | n_pixel |")
-    lines.append("|---|---|---|---|---|")
-    for model_code, model_name in MODELS:
-        state_vals = []
-        pixel_vals = []
-        for split in SPLITS:
-            state_vals.extend(get_state_metric(model_code, split, "cos_dist"))
-            pixel_vals.extend(get_pixel_metric(model_code, split, "cos_dist"))
-        n_state = len(state_vals)
-        n_pixel = len(pixel_vals)
-        s_state = f"{sum(state_vals)/len(state_vals):.4f}" if state_vals else "—"
-        s_pixel = f"{sum(pixel_vals)/len(pixel_vals):.4f}" if pixel_vals else "—"
-        lines.append(f"| {model_name} | {s_state} | {s_pixel} | {n_state} | {n_pixel} |")
-
-    lines.append("")
-    lines.append("## Per-model summary (mean LeWM-SR @0.05, state-only)")
-    lines.append("")
-    lines.append("> State-side: LeWM-SR @0.05 = fraction of rollouts where cos_dist < 0.05.")
-    lines.append("> High = latent goal-match; low = fail. Range [0, 1].")
-    lines.append("")
-    lines.append("| Model | state LeWM-SR@0.05 | n_state |")
-    lines.append("|---|---|---|")
-    for model_code, model_name in MODELS:
-        state_vals = []
-        for split in SPLITS:
-            state_vals.extend(get_state_metric(model_code, split, "lewm_005"))
-        n_state = len(state_vals)
-        s_state = f"{sum(state_vals)/len(state_vals):.4f}" if state_vals else "—"
-        lines.append(f"| {model_name} | {s_state} | {n_state} |")
-
-    lines.append("")
-    lines.append("**Interpretation.**")
-    lines.append("- State cos_dist: lower = better goal-match. The trace family (STJEWM + ALIF-timecell + SLT)")
-    lines.append("  should give cos_dist ~ 0.1 (calibrated); collapse (MLP/LIFTransformer) should give")
-    lines.append("  cos_dist ~ 0 (latent=constant); over-react (LeWM-v2) should give cos_dist ~ 0.18.")
-    lines.append("- Pixel cos_dist: same interpretation, but the random policy produces larger distances")
-    lines.append("  because no real control is happening — the metric still reveals the family partition")
-    lines.append("  via the collapse-vs-calibrated-vs-over-react band structure.")
-    lines.append("- **Family partition survives modality change** if the rank order of cos_dist across models")
-    lines.append("  is preserved between state and pixel (calibrated < noise < over-react < collapse).")
-
-    OUT.write_text("\n".join(lines))
-    print(f"Wrote {OUT} ({len(lines)} lines)")
+    args = parser().parse_args()
+    audit = TrainingAudit(args.training_manifest)
+    pairs, exclusions = paired_records(args.state_run, args.pixel_run, audit)
+    lines = ["# Audited paired state/pixel cells", "",
+             "Descriptive only: state uses offline future-state goals; pixel uses fixed rendered physical goals.",
+             "Initialization, horizon and replanning protocols differ. These results do not isolate the effect of modality.",
+             "Unpaired planned conditions are enumerated in the JSON companion, not silently averaged together.",
+             "One training seed: no confidence interval is estimable.", "",
+             "| split | state model | pixel model | env | state env-SR | pixel env-SR | state cos | pixel cos |",
+             "|---|---|---|---|---|---|---|---|"]
+    for row in pairs:
+        lines.append(f"| {row['split']} | {row['state_model']} | {row['pixel_model']} | {row['env']} | "
+                     f"{fmt(row['state']['success_rate_env'])} | {fmt(row['pixel']['success_rate_env'])} | "
+                     f"{fmt(row['state']['mean_cos_dist'])} | {fmt(row['pixel']['mean_cos_dist'])} |")
+    publish(args, audit, pairs, exclusions, lines)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

@@ -19,11 +19,44 @@ from collections.abc import Callable
 import torch
 
 
+def make_native_action_predict_hook(
+    model_action_dim: int,
+    action_low,
+    action_high,
+    device: str | torch.device,
+    predict_hook: Callable[[object, torch.Tensor, torch.Tensor], torch.Tensor] | None = None,
+):
+    """Adapt native CEM controls to the bounded, zero-padded training input.
+
+    Construct CEM with the native action dimension. Apply the same native
+    bounds when executing its returned sequence in the environment.
+    """
+    low = torch.as_tensor(action_low, dtype=torch.float32, device=device)
+    high = torch.as_tensor(action_high, dtype=torch.float32, device=device)
+    if low.ndim != 1 or high.shape != low.shape or not torch.all(low < high):
+        raise ValueError("Native action bounds must be ordered, matching 1D arrays")
+    padding = model_action_dim - low.numel()
+    if padding < 0:
+        raise ValueError("Model action dimension is smaller than the native action dimension")
+
+    def predict_native_actions(model, ctx_emb, ctx_act):
+        if ctx_act.shape[-1] != low.numel():
+            raise ValueError("CEM action dimension does not match the native action bounds")
+        actions = torch.clamp(ctx_act, min=low, max=high)
+        if padding:
+            actions = torch.nn.functional.pad(actions, (0, padding))
+        if predict_hook is not None:
+            return predict_hook(model, ctx_emb, actions)
+        return model.predict(ctx_emb, actions)
+
+    return predict_native_actions
+
+
 class CEM:
     """Cross-Entropy Method planner for any model with `predict(ctx_emb, ctx_act)`.
 
     The model must expose:
-        model.predict(ctx_emb: (B, H, D), ctx_act: (B, H, A)) -> (B, D) next latent
+        model.predict(ctx_emb: (B, H, D), ctx_act: (B, H, A)) -> (B, H, D)
 
     This is satisfied by:
         - STJEWM (code/stjewm.py)
@@ -52,8 +85,7 @@ class CEM:
         self.history_size = history_size
         self.sigma_init = sigma_init
         self.device = device
-        # Optional experiment-only hook.  The default path remains the direct
-        # model.predict call, so non-ablation planning is byte-for-byte unchanged.
+        # Optional input adapter or experiment-specific predictor intervention.
         self.predict_hook = predict_hook
 
     @torch.no_grad()
@@ -61,7 +93,7 @@ class CEM:
         """Roll out (N, H, A) actions through model.predict and compute cost.
 
         Args:
-            z_init: (D,) initial latent (single episode)
+            z_init: (D,) initial latent or (history_size, D) observed context
             z_goal: (D,) goal latent (single episode)
             actions: (N, H, A) candidate action sequences
 
@@ -69,8 +101,13 @@ class CEM:
             (N,) cost for each candidate.
         """
         N, H, A = actions.shape
-        # Expand z_init to (N, history_size, D) for batched rollout
-        h = z_init.unsqueeze(0).expand(N, -1).unsqueeze(1).expand(N, self.history_size, -1).contiguous()
+        if z_init.ndim == 1:
+            context = z_init.unsqueeze(0).expand(self.history_size, -1)
+        elif z_init.ndim == 2 and z_init.shape[0] == self.history_size:
+            context = z_init
+        else:
+            raise ValueError("Initial latent must be (D,) or (history_size, D)")
+        h = context.unsqueeze(0).expand(N, -1, -1).contiguous()
         for t in range(H):
             avail = H - t
             if avail >= self.history_size:

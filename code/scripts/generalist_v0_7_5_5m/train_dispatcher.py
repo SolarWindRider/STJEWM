@@ -24,7 +24,7 @@ def add(mk, sp, nl, out, seed=0, ro=''):
     cmd = [PY, '-m', 'code.train.train', '--model', mk,
            '--multi-env-spec', f'configs/oodc_5m/{sp}.json',
            '--pad-obs-to', '128', '--action-dim', '56',
-           '--embed-dim', '192', '--image-size', '0',
+           '--embed-dim', '288' if mk == 'lewm_baseline' else '192', '--image-size', '0',
            '--n-layers', str(nl), '--epochs', '1', '--batch', '32',
            '--lr', '3e-4', '--history-size', '1', '--goal-offset', '25',
            '--seed', str(seed), '--no-amp', '--out', out]

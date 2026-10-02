@@ -1,7 +1,7 @@
 """Latent-goal MPC horizon sweep (v0.7.7 utility experiment 1).
 
-For each (model, env, horizon), run the canonical CEM planner with cosine
-distance to a goal latent as the cost. Measures:
+For each (model, env, horizon), run the canonical squared-L2 latent CEM planner
+with native bounded actions and observed-state replanning. Measures:
   - env_success: fraction of episodes where the env-native check_success passes
   - mean_cos_dist_terminal: terminal cosine distance to goal latent
 
@@ -30,10 +30,13 @@ import torch
 
 sys.path.insert(0, "/home/lx/snn")
 
-from code.core.cem import CEM
-from code.core.encode import encode_history, encode_obs
+from code.core.cem import CEM, make_native_action_predict_hook
+from code.core.encode import encode_obs
 from code.core.envs import make_dmc_env
 from code.data import load_dataset
+from code.data.loaders import DATA_LOADER_PROTOCOL_VERSION
+from code.eval.closed_loop import _set_env_state
+from code.scripts.event_align import build_model
 
 
 DMC_DATA = {
@@ -65,7 +68,7 @@ def run_horizon_sweep(
     ckpt_path: str,
     env_kind: str,
     horizons: List[int],
-    n_episodes: int = 5,
+    n_episodes: int = 3,
     cem_samples: int = 100,
     cem_iters: int = 10,
     cem_elites: int = 10,
@@ -74,140 +77,206 @@ def run_horizon_sweep(
     device: str = "cpu",
     out_path: str = None,
 ) -> dict:
-    """Sweep CEM horizon and return per-horizon metrics."""
-    ck = torch.load(ckpt_path, map_location=device, weights_only=False)
+    """Evaluate identical offline init/goal pairs at every planning horizon."""
+    import mujoco
+
+    if out_path and Path(out_path).exists():
+        raise FileExistsError(f"Archive the existing result before rerunning: {out_path}")
+    if not horizons or min(horizons) < 1 or n_episodes < 1:
+        raise ValueError("Positive horizons and n_episodes are required")
+    if not 1 < cem_elites <= cem_samples or cem_iters < 1:
+        raise ValueError("CEM requires 1 < n_elites <= n_samples and n_iters >= 1")
+    if history_size < 1 or goal_offset < 1:
+        raise ValueError("history_size and goal_offset must be positive")
+    wall_t0_total = time.time()
+    ck = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     ck_args = ck.get("args", {})
-    pad_obs_to = ck_args.get("pad_obs_to", 128)
-    action_dim = ck_args.get("action_dim", 56)
-    state_dim = ck_args.get("state_dim") or pad_obs_to
+    sd = {k.replace("_orig_mod.", ""): v for k, v in ck["model"].items()}
+    state_dim = next(
+        (int(sd[key].shape[1]) for key in (
+            "state_encoder.proj.0.weight", "state_projector.proj.0.weight",
+            "state_projector.0.weight", "state_proj.0.weight",
+        ) if key in sd),
+        ck_args.get("pad_obs_to") or ck_args.get("state_dim"),
+    )
+    action_dim = next(
+        (int(sd[key].shape[1]) for key in (
+            "action_encoder.proj.0.weight", "action_encoder.0.weight",
+            "action_proj.0.weight",
+        ) if key in sd),
+        ck_args.get("action_dim"),
+    )
+    if ck_args["model"] == "mlp_baseline":
+        action_dim = int(sd["net.0.weight"].shape[1] - sd["state_proj.2.weight"].shape[0])
+    if state_dim is None or action_dim is None:
+        raise ValueError(f"Cannot determine trained input dimensions for {ckpt_path}")
+    model = build_model(
+        ck_args["model"], state_dim, action_dim, ck_args, state_dict=sd,
+    )
+    model.load_state_dict(sd, strict=True)
+    model.to(device).eval()
 
-    model = build_model_from_ckpt(ck_args, state_dim, action_dim, device)
-    sd = ck["model"]
-    sd = {k.replace("_orig_mod.", ""): v for k, v in sd.items()}
-    try:
-        model.load_state_dict(sd, strict=True)
-    except Exception:
-        # Some baselines may have non-strict shapes; fall back gracefully.
-        result = model.load_state_dict(sd, strict=False)
-        if result.missing_keys or result.unexpected_keys:
-            print(f"  [warn] {ckpt_path}: missing={len(result.missing_keys)} unexpected={len(result.unexpected_keys)}")
-    model.eval()
-
-    env = make_dmc_env(env_kind)
     data_path = DMC_DATA.get(env_kind)
     if data_path is None or not os.path.exists(data_path):
-        return {"error": f"data not found for env={env_kind}: {data_path}"}
+        raise FileNotFoundError(f"Data not found for env={env_kind}: {data_path}")
+    # Keep native states for physics and success; pad only at the model boundary.
     ds = load_dataset(
-        env_kind="dmc", path=data_path,
-        history_size=history_size, goal_offset=goal_offset,
-        max_windows=min(200, 8000), pad_obs_to=pad_obs_to,
+        env_kind="dmc", path=data_path, history_size=history_size,
+        goal_offset=goal_offset, max_windows=200,
     )
-
-    rng = np.random.default_rng(0)
-    indices = rng.choice(len(ds), size=min(n_episodes, len(ds)), replace=False)
-    episodes = [ds[int(i)] for i in indices]
-
+    if len(ds) < n_episodes:
+        raise ValueError(f"{env_kind} has only {len(ds)} windows for {n_episodes} episodes")
+    indices = np.random.default_rng(0).choice(len(ds), size=n_episodes, replace=False)
+    episodes = [(int(i), ds[int(i)]) for i in indices]
+    env = make_dmc_env(env_kind)
     per_horizon = {}
-    for H in horizons:
-        cem = CEM(
-            model, action_dim=action_dim, horizon=H,
-            n_samples=cem_samples, n_elites=cem_elites, n_iters=cem_iters,
-            history_size=history_size, device=device,
-        )
-        env_successes = []
-        cos_dist_terminals = []
-        wall_t0 = time.time()
-        for item in episodes:
-            init_state_np = item["init_state"].numpy() if hasattr(item["init_state"], "numpy") else np.asarray(item["init_state"])
-            goal_state_np = item["goal_state"].numpy() if hasattr(item["goal_state"], "numpy") else np.asarray(item["goal_state"])
-            # Pad raw states (e.g. 9-D cheetah) to pad_obs_to so the state-projector branch is taken
-            if init_state_np.shape[-1] < pad_obs_to:
-                init_state_np = np.concatenate([init_state_np, np.zeros(pad_obs_to - init_state_np.shape[-1], dtype=np.float32)])
-            if goal_state_np.shape[-1] < pad_obs_to:
-                goal_state_np = np.concatenate([goal_state_np, np.zeros(pad_obs_to - goal_state_np.shape[-1], dtype=np.float32)])
-
-            history_states = [init_state_np.copy() for _ in range(history_size)]
-            z_history = encode_history(
-                model, [torch.from_numpy(s).float() for s in history_states],
-                action_dim, device,
+    eval_budget = 50
+    try:
+        native_state_dim = env.spec.obs_dim
+        native_action_dim = env.spec.action_dim
+        if ds.spec.obs_dim != native_state_dim:
+            raise ValueError(
+                f"{env_kind}: dataset state dimension {ds.spec.obs_dim} "
+                f"does not match environment dimension {native_state_dim}"
             )
-            z_goal = encode_obs(model, torch.from_numpy(goal_state_np).float(), action_dim, device)
+        if state_dim < native_state_dim or action_dim < native_action_dim:
+            raise ValueError(f"Checkpoint inputs are smaller than the native {env_kind} inputs")
 
-            eval_budget = 50
-            actions_taken = 0
-            done = False
-            while actions_taken < eval_budget:
-                try:
+        def encode_native_state(state):
+            state = np.asarray(state, dtype=np.float32)
+            if state.shape != (native_state_dim,) or not np.isfinite(state).all():
+                raise ValueError(f"{env_kind}: invalid native state: {state}")
+            padded = torch.nn.functional.pad(
+                torch.as_tensor(state, device=device), (0, state_dim - native_state_dim),
+            )
+            return encode_obs(model, padded, action_dim, device)
+
+        predict_native_actions = make_native_action_predict_hook(
+            action_dim, env.spec.action_low, env.spec.action_high, device,
+        )
+
+        for H in horizons:
+            cem = CEM(
+                model, action_dim=native_action_dim, horizon=H,
+                n_samples=cem_samples, n_elites=cem_elites, n_iters=cem_iters,
+                history_size=history_size, device=device,
+                predict_hook=predict_native_actions,
+            )
+            episode_results = []
+            wall_t0 = time.time()
+            for episode_index, item in episodes:
+                init_state = item["init_state"].numpy()
+                goal_state = item["goal_state"].numpy()
+                # Saved trajectories contain qpos, not qvel. Every comparison
+                # starts from the same qpos with zero velocity and a fresh clock.
+                torch.manual_seed(episode_index)
+                env.reset(seed=episode_index)
+                _set_env_state(env, init_state)
+                mujoco.mj_forward(env._model, env._data)
+                if not np.allclose(env.get_state(), init_state, rtol=0, atol=1e-6):
+                    raise RuntimeError(f"{env_kind}: failed to restore episode {episode_index}")
+                z_goal = encode_native_state(goal_state)
+                actions_taken = 0
+                planning_calls = 0
+                done = False
+                while actions_taken < eval_budget:
+                    # Replanning is closed-loop: never substitute a predicted
+                    # latent for the observation after the executed action chunk.
+                    z_init = encode_native_state(env.get_state())
                     seq = cem.plan(z_init, z_goal)
-                except Exception:
-                    seq = torch.zeros(H, action_dim)
-                for a_idx in range(min(H, eval_budget - actions_taken)):
-                    action = seq[a_idx].cpu().numpy().astype(np.float32)
-                    if action.shape[-1] > env.spec.action_dim:
-                        action = action[..., :env.spec.action_dim]
-                    action = np.clip(action, env.spec.action_low, env.spec.action_high)
-                    try:
-                        _obs, _r, done, _info = env.step(action)
-                    except Exception:
-                        done = True
-                    actions_taken += 1
+                    if not torch.isfinite(seq).all():
+                        raise FloatingPointError(f"{env_kind}: CEM returned non-finite actions")
+                    planning_calls += 1
+                    for action in seq[:min(H, eval_budget - actions_taken)].cpu().numpy():
+                        action = np.clip(action, env.spec.action_low, env.spec.action_high)
+                        _, _, done, _ = env.step(action.astype(np.float32, copy=False))
+                        actions_taken += 1
+                        if done:
+                            break
                     if done:
                         break
-                if done or actions_taken >= eval_budget:
-                    break
-                try:
-                    with torch.no_grad():
-                        a_window = seq[:history_size].unsqueeze(0)
-                        nxt = model.predict(z_history.unsqueeze(0), a_window)
-                        z_history = torch.cat([z_history[1:], nxt[0:1, -1]], dim=0)
-                        z_init = z_history[-1]
-                except Exception:
-                    break
 
-            try:
-                final_state_np = env.get_state()
-            except Exception:
-                final_state_np = init_state_np
-            # Pad to pad_obs_to so the state_projector branch is taken
-            if final_state_np.shape[-1] < pad_obs_to:
-                final_state_np = np.concatenate(
-                    [final_state_np, np.zeros(pad_obs_to - final_state_np.shape[-1], dtype=np.float32)]
+                final_state = env.get_state()
+                z_final = encode_native_state(final_state)
+                cos = torch.nn.functional.cosine_similarity(
+                    z_final.unsqueeze(0), z_goal.unsqueeze(0),
                 )
-            z_final = encode_obs(model, torch.from_numpy(final_state_np).float(), action_dim, device)
-            cos = torch.nn.functional.cosine_similarity(z_final.unsqueeze(0), z_goal.unsqueeze(0))
-            cos_dist_terminal = float((1.0 - cos.item()) / 2.0)
-            cos_dist_terminals.append(cos_dist_terminal)
-            try:
-                env_success, _ = env.check_success(final_state_np, goal_state_np)
-            except Exception:
-                env_success = False
-            env_successes.append(1.0 if env_success else 0.0)
+                cos_dist_terminal = float((1.0 - cos.item()) / 2.0)
+                env_success, phys_dist = env.check_success(final_state, goal_state)
+                if not np.isfinite(cos_dist_terminal) or not np.isfinite(phys_dist):
+                    raise FloatingPointError(f"{env_kind}: non-finite terminal metrics")
+                source_index = (
+                    int(ds._starts[episode_index]) if ds._starts is not None else episode_index
+                )
+                episode_results.append({
+                    "episode_index": episode_index,
+                    "source_index": source_index,
+                    "goal_source_index": source_index + goal_offset,
+                    "seed": episode_index,
+                    "init_state": init_state.tolist(),
+                    "goal_state": goal_state.tolist(),
+                    "final_state": final_state.tolist(),
+                    "actions_taken": actions_taken,
+                    "planning_calls": planning_calls,
+                    "env_success": bool(env_success),
+                    "phys_dist": float(phys_dist),
+                    "cos_dist_terminal": cos_dist_terminal,
+                })
 
-        per_horizon[H] = {
-            "horizon": H,
-            "env_success": float(np.mean(env_successes)),
-            "env_success_std": float(np.std(env_successes)),
-            "mean_cos_dist_terminal": float(np.mean(cos_dist_terminals)),
-            "mean_cos_dist_terminal_std": float(np.std(cos_dist_terminals)),
-            "wall_time_sec": time.time() - wall_t0,
-            "n_episodes": len(env_successes),
+            env_successes = [e["env_success"] for e in episode_results]
+            cos_dist_terminals = [e["cos_dist_terminal"] for e in episode_results]
+            phys_dists = [e["phys_dist"] for e in episode_results]
+            per_horizon[H] = {
+                "horizon": H,
+                "env_success": float(np.mean(env_successes)),
+                "env_success_std": float(np.std(env_successes)),
+                "mean_cos_dist_terminal": float(np.mean(cos_dist_terminals)),
+                "mean_cos_dist_terminal_std": float(np.std(cos_dist_terminals)),
+                "mean_phys_dist_terminal": float(np.mean(phys_dists)),
+                "mean_phys_dist_terminal_std": float(np.std(phys_dists)),
+                "wall_time_sec": time.time() - wall_t0,
+                "n_episodes": len(episode_results),
+                "per_episode": episode_results,
+            }
+
+        out = {
+            "protocol_version": 2,
+            "ckpt": ckpt_path,
+            "data_loader_protocol": DATA_LOADER_PROTOCOL_VERSION,
+            "checkpoint_data_protocol_version": ck.get("data_protocol_version"),
+            "model": "LeWM" if ck_args["model"] == "lewm_baseline" else ck_args["model"],
+            "env": env_kind,
+            "n_episodes": n_episodes,
+            "cem_samples": cem_samples,
+            "cem_elites": cem_elites,
+            "cem_iters": cem_iters,
+            "cem_cost": "squared_l2",
+            "cem_action_dim": native_action_dim,
+            "model_action_dim": action_dim,
+            "model_state_dim": state_dim,
+            "latent_representation": "forward.emb, one observed frame, zero action",
+            "goal_offset": goal_offset,
+            "history_size": history_size,
+            "eval_budget": eval_budget,
+            "episode_sampling_seed": 0,
+            "episode_indices": indices.tolist(),
+            "candidate_windows": len(ds),
+            "initial_velocity": "zero (not stored in the offline dataset)",
+            "replanning": "observed state after executing up to H actions",
+            "physical_metric": "native_state_l2 / sqrt(native_state_dim)",
+            "physical_state_dim": native_state_dim,
+            "success_tolerance": env._success_tol,
+            "horizons": horizons,
+            "per_horizon": per_horizon,
+            "wall_time_sec_total": time.time() - wall_t0_total,
+            "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         }
-
-    out = {
-        "ckpt": ckpt_path,
-        "env": env_kind,
-        "n_episodes": n_episodes,
-        "cem_samples": cem_samples,
-        "cem_elites": cem_elites,
-        "cem_iters": cem_iters,
-        "horizons": horizons,
-        "per_horizon": per_horizon,
-        "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
-    }
+    finally:
+        env.close()
     if out_path:
         Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-        with open(out_path, "w") as f:
-            json.dump(out, f, indent=2)
+        with open(out_path, "x") as f:
+            json.dump(out, f, indent=2, allow_nan=False)
         print(f"  -> {out_path}")
     return out
 
@@ -217,7 +286,7 @@ def parse_args():
     p.add_argument("--ckpt", required=True)
     p.add_argument("--env", required=True, choices=list(DMC_DATA.keys()))
     p.add_argument("--horizons", type=str, default="1,3,5,10,20")
-    p.add_argument("--n-episodes", type=int, default=5)
+    p.add_argument("--n-episodes", type=int, default=3)
     p.add_argument("--cem-samples", type=int, default=100)
     p.add_argument("--cem-elites", type=int, default=10)
     p.add_argument("--cem-iters", type=int, default=10)

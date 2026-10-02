@@ -1,440 +1,222 @@
-"""OOD1 cross-benchmark-family transfer (v0.7.10 utility experiment).
+"""Historical OOD1 cross-benchmark-family diagnostics, not publication inputs.
 
-A serious cross-environment transfer experiment cannot be answered by holding
-out 2 of 16 environments from the *same* G16 suite (that's the within-suite
-pilot of v0.7.8). Real OOD generalisation requires holding out an *entire
-benchmark family* and testing on the other 3 families.
+The declared design trains on one family and diagnoses the other three. The
+checked-in DMC training spec is usable; the PushT/Reacher/TwoRoom training specs
+and the DMC evaluation-family entries are prerequisites, not invented defaults.
+The existing model list has ten entries, not twelve. This source preserves that
+list and does not add scientific cells.
 
-OOD1 by construction = "1 train family -> 3 unseen families". The honest
-matrix over the 4 families currently available (DMC classic-control, PushT,
-LeWM reacher / OGBench cube, Delayed POMDP / TwoRoom) is:
-
-  Split              | train_family       | unseen_families
-  -------------------|--------------------|---------------------------
-  OOD1_dmc           | DMC (13 envs)      | pusht, reacher, tworoom
-  OOD1_pusht          | pusht (1 env only) | DMC, reacher, tworoom
-  OOD1_reacher       | reacher (1 env only)| DMC, pusht, tworoom
-  OOD1_tworoom       | tworoom (1 env)     | DMC, pusht, reacher
-
-Only OOD1_dmc is non-degenerate (13 training envs). The other 3 splits train
-on a single env and are reported with explicit degeneracy caveats.
-
-For each split we train (a) 6 STJEWM readouts (trace/spike/rate/no_trace/
-hidden_leak/membrane) and (b) 4 baselines (mlp_baseline, gru_baseline,
-alif_timecell_baseline, stacked_lif_trace) per split. That's 12 ckpts x 4 splits
-= 48 trainings. At ~25 min/ckpt on 1 CPU = ~20 hr wallclock.
-
-Per-cell output:
-  results/utility/ood1/<split>/<model>/seed_<seed>/<env>_{div,resp,rho,env_sr}.json
-Aggregate table at results/utility/ood1_table.md.
-
-Honest caveats baked in:
-- 1-seed; no std bars (same as v0.7.8 pilot).
-- Cross-family dynamics are wildly different (DMC is qpos-only; tworoom has
-  visual obs and 100-step memory; reacher has sub-task POMDP structure).
-  We do NOT claim env-native control generalisation; we only claim the
-  diagnostic profile (div/resp/rho) is preserved across the family boundary.
-- The 3 degenerate splits (pusht/reacher/tworoom as train) train only on
-  one env. The DMC-trained ckpt has the strongest comparison; the others
-  are sanity checks.
-
-This module also embeds a slim in-process measure_latent_stats helper
-that dispatches on env_kind — measure_latent_stats.py was DMC-only.
+Measurements use the canonical protocol-2 single-frame readout and separate
+observation-embedding diagnostics, with reset transitions excluded. Historical
+raw results cannot substitute for a completed audited publication manifest.
 """
 from __future__ import annotations
 
 import argparse
-import json
-import os
 import subprocess
-import sys
-import time
 from pathlib import Path
-from typing import Any, Dict, List
 
-sys.path.insert(0, "/home/lx/snn")
-
-import numpy as np
 import torch
 
+from code.eval.closed_loop import make_env
+from code.scripts.audited_results import fmt, load_json, require, validate_diagnostic, write_new_json
+from code.scripts.event_align import ENV_KIND_MAP, build_model
+from code.scripts.latent_rollout import collect_state_rollout
 
-# ============================================================
-# Split definitions
-# ============================================================
 
-# 4 train-by-1-family splits. Honest: only "dmc" has enough training data.
-# The other 3 are 1-env train sets, reported with "degenerate" caveats.
 SPLITS = [
-    ("ood1_dmc_train",     "dmc",       ["pusht", "reacher_4d", "tworoom"]),
-    ("ood1_pusht_train",    "pusht",     ["dmc", "reacher_4d", "tworoom"]),
-    ("ood1_reacher_train",  "reacher_4d",["dmc", "pusht", "tworoom"]),
-    ("ood1_tworoom_train",  "tworoom",   ["dmc", "pusht", "reacher_4d"]),
+    ("ood1_dmc_train", "dmc", ["pusht", "reacher_4d", "tworoom"]),
+    ("ood1_pusht_train", "pusht", ["dmc", "reacher_4d", "tworoom"]),
+    ("ood1_reacher_train", "reacher_4d", ["dmc", "pusht", "tworoom"]),
+    ("ood1_tworoom_train", "tworoom", ["dmc", "pusht", "reacher_4d"]),
 ]
-
-# 12 ckpts trained per split. Same set as v0.7.8 G16 pilot (cuBiFAE is
-# already calibrated per G16 Tables 4-6; if the cross-family transfer claim
-# holds for trace/spike, the 10 remaining ckpts are degraded to confirming
-# evidence).
 DEFAULT_CKPT_BUDGET = [
-    "stjewm_trace_only",
-    "stjewm_spike_only",
-    "stjewm_rate_only",
-    "stjewm_no_trace",
-    "stjewm_hidden_leak",
-    "stjewm_membrane_readout",
-    "mlp_baseline",
-    "gru_baseline",
-    "alif_timecell_baseline",
-    "stacked_lif_trace",
+    "stjewm_trace_only", "stjewm_spike_only", "stjewm_rate_only",
+    "stjewm_no_trace", "stjewm_hidden_leak", "stjewm_membrane_readout",
+    "mlp_baseline", "gru_baseline", "alif_timecell_baseline", "stacked_lif_trace",
 ]
-
-
-# ============================================================
-# In-process measure_latent_stats (cross-family)
-# ============================================================
-
-def _load_model_for_env(ckpt_path: str, env, device: str = "cpu"):
-    """Build the model whose weights are in ckpt, with action/state dims
-    padded to match ckpt args. Wraps the spec obs with _PadObsWrapper
-    if needed, then delegates to the shared build_model_from_ckpt helper
-    (which knows the right kwargs for every baseline + STJEWM).
-    """
-    import torch
-    from code.eval.closed_loop import _PadObsWrapper
-    from code.scripts.utility.latent_goal_mpc import build_model_from_ckpt
-    ck = torch.load(ckpt_path, map_location=device, weights_only=False)
-    ck_args = ck.get("args", {})
-    pad_obs_to = ck_args.get("pad_obs_to") or ck_args.get("state_dim") or env.spec.obs_dim
-    action_dim = ck_args.get("action_dim") or env.spec.action_dim
-    if pad_obs_to and pad_obs_to > env.spec.obs_dim:
-        env = _PadObsWrapper(env, pad_obs_to)
-    state_dim = pad_obs_to
-    mdl = build_model_from_ckpt(ck_args, state_dim, action_dim, device)
-    mdl.load_state_dict(ck["model"], strict=False)
-    mdl.eval()
-    return mdl
 
 
 def measure_diagnostic_cross_family(
     ckpt_path: str, env_kind: str, env_path: str, env_id: str,
     n_steps: int = 200, seed: int = 0, device: str = "cpu",
-    action_dim: int = 56,  # CKPT action_dim; defaults to G16 train value
-) -> Dict[str, float]:
-    """Roll a ckpt on a (possibly non-DMC) env for n_steps and return {div, resp}. Same shape as v0.7.8 measure_latent_stats but dispatches on env_kind (DMC/PushT/Reacher/...) so we can measure cross-family OOD diagnostics.
-    """
-    # Cross-family factory lives in code.eval.closed_loop (handles (handles
-    # DMC/PushT/TwoRoom/Reacher/DelayedT/Cube/Swim via one make_env).
-    from code.eval.closed_loop import make_env
-    env = make_env(env_kind=env_kind, data_path=env_path)
-    if hasattr(env, "seed"):
-        env.seed(seed)
-
-    def _flat_obs(o):
-        # DMC envs return a 1D np.ndarray; swm / reacher / delayed_t_maze
-        # envs return dicts like {"obs": ...} or {"pixels": ..., "obs": ...}.
-        # Flatten both shapes to (D,) consistently. If the dict has no
-        # standard key, pick the first tensor-like value.
-        if isinstance(o, dict):
-            for k in ("obs", "pixels", "state"):
-                if k in o:
-                    o = o[k]
-                    break
-            else:
-                for v in o.values():
-                    if hasattr(v, "numpy") or hasattr(v, "cpu"):
-                        o = v
-                        break
-        o = np.asarray(o)
-        if o.ndim > 1:
-            o = o.reshape(o.shape[0], -1).mean(axis=0)
-        return o.astype(np.float32)
-
-    has_gym_action_space = (
-        hasattr(env, "action_space") and hasattr(env.action_space, "sample")
+    action_dim: int | None = None,
+) -> dict:
+    """Strict checkpoint-backed, episode-safe diagnostics across native envs."""
+    native_kind = (
+        ENV_KIND_MAP.get(env_id, env_id) if env_kind == "dmc"
+        else "reacher" if env_kind == "reacher_4d" else env_kind
     )
-    cur_obs = _flat_obs(env.reset(seed=seed))
-    model = _load_model_for_env(str(ckpt_path), env, device)
-
-    obs_list, lat_list = [], []
-    from code.core.encode import encode_obs as _encode_obs_obs
-    for t in range(n_steps):
-        if has_gym_action_space:
-            action = env.action_space.sample()
-        else:
-            # Swm / Reacher / DelayedT envs don't expose action_space;
-            # sample uniformly in the spec.action_low / action_high bound.
-            action = np.random.uniform(
-                env.spec.action_low, env.spec.action_high
-            ).astype(np.float32)
-        z = _encode_obs_obs(model, torch.as_tensor(cur_obs, dtype=torch.float32),
-                            action_dim, device)
-        lat_list.append(z.detach().cpu().numpy())
-        obs_list.append(cur_obs)
-        step_out, _, done, _ = env.step(action)
-        cur_obs = _flat_obs(step_out)
-        if done:
-            cur_obs = _flat_obs(env.reset(seed=seed))
-    obs_arr = np.stack(obs_list)
-    lat_arr = np.stack(lat_list)
-    d_obs = np.diff(obs_arr, axis=0)
-    d_lat = np.diff(lat_arr, axis=0)
-    per_dim_std = lat_arr.std(axis=0)
-    divergence = float(per_dim_std.mean())
-    ratio = (
-        np.linalg.norm(d_lat, axis=1)
-        / (np.linalg.norm(d_obs, axis=1) + 1e-9)
-    )
-    responsiveness = float(ratio.mean())
-    return {
-        "ckpt": str(ckpt_path),
-        "env_kind": env_kind,
-        "env_id": env_id,
-        "n_steps": int(n_steps),
-        "responsiveness": round(responsiveness, 4),
-        "divergence": round(divergence, 4),
-        "per_dim_std_max": round(float(per_dim_std.max()), 4),
-        "per_dim_std_min": round(float(per_dim_std.min()), 4),
-        "mean_norm_obs": round(float(np.linalg.norm(obs_arr, axis=1).mean()), 4),
-        "mean_norm_lat": round(float(np.linalg.norm(lat_arr, axis=1).mean()), 4),
-    }
-
+    env = make_env(native_kind, data_path=env_path)
+    try:
+        checkpoint = torch.load(ckpt_path, map_location="cpu", weights_only=False)
+        saved = checkpoint["args"]
+        state_dict = {key.replace("_orig_mod.", ""): value for key, value in checkpoint["model"].items()}
+        state_dim = saved.get("pad_obs_to") or saved.get("state_dim") or env.spec.obs_dim
+        trained_action_dim = saved.get("action_dim") or env.spec.action_dim
+        require(action_dim is None or action_dim == trained_action_dim,
+                "Requested action dimension differs from the checkpoint")
+        model_name = Path(ckpt_path).parent.parent.name
+        model = build_model(model_name, state_dim, trained_action_dim, saved, state_dict=state_dict)
+        model.load_state_dict(state_dict, strict=True)
+        model.to(device).eval()
+        result, _ = collect_state_rollout(
+            model, env, state_dim, trained_action_dim,
+            n_steps=n_steps, n_resets=1, seed=seed, device=device,
+        )
+        result.update(
+            ckpt=str(Path(ckpt_path).resolve()), model=model_name, env=env_id,
+            env_kind=env_kind, weights_loaded_strict=True,
+        )
+        return result
+    finally:
+        env.close()
 
 
 def event_align_cross_family(
     ckpt_path: str, env_kind: str, env_path: str, env_id: str,
     n_steps: int = 100, seed: int = 0, device: str = "cpu",
-    action_dim: int = 56,
-) -> Dict[str, float]:
-    """Per-step correlation between ||Δobs_t|| and ||Δlatent_t||.
-    Same diagnostic measure_latent_stats supports for DMC; this replicates
-    the cross-family version using the canonical encode helper.
-    """
-    from code.eval.closed_loop import make_env
-    env = make_env(env_kind=env_kind, data_path=env_path)
-    if hasattr(env, "seed"):
-        env.seed(seed)
-
-    def _flat_obs(o):
-        if isinstance(o, dict):
-            for k in ("obs", "pixels", "state"):
-                if k in o:
-                    o = o[k]
-                    break
-            else:
-                for v in o.values():
-                    if hasattr(v, "numpy") or hasattr(v, "cpu"):
-                        o = v
-                        break
-        o = np.asarray(o)
-        if o.ndim > 1:
-            o = o.reshape(o.shape[0], -1).mean(axis=0)
-        return o.astype(np.float32)
-
-    model = _load_model_for_env(str(ckpt_path), env, device)
-    from code.core.encode import encode_obs as _encode_obs_obs
-    has_gym_action_space = (
-        hasattr(env, "action_space") and hasattr(env.action_space, "sample")
+    action_dim: int | None = None,
+) -> dict:
+    """Use canonical event_rho, including None when correlation is undefined."""
+    return measure_diagnostic_cross_family(
+        ckpt_path, env_kind, env_path, env_id,
+        n_steps=n_steps, seed=seed, device=device, action_dim=action_dim,
     )
 
-    dobs_arr, dlat_arr = [], []
-    cur_obs = _flat_obs(env.reset(seed=seed))
-    prev_obs, prev_lat = None, None
-    for t in range(n_steps):
-        z = _encode_obs_obs(model, torch.as_tensor(cur_obs, dtype=torch.float32),
-                            action_dim, device)
-        lat = z.detach().cpu().numpy()
-        if prev_obs is not None:
-            dobs_arr.append(np.linalg.norm(cur_obs - prev_obs))
-            dlat_arr.append(np.linalg.norm(lat - prev_lat))
-        prev_obs = cur_obs
-        prev_lat = lat
-        if has_gym_action_space:
-            step_action = env.action_space.sample()
-        else:
-            step_action = np.random.uniform(
-                env.spec.action_low, env.spec.action_high
-            ).astype(np.float32)
-        step_out, _, done, _ = env.step(step_action)
-        cur_obs = _flat_obs(step_out)
-        if done:
-            cur_obs = _flat_obs(env.reset(seed=seed))
-    if len(dobs_arr) < 2:
-        return {"corr_obs_latent": float("nan"), "n": 0}
-    if dobs.std() < 1e-9 or dlat.std() < 1e-9:
-        return {"corr_obs_latent": float("nan"), "n": len(dobs_arr)}
-    corr = float(np.corrcoef(dobs, dlat)[0, 1])
-    return {"corr_obs_latent": corr, "n": len(dobs_arr)}
 
-
-# ============================================================
-# Train / measure / aggregate
-# ============================================================
-
-def train_one_ckpt(split: str, model: str, base_seed: int = 0) -> Path:
-    """Train ONE ckpt for one (split, model) pair via train_one.sh."""
-    out_dir = Path(f"results/ood1/{split}/{model}/seed_{base_seed}")
-    ckpt = out_dir / "final.pt"
-    if ckpt.exists():
-        print(f"[train] {split}/{model}: ckpt already exists, skipping")
+def train_one_ckpt(
+    split: str, model: str, base_seed: int = 0, out_dir: str | Path = "results/ood1",
+) -> Path:
+    """Train only from an existing family spec, in the requested result root."""
+    target = Path("configs") / f"{split}.json"
+    if not target.is_file():
+        raise FileNotFoundError(f"OOD1 prerequisite missing: training family spec {target}")
+    load_json(target)
+    cell_dir = Path(out_dir) / split / model / f"seed_{base_seed}"
+    ckpt = cell_dir / "final.pt"
+    if ckpt.is_file():
         return ckpt
-
-    spec_link = Path(f"configs/_ood1_{split}_{model}.json")
-    spec_link.parent.mkdir(parents=True, exist_ok=True)
-    target = Path(f"configs/ood1_{split.split('_train')[0]}_train.json")
-    if not target.exists():
-        raise FileNotFoundError(f"missing train spec: {target}")
-    spec_link.write_text(target.read_text())
-
-    out_dir.mkdir(parents=True, exist_ok=True)
-    cmd = [
-        "/bin/bash",
-        "code/scripts/generalist_v0_7_5/train_one.sh",
-        model,
-        str(spec_link),
-        str(out_dir),
-        str(base_seed),
-    ]
-    t0 = time.time()
-    rc = subprocess.call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-    dt = time.time() - t0
-    if rc != 0 or not ckpt.exists():
-        raise RuntimeError(f"train failed for {split}/{model}: rc={rc}")
-    print(f"[train] {split}/{model}: done in {dt/60:.1f} min -> {ckpt}")
+    subprocess.run([
+        "/bin/bash", "code/scripts/generalist_v0_7_5/train_one.sh",
+        model, str(target), str(cell_dir), str(base_seed),
+    ], check=True)
+    require(ckpt.is_file(), f"Trainer returned without checkpoint: {ckpt}")
     return ckpt
 
 
-def run_one_cell(ckpt: Path, env_id: str, env_kind: str, env_path: str,
-                 seed: int = 0) -> Dict[str, float]:
-    """Measure {div, resp, rho} on (ckpt, env) for OOD1. Skip env-SR; OOD1
-    cross-family env-SR is meaningless (cartpole vs pusht vs tworoom all
-    report binary-style SR against different success criteria)."""
-    cell = ckpt.parent
-    out_div = cell / f"div_{env_id}.json"
-    out_rho = cell / f"rho_{env_id}.json"
-
+def run_one_cell(
+    ckpt: Path, env_id: str, env_kind: str, env_path: str,
+    seed: int = 0, device: str = "cpu",
+) -> dict:
+    paths = (ckpt.parent / f"div_{env_id}.json", ckpt.parent / f"rho_{env_id}.json")
+    require(not any(path.exists() for path in paths),
+            f"Archive existing historical OOD1 outputs before rerunning: {paths}")
     diag = measure_diagnostic_cross_family(
-        str(ckpt), env_kind, env_path, env_id, n_steps=200, seed=seed
+        str(ckpt), env_kind, env_path, env_id, n_steps=200, seed=seed, device=device,
     )
-    out_div.parent.mkdir(parents=True, exist_ok=True)
-    out_div.write_text(json.dumps(diag, indent=2))
-
     align = event_align_cross_family(
-        str(ckpt), env_kind, env_path, env_id, n_steps=100, seed=seed
+        str(ckpt), env_kind, env_path, env_id, n_steps=100, seed=seed, device=device,
     )
-    out_rho.write_text(json.dumps(align, indent=2))
+    write_new_json(paths[0], diag)
+    write_new_json(paths[1], align)
+    return {"div": diag["divergence"], "resp": diag["responsiveness"], "rho": align["event_rho"]}
 
-    return {"div": diag["divergence"], "resp": diag["responsiveness"],
-            "rho": align["corr_obs_latent"]}
+
+def planned_cells(out_dir: Path, splits: list[str], models: list[str], seed: int, eval_spec: Path):
+    """Require declared family specs and coverage before any training starts."""
+    entries = load_json(eval_spec)["specs"]
+    definitions = {split: unseen for split, _, unseen in SPLITS}
+    require(splits and models, "At least one split and model must be requested")
+    require(len(splits) == len(set(splits)) and len(models) == len(set(models)), "Duplicate requested split/model")
+    require(not set(splits) - definitions.keys(), "Unknown OOD1 split")
+    cells, missing = [], []
+    for split in splits:
+        train_spec = Path("configs") / f"{split}.json"
+        if not train_spec.is_file():
+            missing.append(f"training family spec: {train_spec}")
+        else:
+            load_json(train_spec)
+        unseen = definitions[split]
+        selected = [entry for entry in entries if entry["env_kind"] in unseen]
+        absent_families = set(unseen) - {entry["env_kind"] for entry in selected}
+        missing.extend(f"{split}: evaluation entries for unseen family {family}" for family in sorted(absent_families))
+        env_ids = [entry["env_id"] for entry in selected]
+        require(len(env_ids) == len(set(env_ids)), f"Duplicate evaluation environment in {split}")
+        for entry in selected:
+            if not Path(entry["path"]).is_file():
+                missing.append(f"{split}/{entry['env_id']}: offline data {entry['path']}")
+            for model in models:
+                ckpt = out_dir / split / model / f"seed_{seed}" / "final.pt"
+                cells.append((split, model, ckpt, entry))
+    if missing:
+        raise FileNotFoundError("OOD1 prerequisites unavailable:\n- " + "\n- ".join(missing))
+    require(cells, "No requested OOD1 evaluation cells")
+    return cells
 
 
-def aggregate(out_dir: str = "results/utility/ood1") -> None:
-    """Walk results/ood1/{split}/{model}/seed_0/{env}*.json and write the
-    aggregate table at results/utility/ood1_table.md.
-    """
-    base = Path("results/utility") / Path(out_dir).name
-    base = Path(out_dir)
-    base.mkdir(parents=True, exist_ok=True)
-
-    rows = []
-    cells = []
-    for split_dir in sorted(base.glob("ood1_*")):
-        if not split_dir.is_dir():
+def aggregate(
+    out_dir: str | Path = "results/ood1", *, splits: list[str] | None = None,
+    models: list[str] | None = None, seed: int = 0,
+    eval_spec: str | Path = "configs/ood1_eval.json",
+) -> dict:
+    """Inspect the requested lattice; absent runs are never completed cells."""
+    cells = planned_cells(
+        Path(out_dir), splits if splits is not None else [split for split, _, _ in SPLITS],
+        models if models is not None else DEFAULT_CKPT_BUDGET, seed, Path(eval_spec),
+    )
+    rows, missing = [], []
+    for split, model, ckpt, entry in cells:
+        env_id = entry["env_id"]
+        identity = {"split": split, "model": model, "seed": seed, "env": env_id}
+        paths = (ckpt, ckpt.parent / f"div_{env_id}.json", ckpt.parent / f"rho_{env_id}.json")
+        absent = [str(path) for path in paths if not path.is_file()]
+        if absent:
+            missing.append({**identity, "missing": absent})
             continue
-        for model_dir in sorted(split_dir.iterdir()):
-            if not model_dir.is_dir():
-                continue
-            for seed_dir in sorted(model_dir.glob("seed_*")):
-                for env_json in sorted(seed_dir.glob("div_*.json")):
-                    env_id = env_json.name.replace("div_", "").replace(".json", "")
-                    rho_json = seed_dir / f"rho_{env_id}.json"
-                    if not rho_json.exists():
-                        continue
-                    d = json.loads(env_json.read_text())
-                    r = json.loads(rho_json.read_text())
-                    cells.append({
-                        "split": split_dir.name,
-                        "model": model_dir.name,
-                        "seed": seed_dir.name,
-                        "env_id": env_id,
-                        "div": d["divergence"],
-                        "resp": d["responsiveness"],
-                        "rho": r["corr_obs_latent"],
-                    })
-    if not cells:
-        print("No OOD1 cells found.")
-        return
-
-    splits = sorted({c["split"] for c in cells})
-    envs = sorted({c["env_id"] for c in cells})
-    models = sorted({c["model"] for c in cells})
-
-    out_md = Path("results/utility/ood1_table.md")
-    with out_md.open("w") as f:
-        f.write("# OOD1 cross-benchmark-family transfer (v0.7.10)\n\n")
-        f.write("Honest-scope OOD1 matrix: train on 1 family, evaluate on the 3 other "
-                "families. Only the *ood1_dmc_train* split is non-degenerate (13 DMC "
-                "training envs); the other 3 splits train on a single env. All numbers "
-                "are 1-seed pilot-scale.\n\n")
-        f.write("Per-cell metric: `div` (latent per-dim std), `resp` (mean |delta-lat|/"
-                "|delta-obs|), `rho` (corr between ||delta-obs|| and ||delta-lat||).\n\n")
-        f.write("| split | model | seed | env | div | resp | rho |\n")
-        f.write("|---|---|---|---|---|---|---|\n")
-        for c in cells:
-            f.write(f"| {c['split']} | {c['model']} | {c['seed']} | "
-                    f"{c['env_id']} | {c['div']:.4f} | {c['resp']:.3f} | "
-                    f"{c['rho']:.3f} |\n")
-
-        # Mean per (split, model, env) — if multiple cells exist
-        from collections import defaultdict
-        agg = defaultdict(list)
-        for c in cells:
-            agg[(c["split"], c["model"], c["env_id"])].append((c["div"], c["resp"], c["rho"]))
-        f.write("\n## Mean per (split, model, env) across seeds\n\n")
-        f.write("| split | model | env | mean_div | mean_resp | mean_rho |\n")
-        f.write("|---|---|---|---|---|---|\n")
-        for k, vs in sorted(agg.items()):
-            ds = [v[0] for v in vs]
-            rs = [v[1] for v in vs]
-            ho = [v[2] for v in vs]
-            f.write(f"| {k[0]} | {k[1]} | {k[2]} | "
-                    f"{sum(ds)/len(ds):.4f} | {sum(rs)/len(rs):.3f} | "
-                    f"{sum(ho)/len(ho):.3f} |\n")
-    print(f"Wrote {out_md}")
+        diag, align = load_json(paths[1]), load_json(paths[2])
+        for payload, steps in ((diag, 200), (align, 100)):
+            validate_diagnostic(payload, env=env_id, model=model, seed=seed)
+            require(payload["n_steps"] == steps, f"Wrong OOD1 diagnostic length: {identity}")
+            require(Path(payload["ckpt"]).resolve() == ckpt.resolve(), f"Wrong OOD1 checkpoint: {identity}")
+        rows.append({**identity, "divergence": diag["divergence"],
+                     "responsiveness": diag["responsiveness"], "event_rho": align["event_rho"]})
+    result = {
+        "status": "incomplete" if missing else "complete", "publication_ready": False,
+        "protocol_version": 2, "n_required": len(cells), "n_complete": len(rows),
+        "missing": missing, "cells": rows,
+    }
+    write_new_json(Path(out_dir) / "coverage.json", result)
+    return result
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--splits", nargs="*", default=[s[0] for s in SPLITS])
-    ap.add_argument("--models", nargs="*", default=DEFAULT_CKPT_BUDGET)
-    ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--skip-train", action="store_true")
-    ap.add_argument("--aggregate-only", action="store_true")
-    ap.add_argument("--out-dir", default="results/ood1")
-    args = ap.parse_args()
-
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--splits", nargs="+", choices=[split for split, _, _ in SPLITS],
+                        default=[split for split, _, _ in SPLITS])
+    parser.add_argument("--models", nargs="+", default=DEFAULT_CKPT_BUDGET)
+    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--skip-train", action="store_true")
+    parser.add_argument("--aggregate-only", action="store_true")
+    parser.add_argument("--out-dir", type=Path, default=Path("results/ood1"))
+    parser.add_argument("--eval-spec", type=Path, default=Path("configs/ood1_eval.json"))
+    parser.add_argument("--device", default="cpu")
+    args = parser.parse_args()
+    cells = planned_cells(args.out_dir, args.splits, args.models, args.seed, args.eval_spec)
     if not args.aggregate_only:
-        for split, train_family, unseen_families in SPLITS:
-            if split not in args.splits:
-                continue
-            print(f"=== split {split}: train={train_family} unseen={unseen_families} ===")
-            for model in args.models:
-                train_one_ckpt(split, model, args.seed)
-                ckpt = Path(args.out_dir) / split / model / f"seed_{args.seed}" / "final.pt"
-                eval_spec = json.loads(Path("configs/ood1_eval.json").read_text())["specs"]
-                for env_entry in eval_spec:
-                    if env_entry["env_kind"] not in unseen_families:
-                        continue
-                    out = run_one_cell(
-                        ckpt, env_entry["env_id"], env_entry["env_kind"],
-                        env_entry["path"], args.seed,
-                    )
-                    print(f"  [{env_entry['env_kind']}/{env_entry['env_id']}] "
-                          f"div={out['div']:.4f} resp={out['resp']:.3f} "
-                          f"rho={out['rho']:.3f}")
-
-    aggregate(args.out_dir)
-    return 0
+        if args.skip_train:
+            missing = sorted({str(ckpt) for _, _, ckpt, _ in cells if not ckpt.is_file()})
+            require(not missing, "--skip-train requires every requested checkpoint: " + ", ".join(missing))
+        for split, model, ckpt, entry in cells:
+            if not args.skip_train and not ckpt.is_file():
+                train_one_ckpt(split, model, args.seed, args.out_dir)
+            result = run_one_cell(ckpt, entry["env_id"], entry["env_kind"], entry["path"], args.seed, args.device)
+            print(f"[{split}/{model}/{entry['env_id']}] div={fmt(result['div'])} "
+                  f"resp={fmt(result['resp'])} rho={fmt(result['rho'])}")
+    result = aggregate(args.out_dir, splits=args.splits, models=args.models, seed=args.seed, eval_spec=args.eval_spec)
+    print(f"[ood1] {result['status']}: {result['n_complete']}/{result['n_required']} cells")
+    return 0 if result["status"] == "complete" else 1
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

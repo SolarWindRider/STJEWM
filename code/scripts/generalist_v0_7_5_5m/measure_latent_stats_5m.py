@@ -1,13 +1,8 @@
-"""Measure collapse-robust latent statistics for 5M-aligned generalist ckpts.
+"""Measure trained-checkpoint readouts and observation embeddings separately.
 
-Mirror of code/scripts/generalist_v0_7_5/measure_latent_stats.py but:
-  - Reads from results/5m/<split>/<model>/seed_0/final.pt
-  - Uses state-dict inference to handle 5M model dims (e.g. alif_timecell d_hid=186)
-  - Iterates over (split, model, env) grid
-
-Usage:
-    python -m code.scripts.generalist_v0_7_5_5m.measure_latent_stats_5m
-    python -m code.scripts.generalist_v0_7_5_5m.measure_latent_stats_5m --splits oodc_F1 cross_benchmark_F1
+Uses the same seeded, single-frame diagnostic protocol as latent_rollout.py.
+Every checkpoint is loaded strictly; failures make the batch fail rather than
+silently producing an incomplete summary.
 """
 from __future__ import annotations
 import argparse
@@ -15,10 +10,12 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
 
 import numpy as np
 import torch
+
+from code.scripts.event_align import build_model
+from code.scripts.latent_rollout import PROTOCOL_VERSION, collect_state_rollout
 
 
 DMC_ENVS = [
@@ -48,167 +45,34 @@ MODELS = [
 ]
 
 
-def _infer_dim_from_state_dict(sd, key):
-    if sd is None:
-        return None
-    w = sd.get(key)
-    if hasattr(w, "shape") and len(w.shape) >= 1:
-        return int(w.shape[0])
-    return None
-
-
-def _state_dict_n_layers(sd, prefix):
-    if sd is None:
-        return None
-    indices = []
-    for k in sd:
-        if k.startswith(prefix + "."):
-            rest = k[len(prefix) + 1:]
-            if rest.startswith("weight_ih_l") or rest.startswith("weight_hh_l"):
-                try:
-                    indices.append(int(rest.split("_l")[-1]))
-                except ValueError:
-                    pass
-    return max(indices) + 1 if indices else None
-
-
 def load_model_5m(ckpt_path: str, env, device: str = "cpu"):
-    from code.eval.closed_loop import _PadObsWrapper
     ck = torch.load(ckpt_path, map_location="cpu", weights_only=False)
-    sd = ck.get("model", {})
     ck_args = ck.get("args", {})
-    state_dim = (ck_args.get("pad_obs_to") or env.spec.obs_dim)
-    action_dim = (ck_args.get("action_dim") or env.spec.action_dim)
-    if state_dim > env.spec.obs_dim:
-        env = _PadObsWrapper(env, state_dim)
-    m = ck_args.get("model", "stjewm")
-    if m == "lewm_baseline":
-        from code.lewm_transformer_baseline import LeWMTransformerBaseline
-        embed_dim = (_infer_dim_from_state_dict(sd, "state_encoder.proj.0.weight")
-                      or ck_args.get("embed_dim", 288))
-        return (LeWMTransformerBaseline(
-            state_dim=state_dim, action_dim=action_dim,
-            embed_dim=embed_dim, num_layers=3, num_heads=8
-        ).to(device).eval(), ck_args, state_dim, action_dim)
-    if m == "gru_baseline":
-        from code.gru_baseline import GRUBaseline
-        hidden_dim = (_infer_dim_from_state_dict(sd, "state_proj.0.weight")
-                      or ck_args.get("hidden_dim", 560))
-        n_layers = _state_dict_n_layers(sd, "gru") or ck_args.get("n_layers", 2)
-        return (GRUBaseline(state_dim=state_dim, action_dim=action_dim,
-                            hidden_dim=hidden_dim, num_layers=n_layers
-                            ).to(device).eval(), ck_args, state_dim, action_dim)
-    if m == "mlp_baseline":
-        from code.mlp_baseline import MLPBaseline
-        hidden_dim = (_infer_dim_from_state_dict(sd, "state_proj.0.weight")
-                      or ck_args.get("hidden_dim", 640))
-        # num hidden layers = count of net.X.weight of shape [hidden, hidden]
-        n_hidden = sum(1 for k, v in sd.items()
-                       if k.startswith("net.") and k.endswith(".weight")
-                       and hasattr(v, "shape") and len(v.shape) == 2
-                       and v.shape[0] == hidden_dim and v.shape[1] == hidden_dim)
-        num_layers = n_hidden or 12
-        emb_dim = (_infer_dim_from_state_dict(sd, "state_proj.2.weight") or 192)
-        return (MLPBaseline(state_dim=state_dim, action_dim=action_dim,
-                            hidden_dim=hidden_dim, num_layers=num_layers, emb_dim=emb_dim
-                            ).to(device).eval(), ck_args, state_dim, action_dim)
-    if m == "stacked_lif_trace":
-        from code.stacked_lif_baseline import make_stacked_lif_trace
-        d_in = _infer_dim_from_state_dict(sd, "state_projector.proj.0.weight") or 672
-        return (make_stacked_lif_trace(state_dim=state_dim, action_dim=action_dim,
-                                        d_in=d_in, embed_dim=d_in, n_layers=8,
-                                        trace_beta=0.9, k_avg=4
-                                        ).to(device).eval(), ck_args, state_dim, action_dim)
-    if m == "stacked_lif_free":
-        from code.stacked_lif_baseline import make_stacked_lif_free
-        d_in = _infer_dim_from_state_dict(sd, "state_projector.proj.0.weight") or 640
-        return (make_stacked_lif_free(state_dim=state_dim, action_dim=action_dim,
-                                       d_in=d_in, embed_dim=d_in, n_layers=8,
-                                       trace_beta=0.9
-                                       ).to(device).eval(), ck_args, state_dim, action_dim)
-    if m == "alif_timecell_baseline":
-        from code.alif_timecell_baseline import ALIFTimecellBaseline
-        d_hid = _infer_dim_from_state_dict(sd, "state_projector.0.weight") or 186
-        return (ALIFTimecellBaseline(state_dim=state_dim, action_dim=action_dim,
-                                d_hid=d_hid, n_layers=2
-                                ).to(device).eval(), ck_args, state_dim, action_dim)
-    if m == "lif_transformer_baseline":
-        from code.lif_transformer_baseline import make_lif_transformer
-        d_snn = _infer_dim_from_state_dict(sd, "state_proj.proj.0.weight") or 288
-        d_tx = d_snn
-        if "pos_embed" in sd:
-            d_tx = int(sd["pos_embed"].shape[2])
-        return (make_lif_transformer(state_dim=state_dim, action_dim=action_dim,
-                                 d_snn=d_snn, d_tx=d_tx, num_layers=3, num_heads=8
-                                 ).to(device).eval(), ck_args, state_dim, action_dim)
-    from code.stjewm import STJEWM
-    return (STJEWM(
-        d_hid=192, embed_dim=192, action_dim=action_dim, action_emb_dim=192,
-        state_dim=state_dim, cell_n_layers=4, n_d=3, trace_beta=0.9,
-        freeze_encoder=True, readout_mode=ck_args.get("readout_mode", "hidden_leak")
-    ).to(device).eval(), ck_args, state_dim, action_dim)
+    state_dim = ck_args.get("pad_obs_to") or env.spec.obs_dim
+    action_dim = ck_args.get("action_dim") or env.spec.action_dim
+    model_name = Path(ckpt_path).parent.parent.name
+    model = build_model(model_name, state_dim, action_dim, ck_args, state_dict=ck["model"])
+    model.load_state_dict(ck["model"], strict=True)
+    return model.to(device).eval(), ck_args, state_dim, action_dim
 
 
 def measure_one(ckpt_path, env_kind, data_path, n_steps=200, seed=0, device="cpu"):
-    from code.eval.closed_loop import make_env, _PadObsWrapper
-    clo_env = CLO_ENV_MAP.get(env_kind, env_kind)
-    env = make_env(clo_env, data_path)
-    # Load ckpt first to know state_dim, then wrap env, then build model
-    import torch as _t
-    ck = _t.load(ckpt_path, map_location='cpu', weights_only=False)
-    ck_args = ck.get('args', {})
-    state_dim = ck_args.get('pad_obs_to') or env.spec.obs_dim
-    action_dim = ck_args.get('action_dim') or env.spec.action_dim
-    if state_dim > env.spec.obs_dim:
-        from code.eval.closed_loop import _PadObsWrapper
-        env = _PadObsWrapper(env, state_dim)
-    model, _, _, _ = load_model_5m(ckpt_path, env, device)
-
-    obs_traj = []
-    lat_traj = []
-    a_low = env.spec.action_low
-    a_high = env.spec.action_high
-    env.reset(seed=seed)
-    obs = env.get_state()
-    obs_traj.append(obs.astype(np.float32))
-    a_padded = np.zeros(action_dim, dtype=np.float32)
-
-    with torch.no_grad():
-        for t in range(n_steps):
-            a = np.random.uniform(a_low, a_high).astype(np.float32)
-            a_padded[: len(a)] = a
-            s_t = torch.from_numpy(obs.astype(np.float32)).reshape(1, 1, -1).to(device)
-            a_t = torch.from_numpy(a_padded).reshape(1, 1, -1).to(device)
-            enc = model.encode(s_t, a_t)
-            lat = enc["emb"][0, 0].cpu().numpy()
-            lat_traj.append(lat)
-            out, _, done, _ = env.step(a)
-            obs = out.get("state", list(out.values())[0])
-            obs_traj.append(obs)
-            if done:
-                env.reset(seed=seed + t + 1)
-    obs_arr = np.stack(obs_traj, axis=0)
-    lat_arr = np.stack(lat_traj, axis=0)
-    d_obs = np.linalg.norm(np.diff(obs_arr, axis=0), axis=1)
-    d_lat = np.linalg.norm(np.diff(lat_arr, axis=0), axis=1)
-    responsiveness = float(d_lat.mean() / d_obs.mean()) if d_obs.mean() > 1e-9 else 0.0
-    per_dim_std = lat_arr.std(axis=0)
-    divergence = float(per_dim_std.mean())
-    return {
-        "model": Path(ckpt_path).parent.parent.name,
-        "split": Path(ckpt_path).parent.parent.parent.name,
-        "env": env_kind,
-        "ckpt": str(ckpt_path),
-        "n_steps": int(n_steps),
-        "responsiveness": round(responsiveness, 4),
-        "divergence": round(divergence, 4),
-        "per_dim_std_max": round(float(per_dim_std.max()), 4),
-        "per_dim_std_min": round(float(per_dim_std.min()), 4),
-        "mean_norm_obs": round(float(np.linalg.norm(obs_arr, axis=1).mean()), 4),
-        "mean_norm_latent": round(float(np.linalg.norm(lat_arr, axis=1).mean()), 4),
-        "mean_d_obs": round(float(d_obs.mean()), 4),
-        "mean_d_latent": round(float(d_lat.mean()), 4),
-    }
+    from code.eval.closed_loop import make_env
+    env = make_env(CLO_ENV_MAP.get(env_kind, env_kind), data_path)
+    try:
+        model, _, state_dim, action_dim = load_model_5m(ckpt_path, env, device)
+        result, _ = collect_state_rollout(
+            model, env, state_dim, action_dim,
+            n_steps=n_steps, n_resets=2, seed=seed, device=device,
+        )
+    finally:
+        env.close()
+    result.update(
+        model=Path(ckpt_path).parent.parent.name,
+        split=Path(ckpt_path).parent.parent.parent.name,
+        env=env_kind, ckpt=str(ckpt_path), weights_loaded_strict=True,
+    )
+    return result
 
 
 def main():
@@ -222,6 +86,7 @@ def main():
                    help="Restrict to specific envs (default: all DMC)")
     p.add_argument("--n-steps", type=int, default=200)
     p.add_argument("--device", default="cpu")
+    p.add_argument("--seed", type=int, default=0)
     p.add_argument("--n-envs", type=int, default=7,
                    help="Number of envs to measure per (split, model)")
     args = p.parse_args()
@@ -231,13 +96,13 @@ def main():
     splits = args.splits or sorted([p.name for p in args.results.iterdir() if p.is_dir() and p.name != "_logs"])
     envs = args.envs or [e for e, _ in DMC_ENVS][:args.n_envs]
 
-    total = sum(1 for s in splits for m in args.models
-                if (args.results / s / m / "seed_0" / "final.pt").exists())
+    failures = []
     done = 0
     for split in splits:
         for model in args.models:
             ckpt = args.results / split / model / "seed_0" / "final.pt"
             if not ckpt.exists():
+                failures.append(f"Missing checkpoint: {ckpt}")
                 continue
             for env in envs:
                 # find data path
@@ -250,19 +115,27 @@ def main():
                     continue
                 out_path = args.out / split / model / f"latent_stats_{env}.json"
                 if out_path.exists():
-                    done += 1
-                    continue
+                    previous = json.loads(out_path.read_text())
+                    if previous.get("protocol_version") == PROTOCOL_VERSION:
+                        done += 1
+                        continue
+                    raise RuntimeError(f"Archive obsolete diagnostics before rerunning: {out_path}")
                 t0 = time.time()
                 try:
-                    r = measure_one(str(ckpt), env, data_path, args.n_steps, device=args.device)
+                    r = measure_one(str(ckpt), env, data_path, args.n_steps,
+                                    seed=args.seed, device=args.device)
                 except Exception as e:
-                    print(f"  ERR {split}/{model}/{env}: {e}")
+                    failures.append(f"{split}/{model}/{env}: {e}")
+                    print(f"  ERR {failures[-1]}", flush=True)
                     continue
                 out_path.parent.mkdir(parents=True, exist_ok=True)
-                out_path.write_text(json.dumps(r, indent=2))
+                out_path.write_text(json.dumps(r, indent=2, allow_nan=False))
                 done += 1
-                print(f"  [{done}] {split}/{model}/{env} resp={r['responsiveness']:.3f} div={r['divergence']:.3f} ({time.time()-t0:.1f}s)")
-    print(f"done: {done} stats generated -> {args.out}")
+                print(f"  [{done}] {split}/{model}/{env} resp={r['responsiveness']} "
+                      f"div={r['divergence']:.6g} ({time.time()-t0:.1f}s)", flush=True)
+    print(f"done: {done} stats generated -> {args.out}", flush=True)
+    if failures:
+        raise RuntimeError("Diagnostic batch failed:\n" + "\n".join(failures))
 
 
 if __name__ == "__main__":

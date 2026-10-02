@@ -55,17 +55,27 @@ history_size = $HISTORY_SIZE
 pad = $PAD
 action_dim = $ACTION_DIM
 
-clo_env_map = {"cartpole_2d": "cartpole", "pendulum_2d": "pendulum", "humanoid_CMU": "humanoid_cmu", "humanoid_cmu": "humanoid_cmu"}
+clo_env_map = {
+    "cartpole_2d": "cartpole", "pendulum_2d": "pendulum",
+    "humanoid_CMU": "humanoid_cmu", "humanoid_cmu": "humanoid_cmu",
+    "cheetah_velhidden": "cheetah_qpos_masked",
+}
 stress_out_dir = os.path.join("$STRESS_OUT_PARENT", split_name, "$MODEL", "seed_$SEED")
 os.makedirs(stress_out_dir, exist_ok=True)
 
 n_total = len(spec)
 for i, entry in enumerate(spec):
-    env_id = entry["env_id"]
+    source_env_id = entry["env_id"]
+    env_id = "cheetah_qpos_masked" if source_env_id == "cheetah_velhidden" else source_env_id
     data_path = entry["path"]
     goal_offset = entry.get("goal_offset", 25)
-    clo_env = entry.get("clo_env") or clo_env_map.get(env_id, env_id)
-    extra = entry.get("extra_flags", [])
+    declared_clo_env = entry.get("clo_env") or source_env_id
+    clo_env = clo_env_map.get(declared_clo_env, declared_clo_env)
+    # Keep source specs intact; new runtime/output labels describe qpos masking.
+    extra = [
+        "--qpos-mask-obs-ratio" if flag == "--vel-hidden-mask-obs-ratio" else flag
+        for flag in entry.get("extra_flags", [])
+    ]
     is_stress = bool(extra)
     this_out_dir = stress_out_dir if is_stress else out_dir
     out_json = os.path.join(this_out_dir, f"eval_{env_id}.json")
@@ -85,5 +95,5 @@ for i, entry in enumerate(spec):
     print(f"[eval {i+1}/{n_total}] {env_id} -> {out_json}", flush=True)
     rc = subprocess.call(cmd)
     if rc != 0:
-        print(f"[WARN] eval for {env_id} exited rc={rc}", file=sys.stderr, flush=True)
+        raise RuntimeError(f"Evaluation for {env_id} exited rc={rc}")
 PY

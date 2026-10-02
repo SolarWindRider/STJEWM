@@ -15,6 +15,18 @@ import torch
 from torch.utils.data import Dataset
 
 
+def _episode_window_starts(offsets, lengths, window):
+    """Enumerate complete windows within the recorded episode boundaries."""
+    starts = [
+        int(offset) + np.arange(max(0, int(length) - window + 1), dtype=np.int64)
+        for offset, length in zip(offsets, lengths)
+    ]
+    valid = np.concatenate(starts) if starts else np.empty(0, dtype=np.int64)
+    if not len(valid):
+        raise ValueError(f"No episode contains a complete {window}-frame window")
+    return valid
+
+
 @dataclass
 class WindowSpec:
     """Metadata for a windowed dataset."""
@@ -47,6 +59,7 @@ class WindowDataset(Dataset):
         actions: np.ndarray,        # (N, action_dim) flat
         spec: WindowSpec,
         max_windows: Optional[int] = None,
+        valid_starts: Optional[np.ndarray] = None,
     ):
         # Capture pre-pad dims before any mutation
         if not spec.obs_dim_original:
@@ -81,7 +94,15 @@ class WindowDataset(Dataset):
         cap = max_windows or spec.max_windows
         if cap is not None and cap < self._max_starts:
             self._max_starts = cap
-
+        # Optional explicit legal window starts (e.g. within-episode starts
+        # derived from episode boundaries). When present it defines both the
+        # length and the mapping of this dataset.
+        self._starts = (np.asarray(valid_starts, dtype=np.int64)
+                        if valid_starts is not None and len(valid_starts) else None)
+        if self._starts is not None:
+            if cap is not None and cap < len(self._starts):
+                self._starts = self._starts[:cap]
+            self._max_starts = len(self._starts)
 
     def __len__(self) -> int:
         return self._max_starts
@@ -89,8 +110,9 @@ class WindowDataset(Dataset):
     def __getitem__(self, idx: int) -> dict:
         spec = self.spec
         window = spec.history_size + spec.goal_offset + 1
-        s = idx
+        s = int(self._starts[idx]) if self._starts is not None else idx
         e = s + window
+
         state_window = self.obs[s:e]                            # (window, obs_dim)
         action_window = self.actions[s:e - 1]                    # (window-1, action_dim)
         # Pad action window with one zero row so it has the same time-dim as state

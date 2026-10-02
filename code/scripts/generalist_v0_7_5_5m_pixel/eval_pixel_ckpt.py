@@ -1,12 +1,21 @@
 #!/usr/bin/env python3
-"""eval_pixel_ckpt.py - Run closed-loop eval on a pixel ckpt across DMC envs.
+"""Closed-loop pixel evaluation for the 13 planned DMC environments.
 
-Usage:
-  python eval_pixel_ckpt.py --ckpt <path> --out_dir <path> [--image_size 84] [--n_episodes 5]
+Protocol: single-frame model(x, zero_action)["emb"] latents; CEM terminal
+squared-L2 cost, history 1, horizon 5, replanning after every executed action;
+50 actions per episode and one MuJoCo integration step per action. Fixed
+physical goals are rendered and scored in the same native state coordinates.
+The reported scalar latent distance is (1 - cosine(final_z, goal_z)) / 2.
 
-Outputs:
-  <out_dir>/eval_<env>.json per env
-  <out_dir>/eval_summary.json (all envs)
+The repaired planner searches native controls, clamps them to environment
+bounds, then zero-pads to model width for prediction. This corrects the old
+phantom-action protocol and requires rerunning every planned cell. Outputs
+must be written to a fresh directory, never over existing evaluation files.
+
+The original runtime attempted 13 environments including the canonical
+``humanoid_CMU`` key, which failed only because the constructor never received
+the native ``humanoid_cmu`` spelling. Results keep the canonical key while
+routing construction through the native registry name.
 """
 import sys
 from pathlib import Path
@@ -21,24 +30,26 @@ sys.path.insert(0, "/home/lx/LeWM")
 # which then shadows the user package (Python caches it as a module,
 # not a package, so `code.train` becomes unfindable).
 import code as _code_pkg  # noqa: F401
-from code.train.train import build_model  # noqa: F401
-from code.core.cem import CEM  # noqa: F401
+from code.train.train import build_model
+from code.scripts.audited_results import TrainingAudit, sha256
+from code.core.cem import CEM, make_native_action_predict_hook
 from code.core.envs.dmc_env import DMCPixelEnv  # noqa: F401
 
 import argparse
 import json
-import os
+import traceback
 
 import numpy as np
 import torch
-import importlib
 
-# 13 DMC envs
+# The original runtime planned 13 environments; humanoid_CMU keeps its
+# canonical result key and constructs through the native registry name.
 DMC_ENVS = [
     "cartpole", "pendulum", "finger", "ball_in_cup", "cheetah",
     "walker", "hopper", "quadruped", "humanoid", "humanoid_CMU",
     "dog", "fish", "stacker",
 ]
+DMC_ENV_KIND = {key: key.lower() for key in DMC_ENVS}
 
 
 def make_goal_state_for(env_kind: str):
@@ -53,51 +64,99 @@ def make_goal_state_for(env_kind: str):
         "hopper": np.zeros(7, dtype=np.float32),
         "quadruped": np.zeros(30, dtype=np.float32),
         "humanoid": np.zeros(28, dtype=np.float32),
-        "humanoid_CMU": np.zeros(63, dtype=np.float32),
+        "humanoid_cmu": np.zeros(63, dtype=np.float32),
         "dog": np.zeros(87, dtype=np.float32),
         "fish": np.zeros(14, dtype=np.float32),
         "stacker": np.zeros(20, dtype=np.float32),
-    }.get(env_kind, None)
+    }[env_kind]
 
 
-def encode_obs(model, obs_pixel_np, action_dim, device="cpu"):
-    """Encode a single pixel obs into a (D,) latent, model-agnostic.
+def restore_goal(env, env_kind: str) -> np.ndarray:
+    """Restore the physical target used both for rendering and goal scoring."""
+    import mujoco
 
-    Uses the training forward path (model(x, a) -> emb) so every 5M-aligned
-    family (STJEWM ViT encoder, MLP/GRU flat-pixel projectors, SNN baselines)
-    shares one code path. Single frame, zero action — matches the trainer's
-    goal-state encoding."""
-    x = torch.from_numpy(np.asarray(obs_pixel_np)).float().reshape(1, 1, -1).to(device)
-    a = torch.zeros(1, 1, action_dim, device=device)
+    target = make_goal_state_for(env_kind)
+    if env._expand_pendulum:
+        env._data.qpos[0] = float(np.arctan2(target[1], target[0]))
+    else:
+        env._data.qpos[:env._nq] = target[:env._nq]
+    env._data.qvel[:] = 0.0
+    # Zero quaternion coordinates are not a valid physical orientation.
+    mujoco.mj_normalizeQuat(env._model, env._data.qpos)
+    mujoco.mj_forward(env._model, env._data)
+    return env.get_state()
+
+
+def encode_obs(model, obs_pixel_np, device="cpu"):
+    """Measure the model's full-forward output, not its pre-cell encoder.
+
+    Derive the zero-action width from the loaded model, never the environment:
+    generalist checkpoints were trained with 56 action channels even when the
+    environment has fewer controls. Keep this same output space for current,
+    goal and final observations and for the planner's predicted latents.
+    """
+    pixel = np.asarray(obs_pixel_np)
+    if pixel.ndim != 3 or pixel.shape[0] != 3:
+        raise ValueError(f"Expected a CHW RGB observation, got {pixel.shape}")
+    x = torch.as_tensor(pixel, dtype=torch.float32, device=device)[None, None]
+    a = x.new_zeros(1, 1, model.action_dim)
     with torch.no_grad():
         out = model(x, a)
-    emb = out["emb"] if isinstance(out, dict) else out
-    return emb[0, -1].reshape(-1)
+    return out["emb"][0, -1].reshape(-1)
 
 
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--ckpt", required=True)
+    p.add_argument("--training-manifest", required=True)
     p.add_argument("--image_size", type=int, default=84)
     p.add_argument("--out_dir", required=True)
-    p.add_argument("--n_episodes", type=int, default=3)
+    p.add_argument("--n_episodes", type=int, default=5)
     p.add_argument("--horizon", type=int, default=5)
-    p.add_argument("--samples", type=int, default=100)
-    p.add_argument("--elites", type=int, default=10)
-    p.add_argument("--cem_iters", type=int, default=5, help="CEM iterations (default 5 for speed)")
+    p.add_argument("--samples", type=int, default=300)
+    p.add_argument("--elites", type=int, default=30)
+    p.add_argument("--cem_iters", type=int, default=10)
     p.add_argument("--device", default="cpu")
+    p.add_argument("--envs", help="Comma-separated subset of the 13 planned environments")
     args = p.parse_args()
+    if min(args.n_episodes, args.horizon, args.samples, args.cem_iters) < 1:
+        p.error("episodes, horizon, samples and CEM iterations must be positive")
+    if not 1 < args.elites <= args.samples:
+        p.error("CEM requires 2 <= elites <= samples")
+    selected_envs = DMC_ENVS if args.envs is None else args.envs.split(",")
+    if (not selected_envs or len(set(selected_envs)) != len(selected_envs)
+            or any(env not in DMC_ENVS for env in selected_envs)):
+        p.error(f"--envs must contain unique names from {DMC_ENVS}")
+    args.ckpt = str(Path(args.ckpt).resolve())
+    audit = TrainingAudit(args.training_manifest)
+    repair_provenance = audit.provenance(args.ckpt)
+
+    results_per_env = {}
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+    output_paths = [out_dir / "eval_summary.json"] + [
+        out_dir / f"eval_{env}.json" for env in DMC_ENVS
+    ]
+    if any(path.exists() for path in output_paths):
+        p.error(f"Refusing to overwrite evaluation data in {out_dir}; choose a fresh --out_dir")
 
     # Load ckpt
     print(f"[eval_pixel] loading {args.ckpt}")
-    ckpt = torch.load(args.ckpt, map_location=args.device, weights_only=False)
-    saved_args = ckpt.get("args", {})
-    model_kind = saved_args.get("model", "stjewm")
-    obs_dim = saved_args.get("pad_obs_to", 21168)
-    action_dim = saved_args.get("action_dim", 56)
+    ckpt = torch.load(args.ckpt, map_location="cpu", weights_only=False)
+    training_protocol_version = ckpt.get("training_protocol_version")
+    required_protocol = audit.payload["required_checkpoint_metadata"]["training_protocol_version"]
+    if training_protocol_version != required_protocol:
+        raise ValueError(
+            f"Checkpoint training protocol {training_protocol_version!r} does not match "
+            f"manifest protocol {required_protocol!r}"
+        )
+    if ckpt.get("training_provenance", {}).get("protocol_version") != training_protocol_version:
+        raise ValueError("Checkpoint training provenance does not confirm its training protocol")
+    saved_args = ckpt["args"]
+    model_kind = saved_args["model"]
+    obs_dim = saved_args["pad_obs_to"]
+    action_dim = saved_args["action_dim"]
     n_layers = saved_args.get("n_layers", 4)
     embed_dim = saved_args.get("embed_dim", 192)
     readout_mode = saved_args.get("readout_mode", "hidden_leak")
@@ -109,74 +168,62 @@ def main():
     model = build_model(
         model_kind, obs_dim, action_dim, n_layers, readout_mode,
         embed_dim=embed_dim, image_size=image_size,
+        hidden_dim=saved_args.get("hidden_dim"),
+        mlp_hidden=saved_args.get("mlp_hidden"),
+        mlp_layers=saved_args.get("mlp_layers"),
+        stacked_lif_layers=saved_args.get("stacked_lif_layers"),
+        stacked_lif_din=saved_args.get("stacked_lif_din"),
     )
-    model.load_state_dict(ckpt["model"])
+    model.load_state_dict(ckpt["model"], strict=True)
+    del ckpt
+    if sha256(args.ckpt) != repair_provenance["checkpoint_sha256"]:
+        raise ValueError("Checkpoint changed after training-audit admission")
     model.to(args.device).eval()
 
-    # CEM planner setup
-    from code.core.cem import CEM
-    from code.core.envs.dmc_env import DMCPixelEnv
-
-    results_per_env = {}
-
-    for env_kind in DMC_ENVS:
-        print(f"[eval_pixel] === {env_kind} ===")
+    for env_kind in selected_envs:
+        print(f"[eval_pixel] === {env_kind} ===", flush=True)
+        env_kind_native = DMC_ENV_KIND[env_kind]
+        env = None
         try:
-            env = DMCPixelEnv(env_kind, image_size=image_size,
-                               success_tol=0.1, max_episode_steps=50)
+            env = DMCPixelEnv(env_kind_native, image_size=image_size,
+                               max_episode_steps=50)
             action_dim_env = env.spec.action_dim
-            # Model was trained with action_dim=56 (padded for generalist). The env has
-            # action_dim_env (e.g. 5 for cheetah). The model's action_encoder expects 56
-            # inputs, so we plan with the model action_dim and slice to native on env.step().
-            cem = CEM(model, action_dim=action_dim, horizon=args.horizon,
+            if action_dim_env > model.action_dim:
+                raise ValueError(
+                    f"{env_kind} needs {action_dim_env} actions, checkpoint has {model.action_dim}"
+                )
+            predict_native = make_native_action_predict_hook(
+                model.action_dim, env.spec.action_low, env.spec.action_high, args.device,
+            )
+            cem = CEM(model, action_dim=action_dim_env, horizon=args.horizon,
                       n_samples=args.samples, n_elites=args.elites,
-                      n_iters=args.cem_iters, history_size=1, device=args.device)
-            # Goal state (ground truth from physics)
-            goal_state = make_goal_state_for(env_kind)
-            if goal_state is None:
-                # Use first obs's state as goal (fallback)
-                obs = env.reset(seed=0)
-                goal_state = obs["state"]
-            # Encode goal latent
-            obs_for_goal = env.reset(seed=0)
-            goal_pixel = obs_for_goal["pixel"].copy()
-            # Place at the right qpos for the goal
-            # This is approximate - we just need any latent that represents the goal
-            # The actual goal latent is from the goal_obs
-            # We do the proper encoding using the env: set qpos to goal_state, render, encode
-            # For DMC the goal is well-defined, so we can directly use the qpos-based goal
-            # For pixel, we render the env at the goal qpos to get the goal pixel
-            # For now: set qpos to goal and render
-            import mujoco
-            if env_kind in ("cartpole", "pendulum", "finger", "ball_in_cup", "cheetah",
-                            "walker", "hopper", "quadruped", "humanoid",
-                            "humanoid_CMU", "dog", "fish", "stacker"):
-                # Set qpos to goal
-                env._data.qpos[: env._nq] = goal_state[: env._nq]
-                mujoco.mj_forward(env._model, env._data)
-                goal_pixel = env._render()
-            goal_z = encode_obs(model, goal_pixel, action_dim_env, args.device)  # (D,)
+                      n_iters=args.cem_iters, history_size=1, device=args.device,
+                      predict_hook=predict_native)
+            env.reset(seed=0)
+            goal_state = restore_goal(env, env_kind_native)
+            goal_qpos = env._data.qpos.copy()
+            goal_z = encode_obs(model, env._render(), args.device)
 
             success_count = 0
-            cos_dists = []         # physical distance (env.check_success)
-            lewm_cos_dists = []    # (1 - cos(final_z, goal_z)) / 2  (LeWM-style)
+            lewm_cos_dists = []
             phys_dists = []
+            per_episode = []
             for ep in range(args.n_episodes):
+                torch.manual_seed(ep)
                 obs = env.reset(seed=ep)
-                state = env.get_state()
                 for t in range(50):
-                    cur_z = encode_obs(model, obs["pixel"], action_dim_env, args.device)  # (D,)
-                    # CEM plan (with model action_dim=56)
+                    cur_z = encode_obs(model, obs["pixel"], args.device)  # (D,)
                     with torch.no_grad():
-                        action_seq = cem.plan(cur_z, goal_z)  # (H, A_model=56)
-                    # Slice to native (action_dim_env, e.g. 5 for cheetah)
-                    action_full = action_seq[0].cpu().numpy()
-                    action = action_full[:action_dim_env]
+                        action_seq = cem.plan(cur_z, goal_z)  # (H, A_native)
+                    action = np.clip(
+                        action_seq[0].cpu().numpy(),
+                        env.spec.action_low, env.spec.action_high,
+                    )
                     obs, r, done, _ = env.step(action)
                     if done:
                         break
                 # Final-state latent for LeWM-SR
-                final_z = encode_obs(model, obs["pixel"], action_dim_env, args.device)  # (D,)
+                final_z = encode_obs(model, obs["pixel"], args.device)  # (D,)
                 cos_sim = torch.nn.functional.cosine_similarity(
                     final_z.unsqueeze(0), goal_z.unsqueeze(0), dim=-1,
                 ).item()
@@ -184,57 +231,101 @@ def main():
                 lewm_cos_dists.append(lewm_cos_dist)
                 # Check env success
                 state = env.get_state()
-                # [FIX 2026-09-07] goal_state 维度与各 env state 对齐(静态 goal 表
-                # 的维度与 DMCPixelEnv get_state 不一致的 env 按零补齐/截断)
-                g = goal_state
-                if g.shape[0] < state.shape[0]:
-                    g = np.pad(g, (0, state.shape[0] - g.shape[0]))
-                elif g.shape[0] > state.shape[0]:
-                    g = g[: state.shape[0]]
-                suc, phys = env.check_success(state, g)
+                suc, phys = env.check_success(state, goal_state)
                 if suc:
                     success_count += 1
-                cos_dists.append(phys)  # legacy name compat
                 phys_dists.append(phys)
+                per_episode.append({
+                    "episode_idx": ep,
+                    "env_success": bool(suc),
+                    "phys_dist": float(phys),
+                    "cos_dist": lewm_cos_dist,
+                    "actions_taken": t + 1,
+                })
             env_sr = success_count / args.n_episodes
-            mean_cos = sum(cos_dists) / len(cos_dists) if cos_dists else 0.0
-            mean_lewm_cos = sum(lewm_cos_dists) / len(lewm_cos_dists) if lewm_cos_dists else 0.0
-            lewm_succ_005 = sum(1 for d in lewm_cos_dists if d < 0.05) / max(1, len(lewm_cos_dists))
-            lewm_succ_001 = sum(1 for d in lewm_cos_dists if d < 0.01) / max(1, len(lewm_cos_dists))
-            lewm_succ = sum(1 for d in lewm_cos_dists if d < 0.1) / max(1, len(lewm_cos_dists))
+            mean_phys = sum(phys_dists) / len(phys_dists)
+            mean_lewm_cos = sum(lewm_cos_dists) / len(lewm_cos_dists)
+            lewm_succ_005 = sum(d < 0.05 for d in lewm_cos_dists) / len(lewm_cos_dists)
+            lewm_succ_001 = sum(d < 0.01 for d in lewm_cos_dists) / len(lewm_cos_dists)
+            lewm_succ = sum(d < 0.1 for d in lewm_cos_dists) / len(lewm_cos_dists)
             results_per_env[env_kind] = {
-                "env_id": f"mujoco/{env_kind}_pixel",
+                "env_id": f"mujoco/{env_kind_native}_pixel",
+                "display_env_kind": env_kind,
                 "n_episodes": args.n_episodes,
                 "n_seeds": 1,
                 "cem_samples": args.samples,
                 "cem_elites": args.elites,
+                "cem_iters": args.cem_iters,
                 "horizon": args.horizon,
+                "history_size": 1,
+                "eval_budget": 50,
+                "replan_every": 1,
+                "frame_skip": 1,
+                "protocol_version": 2,
+                "measurement_object": "forward.emb",
+                "goal_state": goal_state.tolist(),
+                "goal_qpos": goal_qpos.tolist(),
+                "success_threshold": env._success_tol,
+                "episode_seeds": list(range(args.n_episodes)),
+                "planner_seeds": list(range(args.n_episodes)),
+                "model_action_dim": model.action_dim,
+                "env_action_dim": action_dim_env,
                 "success_rate_env": float(env_sr),
                 "mean_cos_dist": float(mean_lewm_cos),
-                "mean_phys_dist": float(mean_cos),
+                "mean_phys_dist": float(mean_phys),
                 "success_rate_lewm": float(lewm_succ),
                 "success_rate_lewm_005": float(lewm_succ_005),
                 "success_rate_lewm_001": float(lewm_succ_001),
+                "per_episode": per_episode,
             }
             print(f"  {env_kind}: env_sr={env_sr:.3f} lewm_cos={mean_lewm_cos:.4f} "
-                  f"lewm_sr@0.05={lewm_succ_005:.3f} phys={mean_cos:.4f}")
+                  f"lewm_sr@0.05={lewm_succ_005:.3f} phys={mean_phys:.4f}")
 
         except Exception as e:
             print(f"  {env_kind}: ERROR {e}")
-            import traceback
             traceback.print_exc()
-            results_per_env[env_kind] = {"error": str(e)}
+            results_per_env[env_kind] = {
+                "error": f"{type(e).__name__}: {e}",
+                "traceback": traceback.format_exc(),
+            }
+        finally:
+            if env is not None:
+                env.close()
 
     # Save summary
     summary = {
         "ckpt": args.ckpt,
+        "protocol_version": 2,
+        "training_protocol_version": training_protocol_version,
+        "repair_provenance": repair_provenance,
         "image_size": image_size,
         "model_kind": model_kind,
         "obs_dim": obs_dim,
         "results_per_env": results_per_env,
+        "evaluated_envs": selected_envs,
+        "protocol": {
+            "name": "pixel_static_qpos_native_action_cem",
+            "observation": "RGB CHW float32 in [0,1], one frame; no extra normalization",
+            "latent": "model(pixel[None,None], zeros[1,1,model.action_dim])['emb'][0,-1]",
+            "prediction": "model.predict(latent[batch,1,D], actions[batch,1,model.action_dim])",
+            "planner_cost": "sum_D((predicted_terminal_z - goal_z)**2)",
+            "latent_distance": "(1 - cosine_similarity(final_z, goal_z)) / 2",
+            "physical_distance": "qpos RMS; pendulum angular distance in radians",
+            "goal": "fixed native state, pendulum cos/sin converted to angle and quaternions normalized; identical rendered/scored target",
+            "history_size": 1,
+            "horizon": args.horizon,
+            "eval_budget": 50,
+            "replan_every": 1,
+            "frame_skip": 1,
+            "cem_iters": args.cem_iters,
+            "candidate_actions": "native controls, bounded identically for prediction/execution; zero-padded only for model.predict",
+            "episode_seeds": list(range(args.n_episodes)),
+            "planner_seeds": list(range(args.n_episodes)),
+        },
     }
     out_path = out_dir / "eval_summary.json"
-    out_path.write_text(json.dumps(summary, indent=2))
+    with out_path.open("x") as handle:
+        json.dump(summary, handle, indent=2, allow_nan=False)
     print(f"[eval_pixel] Saved {out_path}")
 
     # Save per-env JSONs
@@ -242,8 +333,12 @@ def main():
         if "error" in r:
             continue
         per_env_path = out_dir / f"eval_{env_kind}.json"
-        per_env_path.write_text(json.dumps(r, indent=2))
+        with per_env_path.open("x") as handle:
+            json.dump(r, handle, indent=2, allow_nan=False)
     print(f"[eval_pixel] DONE for {args.ckpt}")
+    failed_envs = [env for env, result in results_per_env.items() if "error" in result]
+    if failed_envs:
+        raise SystemExit(f"[eval_pixel] Failed planned cells: {', '.join(failed_envs)}")
 
 
 if __name__ == "__main__":

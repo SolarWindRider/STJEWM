@@ -62,59 +62,45 @@ The v0.7.5 work was a metric design fix, not a re-training.
 - `configs/generalist_probe_eval.json` — 7 probe-eligible envs with
   per-env probe target list.
 
-## Common entry points
+## Current manifest-gated entry points
 
-### Compute collapse-robust metrics on existing ckpts (v0.7.5 only, no training)
+Run these from `/home/lx/snn`. The surrounding v0.7.5 descriptions and old
+output paths are historical context, not current completion evidence.
+The final consolidated training manifest is the sole repair-training driver.
+Historical `run_all.sh`, `run_suite.sh` and `eval_stress.sh` no longer
+auto-publish results. In particular, do not use their shared historical
+checkpoint roots or aggregate-only smoke mode for the final repair generation.
 
-The v0.7.5 metric fix is **read-only on ckpts** — no retraining
-required. If you have an existing 12-ckpt set trained on G4/G8/G16,
-this is all you need:
-
-```bash
-# Per (ckpt, env) random-policy trajectory
-for SUITE in generalist generalist_G8 generalist_G16; do
-    bash code/scripts/generalist_v0_7_5/measure_all.sh   # if you have one
-done
-
-# Per (suite, env) collapse table
-python -m code.scripts.generalist_v0_7_5.aggregate_master --merge-all
-
-# Re-render the master MD with the 5-column collapse diagnostic
-python -m code.scripts.generalist_v0_7_5.render_master_table
-```
-
-### Train + eval G4 (1 seed, fresh)
+The examples require already completed state/auxiliary plans. They do not
+launch training or manufacture missing results. Each output and its JSON
+companion must be new; incomplete, obsolete, unpaired or changed evidence fails.
 
 ```bash
-bash code/scripts/generalist_v0_7_5/run_suite.sh G4 \
-    configs/generalist_G4_train.json \
-    configs/generalist_G16_eval.json 1
+PY=/home/lx/miniconda3/envs/snn/bin/python
+AUDIT=/data/lx/tmp/results/_repair_archive/20260916T102154Z/training_final_repair_manifest.json
+: "${STATE_RUN:?Set a completed final-generation state evaluation directory}"
+: "${AUX_RUN:?Set a completed final-generation auxiliary evaluation directory}"
+: "${REPORT_ROOT:?Set a fresh report output directory}"
+
+# Complete state evaluation summary. Repeat --state-run to combine disjoint plans.
+bash code/scripts/generalist_v0_7_5/master_aggregate.sh \
+  --training-manifest "$AUDIT" --state-run "$STATE_RUN" \
+  --out "$REPORT_ROOT/generalist_state.md"
+
+# Diagnostic summaries: forward.emb is primary; event_rho null stays undefined.
+$PY -m code.scripts.generalist_v0_7_5.aggregate_align \
+  --training-manifest "$AUDIT" --diagnostic-run "$AUX_RUN" --group state \
+  --out "$REPORT_ROOT/state_alignment.md"
+
+# Requires the complete scale group in AUX_RUN; does not invent G4/G8/G16 env-SR.
+$PY -m code.scripts.generalist_v0_7_5.scaling_table \
+  --training-manifest "$AUDIT" --diagnostic-run "$AUX_RUN" \
+  --out "$REPORT_ROOT/scaling_diagnostics.md"
 ```
 
-### Train + eval G8/G16 (3 seeds)
-
-```bash
-bash code/scripts/generalist_v0_7_5/run_suite.sh G8 \
-    configs/generalist_G8_train.json \
-    configs/generalist_G16_eval.json 3
-bash code/scripts/generalist_v0_7_5/run_suite.sh G16 \
-    configs/generalist_G16_train.json \
-    configs/generalist_G16_eval.json 3
-```
-
-### Stress-only (after ckpts exist)
-
-```bash
-bash code/scripts/generalist_v0_7_5/eval_stress.sh G16 3
-```
-
-### Probes + align (after ckpts exist)
-
-```bash
-N_SEEDS=3 bash code/scripts/generalist_v0_7_5/run_probes.sh
-N_SEEDS=3 bash code/scripts/generalist_v0_7_5/run_align.sh
-bash code/scripts/generalist_v0_7_5/master_aggregate.sh --probes --align --suite=G16
-```
+`--merge-all`, `--suite`, `--probes`, `--align`, and `--out-name` are no
+longer aggregation interfaces. Historical directory scans and
+`render_master_table.py` are not the final-generation publication route.
 
 ## Output paths
 

@@ -42,6 +42,8 @@ import torch.nn as nn
 
 sys.path.insert(0, "/home/lx/snn")
 
+from code.scripts.event_align import build_model
+
 
 # ============================================================
 # Env registry (mirrors code/scripts/train_all.sh ENVS)
@@ -141,6 +143,22 @@ EVENT_BINARY_TARGETS: set[str] = {
     "event_room_entered", "event_block_near_target", "event_cue_state",
 }
 
+EVENT_TARGET_PROTOCOL = "supported_observed_labels_v1"
+EVENT_TARGET_ENV = {
+    "event_room_entered": "tworoom",
+    "event_block_near_target": "pusht",
+    "event_cue_state": "delayed_t_maze",
+}
+
+
+def event_target_supported(env: str, target: str) -> bool:
+    """Environment/target lattice, independent of whether a sample has both classes."""
+    return (
+        env in ENV_REGISTRY
+        and target in EVENT_BINARY_TARGETS
+        and EVENT_TARGET_ENV.get(target, env) == env
+    )
+
 
 # All targets that the probe can produce.
 ALL_PROBE_TARGETS: list[str] = [
@@ -155,7 +173,7 @@ ALL_PROBE_TARGETS: list[str] = [
 # Helpers
 # ============================================================
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Linear probe on frozen encoder outputs.")
+    p = argparse.ArgumentParser(description="Linear probe on explicitly named frozen-model representations.")
     p.add_argument("--env", required=True, choices=sorted(ENV_REGISTRY.keys()))
     p.add_argument("--model", required=True, help="Model dir name, e.g. stjewm_v2.")
     p.add_argument(
@@ -176,6 +194,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--device", default="cpu",
                    help="cpu or cuda (probe is tiny, cpu is fine).")
     p.add_argument("--val-frac", type=float, default=0.2)
+    p.add_argument("--representation", choices=["readout", "observation_embedding"],
+                   default="readout")
     p.add_argument("--pad-obs-to", type=int, default=None,
                    help="Override state_dim with this padded dim (for generalist ckpts).")
     p.add_argument("--action-dim-eval", type=int, default=None,
@@ -183,134 +203,6 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
-def build_model(model_name: str, state_dim: int, action_dim: int, ck_args: dict,
-                ck_state_dict: dict | None = None):
-    """Build the model exactly as code/train/train.py and code/eval/closed_loop.py do.
-
-    For GRU / MLP, the n_layers stored in ck_args can be wrong (training
-    bookkeeping drift). We prefer the actual layer count from the state_dict
-    when available.
-    """
-    def _state_dict_n_layers(prefix: str) -> int | None:
-        if ck_state_dict is None:
-            return None
-        indices = []
-        for k in ck_state_dict:
-            if k.startswith(prefix + "."):
-                rest = k[len(prefix) + 1:]
-                if rest.startswith("weight_ih_l") or rest.startswith("weight_hh_l"):
-                    try:
-                        indices.append(int(rest.split("_l")[-1]))
-                    except ValueError:
-                        pass
-        return max(indices) + 1 if indices else None
-
-    def _infer_dim_from_state_dict(sd: dict | None, key: str) -> int | None:
-        if sd is None:
-            return None
-        w = sd.get(key)
-        if hasattr(w, "shape") and len(w.shape) >= 1:
-            return int(w.shape[0])
-        return None
-
-    if model_name.startswith("lewm"):
-        from code.lewm_transformer_baseline import LeWMTransformerBaseline
-        # measure_latent_stats_5m.py uses num_layers=3 (hardcoded).
-        embed_dim = (_infer_dim_from_state_dict(ck_state_dict, "state_encoder.proj.0.weight")
-                      or ck_args.get("embed_dim", 256))
-        num_layers = 3
-        return LeWMTransformerBaseline(
-            state_dim=state_dim, action_dim=action_dim,
-            embed_dim=embed_dim, num_layers=num_layers, num_heads=8,
-        )
-    if model_name.startswith("gru"):
-        from code.gru_baseline import GRUBaseline
-        hidden_dim = (_infer_dim_from_state_dict(ck_state_dict, "state_proj.0.weight")
-                      or ck_args.get("hidden_dim", 576))
-        num_layers = _state_dict_n_layers("gru") or ck_args.get("n_layers", 3)
-        return GRUBaseline(
-            state_dim=state_dim, action_dim=action_dim,
-            hidden_dim=hidden_dim, num_layers=num_layers,
-        )
-    if model_name.startswith("mlp"):
-        from code.mlp_baseline import MLPBaseline
-        hidden_dim = (_infer_dim_from_state_dict(ck_state_dict, "state_proj.0.weight")
-                      or ck_args.get("hidden_dim", 576))
-        # num_layers: total number of FFN Linear layers (initial in→hidden +
-        # n_hidden_layers hidden→hidden + 1 final hidden→emb). The count of
-        # [hidden, hidden]-shaped net.X.weight tensors is n_hidden_layers;
-        # we need n_hidden_layers + 1 iters to produce that count plus the
-        # final layer (off-by-one in the original implementation).
-        if ck_state_dict is not None:
-            n_hidden_layers = sum(1 for k, v in ck_state_dict.items()
-                                  if k.startswith("net.") and k.endswith(".weight")
-                                  and hasattr(v, "shape") and len(v.shape) == 2
-                                  and v.shape[0] == hidden_dim and v.shape[1] == hidden_dim)
-            num_layers = (n_hidden_layers + 1) if n_hidden_layers else ck_args.get("n_layers", 4)
-        else:
-            num_layers = ck_args.get("n_layers", 4)
-        emb_dim = (_infer_dim_from_state_dict(ck_state_dict, "state_proj.2.weight")
-                  or ck_args.get("emb_dim", 192))
-        return MLPBaseline(
-            state_dim=state_dim, action_dim=action_dim,
-            hidden_dim=hidden_dim, num_layers=num_layers, emb_dim=emb_dim,
-        )
-    if model_name.startswith("stacked_lif_trace"):
-        from code.stacked_lif_baseline import make_stacked_lif_trace
-        # 5m ckpts were trained with n_layers=8 (see measure_latent_stats_5m.py);
-        # args.n_layers=2 is misleading here.
-        n_layers = 8
-        d_in = _infer_dim_from_state_dict(ck_state_dict, "state_projector.proj.0.weight") or 192
-        return make_stacked_lif_trace(
-            state_dim=state_dim, action_dim=action_dim,
-            d_in=d_in, embed_dim=d_in, n_layers=n_layers, trace_beta=0.9, k_avg=4,
-        )
-    if model_name.startswith("stacked_lif_free"):
-        from code.stacked_lif_baseline import make_stacked_lif_free
-        n_layers = 8
-        d_in = _infer_dim_from_state_dict(ck_state_dict, "state_projector.proj.0.weight") or 192
-        return make_stacked_lif_free(
-            state_dim=state_dim, action_dim=action_dim,
-            d_in=d_in, embed_dim=d_in, n_layers=n_layers, trace_beta=0.9,
-        )
-    if model_name.startswith("lif_transformer"):
-        from code.lif_transformer_baseline import make_lif_transformer
-        # measure_latent_stats_5m.py uses num_layers=3 (hardcoded).
-        n_layers = 3
-        d_snn = _infer_dim_from_state_dict(ck_state_dict, "state_proj.proj.0.weight") or 128
-        d_tx = d_snn  # LIFTransformer uses d_snn == d_tx
-        if ck_state_dict is not None and "pos_embed" in ck_state_dict:
-            d_tx = int(ck_state_dict["pos_embed"].shape[2])
-        return make_lif_transformer(
-            state_dim=state_dim, action_dim=action_dim,
-            d_snn=d_snn, d_tx=d_tx, num_layers=n_layers, num_heads=8,
-        )
-    if model_name.startswith("alif_timecell"):
-        from code.alif_timecell_baseline import ALIFTimecellBaseline
-        # measure_latent_stats_5m.py uses n_layers=2.
-        n_layers = 2
-        d_hid = _infer_dim_from_state_dict(ck_state_dict, "state_projector.0.weight") or 192
-        return ALIFTimecellBaseline(
-            state_dim=state_dim, action_dim=action_dim,
-            d_hid=d_hid, n_layers=n_layers,
-        )
-    from code.stjewm import STJEWM
-    # Use ck_args['n_layers'] (the actual cell_n_layers used in training).
-    n_layers = ck_args.get("n_layers", 4)
-    # [FIX 2026-09-09] image_size must match the ckpt's frozen-ViT layout
-    # (37 patches = 84px) or strict load fails. Infer from position_embeddings.
-    isz = ck_args.get("image_size") or 84
-    if ck_state_dict is not None:
-        for k, v in ck_state_dict.items():
-            if "position_embeddings" in k and hasattr(v, "shape") and v.ndim == 3:
-                n_patches = int(v.shape[1]) - 1
-                isz = int(round((n_patches ** 0.5) * 14)) if n_patches > 0 else 84
-                break
-    return STJEWM(
-        d_hid=192, embed_dim=192, action_dim=action_dim, action_emb_dim=192,
-        state_dim=state_dim, cell_n_layers=n_layers, n_d=3,
-        trace_beta=0.9, freeze_encoder=True, image_size=isz,
-    )
 
 
 def collect_latents_and_targets(
@@ -318,8 +210,9 @@ def collect_latents_and_targets(
     target_kind: str, env: str, device: str, k: int = 10,
     max_windows: int = 5000, pad_obs_to: int | None = None,
     action_dim_eval: int | None = None,
+    representation: str = "readout",
 ):
-    """Walk the dataset, run model.encode() per window, return (Z, Y) tensors.
+    """Walk the dataset, collect one consistently named forward field per window.
 
     target_kind: position | velocity | future_k | goal_direction | contact
     """
@@ -388,8 +281,9 @@ def collect_latents_and_targets(
         s_dev = s_pad.to(device)
         a_dev = a_pad.to(device)
         with torch.no_grad():
-            enc = model.encode(s_dev, a_dev)
-        z = enc["emb"]                               # (B, T_max, D)
+            out = model(s_dev, a_dev)
+        key = "emb" if representation == "readout" else "emb_pre_cell"
+        z = out[key]                                 # (B, T_max, D)
         z_pooled = z.mean(dim=1)                     # (B, D)
         for j in range(z_pooled.shape[0]):
             Zs.append(z_pooled[j].cpu())
@@ -507,11 +401,12 @@ def collect_event_targets(
     max_windows: int = 5000,
     pad_obs_to: int | None = None,
     action_dim_eval: int | None = None,
+    representation: str = "readout",
 ):
-    """Walk the dataset, run model.encode() per window, return per-step (Z, Y).
+    """Run the same explicit forward representation for every model.
 
-    For each window we feed the FULL trajectory to model.encode() (padded to
-    the longest window in the batch) and get (B, T, D) embeddings. We then
+    Each full trajectory is padded to the longest window in the batch,
+    producing (B, T, D) representations. We then
     compute a per-step binary target of length T-1 (inter-step diff axis)
     and align them with z[:, :T-1, :].
 
@@ -520,6 +415,8 @@ def collect_event_targets(
         Y:            (sum_windows x (T-1), 1)
         binary_flag:  True if target is binary (use BCE + accuracy)
     """
+    if not event_target_supported(env, target_kind):
+        return None, None, True, f"unsupported event target {target_kind} for env={env}"
     n = min(len(dataset), max_windows)
     Zs, Ys = [], []
     BATCH = 32  # smaller because we expand to per-step T
@@ -532,14 +429,15 @@ def collect_event_targets(
             s_full = item["state"]            # (T_full, obs_dim)
             a_full = item["action"]           # (T_full, action_dim)
             goal_state = item["goal_state"]
+            tgt = _per_step_event_target(s_full, target_kind, env, goal_state)
+            if tgt is None or tgt.numel() == 0:
+                continue
             T_real_list.append(s_full.shape[0])
             s_list.append(s_full)
             a_list.append(a_full)
-            tgt = _per_step_event_target(s_full, target_kind, env, goal_state)
-            if tgt is None:
-                # Append a placeholder so encode() still gets the right shapes.
-                tgt = torch.zeros(s_full.shape[0] - 1, dtype=torch.float32)
             target_list.append(tgt)
+        if not s_list:
+            continue
 
         # Pad to T_max (the longest window in this batch).
         T_max = max(T_real_list)
@@ -558,15 +456,8 @@ def collect_event_targets(
         a_dev = a_pad.to(device)
         with torch.no_grad():
             out = model.forward(s_dev, a_dev)
-        # We probe the GATED SPIKE TRACE (pre-projection), not the post-readout
-        # latent. The trace is the model-visible state for trace-only STJEWM and
-        # the membrane-forbidden protocol is most clearly tested on it. For
-        # baselines (LeWM, GRU, MLP) forward() does not return a 'trace' key;
-        # fall back to 'emb' in that case.
-        if isinstance(out, dict) and "trace" in out:
-            z = out["trace"]                            # (B, T_max, D)
-        else:
-            z = out["emb"] if isinstance(out, dict) else out
+        key = "emb" if representation == "readout" else "emb_pre_cell"
+        z = out[key]
         # Per-step z for the real window length. Targets are aligned to T-1
         # steps (the inter-step diff axis). We index z[:, :T-1, :].
         for j, T_real in enumerate(T_real_list):
@@ -578,7 +469,7 @@ def collect_event_targets(
             Zs.append(z_win[:n_match].cpu())
             Ys.append(tgt_win[:n_match].cpu())
     if not Zs:
-        return None, None, True, "empty dataset"
+        return None, None, True, f"no windows with defined labels for {target_kind}"
     Z = torch.cat(Zs, dim=0)         # (N_total_steps, D)
     Y = torch.cat(Ys, dim=0)         # (N_total_steps,)
     Y = Y.unsqueeze(-1)              # (N, 1)
@@ -587,60 +478,40 @@ def collect_event_targets(
 
 
 def r2_score(y_pred: torch.Tensor, y_true: torch.Tensor,
-             near_const_floor: float = 1e-4,
-             winsorize_lo: float = 0.005, winsorize_hi: float = 0.995) -> tuple[float, list[float], list[bool]]:
-    """Per-output R^2 averaged over output dims, robust to near-constant targets
-    AND to extreme outliers in the val target distribution.
-
-    Returns (mean_r2, per_dim_r2, near_const_flags).
-
-    Two pathologies handled:
-    1. Near-constant val dim: `ss_tot ≈ 0`. Old code reported `1 - ss_res / 1e-9`
-       which produced numbers like -1.27 million. We now flag the dim and
-       report R^2 = 0.
-    2. Extreme outliers (e.g. velocity spikes at contacts): a single outlier
-       at 5x the IQR inflates `ss_res` by 25x and turns a sane R^2 into
-       -20. We winsorize y_true and y_pred together at
-       [winsorize_lo, winsorize_hi] quantiles before computing ss_tot/ss_res.
-       The clip bounds are computed per-dim from y_true.
-    """
+             near_const_floor: float = 0.0) -> tuple[float, list[float], list[bool]]:
+    """Raw, unclipped per-output R²; constant targets are flagged and scored zero."""
     yp = y_pred.detach().cpu().numpy().astype(np.float64)
     yt = y_true.detach().cpu().numpy().astype(np.float64)
     if yt.ndim == 1:
         yt = yt[:, None]
         yp = yp[:, None]
-    r2s = []
-    flags = []
+    if not np.isfinite(yp).all() or not np.isfinite(yt).all():
+        raise ValueError("Non-finite predictions or targets in position probe")
+    r2s, flags = [], []
     for d in range(yt.shape[1]):
-        ytd = yt[:, d]
-        ypd = yp[:, d]
-        # Per-dim winsorize bounds (computed from y_true)
-        if winsorize_lo > 0 and winsorize_hi < 1.0:
-            lo = float(np.quantile(ytd, winsorize_lo))
-            hi = float(np.quantile(ytd, winsorize_hi))
-            if hi > lo:
-                ytd = np.clip(ytd, lo, hi)
-                ypd = np.clip(ypd, lo, hi)
-        ss_res = float(((ytd - ypd) ** 2).sum())
-        ss_tot = float(((ytd - ytd.mean()) ** 2).sum())
-        if ss_tot < near_const_floor:
-            # Target is constant (after winsorization) on val for this dim —
-            # R^2 is undefined. Reporting 0.0 is the honest "no signal"
-            # answer.
-            r2s.append(0.0)
-            flags.append(True)
-        else:
-            r2s.append(1.0 - ss_res / ss_tot)
-            flags.append(False)
+        ss_res = float(((yt[:, d] - yp[:, d]) ** 2).sum())
+        ss_tot = float(((yt[:, d] - yt[:, d].mean()) ** 2).sum())
+        constant = ss_tot <= near_const_floor
+        r2s.append(0.0 if constant else 1.0 - ss_res / ss_tot)
+        flags.append(constant)
     return float(np.mean(r2s)), r2s, flags
 
 
-def save_skip(out_path: str, reason: str, n_train: int = 0, n_val: int = 0) -> None:
+def save_skip(
+    out_path: str, reason: str, n_train: int = 0, n_val: int = 0,
+    *, status: str = "skipped", env: str | None = None,
+    model: str | None = None, target: str | None = None,
+) -> None:
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w") as f:
         json.dump(
-            {"skipped": True, "reason": reason, "r2": 0.0, "n_train": n_train, "n_val": n_val},
-            f, indent=2,
+            {
+                "protocol_version": 2, "event_target_protocol": EVENT_TARGET_PROTOCOL,
+                "skipped": True, "status": status, "reason": reason,
+                "r2": None, "metric": None, "n_train": n_train, "n_val": n_val,
+                "env": env, "model": model, "probe_target": target,
+            },
+            f, indent=2, allow_nan=False,
         )
 
 
@@ -652,26 +523,33 @@ def main() -> int:
     env = args.env
     model_name = args.model
     target = args.probe_target
+    is_event = target.startswith("event_")
+    if is_event and not event_target_supported(env, target):
+        save_skip(
+            args.out, f"unsupported event target {target} for env={env}",
+            status="unsupported", env=env, model=model_name, target=target,
+        )
+        return 0
 
     ckpt_path = args.ckpt or f"/home/lx/snn/results/{env}/{model_name}/final.pt"
     if not os.path.exists(ckpt_path):
         save_skip(args.out, f"checkpoint missing: {ckpt_path}")
         print(f"[probe] skip — no ckpt at {ckpt_path}")
-        return 0
+        return int(is_event)
 
     # Load ckpt args
     try:
         ck = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     except Exception as e:
         save_skip(args.out, f"ckpt load failed: {e}")
-        return 0
+        return int(is_event)
     ck_args = ck.get("args", {}) or {}
 
     # Build dataset
     env_kind, data_path, history_size, goal_offset = ENV_REGISTRY[env]
     if not os.path.exists(data_path):
         save_skip(args.out, f"data missing: {data_path}")
-        return 0
+        return int(is_event)
     try:
         from code.data import load_dataset
         ds = load_dataset(env_kind, path=data_path, history_size=history_size,
@@ -679,10 +557,10 @@ def main() -> int:
                           pad_obs_to=args.pad_obs_to)
     except Exception as e:
         save_skip(args.out, f"dataset load failed: {e}")
-        return 0
+        return int(is_event)
     if len(ds) == 0:
         save_skip(args.out, "empty dataset")
-        return 0
+        return int(is_event)
 
     # Determine state_dim / action_dim. When --pad-obs-to/--action-dim-eval
     # are set (generalist ckpt), override the per-env native dims.
@@ -693,17 +571,16 @@ def main() -> int:
     # Build model + load weights
     try:
         model = build_model(model_name, state_dim, action_dim, ck_args,
-                            ck_state_dict=ck.get("model"))
-        model.load_state_dict(ck["model"])
+                            state_dict=ck.get("model"))
+        model.load_state_dict(ck["model"], strict=True)
     except Exception as e:
         save_skip(args.out, f"model build/load failed: {e}")
-        return 0
+        return int(is_event)
     model = model.to(args.device).eval()
     for p in model.parameters():
         p.requires_grad = False
 
     # Determine probe target dim + dispatch event-type vs window-level
-    is_event = target.startswith("event_")
     binary = target in EVENT_BINARY_TARGETS
     if is_event:
         probe_dim = 1   # per-step binary or scalar
@@ -712,6 +589,7 @@ def main() -> int:
             max_windows=args.max_windows,
             pad_obs_to=args.pad_obs_to,
             action_dim_eval=args.action_dim_eval,
+            representation=args.representation,
         )
     else:
         probe_dim = ENV_PROBE[env]["pos"][1] - ENV_PROBE[env]["pos"][0]
@@ -730,16 +608,20 @@ def main() -> int:
             model, ds, action_dim, probe_dim, target, env, args.device,
             k=args.future_k, max_windows=args.max_windows,
             pad_obs_to=args.pad_obs_to, action_dim_eval=args.action_dim_eval,
+            representation=args.representation,
         )
     if Z is None:
-        save_skip(args.out, err or "no data")
-        return 0
+        save_skip(args.out, err or "no data", status="undefined" if is_event else "skipped",
+                  env=env, model=model_name, target=target)
+        return int(is_event)
 
     # Z is already (N, D) from the batched collect
     n_total = Z.shape[0]
     if n_total < 16:
-        save_skip(args.out, f"too few samples: {n_total}", n_train=0, n_val=0)
-        return 0
+        save_skip(args.out, f"too few samples: {n_total}", n_train=0, n_val=0,
+                  status="undefined" if is_event else "skipped",
+                  env=env, model=model_name, target=target)
+        return int(is_event)
 
     # Train/val split with a FIXED random shuffle (not the prior sequential
     # split). The dataset is ordered by episode, so a sequential split gave
@@ -753,6 +635,13 @@ def main() -> int:
     perm = torch.randperm(n_total, generator=gen)
     Z_train, Z_val = Z[perm[:n_train]], Z[perm[n_train:]]
     Y_train, Y_val = Y[perm[:n_train]], Y[perm[n_train:]]
+    if binary and (torch.unique(Y_train).numel() < 2 or torch.unique(Y_val).numel() < 2):
+        save_skip(
+            args.out, "AUROC requires both observed classes in training and validation",
+            n_train=n_train, n_val=n_val, status="undefined",
+            env=env, model=model_name, target=target,
+        )
+        return 1
 
     # Move to device
     Z_train = Z_train.to(args.device)
@@ -762,6 +651,7 @@ def main() -> int:
 
     # Linear probe
     embed_dim = Z_train.shape[-1]
+    torch.manual_seed(12345)
     head = nn.Linear(embed_dim, probe_dim).to(args.device)
     opt = torch.optim.Adam(head.parameters(), lr=args.lr)
 
@@ -785,8 +675,9 @@ def main() -> int:
         loss_fn = nn.MSELoss()
 
     t0 = time.time()
+    shuffle_gen = torch.Generator().manual_seed(12345)
     for ep in range(args.epochs):
-        perm = torch.randperm(n_train)
+        perm = torch.randperm(n_train, generator=shuffle_gen)
         for s in range(0, n_train, args.batch):
             idx = perm[s: s + args.batch]
             pred = head(Z_train[idx])
@@ -821,13 +712,9 @@ def main() -> int:
         raw_acc = float((pred_class == y).mean())
         bal_acc = 0.5 * (pos_recall + neg_recall)
         # AUROC + AUPRC
-        try:
-            from sklearn.metrics import roc_auc_score, average_precision_score
-            auroc = float(roc_auc_score(y, prob)) if len(np.unique(y)) > 1 else 0.5
-            auprc = float(average_precision_score(y, prob)) if len(np.unique(y)) > 1 else float(y.mean())
-        except Exception:
-            auroc = 0.5
-            auprc = float(y.mean())
+        from sklearn.metrics import roc_auc_score, average_precision_score
+        auroc = float(roc_auc_score(y, prob))
+        auprc = float(average_precision_score(y, prob))
         r2 = auroc
         metric_name = "auroc"
         extra = {"raw_acc": raw_acc, "pos_recall": pos_recall,
@@ -846,7 +733,16 @@ def main() -> int:
                   f"near-constant on val; reporting R^2=0 for them.")
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     payload = {
+        "protocol_version": 2,
+        "representation": args.representation,
+        "measurement_object": "forward.emb" if args.representation == "readout" else "forward.emb_pre_cell",
+        "checkpoint": ckpt_path,
+        "weights_loaded_strict": True,
+        "probe_seed": 12345,
+        "target_metric": "raw_unclipped_r2" if not binary else "auroc",
         "skipped": False,
+        "status": "complete",
+        "event_target_protocol": EVENT_TARGET_PROTOCOL if is_event else None,
         "reason": None,
         "r2": float(r2),
         "metric": metric_name,
@@ -861,7 +757,7 @@ def main() -> int:
     }
     payload.update(extra)
     with open(args.out, "w") as f:
-        json.dump(payload, f, indent=2)
+        json.dump(payload, f, indent=2, allow_nan=False)
     if binary:
         print(f"[probe] {env}/{model_name}/{target}: AUROC={r2:.4f} bal_acc={bal_acc:.4f} raw_acc={raw_acc:.4f} base={float(y.mean()):.3f}  ({dt:.1f}s)")
     else:

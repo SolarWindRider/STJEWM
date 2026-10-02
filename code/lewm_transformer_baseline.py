@@ -1,7 +1,7 @@
 """LeWM-style Transformer baseline for state-based 3D arm world model.
 
 Faithful port of LeWM's JEPA architecture but for state input:
-- 6-layer Transformer (vs 4-layer SNN stack in ST-JEWM)
+- 6-layer causal Transformer (vs 4-layer SNN stack in ST-JEWM)
 - AdaLN-zero conditioning (LeWM's signature)
 - ViT-like state encoder (Linear + LayerNorm)
 - ~3.5M trainable params (similar to LeWM 3.49M for reacher)
@@ -50,7 +50,7 @@ class ActionEncoder(nn.Module):
 
 
 class AdaLNZeroBlock(nn.Module):
-    """Transformer block with AdaLN-zero conditioning (LeWM style)."""
+    """Causal self-attention block with AdaLN-zero conditioning (LeWM style)."""
     def __init__(self, dim, num_heads, mlp_ratio=4.0, dropout=0.0):
         super().__init__()
         self.norm1 = nn.LayerNorm(dim, elementwise_affine=False, eps=1e-6)
@@ -74,7 +74,19 @@ class AdaLNZeroBlock(nn.Module):
         # x: (B, T, D), cond: (B, T, D)
         shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = self.adaLN(cond).chunk(6, dim=-1)
         h = self.norm1(x) * (1 + scale_msa) + shift_msa
-        attn_out, _ = self.attn(h, h, h)
+        # Keep MultiheadAttention's learned projections/checkpoint layout, but
+        # use SDPA's causal kernel without allocating a quadratic attention mask.
+        B, T, D = h.shape
+        qkv = F.linear(h, self.attn.in_proj_weight, self.attn.in_proj_bias)
+        q, k, v = qkv.reshape(
+            B, T, 3, self.attn.num_heads, self.attn.head_dim
+        ).permute(2, 0, 3, 1, 4).unbind(0)
+        attn_out = F.scaled_dot_product_attention(
+            q, k, v,
+            dropout_p=self.attn.dropout if self.attn.training else 0.0,
+            is_causal=True,
+        )
+        attn_out = self.attn.out_proj(attn_out.transpose(1, 2).reshape(B, T, D))
         x = x + gate_msa * attn_out
         h = self.norm2(x) * (1 + scale_mlp) + shift_mlp
         x = x + gate_mlp * self.mlp(h)
@@ -82,7 +94,7 @@ class AdaLNZeroBlock(nn.Module):
 
 
 class LeWMTransformerBaseline(nn.Module):
-    """LeWM-style Transformer world model for state input."""
+    """LeWM-style world model; each temporal output uses only its input prefix."""
     def __init__(self, state_dim, action_dim, embed_dim=192, num_layers=6, num_heads=8, history_size=3, image_size: int = 0):
         super().__init__()
         self.state_dim = state_dim
@@ -133,6 +145,8 @@ class LeWMTransformerBaseline(nn.Module):
         state: (B, T, state_dim)
         action: (B, T, action_dim)
         returns: dict with 'emb' = (B, T, embed_dim)
+
+        Output t depends only on observations/actions through t within this call.
         """
         B, T = state.shape[:2]
         if self.pixel_pre is not None:
@@ -150,7 +164,7 @@ class LeWMTransformerBaseline(nn.Module):
         return {"emb": self.proj_out(x), "emb_pre_cell": s_emb}
 
     def predict(self, ctx_emb, ctx_act):
-        """Per-step prediction."""
+        """Per-step prediction using only matching latent/action prefixes."""
         # ctx_emb: (B, H, D), ctx_act: (B, H, A) or (B, H, D)
         if ctx_act.shape[-1] == self.action_dim:
             a_emb = self.action_encoder(ctx_act)

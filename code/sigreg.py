@@ -40,8 +40,8 @@ class SIGReg(nn.Module):
         A = A / A.norm(p=2, dim=0, keepdim=False).clamp_min(1e-12)
         # proj @ A : (T, B, num_proj); multiply by t grid
         x_t = (proj @ A).unsqueeze(-1) * self.t  # (T, B, num_proj, knots)
-        cos_mean = x_t.cos().mean(dim=-3)        # (B, num_proj, knots)
+        cos_mean = x_t.cos().mean(dim=-3)        # (T, num_proj, knots)
         sin_mean = x_t.sin().mean(dim=-3)
         err = (cos_mean - self.phi).square() + sin_mean.square()
-        statistic = (err * self.wphi).sum(dim=-1) * T  # (B, num_proj)
+        statistic = (err * self.wphi).sum(dim=-1) * B  # (T, num_proj)
         return statistic.mean()

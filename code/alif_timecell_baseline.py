@@ -21,9 +21,9 @@ Architecture:
                         along the feature axis to a long 1D "membrane trace"
                         (B, T, n_layers * d_hid) which is fed to the time-cell
                         readout.
-    4. TimeCellReadout: 1D conv over the multi-layer membrane trace with
-                        kernel size 256 and stride 128 -> 8 anchor samples
-                        per step. Concat with current spike -> linear to 192.
+    4. TimeCellReadout: causal 1D conv over the multi-layer membrane trace with
+                        kernel size 8 and stride 1 -> 8 anchor feature groups
+                        per step. Concat with current spike -> linear to d_hid.
     5. The state z_t is the linear-projected concat of (8 anchors, s_t).
 
 This model is intentionally similar in budget to STJEWM (~3-4M trainable
@@ -31,7 +31,7 @@ params; the 16-env envelope is 1-10M) and exposes the standard ST-JEWM /
 LeWM contract:
 
     model.encode(obs, action) -> dict with 'emb' (B, T, 192)
-    model.predict(ctx_emb, ctx_act) -> (B, 192)
+    model.predict(ctx_emb, ctx_act) -> (B, H, d_hid)
     model.forward(obs, action) -> dict with 'emb', 'trace', 'spike', 'h', ...
 """
 from __future__ import annotations
@@ -123,9 +123,10 @@ class ALIFCell(nn.Module):
 class ALIFStackWithTimeCells(nn.Module):
     """N-layer ALIF stack; emits (spike, time-cell readout, all_layers_v).
 
-    The time-cell readout is a 1D conv over the per-layer membrane trace
-    with kernel_size=256, stride=128, yielding 8 anchors per step. We
-    apply it to the concatenated per-layer membrane trace.
+    The time-cell readout is a causal 1D conv over the per-layer membrane trace
+    with kernel_size=8, stride=1, yielding 8 anchor feature groups per step.
+    Each anchor reads the current membrane and its previous seven positions,
+    zero-padding unavailable history at the beginning of each call.
     """
 
     def __init__(
@@ -149,15 +150,9 @@ class ALIFStackWithTimeCells(nn.Module):
                     tau_m=tau_m, tau_b=tau_b,
                 )
             )
-        # Time-cell readout: 1D conv over the concatenated membrane trace.
-        # The input has n_layers * d_hid channels. The original ALIFTimecell
-        # paper uses a 1D conv with kernel_size=256, stride=128, yielding
-        # 8 anchors per step. To get exactly T out for any T (and avoid
-        # huge kernels on short windows where T=2-200), we use kernel=8,
-        # stride=1 with explicit same-length padding (handled in forward),
-        # which gives 8 local-anchor samples per step. This preserves the
-        # "multi-timescale anchor readout" spirit while being fast and
-        # numerically stable on the ST-JEWM windowed training regime.
+        # Causal time-cell readout over n_layers * d_hid membrane channels.
+        # Eight temporal taps and explicit left padding preserve length T;
+        # the 8 * d_hid output channels form eight anchor feature groups.
         self.membrane_dim = n_layers * d_hid
         self.time_conv = nn.Conv1d(
             in_channels=self.membrane_dim,
@@ -197,10 +192,10 @@ class ALIFStackWithTimeCells(nn.Module):
         # Concatenate per-layer membranes along feature axis -> (B, T, n*d_hid)
         v_cat = torch.cat(v_layers, dim=-1)  # (B, T, n_layers * d_hid)
         # Time-cell readout: 1D conv across the (B, n_layers*d_hid, T) axis.
-        # Apply same-length padding (pad with (kernel-1) zeros on the right
-        # so output length = T).
+        # Left-pad with kernel-1 zeros: output t reads only membranes through t,
+        # retaining length T even when the input window is shorter than a kernel.
         v_t = v_cat.transpose(1, 2)  # (B, n_layers*d_hid, T)
-        v_padded = F.pad(v_t, (0, self.time_conv.kernel_size[0] - 1))
+        v_padded = F.pad(v_t, (self.time_conv.kernel_size[0] - 1, 0))
         anchors = self.time_conv(v_padded)  # (B, 8*d_hid, T)
         anchors = anchors.transpose(1, 2)  # (B, T, 8*d_hid)
         # Get the last layer's spike (the "current" spike)
@@ -295,8 +290,10 @@ class ALIFTimecellBaseline(nn.Module):
         return {"emb": s_emb, "emb_pre_cell": s_emb, "act_emb": a_emb}
 
     def forward(self, obs: torch.Tensor, action: torch.Tensor) -> dict:
-        """Full forward: returns dict with 'emb' (predictive latent), 'spike',
-        'trace', etc. (probe.py reads 'trace' from this output)."""
+        """Prefix-causal forward from reset cell state: 'emb', 'spike', 'trace', etc.
+
+        Every output at t depends only on observations/actions through t.
+        """
         enc = self.encode(obs, action)
         s_emb = enc["emb"]            # (B, T, d_hid)
         a_emb = enc["act_emb"]        # (B, T, d_hid)
@@ -315,7 +312,7 @@ class ALIFTimecellBaseline(nn.Module):
         }
 
     def predict(self, ctx_emb: torch.Tensor, ctx_act: torch.Tensor) -> torch.Tensor:
-        """Per-step prediction. Matches STJEWM.predict signature.
+        """Prefix-causal per-step prediction from reset cell state.
 
         ctx_emb: (B, H, d_hid) — pre-cell or post-cell embedding; we treat
                  it as already-encoded state embedding (not raw state).
@@ -348,7 +345,7 @@ class ALIFTimecellBaseline(nn.Module):
                 a_t = torch.cat([a_t, pad], dim=1)
             nxt = self.predict(h, a_t)[:, -1]
             preds.append(nxt)
-            h = torch.cat([h, nxt.unsqueeze(1)], dim=1)
+            h = torch.cat([h[:, 1:], nxt.unsqueeze(1)], dim=1)
         return torch.stack(preds, dim=1)
 
     @torch.no_grad()

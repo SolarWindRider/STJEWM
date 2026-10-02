@@ -4,25 +4,51 @@ Cross-modality complement to `generalist_v0_7_5_5m/` (state version).
 Same 130 ckpts grid (13 models x 10 splits x 1 seed),
 **5M-aligned trainable** params, **5.5M frozen ViT-Tiny** pixel encoder.
 
-## Quick start
+## Current manifest-gated commands
+
+Run from `/home/lx/snn`. The final consolidated training manifest is the sole
+repair-training driver; the historical one-off training commands are not
+substitutes for its approved checkpoint/data/step budgets.
+
+After its audited checkpoints are ready, evaluate into a fresh root:
 
 ```bash
-# Train 1 pixel ckpt (smoke test, 84x84 image, ~2 min on CPU)
-bash train_one_pixel.sh stjewm cross_benchmark_F1 0 84
-
-# Train all 130 ckpts (sequential, ~24-48h on RTX 4090)
-bash train_all_pixel.sh 0 84
-
-# Train all 130 in parallel (4 at a time)
-bash launch_parallel_pixel.sh 0 84 4
-
-# Evaluate 1 ckpt
-bash eval_one_pixel.sh stjewm cross_benchmark_F1 84
-
-# Aggregate into a table
-python aggregate_pixel.py
-python cross_modality_table.py
+PY=/home/lx/miniconda3/envs/snn/bin/python
+export TRAINING_MANIFEST=/data/lx/tmp/results/_repair_archive/20260916T102154Z/training_final_repair_manifest.json
+export CKPT_ROOT=/data/lx/tmp/results/5m_pixel
+: "${EVAL_ROOT:?Set a fresh pixel evaluation output directory}"
+export EVAL_ROOT
+bash code/scripts/generalist_v0_7_5_5m_pixel/run_pixel_eval_all.sh
 ```
+
+The canonical producer is `eval_pixel_ckpt.py`. The completed grid receipt
+must cover 130 checkpoints × 13 environments (1690 cells), with successful
+process exits and matching checkpoint/summary hashes. Both old
+`eval_pixel_ckpt_cem.py` and `eval_pixel_ckpt_fast.py` were removed.
+The source-only `run_highpower_cem.sh` sensitivity grid is not a primary-grid
+substitute.
+
+To summarize completed manifests without scanning old checkpoint directories:
+
+```bash
+: "${STATE_RUN:?Set a completed final-generation state evaluation directory}"
+: "${REPORT_ROOT:?Set a fresh report output directory}"
+$PY -m code.scripts.generalist_v0_7_5_5m_pixel.aggregate_pixel \
+  --training-manifest "$TRAINING_MANIFEST" --pixel-run "$EVAL_ROOT" \
+  --out "$REPORT_ROOT/pixel_summary.md"
+$PY -m code.scripts.generalist_v0_7_5_5m_pixel.cross_modality_table \
+  --training-manifest "$TRAINING_MANIFEST" --state-run "$STATE_RUN" \
+  --pixel-run "$EVAL_ROOT" --out "$REPORT_ROOT/cross_modality_cells.md"
+$PY -m code.scripts.generalist_v0_7_5_5m_pixel.cross_modality_table_cem \
+  --training-manifest "$TRAINING_MANIFEST" --state-run "$STATE_RUN" \
+  --pixel-run "$EVAL_ROOT" --out "$REPORT_ROOT/cross_modality_models.md"
+```
+
+Pixel checkpoints retain their actual `stjewm` / `lewm_baseline` identities,
+mapped explicitly to state `stjewm_trace_only` / `lewm_baseline_v2` for paired
+comparisons. Unpaired conditions are listed, not silently pooled. These are
+descriptive comparisons: state and pixel goals, initialization, horizon and
+replanning protocols differ. One training seed cannot provide a seed CI.
 
 ## Settings (5M-aligned parity with state version)
 

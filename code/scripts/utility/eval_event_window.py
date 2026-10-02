@@ -1,221 +1,120 @@
-"""Evaluate a ckpt on the Event-Window task. Metric: mean cumulative
-reward per episode (0-20, since 20 windows per episode × 0/1 reward).
+"""Evaluate a strictly loaded, audited checkpoint on Event-Window reward.
 
-This is the *right* metric for the event_window task: the env has no
-env-native "did the agent reach the goal" notion (it doesn't have a
-spatial goal — the goal is the modal event of the last window, which is
-a categorical prediction). The reward returned by `env.step` is the
-direct measure of task performance.
-
-We use the *trained model's CEM plan* to pick the categorical action.
-The CEM plan operates in latent space, and the predicted action is
-mapped back to the env's action space via the model's prediction head.
+This is a latent self-goal CEM heuristic, not a reward-optimising predictor or a
+supervised categorical prediction head. Scores are the actual full-episode
+rewards returned by the native task (20 scored windows per default episode).
 """
 from __future__ import annotations
 
 import argparse
-import json
-import os
-import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
 
 import numpy as np
 import torch
 
-sys.path.insert(0, "/home/lx/snn")
-
-from code.core.cem import CEM
+from code.core.cem import CEM, make_native_action_predict_hook
 from code.core.encode import encode_obs
-from code.data import load_dataset
-from code.eval.closed_loop import make_env, _PadObsWrapper, _load_eval_dataset
 from code.core.envs.event_window import make_event_window
+from code.eval.closed_loop import _PadObsWrapper
+from code.train.train import build_model
+from code.scripts.audited_results import TrainingAudit, require, write_new_json
 
 
 def parse_args():
-    p = argparse.ArgumentParser()
-    p.add_argument("--ckpt", required=True)
-    p.add_argument("--n-episodes", type=int, default=50)
-    p.add_argument("--n-seeds", type=int, default=3)
-    p.add_argument("--cem-samples", type=int, default=100)
-    p.add_argument("--cem-elites", type=int, default=10)
-    p.add_argument("--cem-iters", type=int, default=10)
-    p.add_argument("--horizon", type=int, default=10)
-    p.add_argument("--eval-budget", type=int, default=200)
-    p.add_argument("--history-size", type=int, default=1)
-    p.add_argument("--pad-obs-eval", type=int, default=128)
-    p.add_argument("--action-dim-eval", type=int, default=56)
-    p.add_argument("--out", required=True)
-    return p.parse_args()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--ckpt", type=Path, required=True)
+    parser.add_argument("--training-manifest", type=Path, required=True)
+    parser.add_argument("--n-episodes", type=int, default=50)
+    parser.add_argument("--n-seeds", type=int, default=3)
+    parser.add_argument("--cem-samples", type=int, default=100)
+    parser.add_argument("--cem-elites", type=int, default=10)
+    parser.add_argument("--cem-iters", type=int, default=10)
+    parser.add_argument("--horizon", type=int, default=10)
+    parser.add_argument("--eval-budget", type=int, default=200)
+    parser.add_argument("--history-size", type=int, default=1)
+    parser.add_argument("--device", default="cpu")
+    parser.add_argument("--out", type=Path, required=True)
+    return parser.parse_args()
 
 
-def evaluate(args) -> Dict[str, Any]:
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-
-    # Build the event_window env
-    env = make_event_window()
-    state_dim = env.spec.obs_dim
-    action_dim = env.spec.action_dim
-    if args.pad_obs_eval > state_dim:
-        env = _PadObsWrapper(env, args.pad_obs_eval)
-        state_dim = args.pad_obs_eval
-    if args.action_dim_eval > action_dim:
-        # Pad the action via a wrapper (one-hot in -> one-hot + zeros out)
-        class _PadActionWrapper:
-            def __init__(self, base, target_dim):
-                self._base = base
-                self.spec = base.spec
-                self._target = target_dim
-                self._step_count = 0
-            def reset(self, seed=None, **kw):
-                obs = self._base.reset(seed=seed, **kw)
-                self._step_count = 0
-                return obs
-            def step(self, action):
-                action = np.asarray(action, dtype=np.float32).flatten()
-                if action.shape[0] < self._target:
-                    pad = np.zeros(self._target - action.shape[0], dtype=np.float32)
-                    action = np.concatenate([action, pad])
-                obs, r, done, info = self._base.step(action)
-                self._step_count += 1
-                return obs, r, done, info
-            def get_state(self):
-                return self._base.get_state()
-            def check_success(self, s, g):
-                return self._base.check_success(s, g)
-        env = _PadActionWrapper(env, args.action_dim_eval)
-        action_dim = args.action_dim_eval
-
-    # Build the model
+def evaluate(args):
+    require(min(args.n_episodes, args.n_seeds, args.cem_samples, args.cem_iters, args.horizon) > 0,
+            "Evaluation budgets must be positive")
+    require(2 <= args.cem_elites <= args.cem_samples, "CEM requires 2 <= elites <= samples")
+    audit = TrainingAudit(args.training_manifest)
+    audit.protect_output(args.out)
+    provenance = audit.provenance(args.ckpt)
     ck = torch.load(args.ckpt, map_location="cpu", weights_only=False)
-    ck_args = ck.get("args", {})
-    state_dim_for_model = state_dim
-    action_dim_for_model = action_dim
-    if ck_args.get("model", "stjewm") == "lewm_baseline":
-        from code.lewm_transformer_baseline import LeWMTransformerBaseline
-        embed_dim = ck_args.get("embed_dim", 256)
-        model = LeWMTransformerBaseline(state_dim=state_dim_for_model,
-                                       action_dim=action_dim_for_model, embed_dim=embed_dim,
-                                       num_layers=ck_args.get("n_layers", 4))
-    elif ck_args.get("model", "stjewm") == "gru_baseline":
-        from code.gru_baseline import GRUBaseline
-        model = GRUBaseline(state_dim=state_dim_for_model, action_dim=action_dim_for_model)
-    elif ck_args.get("model", "stjewm") == "mlp_baseline":
-        from code.mlp_baseline import make_mlp_baseline
-        model = make_mlp_baseline(state_dim=state_dim_for_model, action_dim=action_dim_for_model)
-    elif ck_args.get("model", "stjewm") == "alif_timecell_baseline":
-        from code.alif_timecell_baseline import ALIFTimecellBaseline
-        n_layers = ck_args.get("n_layers", 4)
-        model = ALIFTimecellBaseline(state_dim=state_dim_for_model, action_dim=action_dim_for_model,
-                                d_hid=192, n_layers=n_layers)
-    else:
-        from code.stjewm import STJEWM
-        n_layers = ck_args.get("n_layers", 4)
-        ck_readout_mode = ck_args.get("readout_mode", "hidden_leak")
-        model = STJEWM(
-            d_hid=192, embed_dim=192, action_dim=action_dim_for_model, action_emb_dim=192,
-            state_dim=state_dim_for_model, cell_n_layers=n_layers, n_d=3,
-            trace_beta=0.9, freeze_encoder=True,
-            readout_mode=ck_readout_mode,
-        )
-    model = model.to(device)
-    model.eval()
-
-    per_seed = []
-    per_episode_all = []
-    wall_t0 = time.time()
-    cem = CEM(
-        model=model,
-        action_dim=action_dim_for_model,
-        n_samples=args.cem_samples,
-        n_elites=args.cem_elites,
-        n_iters=args.cem_iters,
-        horizon=args.horizon,
-        history_size=args.history_size,
-        device=device,
+    saved = ck["args"]
+    native = make_event_window()
+    require(args.eval_budget >= native.spec.max_episode_steps, "Reward claims require all 20 scored windows")
+    state_dim, action_dim = saved["pad_obs_to"], saved["action_dim"]
+    require(state_dim >= native.spec.obs_dim and action_dim >= native.spec.action_dim, "Checkpoint cannot represent this task")
+    env = _PadObsWrapper(native, state_dim) if state_dim > native.spec.obs_dim else native
+    model = build_model(
+        saved["model"], state_dim, action_dim, saved["n_layers"], saved.get("readout_mode", "hidden_leak"),
+        embed_dim=saved.get("embed_dim", 192), image_size=saved.get("image_size", 84),
+        hidden_dim=saved.get("hidden_dim"), mlp_hidden=saved.get("mlp_hidden"),
+        mlp_layers=saved.get("mlp_layers"), stacked_lif_layers=saved.get("stacked_lif_layers"),
+        stacked_lif_din=saved.get("stacked_lif_din"),
     )
-
-    for seed in range(args.n_seeds):
-        seed_episodes = []
-        for ep in range(args.n_episodes):
-            obs = env.reset(seed=seed * 10000 + ep)
-            init_state_np = env.get_state()
-            actions_taken = 0
-            ep_reward = 0.0
-            t_start = time.time()
-
-            # Initial latent from the first obs (use it as the "current" state)
-            with torch.no_grad():
-                state_t = torch.from_numpy(init_state_np).float().unsqueeze(0).to(device)
-                z_init = encode_obs(model, state_t, action_dim_for_model, device)
-
-            # CEM-plan from z_init toward itself (no external goal; the env
-            # will score our categorical pick)
-            while actions_taken < args.eval_budget:
-                # The "goal" is z_init (the env doesn't give us a different
-                # goal — the task is to pick the modal event of the *past*).
-                # Use a zero action as the "goal" placeholder.
-                z_goal = z_init
-                seq = cem.plan(z_init, z_goal)  # (H, A)
-                for a_idx in range(min(args.horizon, args.eval_budget - actions_taken)):
-                    action = seq[a_idx].cpu().numpy().astype(np.float32)
-                    # Slice to native action_dim
-                    if action.shape[-1] != action_dim:
-                        action = action[..., :action_dim]
-                    # The action is a one-hot (5D). Apply via argmax
-                    try:
-                        _obs, _r, done, _info = env.step(action)
-                    except Exception:
-                        done = True
-                        _r = 0.0
-                    ep_reward += float(_r)
-                    actions_taken += 1
-                    if done:
-                        break
-                if done or actions_taken >= args.eval_budget:
-                    break
-                # Roll forward (no need for model.predict — the env's own
-                # dynamics drive the next state; we just need to update z_init)
-                try:
-                    state_t = torch.from_numpy(env.get_state()).float().unsqueeze(0).to(device)
-                    z_init = encode_obs(model, state_t, action_dim_for_model, device)
-                except Exception:
-                    break
-
-            seed_episodes.append({
-                "seed": seed,
-                "episode_idx": ep,
-                "ep_reward": float(ep_reward),
-                "n_windows": 20,
-                "n_actions": actions_taken,
-            })
-            per_episode_all.append(seed_episodes[-1])
-        if seed_episodes:
-            mean_reward = float(np.mean([e["ep_reward"] for e in seed_episodes]))
-            per_seed.append({"seed": seed, "n": len(seed_episodes), "mean_reward": mean_reward})
-            print(f"  seed={seed} mean_reward={mean_reward:.2f}/20 windows", flush=True)
-
-    out = {
-        "env_id": env.spec.env_id,
-        "n_episodes": args.n_episodes,
-        "n_seeds": args.n_seeds,
-        "mean_reward": float(np.mean([s["mean_reward"] for s in per_seed])) if per_seed else 0.0,
-        "mean_reward_std": float(np.std([s["mean_reward"] for s in per_seed])) if per_seed else 0.0,
-        "per_seed": per_seed,
-        "per_episode": per_episode_all,
-        "wall_time_sec": float(time.time() - wall_t0),
-    }
-    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    Path(args.out).write_text(json.dumps(out, indent=2))
-    print(f"  Mean reward: {out['mean_reward']:.2f} ± {out['mean_reward_std']:.2f} / 20 windows")
-    print(f"  Saved to {args.out}")
-    return out
+    model.load_state_dict(ck["model"], strict=True)
+    model.to(args.device).eval()
+    del ck
+    native_action_dim = native.spec.action_dim
+    cem = CEM(model=model, action_dim=native_action_dim, n_samples=args.cem_samples,
+              n_elites=args.cem_elites, n_iters=args.cem_iters, horizon=args.horizon,
+              history_size=args.history_size, device=args.device,
+              predict_hook=make_native_action_predict_hook(action_dim, native.spec.action_low,
+                                                           native.spec.action_high, args.device))
+    per_seed, per_episode = [], []
+    started = time.monotonic()
+    try:
+        for seed in range(args.n_seeds):
+            episodes = []
+            for episode in range(args.n_episodes):
+                episode_seed = seed * 10000 + episode
+                torch.manual_seed(episode_seed)
+                env.reset(seed=episode_seed)
+                actions_taken, reward, done = 0, 0.0, False
+                while not done and actions_taken < args.eval_budget:
+                    with torch.no_grad():
+                        state = torch.as_tensor(env.get_state(), dtype=torch.float32, device=args.device)[None]
+                        latent = encode_obs(model, state, action_dim, args.device)
+                        sequence = cem.plan(latent, latent)
+                    for action in sequence[:min(args.horizon, args.eval_budget - actions_taken)]:
+                        native_action = np.clip(action.cpu().numpy(), native.spec.action_low, native.spec.action_high).astype(np.float32)
+                        _, value, done, _ = env.step(native_action)
+                        reward += float(value)
+                        actions_taken += 1
+                        if done:
+                            break
+                require(done and actions_taken == native.spec.max_episode_steps, "Incomplete native reward episode")
+                episodes.append({"seed": seed, "episode_idx": episode, "episode_seed": episode_seed,
+                                 "ep_reward": reward, "n_windows": native.cfg.n_windows, "n_actions": actions_taken})
+            per_episode.extend(episodes)
+            per_seed.append({"seed": seed, "n": len(episodes),
+                             "mean_reward": float(np.mean([row["ep_reward"] for row in episodes]))})
+    finally:
+        env.close()
+    require(audit.checkpoint(args.ckpt)["sha256"] == provenance["checkpoint_sha256"], "Checkpoint changed during evaluation")
+    means = [row["mean_reward"] for row in per_seed]
+    result = {"status": "completed", "env_id": native.spec.env_id, "protocol_version": 2,
+              "measurement_object": "forward.emb", "weights_loaded_strict": True,
+              "planner_objective": "squared_l2_self_goal_not_reward_optimization",
+              "n_episodes": args.n_episodes, "n_seeds": args.n_seeds,
+              "mean_reward": float(np.mean(means)),
+              "mean_reward_std": float(np.std(means, ddof=1)) if len(means) > 1 else None,
+              "per_seed": per_seed, "per_episode": per_episode, "repair_provenance": provenance,
+              "wall_time_sec": time.monotonic() - started}
+    write_new_json(args.out, result)
+    print(f"Event-Window reward={result['mean_reward']:.3f}; seeds={args.n_seeds}; output={args.out}")
+    return result
 
 
 def main():
-    args = parse_args()
-    evaluate(args)
+    evaluate(parse_args())
 
 
 if __name__ == "__main__":

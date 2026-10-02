@@ -13,6 +13,8 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import contextlib
+import hashlib
 import json
 import sys
 import time
@@ -25,7 +27,7 @@ import stable_worldmodel  # noqa: F401
 import numpy as np
 import torch
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
+from torch.utils.data import ConcatDataset, DataLoader
 sys.path.insert(0, "/home/lx/snn")
 
 from code.core.encode import assert_model_compatible
@@ -38,6 +40,54 @@ from code.native_losses import (
     lif_transformer_loss,
     stacked_lif_loss,
 )
+
+TRAINING_PROTOCOL_VERSION = "causal_grad_sigreg_B_20260916"
+TRAINING_SOURCE_FILES = (
+    "../LeWM/src/__init__.py",
+    "../LeWM/src/encoder.py",
+    "code/__init__.py",
+    "code/core/__init__.py",
+    "code/core/encode.py",
+    "code/core/pixel_pre.py",
+    "code/train/__init__.py",
+    "code/train/train.py",
+    "code/stjewm.py",
+    "code/snn_cell.py",
+    "code/lewm_transformer_baseline.py",
+    "code/gru_baseline.py",
+    "code/mlp_baseline.py",
+    "code/stacked_lif_baseline.py",
+    "code/lif_transformer_baseline.py",
+    "code/alif_timecell_baseline.py",
+    "code/native_losses.py",
+    "code/sigreg.py",
+)
+DATA_SOURCE_FILES = (
+    "code/data/__init__.py",
+    "code/data/base.py",
+    "code/data/loaders.py",
+    "code/data/multi_env.py",
+    "code/data/delayed_t_maze.py",
+    "code/data/dmc_pixel.py",
+    "code/core/envs/__init__.py",
+    "code/core/envs/base.py",
+    "code/core/envs/dmc_env.py",
+    "code/core/envs/delayed_t_maze.py",
+    "code/core/envs/swm_envs.py",
+    "code/core/envs/reacher_env.py",
+    "code/core/envs/gym_envs.py",
+    "code/core/envs/event_window.py",
+)
+
+
+def source_sha256(relative_paths) -> dict:
+    """Fingerprint the same audited source registry for every checkpoint."""
+    root = Path(__file__).resolve().parents[2]
+    return {
+        relative: hashlib.sha256((root / relative).read_bytes()).hexdigest()
+        for relative in sorted(relative_paths)
+    }
+
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -70,6 +120,8 @@ def parse_args():
     p.add_argument("--data", default=None,
                    help="Path to data file (or env_id for gym_live; not required for env-based loaders like ogb_cube_env)")
     p.add_argument("--out", required=True)
+    p.add_argument("--no-amp", action="store_true",
+                   help="Disable bf16 autocast (fp32 forward) for unstable large-scale data")
     p.add_argument("--epochs", type=int, default=3)
     p.add_argument("--batch", type=int, default=64)
     p.add_argument("--lr", type=float, default=3e-4)
@@ -205,6 +257,84 @@ def build_model(model_kind: str, obs_dim: int, action_dim: int, n_layers: int,
             image_size=image_size,
         )
 
+def training_data_provenance(args, dataset) -> dict:
+    """Record actual dataset protocols/counts and the full audited data sources."""
+    from code.data.delayed_t_maze import MAZE_DATA_PROTOCOL_VERSION
+    from code.data.dmc_pixel import PIXEL_DATA_PROTOCOL_VERSION
+    from code.data.loaders import DATA_LOADER_PROTOCOL_VERSION
+
+    spec_identity = None
+    if args.multi_env_spec is not None:
+        spec_path = Path(args.multi_env_spec).resolve()
+        spec_bytes = spec_path.read_bytes()
+        raw = json.loads(spec_bytes)
+        entries = raw["specs"] if isinstance(raw, dict) else raw
+        spec_identity = {
+            "path": str(spec_path),
+            "sha256": hashlib.sha256(spec_bytes).hexdigest(),
+        }
+    else:
+        entries = [{
+            "env_kind": args.env_kind, "path": args.data,
+            "history_size": args.history_size, "goal_offset": args.goal_offset,
+            "max_windows": args.max_windows,
+        }]
+    children = dataset.datasets if isinstance(dataset, ConcatDataset) else [dataset]
+    if len(children) != len(entries):
+        raise ValueError("Dataset children do not match the recorded training input specs")
+    inputs = []
+    protocols = set()
+    for entry, child in zip(entries, children):
+        while hasattr(child, "_base"):
+            child = child._base
+        protocol = getattr(child, "data_protocol_version", DATA_LOADER_PROTOCOL_VERSION)
+        protocols.add(protocol)
+        identity = dict(entry)
+        identity["data_protocol_version"] = protocol
+        identity["emitted_windows"] = len(child)
+        if hasattr(child, "total_valid_windows"):
+            identity["legal_windows"] = int(child.total_valid_windows)
+        if hasattr(child, "collection_metadata"):
+            identity["collection_metadata"] = child.collection_metadata
+        source = entry.get("path") or entry.get("data")
+        if source is not None:
+            path = Path(source).resolve()
+            if path.exists():
+                stat = path.stat()
+                identity["resolved_data"] = {
+                    "path": str(path), "size_bytes": stat.st_size,
+                    "mtime_ns": stat.st_mtime_ns,
+                }
+            else:
+                identity["environment_or_loader_source"] = source
+        inputs.append(identity)
+    if protocols == {PIXEL_DATA_PROTOCOL_VERSION}:
+        loader_protocol = PIXEL_DATA_PROTOCOL_VERSION
+    elif MAZE_DATA_PROTOCOL_VERSION in protocols and protocols <= {
+        DATA_LOADER_PROTOCOL_VERSION, MAZE_DATA_PROTOCOL_VERSION,
+    }:
+        loader_protocol = MAZE_DATA_PROTOCOL_VERSION
+    elif protocols == {DATA_LOADER_PROTOCOL_VERSION}:
+        loader_protocol = DATA_LOADER_PROTOCOL_VERSION
+    else:
+        raise ValueError(f"Unsupported mixture of training data protocols: {sorted(protocols)}")
+    return {
+        "loader_protocol": loader_protocol,
+        "loader_source_sha256": source_sha256(DATA_SOURCE_FILES),
+        "spec": spec_identity,
+        "inputs": inputs,
+        "emitted_windows": len(dataset),
+    }
+
+
+def training_source_provenance() -> dict:
+    """Record the full audited trainer/model/loss registry, including all variants."""
+    return {
+        "protocol_version": TRAINING_PROTOCOL_VERSION,
+        "source_sha256": source_sha256(TRAINING_SOURCE_FILES),
+    }
+
+
 # ============================================================
 # Training loop (single canonical)
 # ============================================================
@@ -225,6 +355,12 @@ def train(
         - stacked_lif_{trace,free}: 3-term pred + sparse + action (action=0 in CEM-eval)
     """
     from code.sigreg import SIGReg
+    data_provenance = training_data_provenance(args, loader.dataset)
+    training_provenance = training_source_provenance()
+    print(f"[train/{args.model}] data provenance: "
+          f"{json.dumps(data_provenance, sort_keys=True)}", flush=True)
+    print(f"[train/{args.model}] training provenance: "
+          f"{json.dumps(training_provenance, sort_keys=True)}", flush=True)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-3)
     sigreg = SIGReg(knots=17, num_proj=1024).to(device)
 
@@ -249,7 +385,9 @@ def train(
             state = batch["state"].to(device)            # (B, W, D)
             action = batch["action"].to(device)          # (B, W, A)
             optimizer.zero_grad()
-            with torch.amp.autocast("cuda", dtype=torch.bfloat16):
+            amp_ctx = (torch.amp.autocast("cuda", dtype=torch.bfloat16)
+                       if not args.no_amp else contextlib.nullcontext())
+            with amp_ctx:
                 out = model(state, action)
                 emb = out["emb"]
                 emb_pre = out["emb_pre_cell"]
@@ -326,6 +464,11 @@ def train(
                     parts = {"pred": pred_loss.item(), "total": pred_loss.item()}
 
                 sparsity = 1.0 - out["spike"].float().mean().item() if "spike" in out else None
+            # [FIX 2026-09-02] Training was a silent no-op: loss.backward() was
+            # missing, so gradients were always None and optimizer.step() never
+            # changed any weight (verified: step2000.pt == final.pt, flat loss).
+            # bf16 autocast does not need a GradScaler; plain backward suffices.
+            loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
             step += 1
@@ -358,6 +501,10 @@ def train(
                     "model": model.state_dict(),
                     "args": vars(args),
                     "step": step,
+                    "training_protocol_version": TRAINING_PROTOCOL_VERSION,
+                    "training_provenance": training_provenance,
+                    "data_protocol_version": data_provenance["loader_protocol"],
+                    "data_provenance": data_provenance,
                 }, ck_path)
                 print(f"[train/{args.model}] saved {ck_path}", flush=True)
     final_path = save_dir / "final.pt"
@@ -365,6 +512,10 @@ def train(
         "model": model.state_dict(),
         "args": vars(args),
         "step": step,
+        "training_protocol_version": TRAINING_PROTOCOL_VERSION,
+        "training_provenance": training_provenance,
+        "data_protocol_version": data_provenance["loader_protocol"],
+        "data_provenance": data_provenance,
     }, final_path)
     print(f"[train/{args.model}] final saved {final_path}", flush=True)
     log_path = save_dir / "loss_log.json"
@@ -418,6 +569,7 @@ def main():
                           history_size=args.history_size,
                           goal_offset=args.goal_offset,
                           image_size=image_size,
+                          max_windows=args.max_windows,
                           seed=args.seed)
     else:
         ds = load_dataset(args.env_kind, path=args.data, history_size=args.history_size,

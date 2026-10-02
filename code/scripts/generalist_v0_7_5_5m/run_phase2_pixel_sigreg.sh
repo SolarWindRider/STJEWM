@@ -49,9 +49,11 @@ pix_job () {
   mkdir -p "$out"
   local ro_args=""
   if [ "$model" = "stjewm" ]; then ro_args="--readout-mode trace_only"; fi
+  local embed=192
+  [ "$model" = "lewm_baseline" ] && embed=288
   CUDA_VISIBLE_DEVICES=$gpu $PY -m code.train.train \
     --model "$model" --multi-env-spec "configs/oodc_5m_pixel/$split.json" \
-    --pad-obs-to 21168 --action-dim 56 --embed-dim 192 --image-size 84 \
+    --pad-obs-to 21168 --action-dim 56 --embed-dim "$embed" --image-size 84 \
     --n-layers "$nl" $ro_args \
     --epochs 1 --batch 32 --lr 3e-4 --history-size 1 --goal-offset 25 \
     --seed 0 --no-amp --out "$out" > "$out/train.log" 2>&1

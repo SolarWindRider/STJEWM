@@ -50,16 +50,14 @@ os.environ.setdefault("MUJOCO_GL", "egl")
 DMC_XML_DIR = "/home/lx/miniconda3/envs/snn/lib/python3.10/site-packages/dm_control/suite"
 
 # ============================================================
-# Stress suite B3: Velocity-hidden DMC
+# Observation corruption condition: hidden qpos channels
 # ============================================================
-# Approximate velocity slice indices per DMC env. These cover the qvel[] part
-# of the state vector. We mask the velocity slice at runtime to test whether
-# trace-based models can still plan when continuous velocity is hidden.
-# Source: DM Control Suite proprioceptive obs layout. For low-dim qpos-only
-# envs (cartpole, pendulum, reacher) the slice still approximates the
-# "velocity" channel of the obs.
-VEL_INDICES = {
-    "cheetah":       slice(3, 6),    # x_pos, y_pos skipped; velocity is indices 3-5
+# These DMC states contain ONLY qpos (get_state() returns mujoco qpos[:nq]),
+# so no velocity is observable to hide. The masked evaluation therefore
+# corrupts these recorded qpos joints; it is not a velocity-observation
+# experiment and is never claimed as one.
+QPOS_MASK_INDICES = {
+    "cheetah":       slice(3, 6),    # hide qpos joints 3-5
     "walker":        slice(3, 6),
     "cartpole":      slice(2, 4),
     "pendulum":      slice(1, 2),
@@ -75,6 +73,7 @@ VEL_INDICES = {
     "manipulator":   slice(3, 6),
     "reacher":       slice(2, 4),
 }
+
 
 
 # ============================================================
@@ -231,10 +230,9 @@ class DMCPixelEnv(DMCStateEnv):
     """
 
     def __init__(self, env_kind: str, image_size: int = 224,
-                 camera_id: int = 0, normalize: bool = True, **kwargs):
-        # Extract kwargs that DMCStateEnv doesn't accept
-        success_tol = kwargs.pop("success_tol", 1.0)
-        max_episode_steps = kwargs.pop("max_episode_steps", 200)
+                 camera_id: int = 0, normalize: bool = True, *,
+                 success_tol: Optional[float] = None,
+                 max_episode_steps: Optional[int] = None):
         # Init parent (sets up mujoco model, qpos, etc.)
         # We compute obs_dim differently because pixel obs is huge.
         if env_kind not in DMC_ENVS:
@@ -261,9 +259,9 @@ class DMCPixelEnv(DMCStateEnv):
             action_low=np.full(action_dim, -1.0, dtype=np.float32),
             action_high=np.full(action_dim, 1.0, dtype=np.float32),
             obs_keys=("pixel",),
-            max_episode_steps=default_max_steps,
+            max_episode_steps=default_max_steps if max_episode_steps is None else max_episode_steps,
         )
-        self._success_tol = default_tol
+        self._success_tol = default_tol if success_tol is None else float(success_tol)
         # Pixel-specific
         self._image_size = image_size
         self._camera_id = camera_id
@@ -359,90 +357,93 @@ def make_dmc_env(env_kind: str) -> BaseEnv:
 # Stress suite B1: Flickering DMC
 # ============================================================
 class FlickeringDMCEnv(DMCStateEnv):
-    """DMC state env where the obs is randomly masked to zero with prob mask_ratio.
-
-    Forces the model to integrate over time (a key strength of the trace).
-    Used as a stress test for the trace-only protocol.
-    """
+    """Cache one visible observation per physical reset/step, including dropout."""
 
     def __init__(self, *args, mask_ratio: float = 0.5, **kwargs):
         super().__init__(*args, **kwargs)
         self.mask_ratio = float(mask_ratio)
+        if not 0.0 <= self.mask_ratio <= 1.0:
+            raise ValueError("mask_ratio must be between zero and one")
+        self._visible_state = None
+        self._observation_hidden = False
+
+    def refresh_observation(self, *, resample: bool = False) -> dict:
+        """Refresh after state restoration without drawing another reset mask."""
+        if resample:
+            self._observation_hidden = bool(self._rng.random() < self.mask_ratio)
+        raw_state = DMCStateEnv.get_state(self)
+        self._visible_state = (
+            np.zeros_like(raw_state) if self._observation_hidden else raw_state
+        )
+        return {"state": self._visible_state.copy()}
+
+    def _current_obs_dict(self) -> dict:
+        # Base reset/step call this exactly once after updating physics.
+        return self.refresh_observation(resample=True)
+
+    def get_state(self) -> np.ndarray:
+        if self._visible_state is None:
+            raise RuntimeError("Reset the flickering environment before reading observations")
+        return self._visible_state.copy()
 
     def step(self, action: np.ndarray) -> Tuple[dict, float, bool, dict]:
         obs, reward, done, info = super().step(action)
-        if np.random.rand() < self.mask_ratio:
-            obs["state"] = np.zeros_like(obs["state"])
         info["mask_ratio"] = self.mask_ratio
+        info["observation_hidden"] = self._observation_hidden
         return obs, reward, done, info
 
-    def reset(self, seed: Optional[int] = None, **kwargs) -> dict:
-        obs = super().reset(seed=seed, **kwargs)
-        if np.random.rand() < self.mask_ratio:
-            obs["state"] = np.zeros_like(obs["state"])
-        return obs
-
 
 
 # ============================================================
-# Stress suite B3: Velocity-hidden DMC factory
+# Stress suite B3: masked-qpos DMC factory
 # ============================================================
-def make_vel_hidden_env(env_kind: str) -> BaseEnv:
-    """Return a DMC env with velocity components of the obs zeroed at every step.
+class MaskedQposEnv(BaseEnv):
+    """Corrupt model observations, leaving simulator state and task success intact."""
 
-    This is a runtime wrapper that does NOT modify the underlying mujoco model.
-    The wrapper inherits from the base env class and masks velocity indices
-    in obs. Used to test whether trace-based models can still plan when
-    continuous velocity is hidden at evaluation time.
-    """
+    def __init__(self, base: BaseEnv, indices):
+        super().__init__()
+        self._base = base
+        self.spec = base.spec
+        self.observation_mask_indices = tuple(indices)
+
+    def mask_state(self, state):
+        observed = np.asarray(state, dtype=np.float32).copy()
+        observed[list(self.observation_mask_indices)] = 0.0
+        return observed
+
+    def reset(self, seed=None, **kwargs):
+        obs = self._base.reset(seed=seed, **kwargs)
+        self._step_count = 0
+        return {**obs, "state": self.mask_state(obs["state"])}
+
+    def step(self, action):
+        obs, reward, done, info = self._base.step(action)
+        self._step_count += 1
+        return {**obs, "state": self.mask_state(obs["state"])}, reward, done, info
+
+    def get_state(self):
+        return self.mask_state(self._base.get_state())
+
+    def get_unmasked_state(self):
+        return self._base.get_state()
+
+    def check_success(self, state, goal_state):
+        return self._base.check_success(state, goal_state)
+
+    def close(self):
+        self._base.close()
+
+
+def make_qpos_mask_env(env_kind: str) -> BaseEnv:
+    """Mask explicitly identified native qpos channels, not absent velocities."""
     base = make_dmc_env(env_kind)
-    vel_slice = VEL_INDICES.get(env_kind, slice(0, 0))
-    parent_class = type(base)
-
-    class _VelHiddenWrapper(parent_class):
-        def __init__(self, base_env, vel_slice):
-            # Copy attributes from base
-            self._base = base_env
-            self._vel_slice = vel_slice
-            self._step_count = 0
-            self.spec = base_env.spec
-            self._env_kind = getattr(base_env, "_env_kind", env_kind)
-
-        def reset(self, seed=None, **kwargs):
-            obs = self._base.reset(seed=seed, **kwargs)
-            self._step_count = 0
-            return self._mask_obs(obs)
-
-        def step(self, action):
-            obs, r, done, info = self._base.step(action)
-            self._step_count += 1
-            return self._mask_obs(obs), r, done, info
-
-        def _mask_obs(self, obs):
-            if isinstance(obs, dict) and "state" in obs:
-                obs = dict(obs)
-                obs["state"] = self._mask(obs["state"])
-                return obs
-            return self._mask(obs)
-
-        def _mask(self, obs):
-            arr = np.array(obs, dtype=np.float32, copy=True)
-            arr[self._vel_slice] = 0.0
-            return arr
-
-        def get_state(self):
-            return self._mask(self._base.get_state())
-
-        def check_success(self, final_state, goal_state):
-            return self._base.check_success(self._mask(final_state), self._mask(goal_state))
-
-        def render(self, *args, **kwargs):
-            return self._base.render(*args, **kwargs)
-
-        def close(self):
-            self._base.close()
-
-    return _VelHiddenWrapper(base, vel_slice)
+    qpos_slice = QPOS_MASK_INDICES.get(env_kind)
+    if qpos_slice is None:
+        raise ValueError(f"No qpos corruption channels are defined for {env_kind}")
+    indices = tuple(range(*qpos_slice.indices(base.spec.obs_dim)))
+    if not indices:
+        raise ValueError(f"The qpos corruption slice is empty for native {env_kind} observations")
+    return MaskedQposEnv(base, indices)
 
 
 

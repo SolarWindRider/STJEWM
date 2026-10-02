@@ -10,7 +10,7 @@ PY=/home/lx/miniconda3/envs/snn/bin/python
 
 splits_state="cross_benchmark_F1 generalist_16env oodc_F2"
 readouts="trace_only hidden_leak spike_only rate_only no_trace membrane_readout"
-baselines="alif_timecell_baseline gru_baseline lewm_baseline_v2 stacked_lif_trace stacked_lif_free lif_transformer_baseline mlp_baseline"
+baselines="alif_timecell_baseline gru_baseline lewm_baseline stacked_lif_trace stacked_lif_free lif_transformer_baseline mlp_baseline"
 
 train_pixel_stjewm() {  # split seed imgsz
   local split=$1 seed=$2 imgsz=$3 ro
@@ -37,9 +37,11 @@ train_pixel_base() {  # split seed imgsz
     [ -f "$OUT/final.pt" ] && { echo "[skip] pix $m $split"; continue; }
     echo "[pix] START $m $split $(date +%T)"
     mkdir -p "$OUT"
+    local embed=192
+    [ "$m" = lewm_baseline ] && embed=288
     $PY -m code.train.train \
       --model "$m" --multi-env-spec "configs/oodc_5m_pixel/${split}.json" \
-      --pad-obs-to 21168 --action-dim 56 --embed-dim 192 \
+      --pad-obs-to 21168 --action-dim 56 --embed-dim "$embed" \
       --image-size "$imgsz" --n-layers 4 \
       --epochs 1 --batch 32 --lr 3e-4 \
       --history-size 1 --goal-offset 25 \

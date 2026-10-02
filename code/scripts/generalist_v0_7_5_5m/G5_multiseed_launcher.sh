@@ -106,7 +106,7 @@ def run_one(gpu, job):
         "--multi-env-spec", job["spec"],
         "--pad-obs-to", "128",
         "--action-dim", "56",
-        "--embed-dim", "192",
+        "--embed-dim", "288" if job["model"] == "lewm_baseline" else "192",
         "--image-size", "0",
         "--n-layers", "2",
         "--epochs", "1",

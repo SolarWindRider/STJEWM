@@ -30,10 +30,9 @@ ENV_DATA = {
     "finger":           "/home/lx/snn/data/dm_control/3d_rollouts_250k/finger_250k.npz",
     "ball_in_cup":      "/home/lx/snn/data/dm_control/3d_rollouts_250k/ball_in_cup_250k.npz",
     "humanoid":         "/home/lx/snn/data/dm_control/3d_rollouts_250k/humanoid_250k.npz",
-    # Stress envs share the underlying env data; the clo env
-    # decides which closure flags are applied. ENV_KIND_MAP below
-    # pins each stress env to the closed_loop env kind that
-    # adversarial-mask settings are implemented for.
+    # Observation-corruption diagnostics use the actual runtime wrappers.
+    "cartpole_flicker": "/home/lx/snn/data/dm_control/cartpole_250k.npz",
+    "cheetah_qpos_masked": "/home/lx/snn/data/dm_control/3d_rollouts_250k/cheetah_250k.npz",
     "pusht_ood":        "/home/lx/LeWM/data/pusht_expert_train.h5",
     "tworoom_long":     "/home/lx/LeWM/data/tworoom_extract/tworoom.h5",
 }
@@ -49,19 +48,10 @@ ENV_KIND_MAP = {
     "humanoid":         "humanoid",
     "pusht_ood":        "pusht",
     "tworoom_long":     "tworoom",
-    "cartpole_flicker": "cartpole",
-    "cheetah_velhidden":"cheetah",
+    "cartpole_flicker": "cartpole_flicker",
+    "cheetah_qpos_masked": "cheetah_qpos_masked",
 }
 
-# Stress-env closures (event_align simulates the same way closed_loop
-# does, but only for the observation stream — perturbation isn't
-# applied here because event definition is observation-level).
-STRESS_FLAGS = {
-    "pusht_ood":        ["--split", "unseen_goal"],
-    "tworoom_long":     ["--goal-offset", "200"],
-    "cartpole_flicker": ["--flicker-mask-ratio", "0.5"],
-    "cheetah_velhidden":["--vel-hidden-mask-obs-ratio", "0.0"],
-}
 
 
 def parse_args() -> argparse.Namespace:
@@ -76,6 +66,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--n-resets", type=int, default=2,
                    help="Number of resets to spread the 200 steps across.")
     p.add_argument("--device", default="cpu")
+    p.add_argument("--seed", type=int, default=0)
     p.add_argument("--pad-obs-to", type=int, default=None,
                    help="Override state_dim with this padded dim (for generalist ckpts).")
     p.add_argument("--action-dim-eval", type=int, default=None,
@@ -290,139 +281,31 @@ def pearson(x: np.ndarray, y: np.ndarray) -> float:
 
 def main() -> int:
     args = parse_args()
-    env_name = args.env
-    model_name = args.model
+    from code.eval.closed_loop import make_env
+    from code.scripts.latent_rollout import collect_state_rollout
 
-    # Resolve checkpoint
-    ckpt_path = args.ckpt or f"/home/lx/snn/results/{env_name}/{model_name}/final.pt"
-    if not os.path.exists(ckpt_path):
-        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-        with open(args.out, "w") as f:
-            json.dump({"skipped": True, "reason": f"no ckpt at {ckpt_path}"}, f, indent=2)
-        print(f"[event_align] skip — no ckpt at {ckpt_path}")
-        return 0
-
-    # Load ckpt
+    ckpt_path = args.ckpt or f"/home/lx/snn/results/{args.env}/{args.model}/final.pt"
+    ck = torch.load(ckpt_path, map_location="cpu", weights_only=False)
+    saved = ck.get("args", {})
+    env = make_env(ENV_KIND_MAP[args.env], data_path=None)
     try:
-        ck = torch.load(ckpt_path, map_location="cpu", weights_only=False)
-    except Exception as e:
-        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-        with open(args.out, "w") as f:
-            json.dump({"skipped": True, "reason": f"ckpt load failed: {e}"}, f, indent=2)
-        return 0
-    ck_args = ck.get("args", {}) or {}
-
-    # Build env (DMCDMCStateEnv) using its native action space.
-    try:
-        from code.eval.closed_loop import make_env
-        env_kind = ENV_KIND_MAP[env_name]
-        env = make_env(env_kind, data_path=None)
-    except Exception as e:
-        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-        with open(args.out, "w") as f:
-            json.dump({"skipped": True, "reason": f"env build failed: {e}"}, f, indent=2)
-        return 0
-
-    state_dim = env.spec.obs_dim
-    action_dim = env.spec.action_dim
-    if args.pad_obs_to is not None:
-        state_dim = args.pad_obs_to
-    if args.action_dim_eval is not None:
-        action_dim = args.action_dim_eval
-    a_low = env.spec.action_low
-    a_high = env.spec.action_high
-
-    # Build model
-    try:
-        model = build_model(model_name, state_dim, action_dim, ck_args, state_dict=ck["model"])
-        model.load_state_dict(ck["model"])
-    except Exception as e:
-        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-        with open(args.out, "w") as f:
-            json.dump({"skipped": True, "reason": f"model build/load failed: {e}"}, f, indent=2)
-        return 0
-    model = model.to(args.device).eval()
-    for p in model.parameters():
-        p.requires_grad = False
-
-    # Run random policy and record obs / latent / spike
-    obs_list = []
-    lat_list = []
-    spike_list = []
-
-    env.reset(seed=0)
-    obs = env.get_state()
-    if args.pad_obs_to is not None and len(obs) < args.pad_obs_to:
-        obs = np.concatenate([obs, np.zeros(args.pad_obs_to - len(obs), dtype=np.float32)])
-
-    steps_per_reset = max(1, args.n_steps // args.n_resets)
-    n_done = 0
-    t = 0
-    while t < args.n_steps:
-        a = np.random.uniform(a_low, a_high).astype(np.float32)
-        out, _, done, _ = env.step(a)
-        obs = out.get("state", list(out.values())[0])
-        obs = np.asarray(obs, dtype=np.float32)
-        if args.pad_obs_to is not None and len(obs) < args.pad_obs_to:
-            obs = np.concatenate([obs, np.zeros(args.pad_obs_to - len(obs), dtype=np.float32)])
-        s_t = torch.from_numpy(obs).reshape(1, 1, -1).to(args.device)
-        # Pad action to model_action_dim so the 56-dim placeholder matches; encode
-        # receives (B, T, model_action_dim) and the model's action encoder was
-        # built with action_dim=56 for generalist ckpts.
-        a_padded = np.zeros(action_dim, dtype=np.float32)
-        a_padded[: len(a)] = a
-        a_t = torch.from_numpy(a_padded).reshape(1, 1, -1).to(args.device)
-        with torch.no_grad():
-            enc = model.encode(s_t, a_t)
-            fwd = model.forward(s_t, a_t)
-        lat_list.append(enc["emb"][0, 0].cpu().numpy())
-        # LeWM baseline has no "spike" key — fall back to None.
-        spike = fwd.get("spike", None)
-        if spike is not None:
-            spike_list.append(float(spike[0, 0].mean().item()))
-        else:
-            # For LeWM baseline, use the embedding L2 norm as a "rate" proxy.
-            spike_list.append(float(np.linalg.norm(enc["emb"][0, 0].cpu().numpy())))
-        obs_list.append(obs)
-        t += 1
-        if done and t < args.n_steps:
-            n_done += 1
-            env.reset(seed=n_done)
-
-    obs_arr = np.stack(obs_list, axis=0)
-    lat_arr = np.stack(lat_list, axis=0)
-    rate_arr = np.array(spike_list, dtype=np.float32)
-
-    # First differences (length N-1 each).
-    d_obs = np.linalg.norm(np.diff(obs_arr, axis=0), axis=1)
-    d_lat = np.linalg.norm(np.diff(lat_arr, axis=0), axis=1)
-    # rate has length n_steps; d_obs/d_lat have length n_steps - 1.
-    # Align to the shortest of the three.
-    L = min(d_obs.shape[0], d_lat.shape[0], rate_arr.shape[0])
-    d_obs = d_obs[:L]
-    d_lat = d_lat[:L]
-    rate_used = rate_arr[:L]
-
-    corr_obs_lat = pearson(d_obs, d_lat)
-    corr_obs_rate = pearson(d_obs, rate_used)
-
-    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    with open(args.out, "w") as f:
-        json.dump(
-            {
-                "skipped": False,
-                "reason": None,
-                "env": env_name,
-                "model": model_name,
-                "corr_obs_latent": float(corr_obs_lat),
-                "corr_obs_rate": float(corr_obs_rate),
-                "n_steps": int(d_obs.shape[0]),
-                "n_resets": int(n_done),
-            },
-            f, indent=2,
+        state_dim = args.pad_obs_to or saved.get("pad_obs_to") or env.spec.obs_dim
+        action_dim = args.action_dim_eval or saved.get("action_dim") or env.spec.action_dim
+        model = build_model(args.model, state_dim, action_dim, saved, state_dict=ck["model"])
+        model.load_state_dict(ck["model"], strict=True)
+        model.to(args.device).eval()
+        result, _ = collect_state_rollout(
+            model, env, state_dim, action_dim, n_steps=args.n_steps,
+            n_resets=args.n_resets, seed=args.seed, device=args.device,
         )
-    print(f"[event_align] {env_name}/{model_name}: corr(obs,lat)={corr_obs_lat:.3f}  "
-          f"corr(obs,rate)={corr_obs_rate:.3f}  steps={d_obs.shape[0]}")
+    finally:
+        env.close()
+    result.update(env=args.env, model=args.model, ckpt=ckpt_path, weights_loaded_strict=True)
+    path = Path(args.out)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(result, indent=2, allow_nan=False))
+    print(f"[event_align] {args.env}/{args.model}: readout rho={result['event_rho']}",
+          flush=True)
     return 0
 
 

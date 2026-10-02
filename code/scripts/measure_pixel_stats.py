@@ -1,127 +1,150 @@
 #!/usr/bin/env python3
-"""Pixel-mode div/resp latent stats for all 5m_pixel checkpoints.
-
-resp = mean||Δlatent|| / mean||Δphysical state|| over 200 random-policy steps;
-div  = mean per-dim std of the latent. One JSON per (split, model, env).
-"""
+"""Pixel readout diagnostics with physical-state normalization and explicit interfaces."""
 import argparse
 import json
-import sys
 from pathlib import Path
 
 import numpy as np
 import torch
 
-sys.path.insert(0, "/home/lx/snn")
-
-from code.core.envs.dmc_env import DMCPixelEnv  # noqa: E402
-from code.train.train import build_model  # noqa: E402
+from code.core.envs.dmc_env import DMCPixelEnv
+from code.scripts.latent_rollout import PROTOCOL_VERSION, extract_representations, trajectory_metrics
+from code.train.train import build_model
 
 ENVS = ["cartpole", "cheetah", "ball_in_cup", "finger"]
 
 
-def measure_pixel(ckpt_path, env_kind, image_size, n_steps, device):
-    import mujoco  # noqa: F401
-    env = DMCPixelEnv(env_kind, image_size=image_size, success_tol=0.1,
-                      max_episode_steps=n_steps + 10)
+@torch.inference_mode()
+def measure_pixel(ckpt_path, env_kind, image_size, n_steps, device, *, seed=0, out_npz=None):
     ck = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     saved = ck.get("args", {})
+    action_dim = saved.get("action_dim") or 56
+    image_size = saved.get("image_size") or image_size
     model = build_model(
-        saved.get("model", "stjewm"), obs_dim=saved.get("pad_obs_to", 21168),
-        action_dim=saved.get("action_dim", 56), n_layers=saved.get("n_layers", 4),
+        saved.get("model", "stjewm"), obs_dim=saved.get("pad_obs_to") or 3 * image_size ** 2,
+        action_dim=action_dim, n_layers=saved.get("n_layers", 4),
         readout_mode=saved.get("readout_mode", "hidden_leak"),
-        embed_dim=saved.get("embed_dim"), image_size=saved.get("image_size", image_size),
+        embed_dim=saved.get("embed_dim"), image_size=image_size,
+        hidden_dim=saved.get("hidden_dim"), mlp_hidden=saved.get("mlp_hidden"),
+        mlp_layers=saved.get("mlp_layers"),
     )
-    model.load_state_dict(ck["model"])  # strict
+    model.load_state_dict(ck["model"], strict=True)
     model.to(device).eval()
-
-    a_low = np.array(env.spec.action_low, dtype=np.float32)
-    a_high = np.array(env.spec.action_high, dtype=np.float32)
-    obs = env.reset(seed=0)
-    state = np.asarray(env.get_state(), dtype=np.float32)
-    obs_traj, lat_traj, st_traj = [], [], [state]
-    rng = np.random.default_rng(0)
-
-    def encode(pixel, act):
-        x = torch.from_numpy(np.asarray(pixel)).float().reshape(1, 1, 3, image_size, image_size).to(device)
-        a = torch.from_numpy(act).float().reshape(1, 1, -1).to(device)
-        with torch.no_grad():
-            out = model(x, a)
-        emb = out["emb"] if isinstance(out, dict) else out
-        return emb[0, -1].cpu().numpy()
-
-    act0 = np.zeros(saved.get("action_dim", 56), dtype=np.float32)
-    lat_traj.append(encode(obs["pixel"], act0))
-    obs_traj.append(obs["pixel"])
-    for t in range(n_steps):
-        a = rng.uniform(a_low, a_high).astype(np.float32)
-        a_pad = np.zeros(saved.get("action_dim", 56), dtype=np.float32)
-        a_pad[: len(a)] = a
-        obs, _, done, _ = env.step(a)
-        state = np.asarray(env.get_state(), dtype=np.float32)
-        st_traj.append(state)
-        obs_traj.append(obs["pixel"])
-        lat_traj.append(encode(obs["pixel"], a_pad))
-        if done:
-            obs = env.reset(seed=seed_offset(t))
-            state = np.asarray(env.get_state(), dtype=np.float32)
-            st_traj[-1] = state
-            lat_traj[-1] = encode(obs["pixel"], act0)
-            obs_traj[-1] = obs["pixel"]
-    st_arr = np.stack(st_traj)
-    lat_arr = np.stack(lat_traj)
-    d_st = np.linalg.norm(np.diff(st_arr, axis=0), axis=1)
-    d_lat = np.linalg.norm(np.diff(lat_arr, axis=0), axis=1)
-    resp = float(d_lat.mean() / d_st.mean()) if d_st.mean() > 1e-9 else 0.0
-    div = float(lat_arr.std(axis=0).mean())
-    env.close()
-    return {"env": env_kind, "n_steps": n_steps,
-            "responsiveness": resp, "divergence": div,
-            "latent_std_max": float(lat_arr.std(axis=0).max()),
-            "latent_std_min": float(lat_arr.std(axis=0).min())}
-
-
-def seed_offset(t):
-    return t + 1
+    env = DMCPixelEnv(env_kind, image_size=image_size,
+                      max_episode_steps=n_steps + 10)
+    rng = np.random.default_rng(seed)
+    states, actions, episodes, pixels = [], [], [], []
+    episode, previous_segment, done = -1, -1, True
+    try:
+        for t in range(n_steps):
+            segment = t * 2 // n_steps
+            if done or segment != previous_segment:
+                episode += 1
+                obs = env.reset(seed=seed + episode)
+                previous_segment = segment
+            native_action = rng.uniform(env.spec.action_low, env.spec.action_high).astype(np.float32)
+            action = np.zeros(action_dim, dtype=np.float32)
+            action[:len(native_action)] = native_action
+            states.append(np.asarray(env.get_state(), dtype=np.float32))
+            pixels.append(np.asarray(obs["pixel"], dtype=np.float32))
+            actions.append(action)
+            episodes.append(episode)
+            obs, _, done, _ = env.step(native_action)
+    finally:
+        env.close()
+    state_arr = np.stack(states)
+    episode_arr = np.asarray(episodes, dtype=np.int32)
+    action_arr = np.stack(actions)
+    representations = {"readout": [], "observation_embedding": []}
+    # Frames are independent context-length-one samples, not one recurrent sequence.
+    for start in range(0, n_steps, 64):
+        stop = min(start + 64, n_steps)
+        _, fields = extract_representations(
+            model, torch.from_numpy(np.stack(pixels[start:stop])[:, None]).to(device),
+            torch.from_numpy(action_arr[start:stop, None]).to(device),
+        )
+        for name, value in fields.items():
+            representations[name].append(value[:, 0].float().cpu().numpy())
+    representations = {name: np.concatenate(values) for name, values in representations.items()}
+    arrays = {
+        "obs_arr": state_arr,
+        "action_arr": action_arr,
+        "episode_id": episode_arr,
+        "lat_arr": representations["readout"],
+        "embedding_arr": representations["observation_embedding"],
+    }
+    metrics = {
+        name: trajectory_metrics(state_arr, values, episode_arr)
+        for name, values in representations.items()
+    }
+    result = {
+        "protocol_version": PROTOCOL_VERSION,
+        "skipped": False,
+        "ckpt": str(ckpt_path),
+        "weights_loaded_strict": True,
+        "env": env_kind,
+        "modality": "pixel",
+        "normalization_observation": "physical_state",
+        "measurement_object": "forward.emb",
+        "observation_embedding_object": "forward.emb_pre_cell",
+        "context_steps": 1,
+        "seed": seed,
+        "n_steps": n_steps,
+        "n_episodes": episode + 1,
+        "representations": metrics,
+        **metrics["readout"],
+    }
+    if out_npz is not None:
+        Path(out_npz).parent.mkdir(parents=True, exist_ok=True)
+        np.savez(out_npz, **arrays)
+    return result
 
 
 def main():
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--results", type=Path, default=Path("/data/lx/tmp/results/5m_pixel"))
     p.add_argument("--out", type=Path, default=Path("/data/lx/tmp/results/5m_pixel_stats"))
     p.add_argument("--n-steps", type=int, default=200)
     p.add_argument("--device", default="cuda:0")
     p.add_argument("--image-size", type=int, default=84)
+    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--splits", nargs="+")
+    p.add_argument("--models", nargs="+")
+    p.add_argument("--envs", nargs="+", default=ENVS)
     args = p.parse_args()
-    args.out.mkdir(parents=True, exist_ok=True)
-
     tasks = []
     for split_dir in sorted(args.results.iterdir()):
-        if not split_dir.is_dir():
+        if not split_dir.is_dir() or (args.splits and split_dir.name not in args.splits):
             continue
         for model_dir in sorted(split_dir.iterdir()):
+            if args.models and model_dir.name not in args.models:
+                continue
             ck = model_dir / "seed_0" / "final.pt"
             if not ck.exists():
                 continue
-            for env in ENVS:
+            for env in args.envs:
                 out = args.out / split_dir.name / model_dir.name / f"latent_stats_{env}.json"
                 if out.exists():
-                    continue
+                    previous = json.loads(out.read_text())
+                    if previous.get("protocol_version") == PROTOCOL_VERSION:
+                        continue
+                    raise RuntimeError(f"Archive obsolete diagnostics before rerunning: {out}")
                 tasks.append((split_dir.name, model_dir.name, env, ck, out))
     print(f"[pixel_stats] tasks: {len(tasks)}", flush=True)
-    errs = 0
+    failures = []
     for i, (split, model, env, ck, out) in enumerate(tasks):
-        out.parent.mkdir(parents=True, exist_ok=True)
         try:
-            r = measure_pixel(str(ck), env, args.image_size, args.n_steps, args.device)
-            out.write_text(json.dumps(r, indent=2))
-            print(f"  [{i+1}/{len(tasks)}] {split}/{model}/{env} "
-                  f"resp={r['responsiveness']:.3f} div={r['divergence']:.4f}", flush=True)
-        except Exception as e:
-            errs += 1
-            out.write_text(json.dumps({"skipped": True, "reason": str(e)[:200]}, indent=2))
-            print(f"  ERR {split}/{model}/{env}: {e}", flush=True)
-    print(f"[pixel_stats] done, {errs} errors", flush=True)
+            r = measure_pixel(str(ck), env, args.image_size, args.n_steps, args.device,
+                              seed=args.seed, out_npz=out.with_suffix(".npz"))
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_text(json.dumps(r, indent=2, allow_nan=False))
+            print(f"[{i+1}/{len(tasks)}] {split}/{model}/{env} "
+                  f"resp={r['responsiveness']} div={r['divergence']:.6g}", flush=True)
+        except Exception as exc:
+            failures.append(f"{split}/{model}/{env}: {exc}")
+            print(f"ERR {failures[-1]}", flush=True)
+    if failures:
+        raise RuntimeError("Pixel diagnostics failed:\n" + "\n".join(failures))
 
 
 if __name__ == "__main__":

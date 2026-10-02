@@ -1,54 +1,62 @@
 {
- "LeWM": {
-  "n": 7,
-  "mean": 0.6489
- },
- "GRU": {
-  "n": 7,
-  "mean": 0.4634
- },
- "LIF-Tx": {
-  "n": 7,
-  "mean": -0.0026
- },
- "SLIF-trace": {
-  "n": 7,
-  "mean": 0.2674
- },
- "MLP": {
-  "n": 7,
-  "mean": -0.0011
- },
- "SLIF-free": {
-  "n": 7,
-  "mean": 0.3296
- },
- "ALIF": {
-  "n": 7,
-  "mean": 0.2529
- },
- "STJEWM-leak": {
-  "n": 7,
-  "mean": 0.2942
- },
- "STJEWM-membrane": {
-  "n": 7,
-  "mean": 0.2613
- },
- "STJEWM-rate": {
-  "n": 7,
-  "mean": 0.2467
- },
- "STJEWM-spike": {
-  "n": 7,
-  "mean": 0.2612
- },
- "STJEWM-no_trace": {
-  "n": 7,
-  "mean": 0.2676
+ "_provenance": {
+  "regenerated": "2026-09-17",
+  "training_manifest_sha256": "4376bb14c50e30e12c3a1d47435b17489568f148b6f0abd57592efe5936e1f09",
+  "freeze_v7": "4ba90480e09d93d61d442be9569a03c020f6bbed9906af915015b3eb2dded834",
+  "sources": {
+   "/data/lx/tmp/results/g2_probe": "91 probe JSON (position, raw_unclipped_r2)"
+  }
  },
  "STJEWM-trace": {
   "n": 7,
-  "mean": 0.2714
+  "mean": -0.0008691675061411763
+ },
+ "STJEWM-spike": {
+  "n": 7,
+  "mean": 0.1575434707690051
+ },
+ "STJEWM-rate": {
+  "n": 7,
+  "mean": 0.04752727480307226
+ },
+ "STJEWM-no_trace": {
+  "n": 7,
+  "mean": 0.2570960191053052
+ },
+ "STJEWM-leak": {
+  "n": 7,
+  "mean": 0.25412561071010475
+ },
+ "STJEWM-membrane": {
+  "n": 7,
+  "mean": 0.2570960191053052
+ },
+ "ALIF-timecell": {
+  "n": 7,
+  "mean": 0.24228509967445838
+ },
+ "Stacked-LIF-trace": {
+  "n": 7,
+  "mean": -0.012643420797726998
+ },
+ "Stacked-LIF-free": {
+  "n": 7,
+  "mean": 0.11326272023015344
+ },
+ "LeWM": {
+  "n": 7,
+  "mean": 0.7290722011277311
+ },
+ "GRU": {
+  "n": 7,
+  "mean": 0.4646410927334268
+ },
+ "MLP": {
+  "n": 7,
+  "mean": -0.0010782825707276182
+ },
+ "LIFTransformer": {
+  "n": 7,
+  "mean": -0.0013790636507654786
  }
 }

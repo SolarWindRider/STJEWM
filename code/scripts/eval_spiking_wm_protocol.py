@@ -1,258 +1,246 @@
-"""Protocol evaluation for the real external baseline Spiking-WM (Brain-Cog-Lab).
+"""Strict, seeded random-policy diagnostics of the external Spiking-WM checkpoint.
 
-Evaluates a trained Spiking-WM (dmc_proprio config, state input) with the SAME
-protocol used for ST-JEWM baselines:
-  1. event-rho (G1): pearson(|d obs|, spike rate) under random policy.
-  2. cos-dist (latent calibration): dynamics open-loop prediction vs. the true
-     t+25 posterior latent ((1-cos)/2) on random-policy trajectories.
-  3. spike activation rate of MCRNN (event-driven sparsity proxy).
-
-Usage:
-  python code/scripts/eval_spiking_wm_protocol.py --task cartpole_swingup \
-      --ckpt results/spiking_wm/logs_cartpole_swingup/latest_model.pt \
-      --out results/spiking_wm/protocol_cartpole_swingup.json
+This is an independent full-proprioception RSSM case study, not a matched-input
+or matched-training-budget control. Encoder outputs, categorical posterior
+modes, the actual actor feature tensor and deterministic-state spike rates are
+reported separately. Cross-episode differences are never measured.
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
-import pathlib
+from pathlib import Path
 import sys
 
+ROOT = Path(__file__).resolve().parents[2]
+EXTERNAL_ROOT = Path('/home/lx/Spiking-WM')
+sys.path.insert(0, str(EXTERNAL_ROOT))
+sys.path.insert(0, str(ROOT))
+import code  # Load the repository package before torch imports stdlib code.
+os.environ.setdefault('MUJOCO_GL', 'egl')
+
 import numpy as np
-
-sys.path.insert(0, "/home/lx/Spiking-WM")
-sys.path.insert(0, "/home/lx/snn")
-
-os.environ.setdefault("MUJOCO_GL", "egl")
-
 import torch
+from code.scripts.latent_rollout import trajectory_metrics
 
-import tools  # noqa: E402
-import networks  # noqa: E402
-import node  # noqa: E402
-import normalization  # noqa: E402
-import surrogate  # noqa: E402
-from dreamer import Dreamer  # noqa: E402
-
-from code.eval.closed_loop import make_env  # noqa: E402
-
-DMC_TASK_MAP = {
-    "cartpole_swingup": "cartpole_swingup",
-    "cheetah_run": "cheetah_run",
-    "walker_walk": "walker_walk",
-    "finger_spin": "finger_spin",
-    "pendulum_swingup": "pendulum_swingup",
-    "cup_catch": "cup_catch",
-    "reacher_easy": "reacher_easy",
-    "hopper_hop": "hopper_hop",
-    "quadruped_walk": "quadruped_walk",
-    "dog_walk": "dog_walk",
-    "fish_swim": "fish_swim",
-    "humanoid_run": "humanoid_run",
-}
+DMC_TASK_MAP = {task: task for task in (
+    'cartpole_swingup', 'cheetah_run', 'walker_walk', 'finger_spin',
+    'pendulum_swingup', 'cup_catch', 'reacher_easy', 'hopper_hop',
+    'quadruped_walk', 'dog_walk', 'fish_swim', 'humanoid_run',
+)}
 
 
-def pearson(x: np.ndarray, y: np.ndarray) -> float:
+def sha256(path):
+    digest = hashlib.sha256()
+    with Path(path).open('rb') as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b''):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def pearson(x, y):
+    x, y = np.asarray(x, dtype=np.float64), np.asarray(y, dtype=np.float64)
+    if x.shape != y.shape or not np.isfinite(x).all() or not np.isfinite(y).all():
+        raise ValueError('Correlation requires matching finite observations')
     if len(x) < 2:
-        return 0.0
-    xm = x - x.mean()
-    ym = y - y.mean()
-    denom = float(np.sqrt((xm * xm).sum() * (ym * ym).sum()))
-    if denom < 1e-12:
-        return 0.0
-    return float((xm * ym).sum() / denom)
+        return None
+    x, y = x - x.mean(), y - y.mean()
+    denominator = np.linalg.norm(x) * np.linalg.norm(y)
+    return float(np.dot(x, y) / denominator) if denominator > 0 else None
 
 
-def cos_dist(a: np.ndarray, b: np.ndarray) -> float:
-    na, nb = float(np.linalg.norm(a)), float(np.linalg.norm(b))
-    if na < 1e-9 or nb < 1e-9:
-        return 1.0
-    return float((1.0 - float(np.dot(a, b) / (na * nb))) / 2.0)
+class ModelConfig(argparse.Namespace):
+    def __getitem__(self, key):
+        return getattr(self, key)
 
 
 def load_config(ckpt_path: str, device: str):
-    import argparse as ap
     import ruamel.yaml as yaml
+    with (EXTERNAL_ROOT / 'configs.yaml').open() as handle:
+        config = yaml.safe_load(handle)
 
-    cfg = yaml.safe_load(open("/home/lx/Spiking-WM/configs.yaml"))
-
-    def rec(base, upd):
-        for k, v in upd.items():
-            if isinstance(v, dict) and k in base:
-                rec(base[k], v)
+    def merge(base, update):
+        for key, value in update.items():
+            if isinstance(value, dict) and key in base:
+                merge(base[key], value)
             else:
-                base[k] = v
+                base[key] = value
 
-    d = {}
-    for name in ("defaults", "dmc_proprio"):
-        rec(d, cfg[name])
-    d.update(
-        dict(
-            device=device,
-            compile=False,
-            steps=5e5,
-            prefill=0,
-            traindir=str(pathlib.Path(ckpt_path).parent / "train_eps"),
-            evaldir=str(pathlib.Path(ckpt_path).parent / "eval_eps"),
-            logdir=str(pathlib.Path(ckpt_path).parent),
-            dataset_size=1000000,
-        )
-    )
-    ap.Namespace.__getitem__ = lambda self, k: getattr(self, k)
-    return ap.Namespace(**d)
+    values = {}
+    for name in ('defaults', 'dmc_proprio'):
+        merge(values, config[name])
+    checkpoint_dir = Path(ckpt_path).parent
+    values.update(device=device, compile=False, steps=500000, prefill=0,
+                  traindir=str(checkpoint_dir / 'train_eps'),
+                  evaldir=str(checkpoint_dir / 'eval_eps'), logdir=str(checkpoint_dir),
+                  dataset_size=1000000)
+    return ModelConfig(**values)
 
 
 class SpikingWMProbe:
-    def __init__(self, ckpt_path: str, task: str, device: str = "cuda:0"):
-        self.cfg = load_config(ckpt_path, device)
-        self.device = device
-        self.spike_times = int(self.cfg.spike_times)
+    def __init__(self, ckpt_path: str, task: str, device: str = 'cuda:0', *, seed=0):
         from envs.dmc import DeepMindControl
         import envs.wrappers as wrappers
-
-        # Build WorldModel with the REAL obs space of the task's env so the
-        # encoder input dims match training (per-key splits).
-        env = wrappers.TimeLimit(
-            DeepMindControl(task, 2, (64, 64), seed=0), 500
-        )
-        env = wrappers.SelectAction(env, key="action")
-        self.obs_space, self.act_space = env.observation_space, env.action_space
-        wm_cfg = self.cfg
-        wm_cfg.num_actions = self.act_space.shape[0]
         import models
 
-        self.wm = models.WorldModel(self.obs_space, self.act_space, 0, wm_cfg).to(
-            device
-        )
-        sd = torch.load(ckpt_path, map_location=device, weights_only=False)
-        # keys are module paths inside agent (e.g. _wm.encoder...)
-        prefix = "agent." if any(k.startswith("agent.") for k in sd) else ""
-        stripped = {
-            k[len(prefix):] if prefix else k: v for k, v in sd.items()
-        }
-        self.wm.load_state_dict(stripped, strict=False)
-        self.wm.eval()
-        for p in self.wm.parameters():
-            p.requires_grad = False
+        self.cfg = load_config(ckpt_path, device)
+        self.device = device
+        self.native_env = DeepMindControl(task, 2, (64, 64), seed=seed)
+        self.env = wrappers.SelectAction(wrappers.TimeLimit(self.native_env, 500), key='action')
+        self.obs_space, self.act_space = self.env.observation_space, self.env.action_space
+        self.cfg.num_actions = self.act_space.shape[0]
+        try:
+            self.wm = models.WorldModel(self.obs_space, self.act_space, 0, self.cfg).to(device)
+            checkpoint = torch.load(ckpt_path, map_location='cpu', weights_only=False, mmap=True)
+            state = {}
+            for key, value in checkpoint.items():
+                if key.startswith('_wm.'):
+                    target = key.removeprefix('_wm.').replace('_orig_mod.', '')
+                    if target in state:
+                        raise ValueError(f'Duplicate WorldModel checkpoint key: {target}')
+                    state[target] = value
+            if not state:
+                raise ValueError('Checkpoint has no root _wm. subtree')
+            self.wm.load_state_dict(state, strict=True)
+            self.loaded_tensor_count = len(state)
+            self.world_model_parameters = sum(p.numel() for p in self.wm.parameters())
+            self.wm.eval().requires_grad_(False)
+        except Exception:
+            self.close()
+            raise
 
+    def close(self):
+        # The upstream DeepMindControl adapter has no gym close method.
+        self.native_env._env.physics.free()
+
+    @torch.inference_mode()
     def policy_step(self, obs_raw: dict, action: np.ndarray, state):
-        """One forward step exactly like dreamer._policy (deterministic mode)."""
-        obs_t = {}
-        for k, v in obs_raw.items():
-            if k in ("is_first", "is_terminal"):
-                continue
-            arr = np.asarray(v, dtype=np.float32)
-            if arr.ndim == 0:
-                arr = arr.reshape(1)
-            obs_t[k] = torch.from_numpy(arr).reshape(1, -1).to(self.device)
-        obs_t["image"] = obs_t["image"] / 255.0 - 0.5
-        obs_t["is_first"] = torch.zeros(1, 1).to(self.device)
-        obs_t["is_terminal"] = torch.zeros(1, 1).to(self.device)
-        pre = self.wm.preprocess(obs_t)
-        embed = self.wm.encoder(pre)
-        a_t = torch.from_numpy(np.asarray(action, dtype=np.float32)).reshape(
-            1, -1
-        ).to(self.device)
+        """Deterministic posterior update; upstream preprocessing runs exactly once."""
+        observations = {}
+        for key, value in obs_raw.items():
+            array = np.ascontiguousarray(value)
+            if key in ('is_first', 'is_terminal'):
+                observations[key] = np.asarray([value], dtype=np.float32)
+            else:
+                if array.ndim == 0:
+                    array = array.reshape(1)
+                observations[key] = array[None]
+        pre = self.wm.preprocess(observations)
+        embedding = self.wm.encoder(pre)
+        action_tensor = torch.as_tensor(action, dtype=torch.float32, device=self.device).reshape(1, -1)
         if state is None:
             state = self.wm.dynamics.initial(1)
-        post, _ = self.wm.dynamics.obs_step(
-            state, a_t, embed, pre["is_first"], sample=False
+        posterior, _ = self.wm.dynamics.obs_step(
+            state, action_tensor, embedding, pre['is_first'], sample=False,
         )
-        return post, embed
+        return posterior, embedding
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--task", required=True)
-    ap.add_argument("--ckpt", required=True)
-    ap.add_argument("--out", required=True)
-    ap.add_argument("--n-steps", type=int, default=2000)
-    ap.add_argument("--device", default="cuda:0")
-    ap.add_argument("--goal-offset", type=int, default=25)
-    ap.add_argument("--n-goal-cells", type=int, default=100)
-    args = ap.parse_args()
-
-    task_name = DMC_TASK_MAP[args.task]
-    probe = SpikingWMProbe(args.ckpt, task_name, args.device)
-    from envs.dmc import DeepMindControl
-    import envs.wrappers as wrappers
-
-    env = wrappers.SelectAction(
-        wrappers.TimeLimit(DeepMindControl(task_name, 2, (64, 64), seed=0), 500),
-        key="action",
-    )
-
-    obs_list, rate_list, stoch_list, embed_list = [], [], [], []
-    state = None
-    t = 0
-    n_done = 0
-    obs_raw = env.reset()
-    while t < args.n_steps:
-        a_raw = env.action_space.sample()
-        out, _, done, _ = env.step({"action": a_raw})
-        obs_raw = out
-        a = a_raw
-        with torch.no_grad():
-            post, embed = probe.policy_step(obs_raw, a, state)
-            state = {k: v.detach() for k, v in post.items()}
-            deter = post["deter"]  # [T, B, deter]
-            stoch = post["stoch"]  # [B, stoch]
-        rate_list.append(float(deter.detach().float().mean().item()))
-        stoch_list.append(stoch.detach().cpu().numpy().reshape(-1))
-        embed_list.append(
-            embed.detach().float().mean(dim=0).cpu().numpy().reshape(-1)
-        )
-        obs_list.append(
-            np.concatenate(
-                [
-                    np.asarray(obs_raw[k], dtype=np.float32).reshape(-1)
-                    for k in obs_raw
-                    if k not in ("image", "is_first", "is_terminal", "reward")
-                ]
-            )
-        )
-        t += 1
-        if done and t < args.n_steps:
-            n_done += 1
-            env.reset()
-            state = None
-
-    obs_arr = np.stack(obs_list)
-    d_obs = np.linalg.norm(np.diff(obs_arr, axis=0), axis=1)
-    rate_arr = np.array(rate_list, dtype=np.float32)
-    stoch_arr = np.stack(stoch_list)
-    embed_arr = np.stack(embed_list)
-    d_stoch = np.linalg.norm(np.diff(stoch_arr, axis=0), axis=1)
-    d_embed = np.linalg.norm(np.diff(embed_arr, axis=0), axis=1)
-    L = min(d_obs.shape[0], d_stoch.shape[0], d_embed.shape[0], rate_arr.shape[0])
-    d_obs, d_stoch, d_embed, rate_arr = d_obs[:L], d_stoch[:L], d_embed[:L], rate_arr[:L]
-    corr_obs_rate = pearson(d_obs, rate_arr)
-    corr_obs_latent = pearson(d_obs, d_stoch)
-    corr_obs_embed = pearson(d_obs, d_embed)
-
-    result = {
-        "task": args.task,
-        "event_rho": float(corr_obs_rate),
-        "corr_obs_latent": float(corr_obs_latent),
-        "corr_obs_embed": float(corr_obs_embed),
-        "n_steps": int(len(d_obs)),
-        "n_resets": int(n_done),
-        "mean_spike_rate": float(np.mean(rate_list)),
-        "stoch_std": float(stoch_arr.std()),
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--task', choices=tuple(DMC_TASK_MAP), required=True)
+    parser.add_argument('--ckpt', required=True)
+    parser.add_argument('--out', type=Path, required=True)
+    parser.add_argument('--n-steps', type=int, default=2000)
+    parser.add_argument('--seed', type=int, default=0)
+    parser.add_argument('--device', default='cuda:0')
+    args = parser.parse_args()
+    if args.n_steps < 3:
+        parser.error('--n-steps must be at least 3')
+    npz_path = args.out.with_suffix('.npz')
+    if args.out.exists() or npz_path.exists():
+        raise FileExistsError('Archive previous diagnostics before rerunning')
+    torch.manual_seed(args.seed)
+    rng = np.random.default_rng(args.seed)
+    checkpoint_hash = sha256(args.ckpt)
+    probe = SpikingWMProbe(args.ckpt, DMC_TASK_MAP[args.task], args.device, seed=args.seed)
+    observation_keys = tuple(key for key in probe.obs_space.spaces if key != 'image')
+    records = {key: [] for key in (
+        'obs_arr', 'action_arr', 'episode_id', 'spike_rate_arr',
+        'stoch_arr', 'embedding_arr', 'actor_feature_arr',
+    )}
+    episode, done, state = -1, True, None
+    try:
+        for _ in range(args.n_steps):
+            if done:
+                episode += 1
+                reset_observation = probe.env.reset()
+                # Initialize at the real reset observation before taking the
+                # first action; do not silently omit that posterior update.
+                state, _ = probe.policy_step(
+                    reset_observation, np.zeros(probe.act_space.shape, dtype=np.float32), None,
+                )
+            action = rng.uniform(probe.act_space.low, probe.act_space.high).astype(np.float32)
+            observation, _, done, _ = probe.env.step({'action': action})
+            state, embedding = probe.policy_step(observation, action, state)
+            with torch.inference_mode():
+                actor_feature = probe.wm.dynamics.get_feat(state)
+            records['obs_arr'].append(np.concatenate([
+                np.asarray(observation[key], dtype=np.float32).reshape(-1)
+                for key in observation_keys
+            ]))
+            records['action_arr'].append(action)
+            records['episode_id'].append(episode)
+            records['spike_rate_arr'].append(float(state['deter'].float().mean()))
+            records['stoch_arr'].append(state['stoch'].float().cpu().numpy().reshape(-1))
+            records['embedding_arr'].append(embedding.float().mean(dim=0).cpu().numpy().reshape(-1))
+            # Actor consumes all spike-time slots, not their temporal mean.
+            records['actor_feature_arr'].append(actor_feature.float().cpu().numpy().reshape(-1))
+    finally:
+        probe.close()
+    arrays = {key: np.asarray(value) for key, value in records.items()}
+    valid = arrays['episode_id'][1:] == arrays['episode_id'][:-1]
+    d_obs = np.linalg.norm(np.diff(arrays['obs_arr'].astype(np.float64), axis=0), axis=1)[valid]
+    representation_names = {
+        'posterior_categorical_mode' if probe.cfg.dyn_discrete else 'posterior_distribution_mode': 'stoch_arr',
+        'encoder_spike_time_mean': 'embedding_arr',
+        'actor_features_all_spike_times': 'actor_feature_arr',
     }
-
-    pathlib.Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    with open(args.out, "w") as f:
-        json.dump(result, f, indent=2, sort_keys=True)
-    print(
-        f"[spiking_wm_protocol] {args.task}: event_rho={result['event_rho']:.4f} "
-        f"corr_obs_latent={result['corr_obs_latent']:.4f} "
-        f"spike_rate={result['mean_spike_rate']:.4f} stoch_std={result['stoch_std']:.4f}"
-    )
+    metrics = {name: trajectory_metrics(arrays['obs_arr'], arrays[key], arrays['episode_id'])
+               for name, key in representation_names.items()}
+    if sha256(args.ckpt) != checkpoint_hash:
+        raise RuntimeError('Checkpoint changed during the diagnostic')
+    sources = [Path(__file__).resolve(), ROOT / 'code/scripts/latent_rollout.py']
+    sources += [EXTERNAL_ROOT / name for name in (
+        'models.py', 'networks.py', 'tools.py', 'node.py', 'normalization.py',
+        'surrogate.py', 'configs.yaml', 'envs/dmc.py', 'envs/wrappers.py',
+    )]
+    result = {
+        'protocol_version': 2, 'status': 'completed', 'task': args.task,
+        'checkpoint': str(Path(args.ckpt).resolve()), 'checkpoint_sha256': checkpoint_hash,
+        'weights_loaded_strict': True, 'checkpoint_subtree': '_wm.',
+        'loaded_tensor_count': probe.loaded_tensor_count,
+        'world_model_parameters': probe.world_model_parameters,
+        'seed': args.seed, 'n_steps': args.n_steps, 'n_episodes': episode + 1,
+        'n_resets': episode, 'n_transitions': int(valid.sum()),
+        'observation_keys': observation_keys, 'action_repeat': 2, 'episode_limit': 500,
+        'posterior_sample': False, 'spike_times': int(probe.cfg.spike_times),
+        'posterior_discrete_categories': int(probe.cfg.dyn_discrete),
+        'representations': metrics,
+        'corr_obs_rate': pearson(d_obs, arrays['spike_rate_arr'][1:][valid]),
+        'mean_spike_rate': float(arrays['spike_rate_arr'].mean()),
+        'stoch_std': float(arrays['stoch_arr'].astype(np.float64).std()),
+        'metric_definitions': {
+            'corr_obs_rate': 'Within-episode observation transition norm versus mean deter spike output at the destination observation',
+            'event_rho': 'Within-episode Pearson correlation of observation and explicitly named representation transition norms',
+            'stoch_std': 'Pooled categorical-mode standard deviation; fixed one-hot sparsity makes this uninformative about temporal diversity',
+            'comparison_scope': 'External full-proprioception recurrent RSSM; not input-, context-, training- or parameter-matched to local models',
+        },
+        'source_sha256': {str(path): sha256(path) for path in sources},
+    }
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    with npz_path.open('xb') as handle:
+        np.savez_compressed(handle, **arrays)
+    result['raw_arrays'] = str(npz_path.resolve())
+    result['raw_arrays_sha256'] = sha256(npz_path)
+    with args.out.open('x') as handle:
+        json.dump(result, handle, indent=2, allow_nan=False)
+    print(f"[spiking_wm_protocol] {args.task}: strict tensors={probe.loaded_tensor_count}, "
+          f"within-episode transitions={result['n_transitions']}, rho={result['corr_obs_rate']}", flush=True)
     return 0
 
 
-if __name__ == "__main__":
-    sys.exit(main())
+if __name__ == '__main__':
+    raise SystemExit(main())

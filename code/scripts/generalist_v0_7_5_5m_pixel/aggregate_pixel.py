@@ -1,96 +1,65 @@
-#!/usr/bin/env python3
-"""Aggregate v0.7.15 pixel ckpts into a single per-(model, split) table."""
-import json
+"""Summarize the exact audited 130-checkpoint, 13-environment pixel grid."""
+from __future__ import annotations
+
+import argparse
+from collections import defaultdict
 from pathlib import Path
 
-ROOT = Path("/home/lx/snn")
-BASE = ROOT / "results" / "5m_pixel"
-OUT = ROOT / "results" / "aggregate" / "generalist_5m_pixel_table.md"
-OUT.parent.mkdir(parents=True, exist_ok=True)
+from code.scripts.audited_results import (
+    TrainingAudit, fmt, metric, require, sha256, summarize, validate_pixel_grid, write_new_json,
+)
 
-MODELS = [
-    ("stjewm_trace_only", "STJEWM-trace"),
-    ("stjewm_hidden_leak", "STJEWM-leak"),
-    ("stjewm_spike_only", "STJEWM-spike"),
-    ("stjewm_rate_only", "STJEWM-rate"),
-    ("stjewm_no_trace", "STJEWM-no-trace"),
-    ("stjewm_membrane_readout", "STJEWM-membrane"),
-    ("alif_timecell_baseline", "ALIFTimecell"),
-    ("stacked_lif_trace", "Stacked-LIF-trace"),
-    ("stacked_lif_free", "Stacked-LIF-free"),
-    ("gru_baseline", "GRU"),
-    ("lewm_baseline_v2", "LeWM-v2"),
-    ("lif_transformer_baseline", "LIFTransformer"),
-    ("mlp_baseline", "MLP"),
-]
-
-SPLITS = [
-    "cross_benchmark_F1", "cross_benchmark_F2", "cross_benchmark_F3",
-    "oodc_F1", "oodc_F1F2", "oodc_F1F3", "oodc_F2", "oodc_F2F3", "oodc_F3",
-    "generalist_16env",
-]
+METRICS = ("success_rate_env", "success_rate_lewm_005", "mean_cos_dist", "mean_phys_dist")
 
 
-def collect_env_sr_lewm(split, model, seed=0):
-    ckpt_dir = BASE / split / model / f"seed_{seed}"
-    if not ckpt_dir.exists():
-        return None
-    eval_files = list(ckpt_dir.glob("eval_*.json"))
-    if not eval_files:
-        return None
-    env_srs = []
-    lewm_srs = []
-    for f in eval_files:
-        try:
-            d = json.load(open(f))
-            if "success_rate_env" in d:
-                env_srs.append(d["success_rate_env"])
-            if "success_rate_lewm_005" in d:
-                lewm_srs.append(d["success_rate_lewm_005"])
-        except Exception:
-            pass
-    if not env_srs and not lewm_srs:
-        return None
-    return {
-        "env_sr": sum(env_srs) / len(env_srs) if env_srs else None,
-        "lewm_sr": sum(lewm_srs) / len(lewm_srs) if lewm_srs else None,
-        "n_envs": len(env_srs),
-    }
+def collect(pixel_run, audit):
+    return validate_pixel_grid(Path(pixel_run) / "grid_status.json", audit)
+
+
+def summarize_rows(records):
+    groups = defaultdict(list)
+    for row in records:
+        groups[(row["split"], row["model"])].append(row)
+    rows = []
+    for (split, model), cells in sorted(groups.items()):
+        require(len(cells) == len({cell["env"] for cell in cells}) == 13, "Unpaired pixel environment coverage")
+        rows.append({"split": split, "model": model, "n_envs": 13, "training_seeds": [0],
+                     "training_seed_std": None,
+                     "metrics": {key: summarize(metric(cell["metrics"], key) for cell in cells) for key in METRICS}})
+    require(len(rows) == 130, "Incomplete pixel checkpoint coverage")
+    return rows
 
 
 def main():
-    lines = []
-    lines.append("# v0.7.15 - 5M-aligned Pixel Re-Training Table")
-    lines.append("")
-    lines.append("All ckpts trained with **frozen ViT-Tiny pixel encoder** (5.5M frozen)")
-    lines.append("replacing the state_projector. **Trainable params: 4.97-5.13M (5M-aligned)**.")
-    lines.append("")
-    lines.append("Setup: image_size 84 (faster than 224, same architecture).")
-    lines.append("Other settings: 1 epoch, batch 32, AdamW lr=3e-4, 1 seed.")
-    lines.append("")
-    lines.append("**Status: in progress (v0.7.15, 2026-07-31).**")
-    lines.append("")
-    lines.append("## Per-(model, split) env-SR / LeWM-SR")
-    lines.append("")
-    lines.append("| Model | " + " | ".join(SPLITS) + " |")
-    lines.append("|" + "---|" * (len(SPLITS) + 1))
-
-    for model_code, model_name in MODELS:
-        row = "| " + model_name + " |"
-        for split in SPLITS:
-            stats = collect_env_sr_lewm(split, model_code)
-            if stats is None:
-                row += " - |"
-            else:
-                env = f"{stats['env_sr']:.2f}" if stats['env_sr'] is not None else "-"
-                lewm = f"{stats['lewm_sr']:.2f}" if stats['lewm_sr'] is not None else "-"
-                row += f" {env} / {lewm} |"
-        lines.append(row)
-    lines.append("")
-    lines.append("**Cross-modality comparison (state vs pixel):** see cross_modality_table.md.")
-    OUT.write_text("\n".join(lines))
-    print(f"Wrote {OUT} ({len(lines)} lines)")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--training-manifest", type=Path, required=True)
+    parser.add_argument("--pixel-run", type=Path, required=True)
+    parser.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args()
+    audit = TrainingAudit(args.training_manifest)
+    records = collect(args.pixel_run, audit)
+    rows = summarize_rows(records)
+    lines = ["# Audited pixel evaluation", "",
+             "All 130 checkpoints and 1690 environment cells passed final-generation, process-exit and output-hash checks.",
+             "Models retain their actual pixel checkpoint identities, including stjewm and lewm_baseline.",
+             "Means use all 13 planned environments. Environment dispersion is not training-seed uncertainty; only one training seed exists.", "",
+             "| split | pixel model | environments | env-SR | latent SR@0.05 | cosine distance | physical distance |",
+             "|---|---|---|---|---|---|---|"]
+    for row in rows:
+        values = " | ".join(fmt(row["metrics"][key]["mean"]) for key in METRICS)
+        lines.append(f"| {row['split']} | {row['model']} | 13 | {values} |")
+    audit.protect_output(args.out)
+    audit.protect_output(args.out.with_suffix(".json"))
+    write_new_json(args.out.with_suffix(".json"), {
+        "status": "completed", "training_manifest": str(audit.path), "training_manifest_sha256": audit.digest,
+        "grid_status": str(args.pixel_run / "grid_status.json"),
+        "grid_status_sha256": sha256(args.pixel_run / "grid_status.json"),
+        "planned_cells": 1690, "rows": rows,
+    })
+    with args.out.open("x") as handle:
+        handle.write("\n".join(lines) + "\n")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

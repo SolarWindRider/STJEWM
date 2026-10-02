@@ -15,7 +15,7 @@ cd /home/lx/snn
 
 SPLITS="cross_benchmark_F1 cross_benchmark_F2 cross_benchmark_F3 oodc_F1 oodc_F1F2 oodc_F1F3 oodc_F2 oodc_F2F3 oodc_F3 generalist_16env"
 STJEWM_READOUTS="trace_only hidden_leak spike_only rate_only no_trace membrane_readout"
-BASELINES="alif_timecell_baseline gru_baseline lewm_baseline_v2 stacked_lif_trace stacked_lif_free lif_transformer_baseline mlp_baseline"
+BASELINES="alif_timecell_baseline gru_baseline lewm_baseline stacked_lif_trace stacked_lif_free lif_transformer_baseline mlp_baseline"
 
 START_TS=$(date +%s)
 
@@ -51,7 +51,7 @@ run_baseline() {
   local MODEL=$1
   local SPLIT=$2
   case "$MODEL" in
-    lewm_baseline_v2) N_LAYERS=3 ;;
+    lewm_baseline) N_LAYERS=3 ;;
     mlp_baseline) N_LAYERS=12 ;;
     stacked_lif_trace|stacked_lif_free) N_LAYERS=8 ;;
     lif_transformer_baseline) N_LAYERS=3 ;;
@@ -67,11 +67,13 @@ run_baseline() {
     return 0
   fi
   echo "[$(date '+%T')] === ${MODEL} ${SPLIT} ==="
+  local EMBED=192
+  [ "$MODEL" = lewm_baseline ] && EMBED=288
   CUDA_VISIBLE_DEVICES=$GPU PYTHONPATH=/home/lx/snn \
     /home/lx/miniconda3/envs/snn/bin/python -m code.train.train \
       --model $MODEL \
       --multi-env-spec configs/oodc_5m_pixel/${SPLIT}.json \
-      --pad-obs-to 21168 --action-dim 56 --embed-dim 192 \
+      --pad-obs-to 21168 --action-dim 56 --embed-dim $EMBED \
       --image-size $IMAGE_SIZE --n-layers $N_LAYERS \
       --epochs 1 --batch 32 --lr 3e-4 \
       --history-size 1 --goal-offset 25 \

@@ -2,7 +2,7 @@
 # Run per-env closed-loop eval of a generalist ckpt.
 # Reads the same multi-env spec used at training time so env/data/goal-offset
 # all stay in sync. For stress envs (e.g. cartpole_flicker) it adds the right
-# --flicker-mask-ratio / --vel-hidden-mask-obs-ratio so the env wrapper fires.
+# --flicker-mask-ratio / --qpos-mask-obs-ratio so the env wrapper fires.
 #
 # Usage:
 #   ./eval_generalist.sh stjewm_trace_only                              # default spec
@@ -22,27 +22,14 @@ HISTORY_SIZE=${HISTORY_SIZE:-1}
 RESULTS_DIR=${RESULTS_DIR:-/home/lx/snn/results/generalist}
 CKPT_DIR_BASE=${CKPT_DIR_BASE:-/home/lx/snn/results/generalist}
 
-# CLI filter (model names)
-FILTER="$*"
+# An optional spec follows a single model; otherwise all arguments are models.
+if [ "$#" -eq 2 ] && [[ "$2" == *.json ]]; then
+    FILTER="$1"
+    SPEC="$2"
+else
+    FILTER="$*"
+fi
 
-# Map env_kind -> closed_loop --env argument. For DMC envs, closed_loop.py uses
-# DMCStateEnv which is keyed on the env_id string passed in --env. Same id used
-# at training and eval, so we just echo it.
-declare -A ENV_KIND_TO_CLO=(
-    [dmc]="<env_id>"  # placeholder; replaced per-row below
-    [reacher_4d]="<env_id>"
-    [pusht]="<env_id>"
-    [tworoom]="<env_id>"
-)
-
-# Per-env stress flags: env_id -> "extra closed_loop flags"
-# (e.g. cartpole_flicker requires --flicker-mask-ratio, cheetah_velhidden requires --vel-hidden-mask-obs-ratio)
-declare -A STRESS_FLAGS=(
-    [cartpole_flicker]="--flicker-mask-ratio 0.5"
-    [cheetah_velhidden]="--vel-hidden-mask-obs-ratio 0.0"
-    [tworoom_long]=""  # handled via --goal-offset 200 in the spec
-    [pusht_ood]="--split unseen_goal"
-)
 
 if [ -n "$FILTER" ]; then
     MODEL_NAMES=($FILTER)
@@ -53,8 +40,8 @@ fi
 for model_name in "${MODEL_NAMES[@]}"; do
     ckpt="$CKPT_DIR_BASE/$model_name/final.pt"
     if [ ! -f "$ckpt" ]; then
-        echo "[skip] $model_name: ckpt not found at $ckpt"
-        continue
+        echo "[error] $model_name: ckpt not found at $ckpt" >&2
+        exit 1
     fi
     out_dir="$RESULTS_DIR/$model_name"
     mkdir -p "$out_dir"
@@ -62,9 +49,19 @@ for model_name in "${MODEL_NAMES[@]}"; do
     # Read each line of the spec and run one eval per env
     /home/lx/miniconda3/envs/snn/bin/python - <<PY
 import json, subprocess, sys, os
+spec_raw = json.load(open("$SPEC"))
+spec = spec_raw.get("specs", spec_raw.get("train_specs", [])) if isinstance(spec_raw, dict) else spec_raw
+ckpt = "$ckpt"
+out_dir = "$out_dir"
+history_size_default = $HISTORY_SIZE
+n_episodes = $N_EPISODES
+n_seeds = $N_SEEDS
+horizon = $HORIZON
+eval_budget = $EVAL_BUDGET
+pad = $PAD
 stress_flags = {
     "cartpole_flicker": "--flicker-mask-ratio 0.5",
-    "cheetah_velhidden": "--vel-hidden-mask-obs-ratio 0.0",
+    "cheetah_qpos_masked": "--qpos-mask-obs-ratio 0.0",
     "tworoom_long": "",
     "pusht_ood": "--split unseen_goal",
 }
@@ -73,11 +70,15 @@ stress_flags = {
 clo_env_map = {
     "cartpole_2d": "cartpole",
     "pendulum_2d": "pendulum",
+    "humanoid_CMU": "humanoid_cmu",
+    # Translate preserved training-spec provenance, not a canonical env alias.
+    "cheetah_velhidden": "cheetah_qpos_masked",
 }
 action_dim = $ACTION_DIM
 
 for entry in spec:
-    env_id = entry["env_id"]
+    source_env_id = entry["env_id"]
+    env_id = "cheetah_qpos_masked" if source_env_id == "cheetah_velhidden" else source_env_id
     data_path = entry["path"]
     history_size = entry.get("history_size", history_size_default)
     goal_offset = entry.get("goal_offset", 25)
@@ -85,8 +86,12 @@ for entry in spec:
     if os.path.exists(out_json):
         print(f"[skip] {env_id}: {out_json} already exists", flush=True)
         continue
-    clo_env = clo_env_map.get(env_id, env_id)
-    extra = stress_flags.get(env_id, "")
+    declared_clo_env = entry.get("clo_env") or source_env_id
+    clo_env = clo_env_map.get(declared_clo_env, declared_clo_env)
+    extra = [
+        "--qpos-mask-obs-ratio" if flag == "--vel-hidden-mask-obs-ratio" else flag
+        for flag in entry.get("extra_flags", stress_flags.get(env_id, "").split())
+    ]
     cmd = [
         "/home/lx/miniconda3/envs/snn/bin/python", "-m", "code.eval.closed_loop",
         "--env", clo_env,
@@ -99,14 +104,16 @@ for entry in spec:
         "--eval-budget", str(eval_budget),
         "--history-size", str(history_size),
         "--goal-offset", str(goal_offset),
+        "--pad-obs-eval", str(pad),
+        "--action-dim-eval", str(action_dim),
     ]
     if extra:
-        cmd.extend(extra.split())
+        cmd.extend(extra)
     short = " ".join(cmd[6:])
     print(f"[eval] {env_id}: {short}", flush=True)
     rc = subprocess.call(cmd)
     if rc != 0:
-        print(f"[WARN] eval for {env_id} exited with rc={rc}", file=sys.stderr)
+        raise RuntimeError(f"Evaluation for {env_id} exited with rc={rc}")
 PY
 done
 

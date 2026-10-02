@@ -2,11 +2,11 @@
 # Run linear-probe event-AUROC for one 5M ckpt.
 #
 # Usage:
-#   ./probe_one.sh <env_id> <model_name> <ckpt_path>
+#   ./probe_one.sh <env_id> <model_name> <ckpt_path> [target]
 #
 # Output goes to results/probe_5m/<env>_<model>_<target>.json (and a copy
 # under results/aggregate/event_probes_5m/ so the aggregator picks them up).
-set -e
+set -euo pipefail
 cd /home/lx/snn
 
 ENV=${1:?usage: probe_one.sh <env_id> <model_name> <ckpt_path>}
@@ -17,8 +17,19 @@ OUT_DIR=results/probe_5m
 AGG_DIR=results/aggregate/event_probes_5m
 mkdir -p "$OUT_DIR" "$AGG_DIR"
 
-# Target list (mirrors the existing run_probes.sh)
-TARGETS="event_contact event_high_motion event_low_motion event_block_near_target event_room_entered event_future_k5 event_future_k10"
+# Keep the historical requested targets, excluding environment-specific labels
+# that the canonical extractor cannot provide.
+REQUESTED_TARGETS=(event_contact event_high_motion event_low_motion event_block_near_target event_room_entered event_future_k5 event_future_k10)
+if [[ $# -ge 4 ]]; then
+  REQUESTED_TARGETS=("$4")
+fi
+TARGETS=$(/home/lx/miniconda3/envs/snn/bin/python -c \
+  'import sys; from code.scripts.probe import event_target_supported; print(" ".join(t for t in sys.argv[2:] if event_target_supported(sys.argv[1], t)))' \
+  "$ENV" "${REQUESTED_TARGETS[@]}")
+if [[ -z "$TARGETS" ]]; then
+  echo "[unsupported] $ENV: ${REQUESTED_TARGETS[*]}"
+  exit 0
+fi
 
 for target in $TARGETS; do
   out="${OUT_DIR}/${ENV}_${MODEL}_${target}.json"

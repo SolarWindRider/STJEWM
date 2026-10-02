@@ -56,7 +56,7 @@ CMD=(
   --multi-env-spec "$SPEC"
   --pad-obs-to 128
   --action-dim 56
-  --embed-dim 192
+  --embed-dim "$( [ "$MODEL" = lewm_baseline ] && echo 288 || echo 192 )"
   --n-layers 2
   --epochs 1
   --batch 32

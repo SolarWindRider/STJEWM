@@ -16,7 +16,7 @@ mkdir -p "$LOG_DIR"
 
 # Per-env probe targets (mirrors run_probes.sh)
 ENV_TARGETS=(
-  "ball_in_cup:event_contact event_high_motion event_low_motion event_block_near_target event_room_entered"
+  "ball_in_cup:event_contact event_high_motion event_low_motion"
   "cartpole_2d:event_contact event_high_motion event_low_motion event_future_k5 event_future_k10"
   "cheetah:event_contact event_high_motion event_low_motion event_future_k5 event_future_k10"
   "delayed_t_maze:event_cue_state"
@@ -68,13 +68,17 @@ for entry in "${ENV_TARGETS[@]}"; do
         continue
       fi
       total=$((total + 1))
-      if "$PROBE_ONE" "$env" "$model" "$ckpt" 2>>"$LOG_DIR/probes.log" | tail -1; then
+      if "$PROBE_ONE" "$env" "$model" "$ckpt" "$target" 2>>"$LOG_DIR/probes.log"; then
         ok=$((ok + 1))
       fi
     done
   done
 done
 echo "[post_training] probes: $ok / $total done"
+if [[ "$ok" -ne "$total" ]]; then
+  echo "[post_training] Supported probe cells failed or were undefined; no completion." >&2
+  exit 1
+fi
 
 # 2. Event-align (Pearson correlation)
 echo "[post_training] phase 2: event-align"

@@ -29,11 +29,13 @@ g_job () { # scale model gpu
   [ -n "${RO[$model]:-}" ] && ro_args="--readout-mode ${RO[$model]}"
   local out="$OUT_ROOT/generalist_G$scale/$model/seed_0"
   [ -f "$out/final.pt" ] && return
+  local embed=192
+  [ "$kind" = lewm_baseline ] && embed=288
   wait_gpu "$gpu" 9000
   mkdir -p "$out"
   CUDA_VISIBLE_DEVICES=$gpu $PY -m code.train.train \
     --model "$kind" --multi-env-spec "configs/generalist_G${scale}_train.json" \
-    --pad-obs-to 128 --action-dim 56 --embed-dim 192 --image-size 0 \
+    --pad-obs-to 128 --action-dim 56 --embed-dim "$embed" --image-size 0 \
     --n-layers "$nl" $ro_args \
     --epochs 1 --batch 32 --lr 3e-4 --history-size 1 --goal-offset 25 \
     --seed 0 --no-amp --out "$out" > "$out/train.log" 2>&1

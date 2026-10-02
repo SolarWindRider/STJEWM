@@ -4,7 +4,7 @@ These use the official stable_worldmodel gymnasium interface. They wrap the
 gym env + provide env-native success checks.
 
 State spec (per env):
-    PushT-v1:    obs = Dict(proprio(4), state(7));  state input = 7D state
+    PushT-v1:    Dict(proprio(4), state(7)); state = agent xy, block xy, angle rad, agent velocity
     TwoRoom-v1:  obs = Box(10,);                    state input = 10D
     OGBCube-v0:  obs = Box(28,);                    state input = 28D
 """
@@ -25,7 +25,7 @@ from .base import BaseEnv, EnvSpec
 # Helper: per-env state extraction
 # ============================================================
 def _state_from_pusht_obs(obs: Dict[str, np.ndarray]) -> np.ndarray:
-    """PushT: use the 7D 'state' (agent pos+vel + block pos+vel+angle+angvel)."""
+    """PushT: agent xy, block xy, block angle (radians), agent velocity xy."""
     return np.asarray(obs["state"], dtype=np.float32).flatten()
 
 
@@ -85,27 +85,9 @@ class PushTEnv(BaseEnv):
         return _state_from_pusht_obs(self._current_obs)
 
     def check_success(self, state: np.ndarray, goal_state: np.ndarray) -> Tuple[bool, float]:
-        """Block-in-target-pose check on the 7D state vector.
-
-        state layout (swm/PushT-v1):
-            [agent_x, agent_y, agent_vx, agent_vy, block_x, block_y, block_angle]
-        (positions in px, angle in degrees). goal_state has the same layout.
-
-        Success criterion aligned with upstream stable_worldmodel PushT
-        eval_state: joint agent+block position difference < 20 px and block
-        angle difference < pi/9 (20 deg). The previous tolerances (0.07 / 1.0)
-        were written as if the state were meters/radians, but the state is
-        px/degrees, which made env-SR identically 0 -- fixed 2026-09-04.
-        """
-        # Agent position (indices 0:2), block pose (indices 4:7)
-        pos_diff = float(np.linalg.norm(np.concatenate([state[0:2] - goal_state[0:2],
-                                                        state[4:6] - goal_state[4:6]])))
-        ang_diff = float(abs(state[6] - goal_state[6]))
-        ang_diff = min(ang_diff, 360.0 - ang_diff)
-        if pos_diff < 20.0 and ang_diff < 20.0:  # 20 px, pi/9 rad = 20 deg
-            return True, 0.0
-        # Use the max of normalized exceedances as the distance
-        return False, max(pos_diff / 20.0, ang_diff / 20.0)
+        """Use upstream PushT's 20-pixel position and pi/9-radian pose thresholds."""
+        success, distance = self._env.unwrapped.eval_state(goal_state, state)
+        return bool(success), float(distance)
 
     def close(self):
         self._env.close()

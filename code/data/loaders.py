@@ -19,7 +19,11 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from .base import WindowDataset, WindowSpec
+from .base import WindowDataset, WindowSpec, _episode_window_starts
+from .delayed_t_maze import load_delayed_t_maze
+from .dmc_pixel import load_dmc_pixel
+
+DATA_LOADER_PROTOCOL_VERSION = "episode_safe_20260916"
 
 
 # ============================================================
@@ -36,14 +40,23 @@ def h5_episode_index(h5_path: str):
             lens = f["ep_len"][:]
             n = len(ep_idx)
         else:
-            order = np.argsort(ep_idx, kind="stable")
-            sorted_ep = ep_idx[order]
-            boundaries = np.where(np.diff(sorted_ep) != 0)[0] + 1
-            ep_ids_unique = np.split(sorted_ep, boundaries)
-            offsets = np.array([grp[0] for grp in ep_ids_unique])
-            lens = np.array([len(g) for g in ep_ids_unique])
             n = len(ep_idx)
+            offsets = np.concatenate([[0], np.flatnonzero(ep_idx[1:] != ep_idx[:-1]) + 1])
+            lens = np.diff(np.concatenate([offsets, [n]]))
         return ep_idx, steps, offsets, lens, n
+
+
+def _npz_window_starts(data, window):
+    """Keep the DMC convention: exclude any window containing a done row."""
+    if "dones" not in data:
+        return None
+    done = np.asarray(data["dones"]).reshape(-1).astype(bool)
+    starts = np.arange(max(0, len(done) - window + 1))
+    counts = np.concatenate([[0], np.cumsum(done)])
+    valid = starts[(counts[starts + window] - counts[starts]) == 0]
+    if not len(valid):
+        raise ValueError(f"No complete {window}-frame window remains within episodes")
+    return valid
 
 
 def h5_load_field(h5_path: str, field: str) -> np.ndarray:
@@ -64,8 +77,10 @@ def load_pusht(
     env_id: Optional[str] = None,
 ) -> WindowDataset:
     """PushT: use the 7D `state` field (agent pos+vel + block pos+vel+angle+angvel)."""
-    state = h5_load_field(h5_path, "state").astype(np.float32)  # (N, 7)
+    state = (h5_load_field(h5_path, "state").astype(np.float32)) / 500.0  # (N, 7); px-scale pos/vel -> ~±1
     actions = h5_load_field(h5_path, "action").astype(np.float32)  # (N, 2)
+    _, _, offsets, lengths, _ = h5_episode_index(h5_path)
+    valid = _episode_window_starts(offsets, lengths, history_size + goal_offset + 1)
     spec = WindowSpec(
         obs_dim=7,
         action_dim=2,
@@ -74,7 +89,7 @@ def load_pusht(
         pad_obs_to=pad_obs_to,
         env_id=env_id,
     )
-    return WindowDataset(state, actions, spec, max_windows=max_windows)
+    return WindowDataset(state, actions, spec, max_windows=max_windows, valid_starts=valid)
 
 
 # ============================================================
@@ -86,9 +101,19 @@ def load_tworoom(
     pad_obs_to: Optional[int] = None,
     env_id: Optional[str] = None,
 ) -> WindowDataset:
-    """TwoRoom: use the 10D `observation` field."""
-    state = h5_load_field(h5_path, "observation").astype(np.float32)
-    actions = h5_load_field(h5_path, "action").astype(np.float32)
+    """TwoRoom: use the 10D `observation` field.
+
+    [FIX 2026-09-02] The h5 stores one NaN action row at the end of each of
+    the 10000 episodes (recording artifact), and flat windows previously
+    crossed episode boundaries. Use the episode metadata (ep_offset/ep_len)
+    to build within-episode legal window starts, and zero the NaN actions.
+    """
+    with h5py.File(h5_path, "r") as f:
+        state = (f["observation"][:].astype(np.float32)) / 250.0  # (N, 10); px-scale pos -> ~±1
+        actions = f["action"][:].astype(np.float32)
+        ep_offset = f["ep_offset"][:].astype(np.int64)
+        ep_len = f["ep_len"][:].astype(np.int64)
+    actions[~np.isfinite(actions)] = 0.0  # NaN action rows are end-of-episode placeholders
     spec = WindowSpec(
         obs_dim=10,
         action_dim=2,
@@ -97,7 +122,9 @@ def load_tworoom(
         pad_obs_to=pad_obs_to,
         env_id=env_id,
     )
-    return WindowDataset(state, actions, spec, max_windows=max_windows)
+    window = history_size + goal_offset + 1
+    valid = _episode_window_starts(ep_offset, ep_len, window)
+    return WindowDataset(state, actions, spec, max_windows=max_windows, valid_starts=valid)
 
 
 # ============================================================
@@ -165,7 +192,8 @@ def load_reacher(
         pad_obs_to=pad_obs_to,
         env_id=env_id,
     )
-    return WindowDataset(state, actions, spec, max_windows=max_windows)
+    valid = _npz_window_starts(d, history_size + goal_offset + 1)
+    return WindowDataset(state, actions, spec, max_windows=max_windows, valid_starts=valid)
 
 
 # ============================================================
@@ -256,7 +284,12 @@ def load_dmc(
     pad_obs_to: Optional[int] = None,
     env_id: Optional[str] = None,
 ) -> WindowDataset:
-    """Generic DMC npz loader. Used for cartpole, pendulum, finger, cheetah, etc."""
+    """Generic DMC npz loader. Used for cartpole, pendulum, finger, cheetah, etc.
+
+    [FIX 2026-09-02] Uses the `dones` field to restrict windows to
+    within-episode ranges (previously ~2-3% of flat windows silently crossed
+    episode resets, giving (init, goal) pairs from different episodes).
+    """
     d = np.load(npz_path)
     obs_raw = d["observations"][:, 0, :].astype(np.float32)
     actions = d["actions"][:, 0, :].astype(np.float32)
@@ -268,41 +301,12 @@ def load_dmc(
         pad_obs_to=pad_obs_to,
         env_id=env_id,
     )
-    return WindowDataset(obs_raw, actions, spec, max_windows=max_windows)
+    window = history_size + goal_offset + 1
+    valid_starts = _npz_window_starts(d, window)
+    return WindowDataset(obs_raw, actions, spec, max_windows=max_windows,
+                         valid_starts=valid_starts)
 
 
-# ============================================================
-# Delayed T-Maze loader (6D obs, 2D action; procedurally generated npz)
-# ============================================================
-def load_delayed_t_maze(
-    npz_path: str = "/home/lx/snn/data/delayed_t_maze_30k.npz",
-    history_size: int = 1,
-    goal_offset: int = 25,
-    max_windows: Optional[int] = None,
-    pad_obs_to: Optional[int] = None,
-    env_id: Optional[str] = None,
-) -> WindowDataset:
-    """Delayed T-Maze loader.
-
-    State vector layout (6D):
-        [agent_x, agent_y, cue_x, cue_y, corridor_marker, goal_marker]
-    Actions (2D):
-        [forward_command, lateral_choice]
-        The forward component is always saturated during the corridor; the
-        lateral component only matters on the terminal decision frame.
-    """
-    d = np.load(npz_path)
-    observations = d["observations"].astype(np.float32)  # (N, 6)
-    actions = d["actions"].astype(np.float32)            # (N, 2)
-    spec = WindowSpec(
-        obs_dim=6,
-        action_dim=2,
-        history_size=history_size,
-        goal_offset=goal_offset,
-        pad_obs_to=pad_obs_to,
-        env_id=env_id,
-    )
-    return WindowDataset(observations, actions, spec, max_windows=max_windows)
 
 
 # ============================================================
@@ -426,136 +430,6 @@ def load_gym_live(
     return GymLiveDataset(env_id, n_episodes=n_episodes, **kwargs)
 
 
-# ============================================================
-# DMC Pixel live dataset (v0.7.15 cross-modality, frozen ViT-Tiny)
-# ============================================================
-class DMCPixelLiveDataset(Dataset):
-    """Live DMC pixel-rollout dataset for the v0.7.15 cross-modality
-    experiment. Uses DMCPixelEnv (DMC XML + mujoco.Renderer) to
-    collect random-policy trajectories and emit (pixel-window,
-    action-window) pairs.
-
-    The returned `obs_dim` is `3 * image_size * image_size` (e.g. 150,528
-    for image_size=224), matching the ViT-Tiny input convention. The
-    world model (STJEWM / baselines) is responsible for converting the
-    pixel window into a latent via the frozen ViT-Tiny encoder.
-
-    This dataset is OBSERVATION-only: it returns the raw pixel tensor;
-    the encoder is a separate component of the model.
-    """
-
-    def __init__(
-        self,
-        env_kind: str,
-        n_episodes: int = 50,
-        max_episode_steps: int = 200,
-        history_size: int = 1,
-        goal_offset: int = 25,
-        image_size: int = 224,
-        camera_id: int = 0,
-        seed: int = 42,
-    ):
-        # Late import (only used here for the pixel pipeline)
-        from code.core.envs.dmc_env import DMCPixelEnv
-        self._env_kind = env_kind
-        self._image_size = image_size
-
-        # First, do one reset to learn obs_dim / action_dim
-        env_tmp = DMCPixelEnv(env_kind, image_size=image_size,
-                               camera_id=camera_id, success_tol=0.1,
-                               max_episode_steps=max_episode_steps)
-        env_tmp.reset(seed=seed)
-        obs_dim = env_tmp.spec.obs_dim  # 3 * 224 * 224 = 150,528
-        action_dim = env_tmp.spec.action_dim
-        env_tmp.close()
-
-        self.spec = WindowSpec(
-            obs_dim=obs_dim,
-            action_dim=action_dim,
-            history_size=history_size,
-            goal_offset=goal_offset,
-            env_id=f"mujoco/{env_kind}_pixel",
-        )
-
-        rng = np.random.default_rng(seed)
-        env = DMCPixelEnv(env_kind, image_size=image_size,
-                          camera_id=camera_id, success_tol=0.1,
-                          max_episode_steps=max_episode_steps)
-
-        all_pixels, all_act = [], []
-        for ep in range(n_episodes):
-            obs = env.reset(seed=seed + ep)
-            for t in range(max_episode_steps):
-                a = rng.uniform(-1.0, 1.0, size=action_dim).astype(np.float32)
-                all_act.append(a)
-                all_pixels.append(obs["pixel"].astype(np.float32))  # (3, H, W)
-                obs, _r, done, _info = env.step(a)
-                if done:
-                    break
-        env.close()
-
-        # Stack: (N, 3, H, W)  -- large but fine for in-memory storage
-        self.pixels = np.stack(all_pixels, axis=0)
-        self.actions = np.stack(all_act, axis=0)
-        N = len(self.pixels)
-        window = history_size + goal_offset + 1
-        self._max_starts = max(0, N - window)
-
-    def __len__(self):
-        return self._max_starts
-
-    def __getitem__(self, idx):
-        spec = self.spec
-        window = spec.history_size + spec.goal_offset + 1
-        s = idx
-        e = s + window
-        pixel_window = self.pixels[s:e]  # (W, 3, H, W)
-        action_window = self.actions[s:e - 1]  # (W, A)
-        if action_window.shape[0] < window:
-            pad = np.zeros((window - action_window.shape[0], self.actions.shape[1]), dtype=np.float32)
-            action_window = np.concatenate([action_window, pad], axis=0)
-        # Pad pixel window if too short
-        if pixel_window.shape[0] < window:
-            ppad = np.zeros((window - pixel_window.shape[0], *pixel_window.shape[1:]), dtype=np.float32)
-            pixel_window = np.concatenate([pixel_window, ppad], axis=0)
-        return {
-            "state": torch.from_numpy(pixel_window).float(),
-            "action": torch.from_numpy(action_window).float(),
-            "init_state": torch.from_numpy(self.pixels[s]).float(),
-            "goal_state": torch.from_numpy(self.pixels[s + spec.goal_offset]).float(),
-        }
-
-
-def load_dmc_pixel(
-    env_kind: str,
-    n_episodes: int = 50,
-    image_size: int = 224,
-    max_episode_steps: int = 200,
-    history_size: int = 1,
-    goal_offset: int = 25,
-    seed: int = 42,
-    **kwargs,  # ignore unknown kwargs (max_windows, pad_obs_to, etc. from multi_env)
-) -> DMCPixelLiveDataset:
-    """Wrapper for `DMCPixelLiveDataset`. Used for v0.7.15 cross-modality.
-
-    Args:
-        env_kind: DMC env name (e.g. "cartpole", "cheetah", "walker").
-        n_episodes: number of random-policy episodes to collect.
-        image_size: pixel render size (default 224, matches ViT-Tiny).
-        max_episode_steps: per-episode step budget.
-        history_size: window size for the obs history.
-        goal_offset: planning horizon offset.
-        seed: random seed.
-    """
-    return DMCPixelLiveDataset(
-        env_kind,
-        n_episodes=n_episodes,
-        max_episode_steps=max_episode_steps,
-        history_size=history_size,
-        goal_offset=goal_offset,
-        image_size=image_size,
-        seed=seed,
-    )
 
 
 # ============================================================
@@ -569,22 +443,11 @@ def load_mujoco_3d(
     pad_obs_to: Optional[int] = None,
     env_id: Optional[str] = None,
 ) -> WindowDataset:
-    """Load our own 3D rollouts (from stage38_gen_3d_rollouts.py output).
-
-    Format: npz with 'observations' (N, 1, D), 'actions' (N, 1, A), etc.
-    """
-    d = np.load(npz_path)
-    obs_raw = d["observations"][:, 0, :].astype(np.float32)
-    actions = d["actions"][:, 0, :].astype(np.float32)
-    spec = WindowSpec(
-        obs_dim=obs_raw.shape[1],
-        action_dim=actions.shape[1],
-        history_size=history_size,
-        goal_offset=goal_offset,
-        pad_obs_to=pad_obs_to,
-        env_id=env_id,
+    """Load 3D rollout NPZs using the same episode-aware DMC window convention."""
+    return load_dmc(
+        npz_path, history_size=history_size, goal_offset=goal_offset,
+        max_windows=max_windows, pad_obs_to=pad_obs_to, env_id=env_id,
     )
-    return WindowDataset(obs_raw, actions, spec, max_windows=max_windows)
 
 
 # ============================================================
@@ -612,7 +475,12 @@ def load_dataset(
         delayed_t_maze   synthetic Delayed-T-Maze npz (state 6D, 2D action)
         event_window     synthetic 5-event window npz (state 10D, 5D action)
         gym_live        gym env_id (collects random data on the fly)
+        dmc_pixel       explicit native domain -> live episode-safe RGB windows
     """
+    # Preserved specs identify maze data by env_id even when their storage
+    # adapter was the generic DMC NPZ loader.
+    if env_kind == "dmc" and kwargs.get("env_id") == "delayed_t_maze":
+        env_kind = "delayed_t_maze"
     if env_kind == "pusht":
         return load_pusht(path or "/home/lx/LeWM/data/pusht_expert_train.h5", **kwargs)
     if env_kind == "tworoom":
@@ -648,10 +516,19 @@ def load_dataset(
         assert path is not None  # env_id
         return load_gym_live(path, **kwargs)
     if env_kind == "dmc_pixel":
-        # path is the DMC env name (e.g. "cartpole", "cheetah"); use
-        # kwargs to override defaults (n_episodes, image_size, ...).
-        env_name = path or kwargs.pop("env_name", "cartpole")
-        return load_dmc_pixel(env_name, **kwargs)
+        declared = {
+            key: value for key, value in (
+                ("path", path), ("data", kwargs.pop("data", None)),
+                ("env_name", kwargs.pop("env_name", None)),
+            ) if value is not None and value != ""
+        }
+        if not declared:
+            raise ValueError("dmc_pixel requires an explicit domain in path, data or env_name")
+        if any(not isinstance(value, str) or not value.strip() for value in declared.values()):
+            raise ValueError(f"Invalid pixel domain declarations: {declared}")
+        if len({value.strip().lower() for value in declared.values()}) != 1:
+            raise ValueError(f"Contradictory pixel domain declarations: {declared}")
+        return load_dmc_pixel(next(iter(declared.values())).strip(), **kwargs)
     raise ValueError(f"Unknown env_kind: {env_kind}")
 
 

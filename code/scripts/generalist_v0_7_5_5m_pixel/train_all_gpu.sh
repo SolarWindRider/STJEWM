@@ -3,7 +3,7 @@ set -e
 cd /home/lx/snn
 SPLITS="cross_benchmark_F1 cross_benchmark_F2 cross_benchmark_F3 oodc_F1 oodc_F1F2 oodc_F1F3 oodc_F2 oodc_F2F3 oodc_F3 generalist_16env"
 STJEWM_READOUTS="trace_only hidden_leak spike_only rate_only no_trace membrane_readout"
-BASELINES="alif_timecell_baseline gru_baseline lewm_baseline_v2 stacked_lif_trace stacked_lif_free lif_transformer_baseline mlp_baseline"
+BASELINES="alif_timecell_baseline gru_baseline lewm_baseline stacked_lif_trace stacked_lif_free lif_transformer_baseline mlp_baseline"
 SEED=0
 IMAGE_SIZE=84
 LOG_DIR=results/_logs
@@ -41,10 +41,12 @@ for SPLIT in $SPLITS; do
       continue
     fi
     echo "[$(date)] [$count/$total] ${BASELINE} ${SPLIT}"
+    embed=192
+    [ "$BASELINE" = lewm_baseline ] && embed=288
     PYTHONPATH=/home/lx/snn /home/lx/miniconda3/envs/snn/bin/python -m code.train.train \
       --model "$BASELINE" \
       --multi-env-spec configs/oodc_5m_pixel/${SPLIT}.json \
-      --pad-obs-to 21168 --action-dim 56 \
+      --pad-obs-to 21168 --action-dim 56 --embed-dim "$embed" \
       --image-size $IMAGE_SIZE \
       --epochs 1 --batch 32 --lr 3e-4 \
       --history-size 1 --goal-offset 25 \

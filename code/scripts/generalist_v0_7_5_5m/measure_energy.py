@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
-"""Measure per-step dense/effective FLOPs for the 5M-aligned world models.
+"""G3/P11 random-input soma sparsity and analytic operation estimates.
 
-This script intentionally uses an architecture-level FLOP ledger rather than a
-backend profiler.  That keeps the comparison stable across PyTorch/CUDA
-versions and makes the event-driven discount explicit.  It loads each trained
-checkpoint, executes several real random batches, and measures STJEWM soma
-spike sparsity from ``spike_layers`` returned by the model.
+The fixed comparison is 13 retained models x state/pixel on cross_benchmark_F1.
+Every checkpoint must pass the final TrainingAudit before strict reconstruction
+with the training factory and its saved arguments.
 
-The ledger counts a dense Linear matmul as ``2 * in_features * out_features``
-(one multiply and one add per weight).  Bias adds, LayerNorm, nonlinearities,
-membrane updates, trace arithmetic, softmax, and tensor copies are not counted.
-The frozen ViT image encoder is deliberately excluded in pixel mode because it
-is shared by all five models; its trainable projection is counted.  State
-projectors and action encoders are counted.  STJEWM's SNN stack, gated-trace
-linear, and mode-specific readout projection are the event-discounted part.
+Actual random forwards measure binary soma activity. The separate dense ledger
+counts Linear/GRU/Conv multiply-adds and nominal dense attention interactions.
+Biases, nonlinearities, normalization, membrane/trace arithmetic, pooling,
+softmax, tensor copies and the pixel ViT backbone are excluded.
 
-Usage (from /home/lx/snn):
-  PYTHONPATH=/home/lx/snn /home/lx/miniconda3/envs/snn/bin/python \
-    code/scripts/generalist_v0_7_5_5m/measure_energy.py --device cuda:0
+The prescribed sparsity-weighted quantity is a HYPOTHETICAL PROXY: it applies
+soma activity to selected operation counts, including continuous computations.
+It is not measured energy, hardware speed, or rigorously executed FLOPs; the
+current implementations use dense kernels even when their soma spikes are zero.
+
+Usage:
+  python -m code.scripts.generalist_v0_7_5_5m.measure_energy \
+    --training-manifest /path/to/training_final_repair_manifest.json \
+    --out-dir /path/to/fresh/P11_energy --device cuda:0
 """
 from __future__ import annotations
 
@@ -25,12 +26,11 @@ import argparse
 import gc
 import json
 import math
-import os
 import random
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # Make direct invocation independent of the caller's cwd/PYTHONPATH.
 ROOT = Path(__file__).resolve().parents[3]
@@ -42,6 +42,8 @@ import torch
 import torch.nn as nn
 
 from code.train.train import build_model
+from code.scripts.audited_results import TrainingAudit, require, sha256, write_new_json
+from code.scripts.generalist_v0_7_5_5m_pixel.cross_modality_table import MODEL_MAP
 
 
 MODEL_NAMES = (
@@ -52,25 +54,22 @@ MODEL_NAMES = (
 )
 STJEWM_VARIANTS = {name for name in MODEL_NAMES if name.startswith("stjewm_")}
 SPIKING_BASELINES = {"alif_timecell_baseline", "stacked_lif_trace", "stacked_lif_free", "lif_transformer_baseline"}
-BASELINE_NAMES = {"gru_baseline", "mlp_baseline", "lewm_baseline_v2"} | SPIKING_BASELINES
+MODALITIES = ("state", "pixel")
 DEFAULT_ROOT = Path("/home/lx/snn")
 DEFAULT_OUT = DEFAULT_ROOT / "results" / "journal_prep" / "P11_energy"
+PROTOCOL = "G3_P11_random_input_sparsity_proxy_v2"
+PROXY_INTERPRETATION = (
+    "Hypothetical soma-sparsity-weighted proxy, not measured hardware energy, "
+    "speed, or rigorously executed FLOPs. The weighted paths include continuous "
+    "membrane, residual, trace, gate and MLP computations; soma activity does not "
+    "establish that these operations can be skipped."
+)
+LEDGER_EXCLUSIONS = (
+    "frozen pixel ViT backbone", "bias additions", "nonlinearities", "normalization",
+    "membrane and trace elementwise updates", "pooling", "softmax", "tensor additions and copies",
+)
 
 
-def _as_int(value: Any, default: int) -> int:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return int(default)
-
-
-def _as_optional_int(value: Any) -> Optional[int]:
-    if value is None:
-        return None
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None
 
 
 def _linear_flops(layer: nn.Linear) -> int:
@@ -84,10 +83,6 @@ def _linears_flops(module: Optional[nn.Module]) -> int:
     return sum(_linear_flops(m) for m in module.modules() if isinstance(m, nn.Linear))
 
 
-def _module_param_count(module: Optional[nn.Module]) -> int:
-    if module is None:
-        return 0
-    return sum(int(p.numel()) for p in module.parameters())
 
 
 def _safe_mode(model: nn.Module) -> str:
@@ -137,7 +132,7 @@ def _input_and_action_flops(model: nn.Module, model_kind: str) -> Tuple[int, Dic
             parts["state_projector"] = _linears_flops(getattr(model, "state_proj", None))
         parts["action_encoder"] = _linears_flops(getattr(model, "action_encoder", None))
     else:
-        raise ValueError(f"Unsupported model kind for energy ledger: {model_kind}")
+        raise ValueError(f"Unsupported model kind for operation ledger: {model_kind}")
     return sum(parts.values()), parts
 
 
@@ -146,8 +141,8 @@ def _stjewm_dynamic_flops(model: nn.Module) -> Tuple[int, Dict[str, int]]:
     stack_cells = 0
     post_mlps = 0
     for cell in model.stack.cells:
-        # MultiCompartmentCell has four synaptic Linear transforms.  Counting
-        # all linears also remains correct if a future cell gains a projection.
+        # MultiCompartmentCell executes all four transforms, including
+        # continuous membrane feedback. Soma sparsity does not skip them.
         stack_cells += _linears_flops(cell)
     for post in model.stack.post_mlps:
         post_mlps += _linears_flops(post)
@@ -205,8 +200,8 @@ def _lewm_dynamic_flops(model: nn.Module, sequence_len: int) -> Tuple[int, Dict[
                     blocks_linear += _linears_flops(proj)
         blocks_linear += _linears_flops(getattr(attn, "out_proj", None))
         blocks_linear += _linears_flops(getattr(block, "mlp", None))
-        # QK^T and AV each cost 2*L*D for a whole L-token sequence;
-        # divide by L to obtain 4*L*D per token.
+        # QK^T and AV together cost a nominal 4*L*L*D for the window,
+        # or 4*L*D per token. This dense estimate does not credit a causal kernel.
         d = int(block.attn.embed_dim)
         attention_interactions += 4 * int(sequence_len) * d
     output = _linears_flops(getattr(model, "proj_out", None))
@@ -219,7 +214,7 @@ def _lewm_dynamic_flops(model: nn.Module, sequence_len: int) -> Tuple[int, Dict[
 
 
 def _spiking_baseline_dynamic_flops(model: nn.Module, model_kind: str, sequence_len: int) -> Tuple[int, int, Dict[str, int]]:
-    """Return total dynamic FLOPs, event-discountable FLOPs, and breakdown."""
+    """Return dense dynamic count, hypothetically weighted count, and breakdown."""
     if model_kind in {"stacked_lif_trace", "stacked_lif_free"}:
         lif = _linears_flops(model.stack)
         readout = _linears_flops(model.readout)
@@ -228,7 +223,7 @@ def _spiking_baseline_dynamic_flops(model: nn.Module, model_kind: str, sequence_
     if model_kind == "alif_timecell_baseline":
         lif = sum(_linears_flops(cell) for cell in model.stack.cells)
         conv = model.stack.time_conv
-        time_cells = 2 * int(conv.in_channels) * int(conv.out_channels) * int(conv.kernel_size[0])
+        time_cells = 2 * int(conv.weight.numel())
         fuse = _linears_flops(model.stack.fuse)
         parts = {"alif_stack": lif, "time_cell_conv": time_cells, "readout_fusion": fuse}
         return lif + time_cells + fuse, lif, parts
@@ -247,32 +242,50 @@ def _spiking_baseline_dynamic_flops(model: nn.Module, model_kind: str, sequence_
     raise ValueError(model_kind)
 
 def _flop_ledger(model: nn.Module, model_kind: str, sequence_len: int) -> Dict[str, Any]:
+    """Analytic dense work and the prescribed proxy partition, never a profiler."""
     input_flops, input_parts = _input_and_action_flops(model, model_kind)
+    weighted = 0
     if model_kind == "stjewm":
         dynamic, dynamic_parts = _stjewm_dynamic_flops(model)
-        dynamic_label = "snn_stack_readout"
+        weighted = dynamic
+        weighted_parts = dict(dynamic_parts)
     elif model_kind == "gru_baseline":
         dynamic, dynamic_parts = _gru_dynamic_flops(model)
-        dynamic_label = "gru_recurrence_readout"
+        weighted_parts = {}
     elif model_kind == "mlp_baseline":
         dynamic, dynamic_parts = _mlp_dynamic_flops(model)
-        dynamic_label = "mlp_ffn_readout"
+        weighted_parts = {}
     elif model_kind == "lewm_baseline":
         dynamic, dynamic_parts = _lewm_dynamic_flops(model, sequence_len)
-        dynamic_label = "transformer_readout"
+        weighted_parts = {}
     elif model_kind in SPIKING_BASELINES:
-        dynamic, event_dynamic, dynamic_parts = _spiking_baseline_dynamic_flops(model, model_kind, sequence_len)
-        dynamic_label = "spiking_or_hybrid_predictor"
+        dynamic, weighted, dynamic_parts = _spiking_baseline_dynamic_flops(model, model_kind, sequence_len)
+        names = {
+            "alif_timecell_baseline": ("alif_stack",),
+            "stacked_lif_trace": ("lif_stack", "readout_projection"),
+            "stacked_lif_free": ("lif_stack", "readout_projection"),
+            "lif_transformer_baseline": ("lif_stack", "spike_projection"),
+        }[model_kind]
+        weighted_parts = {name: dynamic_parts[name] for name in names}
     else:
         raise ValueError(model_kind)
+    require(sum(weighted_parts.values()) == weighted, "Inconsistent hypothetical proxy partition")
     return {
-        "input_action_flops": int(input_flops),
-        "input_action_breakdown": {k: int(v) for k, v in input_parts.items()},
-        "dynamic_flops": int(dynamic),
-        "dynamic_label": dynamic_label,
-        "event_discountable_flops": int(event_dynamic if model_kind in SPIKING_BASELINES else dynamic if model_kind == "stjewm" else 0),
-        "dynamic_breakdown": {k: int(v) for k, v in dynamic_parts.items()},
-        "dense_flops_per_step": int(input_flops + dynamic),
+        "kind": "analytic_dense_operation_estimate",
+        "unit": "multiply_add_flop_equivalents_per_sample_token",
+        "input_action_dense_flops_per_step": int(input_flops),
+        "input_action_breakdown": input_parts,
+        "predictor_dense_flops_per_step": int(dynamic),
+        "predictor_breakdown": dynamic_parts,
+        "analytic_dense_flops_per_step": int(input_flops + dynamic),
+        "hypothetically_weighted_dense_flops_per_step": int(weighted),
+        "hypothetically_weighted_breakdown": weighted_parts,
+        "always_dense_predictor_flops_per_step": int(dynamic - weighted),
+        "always_dense_flops_per_step": int(input_flops + dynamic - weighted),
+        "always_dense_interpretation": (
+            "Unweighted terms in the hypothetical proxy, not the only dense "
+            "operations in the implementation; all counted kernels are dense."
+        ),
     }
 
 
@@ -287,6 +300,7 @@ def _set_seed(seed: int) -> None:
 def _measure_sparsity(
     model: nn.Module,
     *,
+    model_kind: str,
     pixel: bool,
     obs_dim: int,
     action_dim: int,
@@ -297,16 +311,15 @@ def _measure_sparsity(
     device: torch.device,
     seed: int,
 ) -> Dict[str, Any]:
-    """Run random real forwards and aggregate STJEWM spike activity."""
+    """Measure all returned binary soma spikes, not hidden/trace activation zeros."""
     _set_seed(seed)
     model.eval()
-    total = 0
-    nonzero = 0
+    expects_spikes = model_kind == "stjewm" or model_kind in SPIKING_BASELINES
     layer_total: List[int] = []
     layer_nonzero: List[int] = []
-    timings: List[float] = []
+    layer_shapes: List[List[int]] = []
     with torch.no_grad():
-        for _ in range(batches):
+        for batch in range(batches):
             if pixel:
                 obs = torch.rand(
                     batch_size, sequence_len, 3, image_size, image_size,
@@ -314,68 +327,124 @@ def _measure_sparsity(
                 )
             else:
                 obs = torch.randn(batch_size, sequence_len, obs_dim, device=device)
-            # Actions use the common normalized control range.
             action = torch.empty(
                 batch_size, sequence_len, action_dim, device=device
             ).uniform_(-1.0, 1.0)
-            start = time.perf_counter()
             out = model(obs, action)
-            if device.type == "cuda":
-                torch.cuda.synchronize(device)
-            timings.append(time.perf_counter() - start)
-            spikes = out.get("spike_layers") if isinstance(out, dict) else None
-            if isinstance(spikes, (list, tuple)) and spikes:
-                while len(layer_total) < len(spikes):
-                    layer_total.append(0)
-                    layer_nonzero.append(0)
-                for idx, spike in enumerate(spikes):
-                    layer_total[idx] += int(spike.numel())
-                    layer_nonzero[idx] += int(torch.count_nonzero(spike).item())
-                    total += int(spike.numel())
-                    nonzero += int(torch.count_nonzero(spike).item())
-    if total:
-        active_fraction = nonzero / total
-        sparsity = 1.0 - active_fraction
-        per_layer = [
-            {
-                "layer": i,
-                "elements": layer_total[i],
-                "nonzero": layer_nonzero[i],
-                "active_fraction": layer_nonzero[i] / layer_total[i],
-                "sparsity": 1.0 - layer_nonzero[i] / layer_total[i],
-            }
-            for i in range(len(layer_total))
-        ]
-        source = "measured from all STJEWM soma spike_layers on random forwards"
-    else:
-        # Dense baselines have no event tensor.  Keep a numeric zero so the
-        # effective-flop formula is total and unambiguous, while noting that it
-        # is a convention rather than a measured spike sparsity.
-        active_fraction = 1.0
-        sparsity = 0.0
-        per_layer = []
-        source = "not applicable: dense baseline (no spike_layers)"
+            require(isinstance(out, dict), "Random forward did not return the model output mapping")
+            emb = out.get("emb")
+            require(isinstance(emb, torch.Tensor) and emb.ndim == 3
+                    and tuple(emb.shape[:2]) == (batch_size, sequence_len)
+                    and emb.shape[-1] == model.embed_dim, "Invalid random-forward latent dimensions")
+            require(bool(torch.isfinite(emb).all()), "Non-finite random-forward latent")
+            spikes = out.get("spike_layers")
+            if not expects_spikes:
+                require(spikes is None or isinstance(spikes, (list, tuple)) and not spikes,
+                        "Dense baseline unexpectedly returned soma spike layers")
+                continue
+            require(isinstance(spikes, (list, tuple)) and spikes,
+                    f"{model_kind} did not return required soma spike_layers")
+            if batch == 0:
+                layer_total = [0] * len(spikes)
+                layer_nonzero = [0] * len(spikes)
+            require(len(spikes) == len(layer_total), "Spike-layer count changed between batches")
+            for idx, spike in enumerate(spikes):
+                require(isinstance(spike, torch.Tensor) and spike.ndim == 3
+                        and tuple(spike.shape[:2]) == (batch_size, sequence_len)
+                        and spike.shape[-1] > 0, f"Invalid soma spike dimensions at layer {idx}")
+                require(bool(((spike == 0) | (spike == 1)).all()),
+                        f"Non-binary or non-finite soma spikes at layer {idx}")
+                shape = list(spike.shape)
+                if batch == 0:
+                    layer_shapes.append(shape)
+                require(shape == layer_shapes[idx], f"Spike dimensions changed at layer {idx}")
+                layer_total[idx] += int(spike.numel())
+                layer_nonzero[idx] += int(torch.count_nonzero(spike).item())
+    total = sum(layer_total)
+    nonzero = sum(layer_nonzero)
+    per_layer = [
+        {
+            "layer": i,
+            "shape_per_batch": layer_shapes[i],
+            "elements": layer_total[i],
+            "nonzero": layer_nonzero[i],
+            "active_fraction": layer_nonzero[i] / layer_total[i],
+            "sparsity": 1.0 - layer_nonzero[i] / layer_total[i],
+        }
+        for i in range(len(layer_total))
+    ]
     return {
-        "sparsity": float(sparsity),
-        "active_fraction": float(active_fraction),
-        "spike_elements": int(total),
-        "spike_nonzero": int(nonzero),
+        "status": "measured" if expects_spikes else "not_applicable",
+        "sparsity": 1.0 - nonzero / total if expects_spikes else None,
+        "active_fraction": nonzero / total if expects_spikes else None,
+        "spike_elements": total,
+        "spike_nonzero": nonzero,
         "per_layer": per_layer,
-        "source": source,
-        "batches": int(batches),
-        "batch_size": int(batch_size),
-        "sequence_len": int(sequence_len),
-        "mean_forward_seconds": float(sum(timings) / len(timings)) if timings else None,
+        "source": (
+            "all returned binary soma spike_layers on random forwards"
+            if expects_spikes else "dense baseline: no soma spike measurement"
+        ),
+        "seed": seed,
+        "batches": batches,
+        "batch_size": batch_size,
+        "sequence_len": sequence_len,
     }
 
 
+def _planned_cells(audit: TrainingAudit, split: str, seed: int) -> List[Dict[str, Any]]:
+    """Resolve the retained grid; never substitute a nearby checkpoint directory."""
+    cells = []
+    for modality in MODALITIES:
+        for model_name in MODEL_NAMES:
+            family = "5m_pixel" if modality == "pixel" else "5m_5mpar" if model_name in STJEWM_VARIANTS else "5m"
+            checkpoint_model = MODEL_MAP.get(model_name, model_name) if modality == "pixel" else model_name
+            path = audit.results_root / family / split / checkpoint_model / "seed_0" / "final.pt"
+            cells.append({
+                "id": f"{modality}/{model_name}",
+                "model": model_name,
+                "display_name": "LeWM" if model_name == "lewm_baseline_v2" else model_name,
+                "modality": modality,
+                "family": family,
+                "checkpoint_model": checkpoint_model,
+                "checkpoint": str(path.resolve()),
+                "training_seed": 0,
+                "random_seed": seed + len(cells),
+            })
+    require(len(cells) == 26 and len({cell["checkpoint"] for cell in cells}) == 26,
+            "G3/P11 requires 26 distinct retained checkpoint cells")
+    return cells
+
+
+def _source_hashes(audit: TrainingAudit) -> Dict[str, str]:
+    """Bind this run to the final training/loader sources and its own producer."""
+    hashes: Dict[str, str] = {}
+    for registry in ("training_source_sha256", "loader_source_sha256"):
+        for relative, expected in audit.payload[registry].items():
+            actual = hashes.get(relative)
+            if actual is None:
+                actual = sha256(ROOT / relative)
+            require(actual == expected, f"Source differs from the final training audit: {relative}")
+            hashes[relative] = actual
+    for relative in (
+        str(Path(__file__).resolve().relative_to(ROOT)),
+        "code/scripts/audited_results.py",
+        "code/scripts/generalist_v0_7_5_5m/repair_eval_grid.py",
+        "code/scripts/generalist_v0_7_5_5m_pixel/cross_modality_table.py",
+    ):
+        hashes[relative] = sha256(ROOT / relative)
+    return hashes
+
+
 def _checkpoint_args(path: Path) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    ckpt = torch.load(str(path), map_location="cpu", weights_only=False)
-    if not isinstance(ckpt, dict):
-        raise ValueError("checkpoint is not a mapping")
-    args = ckpt.get("args", {}) or {}
-    if not isinstance(args, dict):
-        args = vars(args) if hasattr(args, "__dict__") else {}
+    ckpt = torch.load(path, map_location="cpu", mmap=True, weights_only=False)
+    require(isinstance(ckpt, dict), "Checkpoint is not a mapping")
+    args = ckpt.get("args")
+    require(isinstance(args, dict), "Checkpoint has no saved argument mapping")
+    require(isinstance(ckpt.get("model"), dict), "Checkpoint has no model state_dict")
+    for key in ("pad_obs_to", "action_dim", "n_layers", "history_size"):
+        require(type(args.get(key)) is int and args[key] > 0, f"Invalid saved {key}")
+    require(type(args.get("image_size")) is int and args["image_size"] >= 0, "Invalid saved image_size")
+    require(type(args.get("seed")) is int, "Missing saved training seed")
     return ckpt, dict(args)
 
 
@@ -384,157 +453,115 @@ def _build_from_checkpoint(
     args: Dict[str, Any],
     *,
     pixel: bool,
-    obs_dim: int,
-    action_dim: int,
-    image_size: int,
 ) -> Tuple[nn.Module, str]:
-    model_kind = str(args.get("model", "stjewm"))
-    if model_name.startswith("stjewm_"):
-        model_kind = "stjewm"
-    # State STJEWM checkpoints were trained with the retained frozen 224px
-    # ViT geometry even though state forwards bypass it.  Building that exact
-    # geometry permits an integrity check of the complete checkpoint while the
-    # forward measurement still excludes the unused encoder.
-    default_image_size = 84 if pixel else (224 if model_kind == "stjewm" else 0)
-    n_layers = _as_int(args.get("n_layers"), 4 if pixel and model_kind == "stjewm" else 2)
-    readout_mode = str(args.get("readout_mode", "hidden_leak"))
-    embed_dim = _as_optional_int(args.get("embed_dim"))
-    hidden_dim = _as_optional_int(args.get("hidden_dim"))
-    mlp_hidden = _as_optional_int(args.get("mlp_hidden"))
-    mlp_layers = _as_optional_int(args.get("mlp_layers"))
-    if model_kind == "stjewm" and not pixel:
-        # build_model intentionally routes image_size>0 to pixel mode.  The
-        # state checkpoints nevertheless retain a 224px frozen encoder, so
-        # instantiate STJEWM directly to preserve both that buffer and the
-        # active state projector without modifying the shared factory.
-        from code.stjewm import STJEWM
-        model = STJEWM(
-            d_hid=192, embed_dim=192, action_dim=action_dim,
-            action_emb_dim=192, state_dim=obs_dim, cell_n_layers=n_layers,
-            n_d=3, trace_beta=0.9, freeze_encoder=True,
-            image_size=224, patch_size=14, readout_mode=readout_mode,
-        )
-    else:
-        model = build_model(
-            model_kind,
-            obs_dim,
-            action_dim,
-            n_layers,
-            readout_mode,
-            embed_dim=embed_dim,
-            hidden_dim=hidden_dim,
-            mlp_hidden=mlp_hidden,
-            mlp_layers=mlp_layers,
-            stacked_lif_layers=_as_optional_int(args.get("stacked_lif_layers")),
-            stacked_lif_din=_as_optional_int(args.get("stacked_lif_din")),
-            image_size=image_size if pixel else 0,
-        )
+    """Use the canonical training factory, including the saved frozen geometry."""
+    model_kind = args["model"]
+    expected_kind = "stjewm" if model_name in STJEWM_VARIANTS else MODEL_MAP.get(model_name, model_name)
+    require(model_kind == expected_kind, f"Saved model {model_kind!r} does not match cell {model_name}")
+    obs_dim, image_size = args["pad_obs_to"], args["image_size"]
+    is_pixel = image_size > 0 and obs_dim == 3 * image_size * image_size
+    require(pixel == is_pixel, "Saved geometry does not match the planned modality")
+    if model_kind == "stjewm":
+        require(args["readout_mode"] == model_name.removeprefix("stjewm_"),
+                "Saved STJEWM readout does not match the planned variant")
+    model = build_model(
+        model_kind, obs_dim, args["action_dim"], args["n_layers"], args["readout_mode"],
+        embed_dim=args.get("embed_dim"),
+        hidden_dim=args.get("hidden_dim"),
+        mlp_hidden=args.get("mlp_hidden"),
+        mlp_layers=args.get("mlp_layers"),
+        stacked_lif_layers=args.get("stacked_lif_layers"),
+        stacked_lif_din=args.get("stacked_lif_din"),
+        image_size=image_size,
+    )
     return model, model_kind
 
 
 def _measure_one(
-    model_name: str,
-    modality: str,
-    path: Path,
+    cell: Dict[str, Any],
+    audit: TrainingAudit,
     *,
     device: torch.device,
     batches: int,
     batch_size: int,
-    seed: int,
+    measurement_source_sha256: str,
 ) -> Dict[str, Any]:
-    pixel = modality == "pixel"
-    if not path.exists():
-        return {
-            "model": model_name,
-            "modality": modality,
-            "checkpoint": str(path),
-            "status": "missing",
-            "error": f"checkpoint missing: {path}",
-        }
+    path = Path(cell["checkpoint"])
+    pixel = cell["modality"] == "pixel"
+    result = dict(cell, status="error", measurement_source_sha256=measurement_source_sha256,
+                  batches=batches, batch_size=batch_size)
+    stage = "training_audit_admission"
+    model = None
     try:
+        result["repair_provenance"] = audit.provenance(path)
+        stage = "strict_saved_geometry_load"
         ckpt, args = _checkpoint_args(path)
-        default_obs = 21168 if pixel else 128
-        obs_dim = _as_int(args.get("pad_obs_to"), default_obs)
-        action_dim = _as_int(args.get("action_dim"), 56)
-        image_size = _as_int(args.get("image_size"), 84 if pixel else 224 if str(args.get("model", "stjewm")) == "stjewm" else 0)
-        sequence_len = _as_int(args.get("history_size"), 1 if pixel else 3)
-        sequence_len = max(1, sequence_len)
-        model, model_kind = _build_from_checkpoint(
-            model_name, args, pixel=pixel, obs_dim=obs_dim,
-            action_dim=action_dim, image_size=image_size,
+        require(args["seed"] == cell["training_seed"], "Checkpoint training seed differs from the planned cell")
+        obs_dim, action_dim = args["pad_obs_to"], args["action_dim"]
+        image_size, sequence_len = args["image_size"], args["history_size"]
+        result.update(
+            checkpoint_args=args, checkpoint_step=ckpt["step"],
+            checkpoint_training_protocol_version=ckpt.get("training_protocol_version"),
+            checkpoint_data_protocol_version=ckpt.get("data_protocol_version"),
+            obs_dim=obs_dim, action_dim=action_dim, image_size=image_size,
+            sequence_len=sequence_len, dtype="float32",
+            observation_shape=[batch_size, sequence_len, 3, image_size, image_size]
+            if pixel else [batch_size, sequence_len, obs_dim],
+            action_shape=[batch_size, sequence_len, action_dim],
+            sample_tokens=batches * batch_size * sequence_len,
         )
-        state_dict = ckpt.get("model")
-        if not isinstance(state_dict, dict):
-            raise ValueError("checkpoint has no model state_dict")
-        # Build the exact checkpoint geometry above, then validate all keys.
-        # The state-mode forward bypasses the retained frozen ViT, so its FLOPs
-        # remain intentionally excluded from the ledger.
-        missing, unexpected = model.load_state_dict(state_dict, strict=False)
-        if missing or unexpected:
-            raise ValueError(
-                f"state_dict mismatch (missing={list(missing)[:5]}, "
-                f"unexpected={list(unexpected)[:5]})"
-            )
-        if not pixel and model_kind == "stjewm":
-            args = dict(args)
-            args["unused_frozen_encoder_loaded"] = True
+        model, model_kind = _build_from_checkpoint(cell["model"], args, pixel=pixel)
+        model.load_state_dict(ckpt["model"], strict=True)
+        del ckpt
+        require(sha256(path) == result["repair_provenance"]["checkpoint_sha256"],
+                "Checkpoint changed after training-audit admission")
+        result.update(model_kind=model_kind, weights_loaded_strict=True,
+                      model_class=type(model).__name__, embedding_dim=model.embed_dim)
         model.to(device).eval()
+        stage = "analytic_ledger"
         ledger = _flop_ledger(model, model_kind, sequence_len)
+        stage = "random_input_forward"
         sparsity = _measure_sparsity(
-            model, pixel=pixel, obs_dim=obs_dim, action_dim=action_dim,
+            model, model_kind=model_kind, pixel=pixel, obs_dim=obs_dim, action_dim=action_dim,
             image_size=image_size, sequence_len=sequence_len,
-            batches=batches, batch_size=batch_size, device=device,
-            seed=seed,
+            batches=batches, batch_size=batch_size, device=device, seed=cell["random_seed"],
         )
-        active = float(sparsity["active_fraction"])
-        event_dynamic = float(ledger["event_discountable_flops"])
-        if model_kind == "stjewm" or model_kind in SPIKING_BASELINES:
-            effective_dynamic = ledger["dynamic_flops"] - event_dynamic + event_dynamic * active
-            effective_total = ledger["input_action_flops"] + effective_dynamic
-        else:
-            effective_dynamic = float(ledger["dynamic_flops"])
-            effective_total = float(ledger["dense_flops_per_step"])
-        total_params = sum(int(p.numel()) for p in model.parameters())
-        trainable_params = sum(int(p.numel()) for p in model.parameters() if p.requires_grad)
-        frozen_params = total_params - trainable_params
-        result = {
-            "model": model_name,
-            "model_kind": model_kind,
-            "modality": modality,
-            "checkpoint": str(path),
-            "status": "ok",
-            "checkpoint_args": args,
-            "obs_dim": obs_dim,
-            "action_dim": action_dim,
-            "image_size": image_size,
-            "sequence_len": sequence_len,
-            "ledger": ledger,
-            "sparsity_measurement": sparsity,
-            "dense_flops_per_step": int(ledger["dense_flops_per_step"]),
-            "effective_dynamic_flops_per_step": float(effective_dynamic),
-            "effective_flops_per_step": float(effective_total),
-            "trainable_params": int(trainable_params),
-            "total_params": int(total_params),
-            "frozen_params": int(frozen_params),
-            "shared_pixel_encoder_excluded": bool(pixel),
-        }
-        return result
-    except Exception as exc:  # retain missing/load errors in the summary
-        return {
-            "model": model_name,
-            "modality": modality,
-            "checkpoint": str(path),
-            "status": "error",
-            "error": f"{type(exc).__name__}: {exc}",
-        }
+        active = sparsity["active_fraction"] if sparsity["status"] == "measured" else 1.0
+        weighted = ledger["hypothetically_weighted_dense_flops_per_step"]
+        proxy_dynamic = ledger["always_dense_predictor_flops_per_step"] + active * weighted
+        proxy_total = ledger["always_dense_flops_per_step"] + active * weighted
+        stage = "checkpoint_stability"
+        require(sha256(path) == result["repair_provenance"]["checkpoint_sha256"],
+                "Checkpoint changed during the measurement")
+        total_params = sum(p.numel() for p in model.parameters())
+        trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        result.update(
+            status="ok", ledger=ledger, sparsity_measurement=sparsity,
+            analytic_dense_flops_per_step=ledger["analytic_dense_flops_per_step"],
+            hypothetical_sparsity_weighted_proxy={
+                "unit": "multiply_add_flop_equivalents_per_sample_token",
+                "interpretation": PROXY_INTERPRETATION,
+                "formula": "always_dense_flops_per_step + active_fraction * hypothetically_weighted_dense_flops_per_step",
+                "active_fraction": active,
+                "active_fraction_source": (
+                    "measured pooled binary soma activity" if sparsity["status"] == "measured"
+                    else "unweighted dense-baseline convention; not a sparsity measurement"
+                ),
+                "predictor_per_step": proxy_dynamic,
+                "total_per_step": proxy_total,
+            },
+            trainable_params=trainable_params, total_params=total_params,
+            frozen_params=total_params - trainable_params,
+            frozen_pixel_encoder_excluded_from_ledger=pixel,
+        )
+    except Exception as exc:
+        result.update(status="error", failure_stage=stage, error_type=type(exc).__name__, error=str(exc))
     finally:
-        try:
-            del model
-        except UnboundLocalError:
-            pass
+        del model
         gc.collect()
         if device.type == "cuda":
             torch.cuda.empty_cache()
+    return result
 
 
 def _fmt_int(value: Any) -> str:
@@ -558,7 +585,7 @@ def _fmt_pct(value: Any) -> str:
 def _fmt_ratio(value: Any) -> str:
     if value is None or not math.isfinite(float(value)):
         return "—"
-    return f"{float(value):.4f}×"
+    return f"{float(value):.4f}"
 
 
 def _ok_rows(data: Dict[str, Any], modality: Optional[str] = None) -> List[Dict[str, Any]]:
@@ -569,160 +596,214 @@ def _ok_rows(data: Dict[str, Any], modality: Optional[str] = None) -> List[Dict[
 
 
 def _render_summary(data: Dict[str, Any]) -> str:
-    rows = data.get("measurements", [])
-    lines: List[str] = []
-    lines.append("# P1-1 Energy / Efficiency Measurement")
-    lines.append("")
-    lines.append("This report is generated from `measurements.json`; all numeric entries below are rendered from that file after the checkpoint forwards completed.")
-    lines.append("")
-    lines.append("## Scope and reproducibility")
-    lines.append("")
-    lines.append(f"- Checkpoint split: `{data['split']}`; seed directory: `seed_0`.")
-    lines.append(f"- Random forward protocol: `{data['batches']}` batches × `{data['batch_size']}` samples, sequence length from each checkpoint's `history_size`, seed `{data['seed']}`.")
-    lines.append(f"- Device: `{data['device']}`; Python/PyTorch execution used the repository environment.")
-    lines.append("- State inputs are `(B,T,128)` and actions are `(B,T,56)`. Pixel inputs are `(B,T,3,84,84)` and actions are `(B,T,56)`.")
-    lines.append("- A Linear with shape `(din,dout)` contributes `2×din×dout` FLOPs per token. Biases, activations, LayerNorm, membrane/trace elementwise updates, softmax, and tensor adds are excluded consistently.")
-    lines.append("- Counted always-dense path: state/pixel projection and action encoder. Counted dynamic path: STJEWM MultiCompartment cell linears, post-cell MLPs, gated-trace gate, and mode-specific readout; GRU gates/output; MLP FFN; or LeWM AdaLN/QKV/output/MLP/attention interactions/output projection.")
-    lines.append("- Pixel-mode frozen ViT backbone is excluded from every row because it is shared across the comparison. Its trainable projection is included. Thus pixel numbers are predictor-side FLOPs, not end-to-end camera encoding FLOPs.")
-    lines.append("- STJEWM sparsity is measured as `1 − nonzero/total` over every layer's returned binary soma `spike_layers` tensor on the random forwards. The prescribed effective estimate is `always_dense + active_fraction × dynamic_SNN/readout`; dense baselines have no spike tensor and receive sparsity `0` / active fraction `1`.")
-    lines.append("")
-    lines.append("## Per-model FLOP table")
-    lines.append("")
-    lines.append("`Params` is trainable parameters; `total` additionally includes frozen parameters (notably the excluded pixel ViT). FLOPs are per input token/step, with transformer attention amortized over the reported sequence length.")
-    lines.append("")
-    lines.append("| Modality | Model | Status | T | Trainable params | Total params | Dense input/action MFLOPs | Dense dynamic MFLOPs | Dense total MFLOPs/step | Sparsity | Effective dynamic MFLOPs | Effective MFLOPs/step |")
-    lines.append("|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
+    rows = data["measurements"]
+    lines = [
+        "# G3/P11 Random-input soma sparsity and analytic proxy",
+        "",
+        f"Run status: **{data['status']}**; {data['completed_rows']}/{data['planned_rows']} planned rows succeeded.",
+        "",
+        data["interpretation"],
+        "",
+        "All numbers below come from `measurements.json`. Failed rows are retained, not dropped from the planned grid.",
+        "",
+        "## Protocol and provenance",
+        "",
+        f"- Split: `{data['split']}`; 13 retained models x state/pixel; training seed `0`.",
+        f"- Final training manifest: `{data['training_manifest']}`; SHA-256 `{data['training_manifest_sha256']}`.",
+        f"- Random forwards: `{data['batches']}` batches x `{data['batch_size']}` samples; T is the saved `history_size`.",
+        f"- Seed base `{data['seed']}` plus the fixed state-then-pixel/model-order row index; each exact seed and input shape is recorded in JSON.",
+        f"- Device: `{data['device']}`. Device identity is execution provenance, not an energy or speed measurement.",
+        "- State inputs are standard normal, pixel inputs uniform [0,1), and actions uniform [-1,1). Every call starts from the model's reset recurrent state.",
+        "- State STJEWM uses `5m_5mpar`; other state models use `5m`. Pixel uses `5m_pixel` with the audited `stjewm`/`lewm_baseline` directory mapping.",
+        "- Saved arguments are passed to the canonical training factory; every weight/buffer is loaded with `strict=True`, including the unused frozen state-STJEWM encoder.",
+        "- Checkpoint hashes, producer/training/loader source hashes, runtime versions, and batch dimensions are recorded in JSON.",
+        "",
+        "## Analytic dense ledger and hypothetical partition",
+        "",
+        "Counts use 2*din*dout per Linear, twice the GRU gate weight elements, twice the Conv1d weight elements per output position, and nominal 4*T*D attention interactions per token/block. Causal masking does not reduce this dense estimate.",
+        "",
+        "Excluded: " + "; ".join(data["ledger_exclusions"]) + ". Pixel forwards execute the frozen ViT to measure actual spike activity, but its work is excluded from the ledger. These are not end-to-end camera costs.",
+        "",
+        "The hypothetical formula is `always_dense + measured_soma_active_fraction * hypothetically_weighted_dense`. Always-dense denotes terms left unweighted in that formula, not all operations executed densely by the model.",
+        "",
+        "The prescribed weighted partition is: STJEWM cell linears, post-cell MLPs, gated-trace gate and selected readout; Stacked-LIF stack/readout; ALIF cell linears only; LIF-Transformer LIF stack/spike projection only. The remaining input/action, convolution, fusion and transformer terms stay unweighted. Dense baselines have no soma measurement (null, not measured zero), and their proxy equals their dense estimate.",
+        "",
+        "STJEWM feedback reads continuous membranes, its residual/gate context and trace are continuous, and its post-cell MLPs include continuous activations. Pooled soma sparsity is not operand sparsity for all these operations. No runtime skipping or energy saving is demonstrated.",
+        "",
+        "## Complete retained grid",
+        "",
+        "Operation columns are millions of multiply-add FLOP-equivalents per sample token. Params include inactive/frozen modules; total additionally includes frozen parameters.",
+        "",
+        "| Modality | Model | Status | T | Trainable params | Total params | Dense input/action | Dense predictor | Dense total | Always-dense in proxy | Measured soma sparsity | Hypothetical weighted proxy total |",
+        "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+    ]
     for row in rows:
-        if row.get("status") != "ok":
-            lines.append(f"| {row.get('modality','—')} | {row.get('model','—')} | **{row.get('status')}** | — | — | — | — | — | — | — | — | — |")
+        if row["status"] != "ok":
+            lines.append(f"| {row['modality']} | {row['display_name']} | **error** | — | — | — | — | — | — | — | — | — |")
             continue
         led = row["ledger"]
         sm = row["sparsity_measurement"]
+        proxy = row["hypothetical_sparsity_weighted_proxy"]
         lines.append(
-            f"| {row['modality']} | {row['model']} | ok | {row['sequence_len']} | "
+            f"| {row['modality']} | {row['display_name']} | ok | {row['sequence_len']} | "
             f"{_fmt_int(row['trainable_params'])} | {_fmt_int(row['total_params'])} | "
-            f"{_fmt_mflops(led['input_action_flops'])} | {_fmt_mflops(led['dynamic_flops'])} | "
-            f"{_fmt_mflops(row['dense_flops_per_step'])} | {_fmt_pct(sm['sparsity'])} | "
-            f"{_fmt_mflops(row['effective_dynamic_flops_per_step'])} | {_fmt_mflops(row['effective_flops_per_step'])} |"
+            f"{_fmt_mflops(led['input_action_dense_flops_per_step'])} | {_fmt_mflops(led['predictor_dense_flops_per_step'])} | "
+            f"{_fmt_mflops(row['analytic_dense_flops_per_step'])} | {_fmt_mflops(led['always_dense_flops_per_step'])} | "
+            f"{_fmt_pct(sm['sparsity'])} | {_fmt_mflops(proxy['total_per_step'])} |"
         )
-    lines.append("")
-    lines.append("## Explicit STJEWM effective-vs-dense ratios")
-    lines.append("")
-    lines.append("Each ratio is `STJEWM effective FLOPs/step ÷ comparator dense FLOPs/step` within the same modality. Values below 1.0 indicate a lower estimated predictor-side cost under the event discount.")
-    lines.append("")
-    lines.append("| Modality | STJEWM variant | vs GRU dense | vs MLP dense | vs LeWM-v2 dense |")
-    lines.append("|---|---|---:|---:|---:|")
-    for modality in ("state", "pixel"):
+    lines.extend([
+        "",
+        "## Hypothetical proxy / analytic dense ratios",
+        "",
+        "Dimensionless STJEWM proxy divided by comparator dense estimate within modality. These ratios are NOT speedups, energy ratios, or executed-operation reductions.",
+        "",
+        "| Modality | STJEWM variant | / GRU dense | / MLP dense | / LeWM dense |",
+        "|---|---|---:|---:|---:|",
+    ])
+    for modality in MODALITIES:
         mrows = {r["model"]: r for r in _ok_rows(data, modality)}
         for st_name in ("stjewm_trace_only", "stjewm_spike_only"):
             st = mrows.get(st_name)
             vals = []
             for baseline in ("gru_baseline", "mlp_baseline", "lewm_baseline_v2"):
-                b = mrows.get(baseline)
-                ratio = (st["effective_flops_per_step"] / b["dense_flops_per_step"]) if st and b else None
+                other = mrows.get(baseline)
+                ratio = (st["hypothetical_sparsity_weighted_proxy"]["total_per_step"]
+                         / other["analytic_dense_flops_per_step"]) if st and other else None
                 vals.append(_fmt_ratio(ratio))
             lines.append(f"| {modality} | {st_name} | {vals[0]} | {vals[1]} | {vals[2]} |")
-    lines.append("")
-    lines.append("## Measured spike activity")
-    lines.append("")
-    lines.append("| Modality | Model | Spike elements | Nonzero spikes | Active fraction | Sparsity source | Per-layer sparsity |")
-    lines.append("|---|---|---:|---:|---:|---|---|")
+    lines.extend([
+        "",
+        "## Actual random-input soma activity",
+        "",
+        "| Modality | Model | Spike elements | Nonzero spikes | Active fraction | Source | Per-layer sparsity |",
+        "|---|---|---:|---:|---:|---|---|",
+    ])
     for row in _ok_rows(data):
         sm = row["sparsity_measurement"]
-        layer_text = ", ".join(f"L{x['layer']}={100*x['sparsity']:.3f}%" for x in sm.get("per_layer", [])) or "—"
+        layer_text = ", ".join(f"L{x['layer']}={100*x['sparsity']:.3f}%" for x in sm["per_layer"]) or "—"
         lines.append(
-            f"| {row['modality']} | {row['model']} | {_fmt_int(sm['spike_elements'])} | {_fmt_int(sm['spike_nonzero'])} | "
+            f"| {row['modality']} | {row['display_name']} | {_fmt_int(sm['spike_elements'])} | {_fmt_int(sm['spike_nonzero'])} | "
             f"{_fmt_pct(sm['active_fraction'])} | {sm['source']} | {layer_text} |"
         )
-    lines.append("")
-    errors = [r for r in rows if r.get("status") != "ok"]
-    lines.append("## Missing or failed inputs")
-    lines.append("")
-    if errors:
-        for row in errors:
-            lines.append(f"- `{row.get('modality')}/{row.get('model')}`: {row.get('error', row.get('status'))}")
-    else:
-        lines.append("- None; all requested state and pixel checkpoints were present and loaded.")
-    lines.append("")
-    lines.append("## Component interpretation")
-    lines.append("")
-    lines.append("The comparison is deliberately about the learned world-model predictor after observation projection. The shared frozen pixel ViT is reported in `total_params` for transparency but excluded from FLOPs; including the identical ViT once on both sides would add a common constant and not change the relative predictor ranking. The SNN discount is an analytical event-driven estimate, not a hardware benchmark: it discounts the counted STJEWM stack/readout matmuls by measured active soma fraction while leaving input/action projections dense.")
+    lines.extend(["", "## Missing, failed, or unstable inputs", ""])
+    errors = [row for row in rows if row["status"] != "ok"]
+    for row in errors:
+        lines.append(f"- `{row['modality']}/{row['display_name']}` ({row['failure_stage']}): {row['error_type']}: {row['error']}")
+    for error in data["integrity_errors"]:
+        lines.append(f"- Run integrity: {error}")
+    if not errors and not data["integrity_errors"]:
+        lines.append("- None; all 26 planned checkpoints were admitted, strictly loaded and measured.")
     lines.append("")
     return "\n".join(lines)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
-    parser.add_argument("--split", default="cross_benchmark_F1")
-    parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT)
+    parser.add_argument("--training-manifest", type=Path, required=True)
+    parser.add_argument("--split", default="cross_benchmark_F1", choices=["cross_benchmark_F1"])
+    parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT,
+                        help="Must not exist; cannot be inside checkpoint/archive/staging roots")
     parser.add_argument("--device", default="cuda:0" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--batches", type=int, default=4)
     parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--seed", type=int, default=20260802)
-    parser.add_argument("--models", nargs="+", default=list(MODEL_NAMES), choices=list(MODEL_NAMES))
-    parser.add_argument("--modalities", nargs="+", default=["state", "pixel"], choices=["state", "pixel"])
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    root = args.root.resolve()
-    out_dir = args.out_dir if args.out_dir.is_absolute() else root / args.out_dir
-    out_dir.mkdir(parents=True, exist_ok=True)
+    require(args.batches > 0 and args.batch_size > 0, "--batches and --batch-size must be positive")
+    require(0 <= args.seed <= 2**32 - 26, "The 26 per-row NumPy seeds must fit uint32")
+    audit = TrainingAudit(args.training_manifest)
+    out_dir = args.out_dir.resolve()
+    audit.protect_output(out_dir)
+    source_hashes = _source_hashes(audit)
+    cells = _planned_cells(audit, args.split, args.seed)
     device = torch.device(args.device)
     if device.type == "cuda" and not torch.cuda.is_available():
         raise RuntimeError(f"requested {device}, but CUDA is unavailable")
-    if args.batches < 1 or args.batch_size < 1:
-        raise ValueError("--batches and --batch-size must be positive")
-
+    out_dir.mkdir(parents=True, exist_ok=False)
     started = time.time()
     measurements: List[Dict[str, Any]] = []
-    for modality in args.modalities:
-        base = root / ("results/5m_pixel" if modality == "pixel" else "results/5m")
-        for model_name in args.models:
-            ckpt = base / args.split / model_name / "seed_0" / "final.pt"
-            print(f"[measure_energy] {modality}/{model_name}: {ckpt}", flush=True)
-            row = _measure_one(
-                model_name, modality, ckpt, device=device,
-                batches=args.batches, batch_size=args.batch_size,
-                seed=args.seed + len(measurements),
+    producer_hash = source_hashes[str(Path(__file__).resolve().relative_to(ROOT))]
+    for cell in cells:
+        print(f"[measure_energy] {cell['modality']}/{cell['display_name']}: {cell['checkpoint']}", flush=True)
+        row = _measure_one(
+            cell, audit, device=device, batches=args.batches, batch_size=args.batch_size,
+            measurement_source_sha256=producer_hash,
+        )
+        measurements.append(row)
+        if row["status"] == "ok":
+            print(
+                f"  analytic_dense={row['analytic_dense_flops_per_step']/1e6:.3f} MFlop-equivalents/token "
+                f"hypothetical_proxy={row['hypothetical_sparsity_weighted_proxy']['total_per_step']/1e6:.3f} "
+                f"soma_sparsity={_fmt_pct(row['sparsity_measurement']['sparsity'])}",
+                flush=True,
             )
-            measurements.append(row)
-            if row.get("status") == "ok":
-                print(
-                    f"  dense={row['dense_flops_per_step']/1e6:.3f} MFLOPs "
-                    f"effective={row['effective_flops_per_step']/1e6:.3f} MFLOPs "
-                    f"sparsity={100*row['sparsity_measurement']['sparsity']:.3f}%",
-                    flush=True,
-                )
-            else:
-                print(f"  {row.get('status')}: {row.get('error')}", flush=True)
-
+        else:
+            print(f"  error [{row['failure_stage']}]: {row['error_type']}: {row['error']}", flush=True)
+    integrity_errors = []
+    try:
+        require(_source_hashes(audit) == source_hashes, "Measurement source changed during the run")
+        require(sha256(audit.path) == audit.digest, "Training manifest changed during the run")
+    except Exception as exc:
+        integrity_errors.append(f"{type(exc).__name__}: {exc}")
+    require(len(measurements) == 26 and [row["id"] for row in measurements] == [cell["id"] for cell in cells],
+            "Incomplete or reordered G3/P11 output")
+    completed = sum(row["status"] == "ok" for row in measurements)
     data: Dict[str, Any] = {
-        "experiment": "P1-1_energy",
+        "experiment": "G3/P11",
+        "protocol": PROTOCOL,
+        "status": "completed" if completed == 26 and not integrity_errors else "failed",
+        "interpretation": PROXY_INTERPRETATION,
+        "hardware_energy_measured": False,
+        "hardware_speed_benchmarked": False,
+        "executed_flops_measured": False,
+        "ledger_exclusions": list(LEDGER_EXCLUSIONS),
         "split": args.split,
-        "root": str(root),
+        "results_root": str(audit.results_root),
+        "training_manifest": str(audit.path),
+        "training_manifest_sha256": audit.digest,
+        "source_sha256": source_hashes,
+        "training_source_sha256": audit.payload["training_source_sha256"],
+        "loader_source_sha256": audit.payload["loader_source_sha256"],
         "device": str(device),
-        "seed": int(args.seed),
-        "batches": int(args.batches),
-        "batch_size": int(args.batch_size),
-        "models": list(args.models),
-        "modalities": list(args.modalities),
+        "runtime": {
+            "python": sys.version, "python_executable": sys.executable,
+            "torch": torch.__version__, "numpy": np.__version__, "cuda": torch.version.cuda,
+            "float32_matmul_precision": torch.get_float32_matmul_precision(),
+            "cuda_matmul_allow_tf32": torch.backends.cuda.matmul.allow_tf32,
+            "cudnn_allow_tf32": torch.backends.cudnn.allow_tf32,
+            "cudnn_benchmark": torch.backends.cudnn.benchmark,
+            "cudnn_deterministic": torch.backends.cudnn.deterministic,
+        },
+        "command": sys.argv,
+        "seed": args.seed,
+        "seed_assignment": "base seed + index in planned_cells; original fixed model/modality order",
+        "batches": args.batches,
+        "batch_size": args.batch_size,
+        "random_input_distributions": {
+            "state": "standard normal", "pixel": "uniform [0,1)", "actions": "uniform [-1,1)",
+        },
+        "models": list(MODEL_NAMES),
+        "modalities": list(MODALITIES),
+        "planned_rows": 26,
+        "completed_rows": completed,
+        "failed_rows": 26 - completed,
+        "planned_cells": cells,
         "started_unix": started,
         "finished_unix": time.time(),
+        "integrity_errors": integrity_errors,
         "measurements": measurements,
     }
     json_path = out_dir / "measurements.json"
-    json_path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
-    # Render by re-reading the persisted measurements: the markdown cannot
-    # silently diverge from the actual output file.
+    write_new_json(json_path, data)
     persisted = json.loads(json_path.read_text())
     summary_path = out_dir / "energy_summary.md"
-    summary_path.write_text(_render_summary(persisted))
-    print(f"[measure_energy] wrote {json_path}", flush=True)
-    print(f"[measure_energy] wrote {summary_path}", flush=True)
-    return 0
+    with summary_path.open("x") as handle:
+        handle.write(_render_summary(persisted))
+    print(f"[measure_energy] {data['status']}: {completed}/26; wrote {json_path} and {summary_path}", flush=True)
+    return 0 if data["status"] == "completed" else 1
 
 
 if __name__ == "__main__":
