@@ -118,3 +118,4 @@ data/delayed_t_maze_30k_3d.npz
 configs/oodc/merged/
 results/5m_pixel/
 results/journal_prep/EXP_Report.md
+handoff.tar.gz
