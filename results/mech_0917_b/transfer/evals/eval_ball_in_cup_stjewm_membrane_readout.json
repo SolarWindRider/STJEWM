@@ -1,0 +1,254 @@
+{
+  "env_id": "mujoco/ball_in_cup",
+  "n_episodes": 5,
+  "n_seeds": 1,
+  "cem_samples": 300,
+  "cem_elites": 30,
+  "cem_iters": 10,
+  "horizon": 25,
+  "eval_budget": 50,
+  "goal_offset": 25,
+  "history_size": 1,
+  "success_rate_lewm": 1.0,
+  "success_rate_lewm_std": 0.0,
+  "success_rate_lewm_005": 1.0,
+  "success_rate_lewm_001": 1.0,
+  "success_rate_env": 1.0,
+  "success_rate_env_std": 0.0,
+  "mean_cos_dist": 0.000670468807220459,
+  "mean_cos_dist_std": 0.0,
+  "mean_phys_dist": 0.03709439113736153,
+  "mean_phys_dist_std": 0.0,
+  "mean_reward": 0.0,
+  "mean_reward_std": 0.0,
+  "per_seed": [
+    {
+      "seed": 0,
+      "n": 5,
+      "success_rate_lewm": 1.0,
+      "success_rate_lewm_005": 1.0,
+      "success_rate_lewm_001": 1.0,
+      "success_rate_env": 1.0,
+      "mean_cos_dist": 0.000670468807220459,
+      "mean_phys_dist": 0.03709439113736153,
+      "mean_reward": 0.0
+    }
+  ],
+  "per_episode": [
+    {
+      "seed": 0,
+      "episode_idx": 70621,
+      "initialization_seed": 70621,
+      "init_state": [
+        -0.013462336733937263,
+        -0.011989607475697994,
+        0.0,
+        -0.018246600404381752
+      ],
+      "goal_state": [
+        -0.007973862811923027,
+        -0.03271886333823204,
+        -0.0007780836313031614,
+        -0.041507538408041
+      ],
+      "final_state": [
+        0.046869952231645584,
+        -0.06079798936843872,
+        0.00012612389400601387,
+        -0.0674414336681366
+      ],
+      "actions_taken": 50,
+      "planning_calls": 2,
+      "cos_dist": 0.0005248188972473145,
+      "lewm_success": true,
+      "lewm_success_at_005": true,
+      "lewm_success_at_001": true,
+      "env_success": true,
+      "phys_dist": 0.033427778631448746,
+      "plan_time_sec": 2.11966872215271,
+      "episode_reward": 0.0
+    },
+    {
+      "seed": 0,
+      "episode_idx": 40047,
+      "initialization_seed": 40047,
+      "init_state": [
+        0.011620630510151386,
+        -0.013433270156383514,
+        0.0005823912215419114,
+        -0.020941266790032387
+      ],
+      "goal_state": [
+        0.007648280821740627,
+        -0.023664627224206924,
+        0.0021023224107921124,
+        -0.034176792949438095
+      ],
+      "final_state": [
+        0.05090457201004028,
+        -0.05091140419244766,
+        0.0012341190595179796,
+        -0.0561114139854908
+      ],
+      "actions_taken": 50,
+      "planning_calls": 2,
+      "cos_dist": 0.00039580464363098145,
+      "lewm_success": true,
+      "lewm_success_at_005": true,
+      "lewm_success_at_001": true,
+      "env_success": true,
+      "phys_dist": 0.027818046510219574,
+      "plan_time_sec": 1.843860149383545,
+      "episode_reward": 0.0
+    },
+    {
+      "seed": 0,
+      "episode_idx": 59728,
+      "initialization_seed": 59728,
+      "init_state": [
+        0.000702659017406404,
+        0.0001524698454886675,
+        0.0,
+        -0.00412019994109869
+      ],
+      "goal_state": [
+        0.005371398292481899,
+        -0.0148726562038064,
+        0.00011733212886611,
+        -0.02251749485731125
+      ],
+      "final_state": [
+        0.06690577417612076,
+        -0.050431717187166214,
+        0.0002669427776709199,
+        -0.05294371023774147
+      ],
+      "actions_taken": 50,
+      "planning_calls": 2,
+      "cos_dist": 0.0007016658782958984,
+      "lewm_success": true,
+      "lewm_success_at_005": true,
+      "lewm_success_at_001": true,
+      "env_success": true,
+      "phys_dist": 0.038654569536447525,
+      "plan_time_sec": 1.8515350818634033,
+      "episode_reward": 0.0
+    },
+    {
+      "seed": 0,
+      "episode_idx": 8143,
+      "initialization_seed": 8143,
+      "init_state": [
+        -0.01336065586656332,
+        -0.010041162371635437,
+        -0.0005429883021861315,
+        -0.018097445368766785
+      ],
+      "goal_state": [
+        -0.013711131177842617,
+        -0.017915399745106697,
+        -0.0024085373152047396,
+        -0.026770250871777534
+      ],
+      "final_state": [
+        0.05539845675230026,
+        -0.06297653913497925,
+        -0.0008283971110358834,
+        -0.061470020562410355
+      ],
+      "actions_taken": 50,
+      "planning_calls": 2,
+      "cos_dist": 0.0009781718254089355,
+      "lewm_success": true,
+      "lewm_success_at_005": true,
+      "lewm_success_at_001": true,
+      "env_success": true,
+      "phys_dist": 0.04475827515125275,
+      "plan_time_sec": 1.8517889976501465,
+      "episode_reward": 0.0
+    },
+    {
+      "seed": 0,
+      "episode_idx": 39512,
+      "initialization_seed": 39512,
+      "init_state": [
+        -0.00707942945882678,
+        -0.0029909757431596518,
+        0.0,
+        -0.007455599959939718
+      ],
+      "goal_state": [
+        -0.01529026497155428,
+        -0.016245082020759583,
+        -0.000376147247152403,
+        -0.02513122744858265
+      ],
+      "final_state": [
+        0.053961776196956635,
+        -0.04693218693137169,
+        0.00033547607017681,
+        -0.055542513728141785
+      ],
+      "actions_taken": 50,
+      "planning_calls": 2,
+      "cos_dist": 0.000751882791519165,
+      "lewm_success": true,
+      "lewm_success_at_005": true,
+      "lewm_success_at_001": true,
+      "env_success": true,
+      "phys_dist": 0.04081328585743904,
+      "plan_time_sec": 1.83738374710083,
+      "episode_reward": 0.0
+    }
+  ],
+  "wall_time_sec": 9.72986388206482,
+  "protocol": {
+    "version": 2,
+    "cem_cost": "squared_l2",
+    "data_loader_protocol": "episode_safe_20260916",
+    "latent_representation": "forward.emb, independent observed frames, zero action",
+    "cem_action_dim": 2,
+    "model_action_dim": 56,
+    "model_state_dim": 128,
+    "observation_scale": 1.0,
+    "declared_env_id": "mujoco/ball_in_cup",
+    "physical_env_id": "mujoco/ball_in_cup",
+    "initialization": "offline native state; unrecorded velocities zero",
+    "goal_definition": "same-episode state at t+goal_offset",
+    "replanning": "observed history after executing up to H actions",
+    "physical_success": {
+      "units": "native (no model padding or normalization)",
+      "state_dim": 4,
+      "definition": "qpos goal RMS < tolerance",
+      "tolerance": 0.1
+    },
+    "timed_intervention": false,
+    "checkpoint": "/data/lx/tmp/results/5m_5mpar/oodc_F1/stjewm_membrane_readout/seed_0/final.pt",
+    "checkpoint_data_protocol_version": "episode_safe_20260916",
+    "checkpoint_training_protocol_version": "causal_grad_sigreg_B_20260916",
+    "checkpoint_step": 312,
+    "checkpoint_training_provenance": {
+      "protocol_version": "causal_grad_sigreg_B_20260916",
+      "source_sha256": {
+        "../LeWM/src/__init__.py": "b3d0aaf061f15d3d68bea8c00730bdd6ac4bdcef32ed67be359a5a51bf5b8d15",
+        "../LeWM/src/encoder.py": "2ff0913ec45dd1df8e6543afcf358833af1523100ebe9fc009417841d5b4800b",
+        "code/__init__.py": "95aa3a4c354c0ea7f0e52694411450625f303e5417d8d173a8566bd0c57f7a6e",
+        "code/alif_timecell_baseline.py": "fdd1a67ff058af0b4e741d89a6c8a6339510e8f711fe2d5ca881cf8a7ec0a34a",
+        "code/core/__init__.py": "a41372f2ddd08bc21e933d10ba1fcf34e06db8b3a74d152a3a73d04f43b4a4d8",
+        "code/core/encode.py": "722a1c99ee79019463455eb9aa0acbef7f38d3092a459bba5a62feb58fe0ab92",
+        "code/core/pixel_pre.py": "cd08bce48b0a67907424ade066e561610d7c51670df5b69d873a3db7ec1e3bf2",
+        "code/gru_baseline.py": "49360499c8fc737be7ad7f17ef7ae95fb15b89d270edbfa163cee63ebdb8ea17",
+        "code/lewm_transformer_baseline.py": "07b5651712237c8ec6b78285877fd9bb4f867bab15abcb4aa9774458a9b079fd",
+        "code/lif_transformer_baseline.py": "66c5c29a23ed5687825b6827c5af74e6f89b13e021bad042c293b33d1c5cf40f",
+        "code/mlp_baseline.py": "97f56baa823b39afb05ea2b152949cbfdba16bf21a30231e3a7f3ddb348e4ea8",
+        "code/native_losses.py": "669bb1f681c59a0d5e5141dcbc5581efc78dee8404b14fb768e6c34a248b8be8",
+        "code/sigreg.py": "fff28b882e80af32679858d993391b60c9cb746ed431ab9ca76294e66cb8aed6",
+        "code/snn_cell.py": "b31df0901d645605be315dd2d021ede5cca1b2c5f31630132b3e134d9d8f367d",
+        "code/stacked_lif_baseline.py": "94bc8f197b4306fe370c604ac23dfe357a6d4fd47144df04540f14c021e5b046",
+        "code/stjewm.py": "da6485e4f9df7c3f30852060ad8084ae4794e22e1ce411afca994da5238331e2",
+        "code/train/__init__.py": "d25661f70a91b82e55db6783a6e5175e676dfd64c0c57a957a2ed7bc355df0da",
+        "code/train/train.py": "cafdff83055ed9421d9b30425cebe0c7df2942d249462d20e33dc7c69d045a31"
+      }
+    }
+  }
+}

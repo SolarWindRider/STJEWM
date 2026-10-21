@@ -1,0 +1,199 @@
+{
+  "env_id": "mujoco/cartpole",
+  "n_episodes": 5,
+  "n_seeds": 1,
+  "cem_samples": 300,
+  "cem_elites": 30,
+  "cem_iters": 10,
+  "horizon": 25,
+  "eval_budget": 50,
+  "goal_offset": 25,
+  "history_size": 1,
+  "success_rate_lewm": 0.2,
+  "success_rate_lewm_std": 0.0,
+  "success_rate_lewm_005": 0.2,
+  "success_rate_lewm_001": 0.0,
+  "success_rate_env": 0.8,
+  "success_rate_env_std": 0.0,
+  "mean_cos_dist": 0.2362111270427704,
+  "mean_cos_dist_std": 0.0,
+  "mean_phys_dist": 0.2978565157322607,
+  "mean_phys_dist_std": 0.0,
+  "mean_reward": 0.0,
+  "mean_reward_std": 0.0,
+  "per_seed": [
+    {
+      "seed": 0,
+      "n": 5,
+      "success_rate_lewm": 0.2,
+      "success_rate_lewm_005": 0.2,
+      "success_rate_lewm_001": 0.0,
+      "success_rate_env": 0.8,
+      "mean_cos_dist": 0.2362111270427704,
+      "mean_phys_dist": 0.2978565157322607,
+      "mean_reward": 0.0
+    }
+  ],
+  "per_episode": [
+    {
+      "seed": 0,
+      "episode_idx": 167365,
+      "initialization_seed": 167365,
+      "init_state": [
+        1.0674375295639038,
+        0.03703278675675392
+      ],
+      "goal_state": [
+        1.0634604692459106,
+        0.1680154651403427
+      ],
+      "final_state": [
+        1.402751088142395,
+        -0.5722857117652893
+      ],
+      "actions_taken": 50,
+      "planning_calls": 2,
+      "cos_dist": 0.22667598724365234,
+      "lewm_success": false,
+      "lewm_success_at_005": false,
+      "lewm_success_at_001": false,
+      "env_success": false,
+      "phys_dist": 0.5758315706611807,
+      "plan_time_sec": 2.0426065921783447,
+      "episode_reward": 0.0
+    },
+    {
+      "seed": 0,
+      "episode_idx": 94907,
+      "initialization_seed": 94907,
+      "init_state": [
+        -1.3909835815429688,
+        -0.8038594126701355
+      ],
+      "goal_state": [
+        -1.4663074016571045,
+        -1.8937485218048096
+      ],
+      "final_state": [
+        -1.2533433437347412,
+        -2.3880674839019775
+      ],
+      "actions_taken": 50,
+      "planning_calls": 2,
+      "cos_dist": 0.36705899238586426,
+      "lewm_success": false,
+      "lewm_success_at_005": false,
+      "lewm_success_at_001": false,
+      "env_success": true,
+      "phys_dist": 0.38059489289156034,
+      "plan_time_sec": 1.820878505706787,
+      "episode_reward": 0.0
+    },
+    {
+      "seed": 0,
+      "episode_idx": 141549,
+      "initialization_seed": 141549,
+      "init_state": [
+        -0.2263953983783722,
+        -0.09029839932918549
+      ],
+      "goal_state": [
+        -0.13607199490070343,
+        -0.32019704580307007
+      ],
+      "final_state": [
+        -0.26669299602508545,
+        -0.230926513671875
+      ],
+      "actions_taken": 50,
+      "planning_calls": 2,
+      "cos_dist": 0.29841479659080505,
+      "lewm_success": false,
+      "lewm_success_at_005": false,
+      "lewm_success_at_001": false,
+      "env_success": true,
+      "phys_dist": 0.11187286666652817,
+      "plan_time_sec": 1.8266808986663818,
+      "episode_reward": 0.0
+    },
+    {
+      "seed": 0,
+      "episode_idx": 19300,
+      "initialization_seed": 19300,
+      "init_state": [
+        1.7728757858276367,
+        -1.7556772232055664
+      ],
+      "goal_state": [
+        1.7136460542678833,
+        -3.4676852226257324
+      ],
+      "final_state": [
+        1.7724298238754272,
+        -3.2935116291046143
+      ],
+      "actions_taken": 50,
+      "planning_calls": 2,
+      "cos_dist": 0.036178380250930786,
+      "lewm_success": true,
+      "lewm_success_at_005": true,
+      "lewm_success_at_001": false,
+      "env_success": true,
+      "phys_dist": 0.12998456865684188,
+      "plan_time_sec": 1.8233084678649902,
+      "episode_reward": 0.0
+    },
+    {
+      "seed": 0,
+      "episode_idx": 93639,
+      "initialization_seed": 93639,
+      "init_state": [
+        0.0829491838812828,
+        -0.27651065587997437
+      ],
+      "goal_state": [
+        0.2355748414993286,
+        -0.8298194408416748
+      ],
+      "final_state": [
+        0.2619117498397827,
+        -1.240510106086731
+      ],
+      "actions_taken": 50,
+      "planning_calls": 2,
+      "cos_dist": 0.2527274787425995,
+      "lewm_success": false,
+      "lewm_success_at_005": false,
+      "lewm_success_at_001": false,
+      "env_success": true,
+      "phys_dist": 0.2909986797851925,
+      "plan_time_sec": 1.817124605178833,
+      "episode_reward": 0.0
+    }
+  ],
+  "wall_time_sec": 9.54131817817688,
+  "protocol": {
+    "version": 2,
+    "cem_cost": "squared_l2",
+    "data_loader_protocol": "episode_safe_20260916",
+    "latent_representation": "forward.emb, independent observed frames, zero action",
+    "cem_action_dim": 1,
+    "model_action_dim": 56,
+    "model_state_dim": 128,
+    "observation_scale": 1.0,
+    "declared_env_id": "mujoco/cartpole",
+    "physical_env_id": "mujoco/cartpole",
+    "initialization": "offline native state; unrecorded velocities zero",
+    "goal_definition": "same-episode state at t+goal_offset",
+    "replanning": "observed history after executing up to H actions",
+    "physical_success": {
+      "units": "native (no model padding or normalization)",
+      "state_dim": 2,
+      "definition": "qpos goal RMS < tolerance",
+      "tolerance": 0.5
+    },
+    "timed_intervention": false,
+    "checkpoint": "/data/lx/tmp/results/traceproj_repair_20260917/oodc_F1/stjewm_trace_only/seed_0/final.pt",
+    "checkpoint_data_protocol_version": null
+  }
+}

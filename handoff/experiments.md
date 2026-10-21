@@ -6,8 +6,8 @@
 
 | # | 实验 | 规模 | 驱动脚本 | 输出位置 | 一句话结论 |
 |---|---|---|---|---|---|
-| E1 | State 5M 网格 | 13 模型 × 10 splits = 1300 cells | `repair_eval_grid.py`(逐格 `eval_one.sh`→`closed_loop`) | ⚠️库外 `state_final_corrected_20260916/` | trace 簇与塌缩簇分离;env-SR 与 cos 不共线 |
-| E2 | 3-seed(G5 paired) | 13 × 3 splits × 3 seeds(962 新 cells) | `G5_multiseed_launcher.sh` + `G5_multiseed_aggregate.py` | `journal_prep/G5_multiseed/` | 簇结构 seed 稳定,0 翻转;pooled cos trace 0.118±0.012 |
+| E1 | State 5M 网格 | 13 模型 × 10 splits × 10 envs(均) = **1300 cells**(splits 6–17 envs,每模型 100 env-splits) | `repair_eval_grid.py`(逐格 `eval_one.sh`→`closed_loop`) | ⚠️库外 `state_final_corrected_20260916/` | trace 簇与塌缩簇分离;env-SR 与 cos 不共线 |
+| E2 | 3-seed(G5 paired) | 13 模型 × 3 splits(F1 13env + oodc_F2 7env + generalist_16env 17env = 37 envs)× 3 seeds = **1443 planned cells**;其中 seed_0 与 E1 重叠 481 → **962 new** | `G5_multiseed_launcher.sh` + `G5_multiseed_aggregate.py` | ⚠️库外 `agg_final/g5_multiseed.json`(汇总);`journal_prep/E13_paired_control/` | 簇结构 seed 稳定,0 翻转;pooled cos trace 0.118±0.012(pooled 口径 = 冻结协议闭环终局 cos_dist,非 teacher-forced 预测精度) |
 | E3 | Pixel 5M 网格 | 130 ckpts × 13 envs = 1690 cells | `run_pixel_eval_all.sh`→`eval_pixel_ckpt.py` | ⚠️库外 `5m_pixel_final_20260916/` | pixel 塌缩是**分级**而非二值(0.003–0.177 连续谱) |
 | E4 | Held-out specs | 9 specs, 546 cells | `run_heldout_eval.sh` | state root `heldout_*` | — |
 | E5 | 规模轴 div/resp/ρ | 36 ckpts,252 stats | `cls0917_scaling.py` | `agg_final/scaling_table.json` | 严格判据下 10/12 模型非尺度不变;失败模式跨尺度切换 |
@@ -26,14 +26,28 @@
 
 ## 机制探针(S/M 系列,27 帧窗口;协议见 protocol.md §3)
 
-| 探针 | 脚本 | 输出 | 关键数字 |
+### ⭐ mech_0917_b 批次(2026-09-17,最终修复权重;初稿 Fig.2/3/4 数字的真实出处,此前 handoff 漏列)
+
+`results/mech_0917_b/`(库内但被 `results/**` 忽略,**必须 -f 入库**)。ckpt 路径 = `/data/lx/tmp/results/5m_5mpar/.../final.pt`(最终代际 ✓,JSON 内嵌路径为证)。scaling_summary.md 自带 provenance 引用链(c20 ← rollout、gain20 ← gain、action_sens_rel ← action_ema、env_sr ← state_final_corrected + E13 交叉核对)。
+
+| 文件 | 内容 | 初稿对应 |
+|---|---|---|
+| `rollout/rollout_summary.{json,md}` | **S1 rollout stability**:λ_lat/λ_state/E_lat(20)/c(20) pooled 表 | **Fig.2b contraction:c20 trace 0.032、membrane 6.966、gru 0.040、lewm 0.205(✅ 实测一致)** |
+| `gain/gain_summary.{json,md}` | **S3 gain**:逐模型绝对 g_obs/g_a(含量纲)与 contractive 标注 | **Fig.3 CSR;写作时并列绝对值(审稿 P0.5)** |
+| `action_ema/action_ema_summary.json` | action_sens_rel(part_a_pooled.s1step_rel) | Fig.3 |
+| `scaling/scaling_summary.{json,md}` | 逐模型行(env_sr、λ、c20、csr)+ **Spearman csr↔env_sr +0.905(p=0.002,+0.886 剔 除?)** | **Fig.3b ρ≈0.905(✅ 实测一致)** |
+| `maskobs/`、`nonlinear_probe/`、`transfer/`、`accessibility/`、`traceproj_repair/` | S4、非线性探针、transfer、可及性、trace_proj 修复 | Fig.4 素材 |
+
+命名跨代警示:论文 Fig.2 的 "S1 perturbation protocol" = 此处 **S1 closed-loop rollout stability(stab0917_b)**;与 `mech_0917/history`(旧 a 批次的"历史"探针)无关。
+
+### 旧 a 批次(`results/mech_0917/`,部分早于最终权重,引用前先核对)
+
+| 探针 | 脚本 | 输出 | 状态 |
 |---|---|---|---|
-| S1 历史 | `mech0917_history.py` | `mech_0917/history/` | — |
-| S2 多步 | `mech0917_multistep.py`(含 `load_model`) | `mech_0917/multistep/` | — |
-| S3 gain | `stab0917_gain.py` | `mech_0917/gain/` | trace 的 g_a 相对 LeWM ≈27×;CSR 高 |
-| S4 obs 掩码 | `stab0917_maskobs.py` | `mech_0917/maskobs/` | obs→0 in 1 step |
-| S5 rollout 斜率 | `stab0917_rollout.py`(repair:`_repair.py`) | — | — |
-| M4 瞬态 | `mech0917_transient.py`(✅2026-10-02 strict-load 修复后重测,**已入库**) | `results/mech_0917/transient/` | trace:d_peak 0.005–0.011,nr 100%(长尾持续),持续对照 0.044–0.048 ≫ 瞬态残差 0.017–0.028(慢迹不变性,非死表示);LeWM:d_peak 13.7–21.1,瞬时归零(纯反应式);GRU:指数恢复 4–13 步 |
+| history | `mech0917_history.py` | `mech_0917/history/` | 引用前核对代际 |
+| multistep | `mech0917_multistep.py`(含 `load_model`) | `mech_0917/multistep/` | 同上 |
+| timescale | `mech0917_timescale.py` | `mech_0917/timescale/` | 同上 |
+| M4 瞬态 | `mech0917_transient.py`(✅2026-10-02 strict-load 修复后**全量重测**) | `results/mech_0917/transient/`(已入库) | **新版有效**;trace d_peak 0.005–0.011 / nr100% / 持续对照 0.044–0.048 ≫ 0.017–0.028;LeWM d_peak 13.7–21.1 瞬时恢复;GRU 指数 4–13 步 |
 | 位置敏感性 | `imag_position_sensitivity.py`(✅2026-10-02 新增,已入库) | `results/actionctx_ablation/imag_position_sensitivity.json` | trace 全位置 0.23–1.27;LeWM 仅末位 0.018(其余 1.5e-4) |
 
 ## Utility 系列(报告 §12.6)

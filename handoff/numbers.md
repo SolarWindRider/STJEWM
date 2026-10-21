@@ -14,8 +14,15 @@
 | ALIF-timecell | 0.028±0.021 | 同上 |
 | Stacked-LIF-free | 0.030±0.002 | 同上 |
 
-- seed 翻转:0(簇结构 seed 稳定)(G5)
+- seed 翻转:0(簇结构 seed 稳定)(⚠️库外 `agg_final/g5_multiseed.json`;**G5/B2 汇总不在 journal_prep**)
 - trace env-SR 0.31 tied-best;readout ρ 0.034;div ~1e-4;resp 0.26(G1/E1)
+- **pooled cos 口径 = 冻结协议闭环终局 cos_dist**(split×env×seed cells 合并),≠ teacher-forced 单步预测精度,两者不可互换
+
+## Fig.2/3 机制数字(mech_0917_b 批次,2026-09-17 最终权重,库内被忽略目录)
+
+c(20) pooled(`results/mech_0917_b/rollout/rollout_summary.md`,ckpt=最终代际 ✓):trace **0.032**、membrane **6.966**、gru **0.040**、lewm **0.205**、mlp 0.000、slif_trace 0.169、spike 16.852、hidden_leak 6.143
+CSR↔env-SR Spearman:**+0.905(p=0.002)**(`results/mech_0917_b/scaling/scaling_summary.md:40`;n=8 架构,只作关联)
+逐模型绝对 gain(g_obs / g_a 含量纲):`results/mech_0917_b/gain/gain_summary.md`(写作时与 CSR 并列)
 
 ## 证伪分析(LeWM-SR@0.05)
 
@@ -65,4 +72,5 @@ trace 3.37;SLIF-free 3.66;SLIF-trace 5.05;GRU/MLP/LeWM 9.76–10.24 MFLOP-equiv/
 
 ## 协议常数(数字审稿人会问)
 
-pad_obs 128 / action_dim 56 / history_size 1 / horizon 25 / budget 50 / goal_offset 25 / CEM 300-30-10(pusht 30)/ embed 192 / 状态 128 维(零填充)/ STJEWM 总参 16.57M(可训练 10.54M)、5M 口径 4.97–5.13M
+pad_obs 128 / action_dim 56 / history_size 1 / horizon 25 / budget 50 / goal_offset 25 / CEM 300-30-10(pusht 30)/ embed 192 / 状态 128 维(零填充)
+**参数(2026-10-21 实测)**:state trace 总 10.523M = 冻结 ViT 5.459M + 可训练 **5.064M**;pixel trace 10.461M / 5.002M;基线全可训练 lewm 4.970M、gru 5.132M、mlp 5.001M;5M 口径 = 可训练参数(4.97–5.13M)

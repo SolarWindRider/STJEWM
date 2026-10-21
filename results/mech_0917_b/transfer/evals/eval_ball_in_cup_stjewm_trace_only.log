@@ -1,0 +1,11 @@
+/home/lx/miniconda3/envs/snn/lib/python3.10/runpy.py:126: RuntimeWarning: 'code.eval.closed_loop' found in sys.modules after import of package 'code.eval', but prior to execution of 'code.eval.closed_loop'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[closed_loop/ball_in_cup] ckpt=/data/lx/tmp/results/5m_5mpar/oodc_F1/stjewm_trace_only/seed_0/final.pt, data=/home/lx/snn/data/dm_control/3d_rollouts_250k/ball_in_cup_250k.npz
+[closed_loop] trained weights loaded strictly on cuda:0
+
+=== FINAL (closed_loop/ball_in_cup) ===
+  LeWM SR: 1.000 ± 0.000
+  Env-native SR: 1.000 ± 0.000
+  Mean cos_dist: 0.0366
+  Mean phys_dist: 0.0112
+  Saved to /home/lx/snn/results/mech_0917_b/transfer/evals/eval_ball_in_cup_stjewm_trace_only.json

@@ -1,0 +1,273 @@
+{
+  "experiment": "E2+E4 stability-selectivity-capability scaling (cls0917_scaling)",
+  "protocol": {
+    "contexts": "27-frame true windows (shared across models)",
+    "envs": {
+      "cartpole_2d": "/home/lx/snn/data/dm_control/cartpole_250k.npz",
+      "cheetah": "/home/lx/snn/data/dm_control/3d_rollouts_250k/cheetah_250k.npz"
+    },
+    "n_windows_per_env": 64,
+    "window_seed": 0,
+    "rel_perturbation": 0.1,
+    "paired_fd": "dz = z(+) - z(-); gain_rel = mean_w ||dz_h||/(||z_h_base||+1e-8)",
+    "csr": "gain_a_rel(h=1)/(gain_o_rel(h=1)+1e-8)",
+    "ratio5": "mean_w ||dz^a_5||/(||dz^o_5||+1e-8), impulse self-fed 5 steps",
+    "device": "cuda",
+    "smoke": false,
+    "npz_fields": "observations,next_observations,actions,rewards,dones (no velocity field)"
+  },
+  "table": {
+    "trace": {
+      "family": "stjewm",
+      "env_sr": 0.31,
+      "lambda_state": -0.0005321470194407868,
+      "c20": 0.031903872982365515,
+      "gain20": 0.0028088389170477512,
+      "action_sens_rel": 0.23897592723369598,
+      "gain_a_rel": 0.11904204398475951,
+      "gain_o_rel": 0.003938560656373014,
+      "csr": 32.47063937617875,
+      "ratio5": 42236.90028304103,
+      "dza_decay5_over_1": 2.1482045684497963,
+      "dzo_decay5_over_1": 0.004233522094317035,
+      "degenerate": false
+    },
+    "spike": {
+      "family": "stjewm",
+      "env_sr": 0.25,
+      "lambda_state": 0.011668310028753806,
+      "c20": 16.85169380401926,
+      "gain20": 335.6883296651987,
+      "action_sens_rel": 0.27676014602184296,
+      "gain_a_rel": 0.1688748305078296,
+      "gain_o_rel": 0.4746438440578662,
+      "csr": 0.4193470664220961,
+      "ratio5": 0.8574022949495373,
+      "dza_decay5_over_1": 3.6491694935241012,
+      "dzo_decay5_over_1": 1.6956243945499367,
+      "degenerate": false
+    },
+    "membrane": {
+      "family": "stjewm",
+      "env_sr": 0.20199999999999999,
+      "lambda_state": 0.08572104794606675,
+      "c20": 6.966410871765742,
+      "gain20": 248.7303331256844,
+      "action_sens_rel": 0.02512561623007059,
+      "gain_a_rel": 0.011354621111513776,
+      "gain_o_rel": 0.2343788476212181,
+      "csr": 0.10536722555946752,
+      "ratio5": 0.3302159744398738,
+      "dza_decay5_over_1": 7.294361253849995,
+      "dzo_decay5_over_1": 1.6418954258887843,
+      "degenerate": false
+    },
+    "hidden_leak": {
+      "family": "stjewm",
+      "env_sr": 0.18400000000000002,
+      "lambda_state": 0.07175279653311906,
+      "c20": 6.1433257490118915,
+      "gain20": 172.95783067529555,
+      "action_sens_rel": 0.019752973690629005,
+      "gain_a_rel": 0.01006374909502738,
+      "gain_o_rel": 0.18928061533967172,
+      "csr": 0.11932897284259422,
+      "ratio5": 0.345228423737187,
+      "dza_decay5_over_1": 5.62180377789831,
+      "dzo_decay5_over_1": 1.6988759743762185,
+      "degenerate": false
+    },
+    "lewm": {
+      "family": "baseline",
+      "env_sr": 0.15400000000000003,
+      "lambda_state": 0.033451991197911805,
+      "c20": 0.20491975484444985,
+      "gain20": 0.2689203508919036,
+      "action_sens_rel": 0.008908926043659449,
+      "gain_a_rel": 0.0034209706254169155,
+      "gain_o_rel": 0.3557645545317627,
+      "csr": 0.013252721391819239,
+      "ratio5": 0.012744213536521132,
+      "dza_decay5_over_1": 0.6222457870783042,
+      "dzo_decay5_over_1": 1.0068109708549695,
+      "degenerate": false
+    },
+    "gru": {
+      "family": "baseline",
+      "env_sr": 0.158,
+      "lambda_state": 0.014186204850540327,
+      "c20": 0.04030538792914745,
+      "gain20": 0.10436604322194398,
+      "action_sens_rel": 0.002274045953527093,
+      "gain_a_rel": 0.0009097015114026323,
+      "gain_o_rel": 0.29949752561443777,
+      "csr": 0.002922061503202471,
+      "ratio5": 0.016092327314185546,
+      "dza_decay5_over_1": 0.6412286001810285,
+      "dzo_decay5_over_1": 1.0036532161368874,
+      "degenerate": false
+    },
+    "mlp": {
+      "family": "baseline",
+      "env_sr": 0.248,
+      "lambda_state": 0.00015360115633384017,
+      "c20": 1.5744926826262113e-06,
+      "gain20": 0.0001680524336862277,
+      "action_sens_rel": 3.1337475547843496e-07,
+      "gain_a_rel": 1.2998362026568714e-07,
+      "gain_o_rel": 5.968687366372892e-08,
+      "csr": 1.8625870817125851,
+      "ratio5": 0.6504744388038907,
+      "dza_decay5_over_1": 0.38791989980740815,
+      "dzo_decay5_over_1": 0.6525805427828709,
+      "degenerate": true
+    },
+    "slif_trace": {
+      "family": "baseline",
+      "env_sr": 0.282,
+      "lambda_state": -0.00034261417522505396,
+      "c20": 0.1688242644776788,
+      "gain20": 10.589011458432822,
+      "action_sens_rel": 0.002488618658389896,
+      "gain_a_rel": 0.000725672287146286,
+      "gain_o_rel": 0.0001560509663871502,
+      "csr": 28082.665100943275,
+      "ratio5": 6486421.749823362,
+      "dza_decay5_over_1": 3.6192106125340304,
+      "dzo_decay5_over_1": 114641.10449274107,
+      "degenerate": false
+    }
+  },
+  "spearman_n8": {
+    "lambda_state": {
+      "rho": -0.7619047619047621,
+      "p": 0.028004939153071794
+    },
+    "c20": {
+      "rho": -0.19047619047619052,
+      "p": 0.6514014957024814
+    },
+    "gain20": {
+      "rho": -0.04761904761904763,
+      "p": 0.9108491685195836
+    },
+    "gain_a_rel": {
+      "rho": 0.2380952380952381,
+      "p": 0.5701563208157683
+    },
+    "gain_o_rel": {
+      "rho": -0.4761904761904762,
+      "p": 0.23293553465009798
+    },
+    "csr": {
+      "rho": 0.9047619047619048,
+      "p": 0.0020082755054294677
+    },
+    "action_sens_rel": {
+      "rho": 0.3571428571428572,
+      "p": 0.38512064355625636
+    },
+    "ratio5": {
+      "rho": 0.9523809523809524,
+      "p": 0.00026040002438725105
+    }
+  },
+  "spearman_n6_no_mlp_slif": {
+    "lambda_state": {
+      "rho": -0.48571428571428577,
+      "p": 0.3287230320699709
+    },
+    "c20": {
+      "rho": 0.08571428571428573,
+      "p": 0.8717434402332361
+    },
+    "gain20": {
+      "rho": 0.08571428571428573,
+      "p": 0.8717434402332361
+    },
+    "gain_a_rel": {
+      "rho": 0.8857142857142858,
+      "p": 0.01884548104956266
+    },
+    "gain_o_rel": {
+      "rho": -0.3714285714285715,
+      "p": 0.46847813411078715
+    },
+    "csr": {
+      "rho": 0.8857142857142858,
+      "p": 0.01884548104956266
+    },
+    "action_sens_rel": {
+      "rho": 0.8857142857142858,
+      "p": 0.01884548104956266
+    },
+    "ratio5": {
+      "rho": 0.942857142857143,
+      "p": 0.004804664723032055
+    }
+  },
+  "caveat": "n=8 (n=6 restricted): descriptive only, no inferential claims",
+  "verdicts": {
+    "best_single_metric_n8": {
+      "metric": "ratio5",
+      "rho": 0.9523809523809524,
+      "p": 0.00026040002438725105
+    },
+    "best_single_metric_n6": {
+      "metric": "ratio5",
+      "rho": 0.942857142857143,
+      "p": 0.004804664723032055
+    },
+    "contractive_cluster": {
+      "members": [
+        "trace",
+        "lewm",
+        "gru"
+      ],
+      "c20": {
+        "trace": 0.031903872982365515,
+        "lewm": 0.20491975484444985,
+        "gru": 0.04030538792914745
+      },
+      "env_sr": {
+        "trace": 0.31,
+        "lewm": 0.15400000000000003,
+        "gru": 0.158
+      },
+      "csr": {
+        "trace": 32.47063937617875,
+        "lewm": 0.013252721391819239,
+        "gru": 0.002922061503202471
+      },
+      "env_sr_rank": {
+        "trace": 2,
+        "lewm": 0,
+        "gru": 1
+      },
+      "c20_rank": {
+        "trace": 0,
+        "lewm": 2,
+        "gru": 1
+      },
+      "csr_rank": {
+        "trace": 2,
+        "lewm": 1,
+        "gru": 0
+      },
+      "stability_alone_separates_capability": false,
+      "csr_rank_matches_envsr_rank": false
+    },
+    "necessary_not_sufficient": {
+      "trace_contractive": true,
+      "trace_csr_exceeds_lewm_gru": true,
+      "stability_necessary_not_sufficient": true,
+      "statement": "stability is necessary-but-not-sufficient iff trace is contractive and out-CSRs lewm/gru while stability alone does not order env-SR in the cluster"
+    }
+  },
+  "provenance": {
+    "lambda_state_c20": "/home/lx/snn/results/mech_0917_b/rollout/rollout_summary.json",
+    "gain20": "/home/lx/snn/results/mech_0917_b/gain/gain_summary.json",
+    "action_sens_rel": "/home/lx/snn/results/mech_0917_b/action_ema/action_ema_summary.json (part_a_pooled.s1step_rel)",
+    "env_sr": "/data/lx/tmp/results/state_final_corrected_20260916/audit/aggregated_state_cells.json | cross-check /home/lx/snn/results/journal_prep/E13_paired_control/paired_control_summary.json"
+  }
+}
