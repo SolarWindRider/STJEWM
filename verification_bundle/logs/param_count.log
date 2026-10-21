@@ -1,0 +1,26 @@
+alif_timecell_baseline: no encoder module (baseline)
+alif_timecell_baseline: total=4984990 frozen_encoder=0 trainable=4984990 groups={'state_projector': 58776, 'action_encoder': 45384, 'stack': 4880830}
+gru_baseline: no encoder module (baseline)
+gru_baseline: total=5131840 frozen_encoder=0 trainable=5131840 groups={'state_proj': 386400, 'action_proj': 346080, 'gru': 3769920, 'norm_out': 1120, 'proj_out': 628320}
+lewm_baseline_v2: no encoder module (baseline)
+lewm_baseline_v2: total=4970016 frozen_encoder=0 trainable=4970016 groups={'pos_embed': 73728, 'state_encoder': 121536, 'action_encoder': 199008, 'blocks': 4491936, 'norm_out': 576, 'proj_out': 83232}
+lif_transformer_baseline: no encoder module (baseline)
+lif_transformer_baseline: total=5119490 frozen_encoder=0 trainable=5119490 groups={'pos_embed': 73728, 'state_proj': 37728, 'lif_stack': 166466, 'spike_proj': 83232, 'action_encoder': 16416, 'blocks': 4491936, 'norm_out': 576, 'fuser': 249408}
+mlp_baseline: no encoder module (baseline)
+mlp_baseline: total=5000704 frozen_encoder=0 trainable=5000704 groups={'state_proj': 205632, 'net': 4795072}
+stacked_lif_free: no encoder module (baseline)
+stacked_lif_free: total=5051528 frozen_encoder=0 trainable=5051528 groups={'state_projector': 492800, 'action_encoder': 446720, 'stack': 3292168, 'readout': 819840}
+stacked_lif_trace: no encoder module (baseline)
+stacked_lif_trace: total=5110568 frozen_encoder=0 trainable=5110568 groups={'state_projector': 538944, 'action_encoder': 490560, 'stack': 3628808, 'readout': 452256}
+stjewm_hidden_leak: encoder forward calls during state encode+predict = 0
+stjewm_hidden_leak: total=10522976 frozen_encoder=5459136 trainable=5063840 groups={'encoder': 5459136, 'projector': 74112, 'action_encoder': 10944, 'state_projector': 61824, 'stack': 4732448, 'gated_trace': 147648, 'trace_proj': 36864}
+stjewm_membrane_readout: encoder forward calls during state encode+predict = 0
+stjewm_membrane_readout: total=10522976 frozen_encoder=5459136 trainable=5063840 groups={'encoder': 5459136, 'projector': 74112, 'action_encoder': 10944, 'state_projector': 61824, 'stack': 4732448, 'gated_trace': 147648, 'trace_proj': 36864}
+stjewm_no_trace: encoder forward calls during state encode+predict = 0
+stjewm_no_trace: total=10522976 frozen_encoder=5459136 trainable=5063840 groups={'encoder': 5459136, 'projector': 74112, 'action_encoder': 10944, 'state_projector': 61824, 'stack': 4732448, 'gated_trace': 147648, 'trace_proj': 36864}
+stjewm_rate_only: encoder forward calls during state encode+predict = 0
+stjewm_rate_only: total=10522976 frozen_encoder=5459136 trainable=5063840 groups={'encoder': 5459136, 'projector': 74112, 'action_encoder': 10944, 'state_projector': 61824, 'stack': 4732448, 'gated_trace': 147648, 'trace_proj': 36864}
+stjewm_spike_only: encoder forward calls during state encode+predict = 0
+stjewm_spike_only: total=10522976 frozen_encoder=5459136 trainable=5063840 groups={'encoder': 5459136, 'projector': 74112, 'action_encoder': 10944, 'state_projector': 61824, 'stack': 4732448, 'gated_trace': 147648, 'trace_proj': 36864}
+stjewm_trace_only: encoder forward calls during state encode+predict = 0
+stjewm_trace_only: total=10522976 frozen_encoder=5459136 trainable=5063840 groups={'encoder': 5459136, 'projector': 74112, 'action_encoder': 10944, 'state_projector': 61824, 'stack': 4732448, 'gated_trace': 147648, 'trace_proj': 36864}

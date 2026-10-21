@@ -1,0 +1,14 @@
+model,total_params,frozen_encoder_params,trainable_params,per_group,encoder_forward_calls_state_mode,checkpoint
+alif_timecell_baseline,4984990,0,4984990,stack:4880830; state_projector:58776; action_encoder:45384,0,/data/lx/tmp/results/5m/oodc_F1/alif_timecell_baseline/seed_0/final.pt
+gru_baseline,5131840,0,5131840,gru:3769920; proj_out:628320; state_proj:386400; action_proj:346080; norm_out:1120,0,/data/lx/tmp/results/5m/oodc_F1/gru_baseline/seed_0/final.pt
+lewm_baseline_v2,4970016,0,4970016,blocks:4491936; action_encoder:199008; state_encoder:121536; proj_out:83232; pos_embed:73728; norm_out:576,0,/data/lx/tmp/results/5m/oodc_F1/lewm_baseline_v2/seed_0/final.pt
+lif_transformer_baseline,5119490,0,5119490,blocks:4491936; fuser:249408; lif_stack:166466; spike_proj:83232; pos_embed:73728; state_proj:37728; action_encoder:16416; norm_out:576,0,/data/lx/tmp/results/5m/oodc_F1/lif_transformer_baseline/seed_0/final.pt
+mlp_baseline,5000704,0,5000704,net:4795072; state_proj:205632,0,/data/lx/tmp/results/5m/oodc_F1/mlp_baseline/seed_0/final.pt
+stacked_lif_free,5051528,0,5051528,stack:3292168; readout:819840; state_projector:492800; action_encoder:446720,0,/data/lx/tmp/results/5m/oodc_F1/stacked_lif_free/seed_0/final.pt
+stacked_lif_trace,5110568,0,5110568,stack:3628808; state_projector:538944; action_encoder:490560; readout:452256,0,/data/lx/tmp/results/5m/oodc_F1/stacked_lif_trace/seed_0/final.pt
+stjewm_hidden_leak,10522976,5459136,5063840,encoder:5459136; stack:4732448; gated_trace:147648; projector:74112; state_projector:61824; trace_proj:36864; action_encoder:10944,0,/data/lx/tmp/results/5m_5mpar/oodc_F1/stjewm_hidden_leak/seed_0/final.pt
+stjewm_membrane_readout,10522976,5459136,5063840,encoder:5459136; stack:4732448; gated_trace:147648; projector:74112; state_projector:61824; trace_proj:36864; action_encoder:10944,0,/data/lx/tmp/results/5m_5mpar/oodc_F1/stjewm_membrane_readout/seed_0/final.pt
+stjewm_no_trace,10522976,5459136,5063840,encoder:5459136; stack:4732448; gated_trace:147648; projector:74112; state_projector:61824; trace_proj:36864; action_encoder:10944,0,/data/lx/tmp/results/5m_5mpar/oodc_F1/stjewm_no_trace/seed_0/final.pt
+stjewm_rate_only,10522976,5459136,5063840,encoder:5459136; stack:4732448; gated_trace:147648; projector:74112; state_projector:61824; trace_proj:36864; action_encoder:10944,0,/data/lx/tmp/results/5m_5mpar/oodc_F1/stjewm_rate_only/seed_0/final.pt
+stjewm_spike_only,10522976,5459136,5063840,encoder:5459136; stack:4732448; gated_trace:147648; projector:74112; state_projector:61824; trace_proj:36864; action_encoder:10944,0,/data/lx/tmp/results/5m_5mpar/oodc_F1/stjewm_spike_only/seed_0/final.pt
+stjewm_trace_only,10522976,5459136,5063840,encoder:5459136; stack:4732448; gated_trace:147648; projector:74112; state_projector:61824; trace_proj:36864; action_encoder:10944,0,/data/lx/tmp/results/5m_5mpar/oodc_F1/stjewm_trace_only/seed_0/final.pt
