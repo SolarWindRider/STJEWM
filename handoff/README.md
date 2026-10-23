@@ -42,3 +42,7 @@
 - CEM:`code/core/cem.py`;编码:`code/core/encode.py`;训练:`code/train/train.py`
 - 复现命令与逐实验脚本映射:`README.md` "Experiment → code file map"(2026-10-02 已提交)
 - 权威表格:`results/journal_prep/`(EXP_Report.md v4.0 为 hub 文档,§12.1–12.9 每个实验一节)
+
+## 主图 v2(2026-10-22 编者重排)
+
+面板改名式重排(零重绘):`/home/lx/figs_nmi/20261022/`(14 面板 + `nmi_figures_v2.tex` + sha256 manifest);映射与措辞边界见 `claims_evidence.md` §6。执行语义红线(state 分段开环 vs pixel first-action MPC)见 `protocol.md` §2.1/§2.4——Methods 禁止统一写成 receding-horizon。

@@ -70,3 +70,36 @@ Spearman ρ≈0.90 的 n=8 是八种架构(高度非独立,共享训练管线/�
 | seed 稳健性 | E2(G5/B2) |
 
 **唯一必须删除的 Abstract 内容**:event synchronization 优势主张(G1 勘误)。
+
+## 6. 主图重排 v2(2026-10-22,编者定稿的 5 图结构)
+
+**原则:最小改动,只重编组,面板像素与数据零改动。** 实现 = 面板改名 + LaTeX 层重排(字母在 `\subcaption` 分配,**不烙进面板**);旧 20260918 bundle 原样保留作 provenance。
+
+### 新旧映射(14 主面板)
+
+| 新位置 | v1 来源 | 内容 |
+|---|---|---|
+| Fig.1a/b/c | fig1a/b/c | 架构 / 闭环成功率 / 传统指标与成功率(不变) |
+| Fig.2a/b/c | fig4a/b/c | 线性 vs 非线性探针 / 上下文长度 / 解码器强度 vs 收缩 |
+| Fig.3a/b/c | fig2a/b/c | 潜轨迹 / 扰动传播 c(h) / readout 决定收缩 |
+| Fig.4a/b/c | fig3a/c/d | 输入增益平面 / 脉冲响应 / 末帧 vs 整窗 |
+| Fig.5a/b | fig2d + fig3b | 收缩 vs 成功率(ρ=−0.19)/ CSR vs 成功率(ρ=+0.905) |
+
+文件:`/home/lx/figs_nmi/20261022/`(fig1a-fig5b_panel.{pdf,png,svg} + `nmi_figures_v2.tex` + `rename_manifest.json` 42 文件 sha256 与 v1 逐一相符)。v1 的 fig3e/fig4d 示意图、v1 fig5 四面板未进主图,留 bundle 作 Extended Data 候选。
+
+### 与 Results 的对应(编者建议标题)
+
+1. The dissociation between predictive metrics and closed-loop capability — Fig.1
+2. Latent accessibility does not determine world-model utility — Fig.2
+3. Spike-derived representations exhibit distinct latent dynamics — Fig.3
+4. Latent states exhibit asymmetric responses to observations and actions — Fig.4
+5. Control selectivity is associated with closed-loop performance — Fig.5
+
+### 证据优先级链(写作顺序约束)
+
+图中实际结果与真实代码实现 → 图注 → Results 正文 → Abstract/Discussion。**按图写论文,不为维持旧解释改图。**
+
+### 两条措辞边界(已写入图注)
+
+- **Fig.2c(旧 4c)**:只展示"辅助解码器得分上升 + 收缩因子改变",**不含规划成功率**——可写"可读性↑伴随动力学改变",**不得**写"提高可读性使规划性能下降"(无同模型干预 + 无闭环指标,Q5=VOID)。
+- **Fig.5**:n=8 描述性关联(ρ=−0.19 p=0.65 ns;ρ=+0.905 p=0.002),**禁止** causal/universal 措辞(§3.3 不变)。

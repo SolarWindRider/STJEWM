@@ -21,7 +21,7 @@
    - a≡0 的依据:规划时当前动作不存在;训练约定窗口末位动作本为零填充;**2026-10-02 消融证据**(imag_position_sensitivity.json + protocol_ablation.py):上下文动作通道对闭环无影响(信息由观测通道携带),规划依赖的动作敏感性在 predict 通路。
 3. **目标编码**(每 episode 一次):`z_goal = encode_obs(o_goal)`,同一函数、同一零动作约定。
 4. **CEM**(`cem.py::plan`):μ=0,σ=1;10 iters × 300 候选 × H=25;每候选从 z_t 起 25 步 `predict` 想象(候选动作 clamp→pad 56 后**直接落在读出位**),代价 = ‖z_final − z_goal‖²;精英 30;返回 argmin 序列。
-5. **执行**:**整条 25 步开环执行**(非 first-action MPC),budget 50 步 → 每 episode 恰好 2 次 planning calls;之后新 o_t 重规划(丢弃旧 latent,无跨规划记忆)。
+5. **执行**:**整条 25 步开环执行**(非 first-action MPC;pixel 侧语义不同,见 §2.4),budget 50 步 → 每 episode 恰好 2 次 planning calls;之后新 o_t 重规划(丢弃旧 latent,无跨规划记忆)。代码证据:`closed_loop.py:277` `for candidate in seq[:min(horizon, ...)]` 整段逐步执行后才回 while 重规划。
 6. **度量**:`z_final = encode_obs(o_final)`;`cos_dist=(1−cos)/2`;env-SR 见 §2.3。
 
 ### 2.2 Goal 构造(回答审稿人 Methods §Goal construction 质疑)
@@ -41,7 +41,8 @@
 ### 2.4 Pixel 闭环(E3)差异
 
 - 观测:DMC 实时像素 → 冻结 ViT(`FrozenPixelPreprocessor`,84px,257 tokens)编码;无 npz。
-- **horizon 5、每步重规划**(50 步 = 10 次规划);其余(CEM 300/30、goal offset、度量)同 state。
+- **horizon 5、每步重规划 = first-action MPC**(CEM 只优化 H5 序列但**只执行首个动作**,每步拿新观测重规划;50 步 = **50 次** planning calls;`eval_pixel_ckpt.py:5` "replanning after every executed action"、`:219` `action_seq[0]`);其余(CEM 300/30、goal offset、度量)同 state。
+- ⚠️ **执行语义红线(2026-10-22 代码核实)**:state 与 pixel **不同**——state=分段开环(§2.1,pooling 后每 episode 2 次 planning calls),pixel=逐步 first-action MPC(50 次)。Methods **不得**写成统一的 "receding-horizon MPC";必须分 modality 表述。E9 trace-ablation(state,H5)为分段执行,10 段/episode(`eligible_planning_steps=0,5,…,45`)。
 - 驱动:`eval_pixel_ckpt.py` / `run_pixel_eval_all.sh`。
 
 ### 2.5 常见误用警示

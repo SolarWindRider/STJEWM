@@ -74,3 +74,12 @@ trace 3.37;SLIF-free 3.66;SLIF-trace 5.05;GRU/MLP/LeWM 9.76–10.24 MFLOP-equiv/
 
 pad_obs 128 / action_dim 56 / history_size 1 / horizon 25 / budget 50 / goal_offset 25 / CEM 300-30-10(pusht 30)/ embed 192 / 状态 128 维(零填充)
 **参数(2026-10-21 实测)**:state trace 总 10.523M = 冻结 ViT 5.459M + 可训练 **5.064M**;pixel trace 10.461M / 5.002M;基线全可训练 lewm 4.970M、gru 5.132M、mlp 5.001M;5M 口径 = 可训练参数(4.97–5.13M)
+
+## 主图 Fig.5 相关系数(2026-10-22 从 scaling_summary.json 直接复算)
+
+| 关联 | n=8 | n=6(去 MLP/SLIF) | p(n=8) | 来源 |
+|---|---|---|---|---|
+| ρ(c20, env-SR) | **−0.190** | +0.086 | 0.65(ns) | `results/mech_0917_b/scaling/scaling_summary.json` spearman_n8.c20 |
+| ρ(CSR, env-SR) | **+0.905** | +0.886 | 0.002 | 同上 spearman_n8.csr / spearman_n6_no_mlp_slif.csr |
+
+写作口径:小样本描述性关联,禁 causal/universal(claims_evidence §3.3、§6)。
