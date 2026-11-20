@@ -71,7 +71,7 @@ Spearman ρ≈0.90 的 n=8 是八种架构(高度非独立,共享训练管线/�
 
 **唯一必须删除的 Abstract 内容**:event synchronization 优势主张(G1 勘误)。
 
-## 6. 主图重排 v2(2026-10-22,编者定稿的 5 图结构)
+## 6. 主图重排 v2(2026-11-20,编者定稿的 5 图结构)
 
 **原则:最小改动,只重编组,面板像素与数据零改动。** 实现 = 面板改名 + LaTeX 层重排(字母在 `\subcaption` 分配,**不烙进面板**);旧 20260918 bundle 原样保留作 provenance。
 
@@ -85,7 +85,7 @@ Spearman ρ≈0.90 的 n=8 是八种架构(高度非独立,共享训练管线/�
 | Fig.4a/b/c | fig3a/c/d | 输入增益平面 / 脉冲响应 / 末帧 vs 整窗 |
 | Fig.5a/b | fig2d + fig3b | 收缩 vs 成功率(ρ=−0.19)/ CSR vs 成功率(ρ=+0.905) |
 
-文件:`/home/lx/figs_nmi/20261022/`(fig1a-fig5b_panel.{pdf,png,svg} + `nmi_figures_v2.tex` + `rename_manifest.json` 42 文件 sha256 与 v1 逐一相符)。v1 的 fig3e/fig4d 示意图、v1 fig5 四面板未进主图,留 bundle 作 Extended Data 候选。
+文件:`/home/lx/figs_nmi/20261120/`(fig1a-fig5b_panel.{pdf,png,svg} + `nmi_figures_v2.tex` + `rename_manifest.json` 42 文件 sha256 与 v1 逐一相符)。v1 的 fig3e/fig4d 示意图、v1 fig5 四面板未进主图,留 bundle 作 Extended Data 候选。
 
 ### 与 Results 的对应(编者建议标题)
 
