@@ -1,0 +1,15 @@
+model,mean_env_sr_clean,ci_low,ci_high,n_cells
+stjewm_trace_only,0.3050,0.1900,0.4300,40
+stacked_lif_trace,0.2950,0.1950,0.4050,40
+lif_transformer_baseline,0.2750,0.1650,0.3950,40
+stacked_lif_free,0.2550,0.1450,0.3750,40
+mlp_baseline,0.2550,0.1500,0.3700,40
+stjewm_rate_only,0.2500,0.1450,0.3650,40
+stjewm_spike_only,0.2100,0.1150,0.3200,40
+stjewm_no_trace,0.2100,0.1150,0.3150,40
+stjewm_membrane_readout,0.2100,0.1150,0.3150,40
+stjewm_hidden_leak,0.1950,0.1000,0.3000,40
+alif_timecell_baseline,0.1950,0.1000,0.3000,40
+gru_baseline,0.1700,0.0800,0.2700,40
+lewm_baseline_v2,0.1600,0.0750,0.2600,40
+# note,26 cells (cheetah for oodc_F3/oodc_F2F3-trained models) excluded: eval env present in training split

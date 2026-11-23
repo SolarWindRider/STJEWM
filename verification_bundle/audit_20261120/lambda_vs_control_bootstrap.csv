@@ -1,0 +1,4 @@
+arm,mean_diff_pp,cell_boot_ci_low,cell_boot_ci_high,split_cluster_boot_ci_low,split_cluster_boot_ci_high,n_cells,n_splits,resamples,seed
+lam01,+1.00,-1.20,+3.40,+0.00,+1.97,100,10,20000,0
+lam10,-3.60,-5.80,-1.20,-4.47,-2.55,100,10,20000,0
+lam100,-0.60,-2.20,+1.00,-2.00,+0.31,100,10,20000,0

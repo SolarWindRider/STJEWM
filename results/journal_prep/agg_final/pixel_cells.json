@@ -1,0 +1,5080 @@
+{
+  "status": "completed",
+  "training_manifest": "/data/lx/tmp/results/_repair_archive/20260916T102154Z/training_final_repair_manifest.json",
+  "training_manifest_sha256": "4376bb14c50e30e12c3a1d47435b17489568f148b6f0abd57592efe5936e1f09",
+  "grid_status": "/data/lx/tmp/results/5m_pixel_final_20260916/grid_status.json",
+  "grid_status_sha256": "882b240838b4eb2afdd71157853108d9e8f649d3f1caffed10a7f9018a6d634a",
+  "planned_cells": 1690,
+  "rows": [
+    {
+      "split": "cross_benchmark_F1",
+      "model": "alif_timecell_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.1076923076923077,
+          "std": 0.2900044208327937,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 7.726137454693134e-05,
+          "std": 0.00020165819433361356,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0661187843638045,
+          "std": 1.0695280515661834,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "gru_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.9076923076923077,
+          "std": 0.22532028485964323,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.017696094512939454,
+          "std": 0.03603883000399924,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1315482258389982,
+          "std": 1.3950740264197266,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "lewm_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.16923076923076924,
+          "std": 0.3727926487665214,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.676923076923077,
+          "std": 0.47285277157879024,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.05631958544254303,
+          "std": 0.09056357664386087,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.032069066871617,
+          "std": 1.3862915438490733,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "lif_transformer_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.12307692307692307,
+          "std": 0.3113247129976625,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 5.960464477539063e-08,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9219194746937713,
+          "std": 0.9341795419408107,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "mlp_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.15384615384615385,
+          "std": 0.3381700376422701,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 2.292486337515024e-09,
+          "std": 1.4708880090499656e-08,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8320941315431936,
+          "std": 1.3775137904614312,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stacked_lif_free",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.13846153846153847,
+          "std": 0.2873396989002783,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 3.759677593524639e-08,
+          "std": 1.1228753159118089e-07,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0349040600655426,
+          "std": 1.4260912189865336,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stacked_lif_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.32105595007244936,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 5.245208740234375e-07,
+          "std": 1.0746812771525917e-06,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8165321856885919,
+          "std": 1.3824512222111025,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.23076923076923078,
+          "std": 0.3727926487665214,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.13846153846153847,
+          "std": 0.2631174057921088,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.14198390405911665,
+          "std": 0.07327760324633932,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.5610764039478775,
+          "std": 0.4429029050855374,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_hidden_leak",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.7692307692307693,
+          "std": 0.3544587784792833,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.03461417739207928,
+          "std": 0.04483471196492321,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1344945853624806,
+          "std": 1.0525017591582848,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_membrane_readout",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8153846153846154,
+          "std": 0.33127570050275307,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.060004403442144395,
+          "std": 0.14048614569082066,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9994372477938518,
+          "std": 1.0271673245417585,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_no_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.1076923076923077,
+          "std": 0.2900044208327937,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.7538461538461538,
+          "std": 0.35734060459498257,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.03471781886540926,
+          "std": 0.04460357664982217,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.034765775811662,
+          "std": 1.0470884048576647,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_rate_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.15384615384615385,
+          "std": 0.3381700376422701,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.7076923076923077,
+          "std": 0.4212314060417355,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.06064391566010622,
+          "std": 0.07925240539573586,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.847784555678903,
+          "std": 1.3857192846225947,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F1",
+      "model": "stjewm_spike_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.15384615384615385,
+          "std": 0.3178453099003366,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.12307692307692308,
+          "std": 0.2650592580092426,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.25023796101315665,
+          "std": 0.16424690235584097,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0518710610375543,
+          "std": 1.3902000062405961,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "alif_timecell_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.005330777626771193,
+          "std": 0.008983577565422021,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0490514558754207,
+          "std": 0.9410868830217011,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "gru_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.1076923076923077,
+          "std": 0.2900044208327937,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8923076923076924,
+          "std": 0.2900044208327937,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.038279303105977866,
+          "std": 0.11467032101767562,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1174558509827512,
+          "std": 1.363478988098861,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "lewm_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.7384615384615385,
+          "std": 0.403192389020555,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.028993486899595994,
+          "std": 0.036845497057617534,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.171954527855256,
+          "std": 1.3843063881202273,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "lif_transformer_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.12307692307692307,
+          "std": 0.3113247129976625,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 5.960464477539063e-08,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9219194746937713,
+          "std": 0.9341795419408107,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "mlp_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.16923076923076924,
+          "std": 0.3146019055478828,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 7.335956280048077e-09,
+          "std": 1.1708898748929636e-08,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8677038570525407,
+          "std": 1.3723563408701014,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stacked_lif_free",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.18461538461538463,
+          "std": 0.32105595007244936,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 1.994463113638071e-07,
+          "std": 4.068252825671269e-07,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.7141606720308464,
+          "std": 0.8258850156870763,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stacked_lif_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.23076923076923078,
+          "std": 0.3351233986275687,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 4.027439997746394e-06,
+          "std": 7.598226003938591e-06,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.808630952380465,
+          "std": 1.3725461531648226,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.18461538461538463,
+          "std": 0.32105595007244936,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.2153846153846154,
+          "std": 0.23750843439814176,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.11145738156942221,
+          "std": 0.08094700777662829,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8287056958047208,
+          "std": 1.37670946225676,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_hidden_leak",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.1076923076923077,
+          "std": 0.2900044208327937,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.7846153846153846,
+          "std": 0.36019937499055954,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.058517412612071405,
+          "std": 0.132620037146375,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.208743072439927,
+          "std": 1.4594939611737874,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_membrane_readout",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.16923076923076924,
+          "std": 0.3038218101251,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.7384615384615385,
+          "std": 0.403192389020555,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.030874217015046338,
+          "std": 0.03540895570329606,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8692860444560602,
+          "std": 0.5335596423282736,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_no_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.1076923076923077,
+          "std": 0.2900044208327937,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.7846153846153846,
+          "std": 0.36019937499055954,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.03944298464518327,
+          "std": 0.06687521912647924,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1388501577359342,
+          "std": 1.3530005315789027,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_rate_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.12307692307692307,
+          "std": 0.3113247129976625,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8461538461538461,
+          "std": 0.3178453099003366,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.03565199237603408,
+          "std": 0.06610632788136074,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9632235395494885,
+          "std": 1.422011628913137,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F2",
+      "model": "stjewm_spike_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.16923076923076924,
+          "std": 0.26890089681459284,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.22248671165882394,
+          "std": 0.1853932465421116,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9991224606986077,
+          "std": 1.084897241004538,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "alif_timecell_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8461538461538461,
+          "std": 0.3755338080994054,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.022560625351392305,
+          "std": 0.04905408863118546,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0548291822666445,
+          "std": 1.0829361489590277,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "gru_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.24615384615384614,
+          "std": 0.3478873970491616,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8769230769230769,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.047579909660495245,
+          "std": 0.12731117514092835,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.729573738948634,
+          "std": 0.972759655904866,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "lewm_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.1076923076923077,
+          "std": 0.2900044208327937,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.7384615384615385,
+          "std": 0.3775766181374352,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.04544585438875052,
+          "std": 0.07278592599284353,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.2125438650198042,
+          "std": 1.4003446570947664,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "lif_transformer_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.12307692307692307,
+          "std": 0.3113247129976625,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 5.960464477539063e-08,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9219194746937713,
+          "std": 0.9341795419408107,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "mlp_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.36019937499055954,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 2.7509836050180286e-09,
+          "std": 1.3016801216582509e-08,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.752872614050378,
+          "std": 0.9734120149510073,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stacked_lif_free",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.12307692307692307,
+          "std": 0.3113247129976625,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 4.5849726750300475e-09,
+          "std": 3.238767493154581e-08,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0219962584746904,
+          "std": 1.0703031667334364,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stacked_lif_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.33127570050275307,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 5.960464477539063e-08,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.6629622341363672,
+          "std": 0.8198541640315274,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2,
+          "std": 0.3559026084010437,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.1076923076923077,
+          "std": 0.19348358440936905,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.15250596495775076,
+          "std": 0.08083196121584356,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.7213114937620536,
+          "std": 0.9722173272843891,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_hidden_leak",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.7384615384615385,
+          "std": 0.3686426940784747,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.06279007179232744,
+          "std": 0.14513698181142506,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0678592011494579,
+          "std": 1.0037602553570977,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_membrane_readout",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.16923076923076924,
+          "std": 0.34492659940103054,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.7076923076923077,
+          "std": 0.42907174703371476,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.04435496169787187,
+          "std": 0.06440756919781589,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9506129589708059,
+          "std": 1.3717533900772088,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_no_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.18461538461538463,
+          "std": 0.36019937499055954,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.7076923076923077,
+          "std": 0.40509574683346666,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.053010808848417725,
+          "std": 0.09797863010408779,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9691953698721779,
+          "std": 1.0276467163074803,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_rate_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.16923076923076924,
+          "std": 0.3351233986275687,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8461538461538461,
+          "std": 0.2961288700756947,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.040281433325547435,
+          "std": 0.06536699049605792,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9826959620715484,
+          "std": 1.155486814925407,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "cross_benchmark_F3",
+      "model": "stjewm_spike_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.12307692307692308,
+          "std": 0.28911890908369103,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.07692307692307693,
+          "std": 0.1739436985245808,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.20073151554052646,
+          "std": 0.11746696347190654,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.7747873099657987,
+          "std": 0.5590297588057652,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "generalist_16env",
+      "model": "alif_timecell_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 2.2558065561147836e-07,
+          "std": 6.468676109814879e-07,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.2939577372681241,
+          "std": 1.4105399504634222,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "generalist_16env",
+      "model": "gru_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.1076923076923077,
+          "std": 0.2900044208327937,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.7846153846153846,
+          "std": 0.3869671688187381,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.05769385436836343,
+          "std": 0.1259754099409978,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.100506601200002,
+          "std": 1.3921664440369899,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "generalist_16env",
+      "model": "lewm_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8769230769230769,
+          "std": 0.28911890908369103,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.04586118688950172,
+          "std": 0.13456050322582447,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9609861112048121,
+          "std": 0.8554230849326068,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "generalist_16env",
+      "model": "lif_transformer_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.12307692307692307,
+          "std": 0.3113247129976625,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9474538457205217,
+          "std": 1.009622988957286,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "generalist_16env",
+      "model": "mlp_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.24615384615384617,
+          "std": 0.35734060459498257,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 1.2837923490084135e-08,
+          "std": 1.0840333807960739e-08,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.7225604850911557,
+          "std": 0.9822647485763988,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "generalist_16env",
+      "model": "stacked_lif_free",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.18461538461538463,
+          "std": 0.32105595007244936,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 9.992030950692984e-06,
+          "std": 5.844709582871799e-06,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8693911548128285,
+          "std": 1.3735356489490127,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "generalist_16env",
+      "model": "stacked_lif_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.36019937499055954,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 2.9802322387695312e-08,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.823257343470374,
+          "std": 1.3743697514070425,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "generalist_16env",
+      "model": "stjewm",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.24615384615384617,
+          "std": 0.3665500980206858,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.26153846153846155,
+          "std": 0.2873396989002783,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.13922365869467074,
+          "std": 0.12241410887299578,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.5863214559986565,
+          "std": 0.44222340645178615,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "generalist_16env",
+      "model": "stjewm_hidden_leak",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.13846153846153847,
+          "std": 0.3404371247344154,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8769230769230769,
+          "std": 0.23858557568108957,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.03327487890536968,
+          "std": 0.06758848732150942,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8193615736583416,
+          "std": 0.5822797448436583,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "generalist_16env",
+      "model": "stjewm_membrane_readout",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8461538461538461,
+          "std": 0.2726884199209317,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.03405894089776736,
+          "std": 0.08124755739760427,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1533800641721779,
+          "std": 1.3842748667049005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "generalist_16env",
+      "model": "stjewm_no_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.7692307692307693,
+          "std": 0.3727926487665214,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.041307400969358594,
+          "std": 0.08011572863558543,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9878426685744607,
+          "std": 0.7741009329223544,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "generalist_16env",
+      "model": "stjewm_rate_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.16923076923076924,
+          "std": 0.3146019055478828,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.7692307692307693,
+          "std": 0.4069902033722994,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.03563934014393733,
+          "std": 0.06002379166766242,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8901219007161398,
+          "std": 1.3676369045488985,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "generalist_16env",
+      "model": "stjewm_spike_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.15384615384615385,
+          "std": 0.3071790591153218,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.23076923076923078,
+          "std": 0.3727926487665214,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.2281723180355934,
+          "std": 0.1410729211474581,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.7546756664267911,
+          "std": 0.6680251150822917,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1",
+      "model": "alif_timecell_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 9.169945350060095e-10,
+          "std": 1.8020945267420883e-08,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0032169080402866,
+          "std": 1.025385965968178,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1",
+      "model": "gru_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.3782551031736691,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8615384615384616,
+          "std": 0.3404371247344154,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.06113833722013694,
+          "std": 0.15069528180732839,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.5651864402912236,
+          "std": 0.4259084589958404,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1",
+      "model": "lewm_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.9692307692307692,
+          "std": 0.11094003924504584,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.0027830279790438135,
+          "std": 0.009681069337659704,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.043359135015282,
+          "std": 1.0863501979253707,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1",
+      "model": "lif_transformer_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0248292029989332,
+          "std": 1.068855282427197,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1",
+      "model": "mlp_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.31050001032247393,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 1.9715382502629206e-08,
+          "std": 1.9826141460995094e-08,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8570266996744871,
+          "std": 1.3686486810035414,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1",
+      "model": "stacked_lif_free",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.16923076923076924,
+          "std": 0.3351233986275687,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 2.570335681621845e-06,
+          "std": 3.0119501070552906e-06,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.85467183446673,
+          "std": 1.044398715359467,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1",
+      "model": "stacked_lif_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.36019937499055954,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": -5.960464477539063e-08,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.823257343470374,
+          "std": 1.3743697514070425,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1",
+      "model": "stjewm",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2,
+          "std": 0.31622776601683794,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.47692307692307695,
+          "std": 0.42847373733957556,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.08664913876698567,
+          "std": 0.0952409104141655,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8328355603881222,
+          "std": 1.3719455854878755,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1",
+      "model": "stjewm_hidden_leak",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8461538461538461,
+          "std": 0.3755338080994054,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.031151606486393858,
+          "std": 0.07363402602504589,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1376616413016694,
+          "std": 1.0517088365050768,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1",
+      "model": "stjewm_membrane_readout",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8615384615384616,
+          "std": 0.3404371247344154,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.033270050929142876,
+          "std": 0.07858416006905537,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1674513517321579,
+          "std": 1.4630527097255708,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1",
+      "model": "stjewm_no_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8615384615384616,
+          "std": 0.3404371247344154,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.033270050929142876,
+          "std": 0.07858416006905537,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1674513517321579,
+          "std": 1.4630527097255708,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1",
+      "model": "stjewm_rate_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.36019937499055954,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.004598994896962093,
+          "std": 0.009396239411242057,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8461178130293788,
+          "std": 1.373402448778401,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1",
+      "model": "stjewm_spike_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.1076923076923077,
+          "std": 0.2900044208327937,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.47692307692307695,
+          "std": 0.40446228945322404,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.10995275578819788,
+          "std": 0.133971466936264,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9548913248059303,
+          "std": 1.3684791064614215,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F2",
+      "model": "alif_timecell_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.41199950211570613,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 6.877459012545072e-09,
+          "std": 1.6112770842410582e-08,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.7689211436400892,
+          "std": 1.01727543192759,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F2",
+      "model": "gru_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8,
+          "std": 0.3559026084010437,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.07744834434527617,
+          "std": 0.18054046397813453,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.23162395920702,
+          "std": 1.4151761384359962,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F2",
+      "model": "lewm_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.9846153846153847,
+          "std": 0.055470019622522904,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.016339470331485455,
+          "std": 0.05681621680525877,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1227019491947445,
+          "std": 1.0738041041754607,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F2",
+      "model": "lif_transformer_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.13846153846153847,
+          "std": 0.29871519752227077,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9062600985041207,
+          "std": 1.3855093030028325,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F2",
+      "model": "mlp_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.26153846153846155,
+          "std": 0.35948681370916685,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 1.4671912560096155e-08,
+          "std": 1.731194044972166e-08,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.6996689196214633,
+          "std": 0.9773704960787811,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F2",
+      "model": "stacked_lif_free",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.24615384615384614,
+          "std": 0.4012800032715822,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 6.858660624577449e-06,
+          "std": 4.980396024536539e-06,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.6923995814995815,
+          "std": 0.9795924959007551,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F2",
+      "model": "stacked_lif_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.36019937499055954,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": -5.960464477539063e-08,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8232961621643875,
+          "std": 1.3743574224291644,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F2",
+      "model": "stjewm",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.15384615384615385,
+          "std": 0.3178453099003366,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.4461538461538462,
+          "std": 0.38430756913220915,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.11810659926671248,
+          "std": 0.1263639794313318,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9116901037922457,
+          "std": 1.389355500856946,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F2",
+      "model": "stjewm_hidden_leak",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.1076923076923077,
+          "std": 0.2900044208327937,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.9538461538461539,
+          "std": 0.11982893790305561,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.006031032250477717,
+          "std": 0.010335907788097738,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.099200387379681,
+          "std": 1.0673740040638486,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F2",
+      "model": "stjewm_membrane_readout",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.1076923076923077,
+          "std": 0.2900044208327937,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8615384615384616,
+          "std": 0.3404371247344154,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.029719188580146202,
+          "std": 0.06916431611551892,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.968737169946579,
+          "std": 1.0622153679685564,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F2",
+      "model": "stjewm_no_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.12307692307692308,
+          "std": 0.28911890908369103,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8307692307692308,
+          "std": 0.3449265994010305,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.05438403630485902,
+          "std": 0.11675245026422705,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0389228098895027,
+          "std": 1.375179999331317,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F2",
+      "model": "stjewm_rate_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2,
+          "std": 0.33665016461206926,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.9230769230769231,
+          "std": 0.19215378456610455,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.01109820856497838,
+          "std": 0.023276354608699153,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8224963927586523,
+          "std": 1.374475271923971,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F2",
+      "model": "stjewm_spike_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.15384615384615385,
+          "std": 0.2961288700756947,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.2235702314485724,
+          "std": 0.15062325076694688,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.771554238161171,
+          "std": 0.745466914846677,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F3",
+      "model": "alif_timecell_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 6.504242236797626e-06,
+          "std": 7.675975680127767e-06,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1067197512228735,
+          "std": 1.1015766163446084,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F3",
+      "model": "gru_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.18461538461538463,
+          "std": 0.33127570050275307,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.9076923076923077,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.033912530770668615,
+          "std": 0.10705438660043308,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.7456775328070337,
+          "std": 0.9658415453931634,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F3",
+      "model": "lewm_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8615384615384616,
+          "std": 0.3404371247344154,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.06892351233042204,
+          "std": 0.20870185721015821,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1679150518361474,
+          "std": 1.4301201306632065,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F3",
+      "model": "lif_transformer_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 2.9802322387695312e-08,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0451667963656588,
+          "std": 1.0770730853379176,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F3",
+      "model": "mlp_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2,
+          "std": 0.33665016461206926,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 5.501967210036058e-09,
+          "std": 1.2035007429495855e-08,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.7353269468063801,
+          "std": 0.9752395926535904,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F3",
+      "model": "stacked_lif_free",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.23076923076923078,
+          "std": 0.3544587784792833,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 1.5498583133404072e-05,
+          "std": 1.4215586601847761e-05,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8112013136754972,
+          "std": 1.377228273984967,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F3",
+      "model": "stacked_lif_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.36019937499055954,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8232574279807477,
+          "std": 1.3743697264343016,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F3",
+      "model": "stjewm",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.3411894728889747,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.2153846153846154,
+          "std": 0.23750843439814176,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.11983991087629245,
+          "std": 0.10397868181603741,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8628026653314746,
+          "std": 1.3751009853797884,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F3",
+      "model": "stjewm_hidden_leak",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8923076923076924,
+          "std": 0.2900044208327937,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.020028571440623356,
+          "std": 0.05018262266898341,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0707800305059636,
+          "std": 1.1605270091887967,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F3",
+      "model": "stjewm_membrane_readout",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.9230769230769231,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.0203526116334475,
+          "std": 0.059474216472717334,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9663263558733255,
+          "std": 0.6469415275537285,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F3",
+      "model": "stjewm_no_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.9230769230769231,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.0203526116334475,
+          "std": 0.059474216472717334,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9663263558733255,
+          "std": 0.6469415275537285,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F3",
+      "model": "stjewm_rate_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.13846153846153847,
+          "std": 0.29871519752227077,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.9538461538461539,
+          "std": 0.16641005886756874,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.006197447043198806,
+          "std": 0.01426385987529293,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9422604780113459,
+          "std": 1.0176199624586375,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F1F3",
+      "model": "stjewm_spike_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.4153846153846154,
+          "std": 0.4431819676050193,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.14388358559316167,
+          "std": 0.1435102475914523,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.225344914522802,
+          "std": 1.4703233644309885,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2",
+      "model": "alif_timecell_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 1.4048356276292066e-06,
+          "std": 2.254771554645554e-06,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1366882719155953,
+          "std": 1.013300029368394,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2",
+      "model": "gru_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8,
+          "std": 0.3559026084010437,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.026676110579417302,
+          "std": 0.048474544767914574,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0199397312267602,
+          "std": 1.087974022379127,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2",
+      "model": "lewm_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.12307692307692307,
+          "std": 0.3113247129976625,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8923076923076924,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.05189014443984399,
+          "std": 0.163416672110099,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1620420605639978,
+          "std": 1.4231523990164123,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2",
+      "model": "lif_transformer_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0072535125808602,
+          "std": 1.4232583558728984,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2",
+      "model": "mlp_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.23076923076923078,
+          "std": 0.3449265994010305,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 6.8774590125450725e-09,
+          "std": 1.6831700510605177e-08,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 21.705510843139358,
+          "std": 76.44231780991015,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2",
+      "model": "stacked_lif_free",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.13846153846153847,
+          "std": 0.30967311135685627,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 1.8339890700120191e-09,
+          "std": 1.5841948683144027e-08,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8980522036290526,
+          "std": 0.9631550934480396,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2",
+      "model": "stacked_lif_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.36019937499055954,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8238439060324019,
+          "std": 1.374164741966988,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2",
+      "model": "stjewm",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.26153846153846155,
+          "std": 0.38630398552276063,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.13846153846153847,
+          "std": 0.23642638578939512,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.1457678150672179,
+          "std": 0.09093015388264598,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.6473189184792907,
+          "std": 0.8145470294753706,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2",
+      "model": "stjewm_hidden_leak",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8615384615384616,
+          "std": 0.3404371247344154,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.027857706179985633,
+          "std": 0.07302130610093052,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0322847576308638,
+          "std": 1.0599835840456628,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2",
+      "model": "stjewm_membrane_readout",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.1076923076923077,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8923076923076924,
+          "std": 0.2900044208327937,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.04061770937763728,
+          "std": 0.1122108903734815,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9535387424583357,
+          "std": 0.8358409030882611,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2",
+      "model": "stjewm_no_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2,
+          "std": 0.39157800414902433,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.9076923076923077,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.026689708691376907,
+          "std": 0.06785256314419047,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9747395462878499,
+          "std": 1.4053413423106993,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2",
+      "model": "stjewm_rate_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.36019937499055954,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.0025139460196861854,
+          "std": 0.006291557373453338,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8322364332572525,
+          "std": 1.3712096746160218,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2",
+      "model": "stjewm_spike_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.4307692307692308,
+          "std": 0.4956218575093573,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.1557590775191784,
+          "std": 0.1560025752483436,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1626187343388448,
+          "std": 1.4521134232808801,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2F3",
+      "model": "alif_timecell_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 7.346043219933144e-06,
+          "std": 1.678899975577559e-05,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.230138534813674,
+          "std": 1.3943069344329915,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2F3",
+      "model": "gru_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8,
+          "std": 0.37416573867739417,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.07563654539676813,
+          "std": 0.1545763283030482,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.2914778581041073,
+          "std": 1.4632091915248797,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2F3",
+      "model": "lewm_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.9076923076923077,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.022614022516287288,
+          "std": 0.060473511061758,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1128216122596573,
+          "std": 1.40570183495909,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2F3",
+      "model": "lif_transformer_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.12307692307692307,
+          "std": 0.3113247129976625,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 2.9802322387695312e-08,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9788741234364265,
+          "std": 0.9382248967818578,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2F3",
+      "model": "mlp_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.18461538461538463,
+          "std": 0.31050001032247393,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 2.750983605018029e-09,
+          "std": 7.545496278134485e-09,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8745858675756562,
+          "std": 1.378373316435517,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2F3",
+      "model": "stacked_lif_free",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.15384615384615385,
+          "std": 0.3178453099003366,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 4.860071035531851e-08,
+          "std": 9.799621604666863e-08,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9442104396359207,
+          "std": 1.3920842602592303,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2F3",
+      "model": "stacked_lif_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.36019937499055954,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": -1.1920928955078125e-07,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.823257343470374,
+          "std": 1.3743697514070425,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2F3",
+      "model": "stjewm",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.3411894728889747,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.3230769230769231,
+          "std": 0.3789323733725367,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.09265762200722327,
+          "std": 0.07012068447885314,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8558256846016894,
+          "std": 1.3704183936794159,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2F3",
+      "model": "stjewm_hidden_leak",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.9538461538461539,
+          "std": 0.11982893790305561,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.009357258906731239,
+          "std": 0.01777962152827938,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.171241262795277,
+          "std": 1.1254772479467494,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2F3",
+      "model": "stjewm_membrane_readout",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.1076923076923077,
+          "std": 0.2900044208327937,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.9692307692307692,
+          "std": 0.11094003924504584,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.012662707842313325,
+          "std": 0.03774680749030738,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1014520100620133,
+          "std": 1.4111053302424978,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2F3",
+      "model": "stjewm_no_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.8307692307692308,
+          "std": 0.3727926487665214,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.03451474056794093,
+          "std": 0.07464489011504612,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0172865080341649,
+          "std": 0.7398944174461771,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2F3",
+      "model": "stjewm_rate_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.21538461538461537,
+          "std": 0.35082320772281167,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.003943657416563768,
+          "std": 0.004587385974422566,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.7166464716268446,
+          "std": 0.9731557115365126,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F2F3",
+      "model": "stjewm_spike_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.2,
+          "std": 0.39157800414902433,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.18891255952990973,
+          "std": 0.1536604055840912,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9611835015997053,
+          "std": 1.0286086035659787,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F3",
+      "model": "alif_timecell_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 2.2017497282761796e-05,
+          "std": 7.537111823720725e-05,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.2018669649290272,
+          "std": 1.4819917241819265,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F3",
+      "model": "gru_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.3411894728889747,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 6.088385215172401e-06,
+          "std": 2.0529365431992442e-05,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8489052606017995,
+          "std": 1.3723030312301243,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F3",
+      "model": "lewm_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 1.0952582726111779e-05,
+          "std": 2.4948495640448953e-05,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.9712227122283611,
+          "std": 0.9710013073253977,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F3",
+      "model": "lif_transformer_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.13846153846153847,
+          "std": 0.30967311135685627,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 2.9802322387695312e-08,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0282747793968192,
+          "std": 0.9331959558160332,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F3",
+      "model": "mlp_baseline",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.16923076923076924,
+          "std": 0.3146019055478828,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 1.0086939885066106e-08,
+          "std": 1.8109191067522765e-08,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.868253931278586,
+          "std": 1.374751479020334,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F3",
+      "model": "stacked_lif_free",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.23076923076923078,
+          "std": 0.3544587784792833,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 1.3242776577289289e-05,
+          "std": 1.285578580738467e-05,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.676814142037518,
+          "std": 0.8125722195721278,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F3",
+      "model": "stacked_lif_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.36019937499055954,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 7.544572536761944e-06,
+          "std": 6.213118884720747e-06,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.8209904127946891,
+          "std": 1.3749609587430964,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F3",
+      "model": "stjewm",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.2153846153846154,
+          "std": 0.33127570050275307,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.6,
+          "std": 0.41633319989322654,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.04262465009322533,
+          "std": 0.044062016312891306,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.7103638801500466,
+          "std": 0.8111820449896223,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F3",
+      "model": "stjewm_hidden_leak",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.12307692307692307,
+          "std": 0.3113247129976625,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.0014977441384242131,
+          "std": 0.003203628375301061,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0369728920272845,
+          "std": 0.9922627686256883,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F3",
+      "model": "stjewm_membrane_readout",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.0006133221662961519,
+          "std": 0.0010337709944544097,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0844315960141093,
+          "std": 1.4106390575517942,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F3",
+      "model": "stjewm_no_trace",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.07692307692307693,
+          "std": 0.2773500981126146,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.0006133221662961519,
+          "std": 0.0010337709944544097,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.0844315960141093,
+          "std": 1.4106390575517942,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F3",
+      "model": "stjewm_rate_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.21538461538461537,
+          "std": 0.35082320772281167,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 1.0,
+          "std": 0.0,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.0020601290922898515,
+          "std": 0.004630027434117744,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 0.710577577596409,
+          "std": 0.9713045164278883,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    },
+    {
+      "split": "oodc_F3",
+      "model": "stjewm_spike_only",
+      "n_envs": 13,
+      "training_seeds": [
+        0
+      ],
+      "training_seed_std": null,
+      "metrics": {
+        "success_rate_env": {
+          "mean": 0.09230769230769231,
+          "std": 0.27827306272059005,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "success_rate_lewm_005": {
+          "mean": 0.7384615384615385,
+          "std": 0.43500663124919053,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_cos_dist": {
+          "mean": 0.049469960652864894,
+          "std": 0.05374121721782021,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        },
+        "mean_phys_dist": {
+          "mean": 1.1075773119868055,
+          "std": 1.1524393785535096,
+          "n_expected": 13,
+          "n_defined": 13,
+          "n_undefined": 0
+        }
+      }
+    }
+  ]
+}

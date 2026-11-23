@@ -1,0 +1,22 @@
+model,train_seed,grid,metric,value,n_cells,n_episodes,per_split,paired_diff_vs_trace_pp,win_tie_lose
+stjewm_trace_only,0,37cells,env_success_rate,0.2595,37,185,cross_benchmark_F1=0.347(n=15); generalist_16env=0.275(n=16); oodc_F2=0.000(n=6),,
+stjewm_trace_only,1,37cells,env_success_rate,0.2541,37,185,cross_benchmark_F1=0.320(n=15); generalist_16env=0.275(n=16); oodc_F2=0.033(n=6),,
+stjewm_trace_only,2,37cells,env_success_rate,0.2757,37,185,cross_benchmark_F1=0.333(n=15); generalist_16env=0.300(n=16); oodc_F2=0.067(n=6),,
+gru_baseline,0,37cells,env_success_rate,0.1135,37,185,cross_benchmark_F1=0.133(n=15); generalist_16env=0.138(n=16); oodc_F2=0.000(n=6),,
+gru_baseline,1,37cells,env_success_rate,0.1459,37,185,cross_benchmark_F1=0.160(n=15); generalist_16env=0.188(n=16); oodc_F2=0.000(n=6),,
+gru_baseline,2,37cells,env_success_rate,0.1459,37,185,cross_benchmark_F1=0.200(n=15); generalist_16env=0.150(n=16); oodc_F2=0.000(n=6),,
+lewm_baseline_v2,0,37cells,env_success_rate,0.1297,37,185,cross_benchmark_F1=0.147(n=15); generalist_16env=0.163(n=16); oodc_F2=0.000(n=6),,
+lewm_baseline_v2,1,37cells,env_success_rate,0.1297,37,185,cross_benchmark_F1=0.160(n=15); generalist_16env=0.150(n=16); oodc_F2=0.000(n=6),,
+lewm_baseline_v2,2,37cells,env_success_rate,0.1514,37,185,cross_benchmark_F1=0.173(n=15); generalist_16env=0.188(n=16); oodc_F2=0.000(n=6),,
+lif_transformer_baseline,0,37cells,env_success_rate,0.2757,37,185,cross_benchmark_F1=0.320(n=15); generalist_16env=0.325(n=16); oodc_F2=0.033(n=6),,
+lif_transformer_baseline,1,37cells,env_success_rate,0.2595,37,185,cross_benchmark_F1=0.320(n=15); generalist_16env=0.288(n=16); oodc_F2=0.033(n=6),,
+lif_transformer_baseline,2,37cells,env_success_rate,0.2649,37,185,cross_benchmark_F1=0.320(n=15); generalist_16env=0.275(n=16); oodc_F2=0.100(n=6),,
+trace_vs_gru_baseline,0,37cells,paired_diff_pp,+14.6,37,185,,,9/27/1
+trace_vs_gru_baseline,1,37cells,paired_diff_pp,+10.8,37,185,,,8/29/0
+trace_vs_gru_baseline,2,37cells,paired_diff_pp,+13.0,37,185,,,13/22/2
+trace_vs_lewm_baseline_v2,0,37cells,paired_diff_pp,+13.0,37,185,,,8/29/0
+trace_vs_lewm_baseline_v2,1,37cells,paired_diff_pp,+12.4,37,185,,,10/26/1
+trace_vs_lewm_baseline_v2,2,37cells,paired_diff_pp,+12.4,37,185,,,12/23/2
+trace_vs_lif_transformer_baseline,0,37cells,paired_diff_pp,-1.6,37,185,,,2/29/6
+trace_vs_lif_transformer_baseline,1,37cells,paired_diff_pp,-0.5,37,185,,,4/29/4
+trace_vs_lif_transformer_baseline,2,37cells,paired_diff_pp,+1.1,37,185,,,4/31/2

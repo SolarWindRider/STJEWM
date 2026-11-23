@@ -1,0 +1,4 @@
+gamma,mean_sr,paired_diff_vs_g1_pp,cell_boot_ci_low,cell_boot_ci_high,n_cells,mean_phys_dist
+1,0.3031,+0.00,+0.00,+0.00,97,15.0194
+0.75,0.3072,+0.41,-2.68,+3.71,97,19.5288
+0.5,0.3320,+2.89,-0.62,+6.19,97,19.9646

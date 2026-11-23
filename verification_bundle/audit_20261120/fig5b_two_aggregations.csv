@@ -1,0 +1,21 @@
+experiment,figure_panel,model,checkpoint,train_seed,eval_seed,split,env,modality,metric,value,n,source_path,note
+P0.1,Fig5b,trace,,0,0,cross_benchmark_F1,cartpole+cheetah,state,csr_as_published_mean_of_per_env_ratios,32.4706,2,"scaling_summary.json table; formula gain_a(h1)/(gain_o(h1)+1e-8) per env, then mean",ratio-then-aggregate
+P0.1,Fig5b,trace,,0,0,cross_benchmark_F1,cartpole+cheetah,state,ratio_of_pooled_mean_gains,30.2248,2,scaling_summary.json table,aggregate-then-ratio (Fig.4a coordinate ratio)
+P0.1,Fig5b,spike,,0,0,cross_benchmark_F1,cartpole+cheetah,state,csr_as_published_mean_of_per_env_ratios,0.419347,2,"scaling_summary.json table; formula gain_a(h1)/(gain_o(h1)+1e-8) per env, then mean",ratio-then-aggregate
+P0.1,Fig5b,spike,,0,0,cross_benchmark_F1,cartpole+cheetah,state,ratio_of_pooled_mean_gains,0.355793,2,scaling_summary.json table,aggregate-then-ratio (Fig.4a coordinate ratio)
+P0.1,Fig5b,membrane,,0,0,cross_benchmark_F1,cartpole+cheetah,state,csr_as_published_mean_of_per_env_ratios,0.105367,2,"scaling_summary.json table; formula gain_a(h1)/(gain_o(h1)+1e-8) per env, then mean",ratio-then-aggregate
+P0.1,Fig5b,membrane,,0,0,cross_benchmark_F1,cartpole+cheetah,state,ratio_of_pooled_mean_gains,0.0484456,2,scaling_summary.json table,aggregate-then-ratio (Fig.4a coordinate ratio)
+P0.1,Fig5b,hidden_leak,,0,0,cross_benchmark_F1,cartpole+cheetah,state,csr_as_published_mean_of_per_env_ratios,0.119329,2,"scaling_summary.json table; formula gain_a(h1)/(gain_o(h1)+1e-8) per env, then mean",ratio-then-aggregate
+P0.1,Fig5b,hidden_leak,,0,0,cross_benchmark_F1,cartpole+cheetah,state,ratio_of_pooled_mean_gains,0.0531684,2,scaling_summary.json table,aggregate-then-ratio (Fig.4a coordinate ratio)
+P0.1,Fig5b,lewm,,0,0,cross_benchmark_F1,cartpole+cheetah,state,csr_as_published_mean_of_per_env_ratios,0.0132527,2,"scaling_summary.json table; formula gain_a(h1)/(gain_o(h1)+1e-8) per env, then mean",ratio-then-aggregate
+P0.1,Fig5b,lewm,,0,0,cross_benchmark_F1,cartpole+cheetah,state,ratio_of_pooled_mean_gains,0.00961583,2,scaling_summary.json table,aggregate-then-ratio (Fig.4a coordinate ratio)
+P0.1,Fig5b,gru,,0,0,cross_benchmark_F1,cartpole+cheetah,state,csr_as_published_mean_of_per_env_ratios,0.00292206,2,"scaling_summary.json table; formula gain_a(h1)/(gain_o(h1)+1e-8) per env, then mean",ratio-then-aggregate
+P0.1,Fig5b,gru,,0,0,cross_benchmark_F1,cartpole+cheetah,state,ratio_of_pooled_mean_gains,0.00303743,2,scaling_summary.json table,aggregate-then-ratio (Fig.4a coordinate ratio)
+P0.1,Fig5b,mlp,,0,0,cross_benchmark_F1,cartpole+cheetah,state,csr_as_published_mean_of_per_env_ratios,1.86259,2,"scaling_summary.json table; formula gain_a(h1)/(gain_o(h1)+1e-8) per env, then mean",ratio-then-aggregate
+P0.1,Fig5b,mlp,,0,0,cross_benchmark_F1,cartpole+cheetah,state,ratio_of_pooled_mean_gains,2.17776,2,scaling_summary.json table,aggregate-then-ratio (Fig.4a coordinate ratio)
+P0.1,Fig5b,slif_trace,,0,0,cross_benchmark_F1,cartpole+cheetah,state,csr_as_published_mean_of_per_env_ratios,28082.7,2,"scaling_summary.json table; formula gain_a(h1)/(gain_o(h1)+1e-8) per env, then mean",ratio-then-aggregate
+P0.1,Fig5b,slif_trace,,0,0,cross_benchmark_F1,cartpole+cheetah,state,ratio_of_pooled_mean_gains,4.65023,2,scaling_summary.json table,aggregate-then-ratio (Fig.4a coordinate ratio)
+P0.1,Fig5,ALL,,0,0,,,state,spearman_csr_vs_env_sr_as_published,rho=+0.905 p=0.00201,8,scaling_summary.json,average-rank ties; env_sr has no ties
+P0.1,Fig5,ALL,,0,0,,,state,spearman_c20_vs_env_sr_as_published,rho=-0.190 p=0.651,8,scaling_summary.json,average-rank ties; env_sr has no ties
+P0.1,Fig5,ALL,,0,0,,,state,spearman_csr_vs_env_sr_n6,rho=+0.886 p=0.0188,6,scaling_summary.json,average-rank ties; env_sr has no ties
+P0.1,Fig5,ALL,,0,0,,,state,spearman_c20_vs_env_sr_n6,rho=+0.086 p=0.872,6,scaling_summary.json,average-rank ties; env_sr has no ties

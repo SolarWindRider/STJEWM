@@ -1,0 +1,10 @@
+model,train_seed,diag_split,c20_S1_mean,both_contractive,E_lat_h1_mean,gain_a_h1_mean,gain_o_h1_mean,gain_a_h5_mean,gain_o_h5_mean,csr_ratio_of_means,obs_gain_near_floor,flag
+trace,0,cross_benchmark_F1,0.005043,1,1.02,0.03099,1.561e-06,0.1122,3.966e-06,inf,1,
+trace,1,cross_benchmark_F1,0.02224,1,1.35,0.02672,8.354e-07,0.08859,1.728e-06,inf,1,
+trace,2,cross_benchmark_F1,2.2e-05,1,1.55e+03,0.05094,4.664e-07,0.2052,1.219e-06,inf,1,E_lat_blowup
+gru,0,cross_benchmark_F1,0.0421,1,0.242,0.0004545,0.1813,0.0003726,0.1153,0.002507,0,
+gru,1,cross_benchmark_F1,0.02952,1,0.215,0.0003279,0.1693,0.0001377,0.08296,0.001937,0,
+gru,2,cross_benchmark_F1,0.05703,1,0.235,0.0004934,0.2091,0.00023,0.116,0.002359,0,
+lif_tx,0,cross_benchmark_F1,0.0002366,1,0.0208,0.001799,0.0001176,9.321e-05,4.963e-07,15.3,0,
+lif_tx,1,cross_benchmark_F1,0.0003274,1,0.115,0.007798,0.0001014,0.0001227,1.023e-06,76.86,0,
+lif_tx,2,cross_benchmark_F1,0.0001995,1,0.0254,0.001949,3.132e-05,7.683e-05,5.689e-08,62.21,0,

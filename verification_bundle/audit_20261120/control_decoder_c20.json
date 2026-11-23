@@ -1,0 +1,67 @@
+{
+ "lam0_ref": {
+  "c20_dose_mean": 0.0001709382086119149,
+  "decoder_heldout_r2_envmean": 0.0,
+  "decoder_source": "fresh fit per env-half (no trained decoder)",
+  "c20_per_env": [
+   9.436716936761513e-05,
+   0.00024750924785621464
+  ],
+  "dec_per_env": [
+   NaN,
+   NaN
+  ]
+ },
+ "lam00_control": {
+  "c20_dose_mean": 2.4165996137526236e-07,
+  "decoder_heldout_r2_envmean": -0.09857654571533203,
+  "decoder_source": "saved decoder.pt (train-tail fit), evaluated on held-out windows",
+  "c20_per_env": [
+   3.2622742196508625e-07,
+   1.5709250078543846e-07
+  ],
+  "dec_per_env": [
+   -0.16939997673034668,
+   -0.027753114700317383
+  ]
+ },
+ "lam01": {
+  "c20_dose_mean": 29.4939603805542,
+  "decoder_heldout_r2_envmean": 0.1981029212474823,
+  "decoder_source": "saved decoder.pt (train-tail fit), evaluated on held-out windows",
+  "c20_per_env": [
+   26.122709274291992,
+   32.865211486816406
+  ],
+  "dec_per_env": [
+   0.2902572751045227,
+   0.1059485673904419
+  ]
+ },
+ "lam10": {
+  "c20_dose_mean": 39.87445259094238,
+  "decoder_heldout_r2_envmean": 0.4441322982311249,
+  "decoder_source": "saved decoder.pt (train-tail fit), evaluated on held-out windows",
+  "c20_per_env": [
+   35.35331726074219,
+   44.39558792114258
+  ],
+  "dec_per_env": [
+   0.6786044836044312,
+   0.2096601128578186
+  ]
+ },
+ "lam100": {
+  "c20_dose_mean": 23.638741493225098,
+  "decoder_heldout_r2_envmean": 0.5309091806411743,
+  "decoder_source": "saved decoder.pt (train-tail fit), evaluated on held-out windows",
+  "c20_per_env": [
+   25.78562355041504,
+   21.491859436035156
+  ],
+  "dec_per_env": [
+   0.8389862775802612,
+   0.2228320837020874
+  ]
+ }
+}

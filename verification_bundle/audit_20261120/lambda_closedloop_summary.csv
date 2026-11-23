@@ -1,0 +1,6 @@
+arm,label,checkpoint,c20_fig2c_protocol,decoder_score,env_success_rate,n_cells,n_episodes,planning_calls_per_episode,note
+lam0,lam0_ref(=E1 trace),/data/lx/tmp/results/5m_5mpar/oodc_F1/stjewm_trace_only/seed_0/final.pt,0.0001361,,0.3100,100,500,2,lambda=0 = original checkpoint (E1 reuse)
+lam00_control,lam0 continued-training control,/data/lx/tmp/results/accessibility_20260917/oodc_F1/stjewm_trace_only_lam00/seed_0/final.pt,2.42e-07,-0.0986,0.2600,100,500,2,"matched continued-training control (lambda=0, same schedule)"
+lam01,lam0.1,/data/lx/tmp/results/accessibility_20260917/oodc_F1/stjewm_trace_only_lam01/seed_0/final.pt,34.705,0.1981,0.2700,100,500,2,1-epoch aux-decoder fine-tune of the same checkpoint
+lam10,lam1.0,/data/lx/tmp/results/accessibility_20260917/oodc_F1/stjewm_trace_only_lam10/seed_0/final.pt,46.335,0.4441,0.2240,100,500,2,1-epoch aux-decoder fine-tune of the same checkpoint
+lam100,lam10,/data/lx/tmp/results/accessibility_20260917/oodc_F1/stjewm_trace_only_lam100/seed_0/final.pt,20.82,0.5309,0.2540,100,500,2,1-epoch aux-decoder fine-tune of the same checkpoint

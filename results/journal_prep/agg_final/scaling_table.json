@@ -1,0 +1,2064 @@
+{
+  "status": "completed",
+  "protocol_version": 2,
+  "measurement_object": "forward.emb",
+  "training_manifest": "/data/lx/tmp/results/_repair_archive/20260916T102154Z/training_final_repair_manifest.json",
+  "training_manifest_sha256": "4376bb14c50e30e12c3a1d47435b17489568f148b6f0abd57592efe5936e1f09",
+  "planned_cells": 252,
+  "seed_std": null,
+  "env_sr_evidence": "not evaluated by this diagnostic grid",
+  "rows": [
+    {
+      "family": "generalist_G4",
+      "model": "alif_timecell_baseline",
+      "metrics": {
+        "divergence": {
+          "mean": 0.034299611811669926,
+          "std": 0.03531837726624865,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 5.7430964511727876,
+          "std": 10.947241699820005,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.3054300983459987,
+          "std": 0.36712547209875396,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/alif_timecell_baseline/latent_stats_cheetah.json",
+          "sha256": "47ed0ac5975242db7432fe7f6b88ea3ae6cb3444f11fc939ee0643280c55637b"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/alif_timecell_baseline/latent_stats_walker.json",
+          "sha256": "638d8985f421f9ff1723051960f57103da778fc465ce97e70d071c79d3ca7128"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/alif_timecell_baseline/latent_stats_humanoid.json",
+          "sha256": "9ad77b48a5021f9cbdcfe5697143c76c102aa859d81540518db425a0fcffd94f"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/alif_timecell_baseline/latent_stats_cartpole_2d.json",
+          "sha256": "ffa7587e81a1e0805458f50731a985a638be449579f8e555ef3e0d2bbdfe7795"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/alif_timecell_baseline/latent_stats_pendulum_2d.json",
+          "sha256": "b677e0bcb3c9463d42c84afb247ea413a51e1578fbeb522c5eba3d18a2dc2a56"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/alif_timecell_baseline/latent_stats_finger.json",
+          "sha256": "c6c3f9616d3d42222636095a748289b14577c794b0bb3c30955eb7bfbee46fbc"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/alif_timecell_baseline/latent_stats_ball_in_cup.json",
+          "sha256": "9a8501e4d87566c6a46a3e6324f16b43686395407197fdff2cae68e49d722e69"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G4",
+      "model": "gru_baseline",
+      "metrics": {
+        "divergence": {
+          "mean": 0.33353709542798127,
+          "std": 0.2661758264489817,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 168.4594940440381,
+          "std": 341.1958647468784,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.17257355589137346,
+          "std": 0.28190898250435165,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/gru_baseline/latent_stats_cheetah.json",
+          "sha256": "855d7ddc111e74c8d1632f0ec5c69a7de061596f6cf2a6df5434ff2cf8a94056"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/gru_baseline/latent_stats_walker.json",
+          "sha256": "8401d09c60387e12b69a755a9e789daefff26c2cf6e1c7d7700f0824ba2f2406"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/gru_baseline/latent_stats_humanoid.json",
+          "sha256": "7e74980faf4644225896d1ea455417858ce6023d30e1eb4b8a0aef7041aa4daf"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/gru_baseline/latent_stats_cartpole_2d.json",
+          "sha256": "7947b3ea573b4f8438c614702cffeea7c2c5704d304149ac100202fec99abfa9"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/gru_baseline/latent_stats_pendulum_2d.json",
+          "sha256": "1f7a47c74867918f0856f0724be11790527c57f59d6409f09911cdc45bc4cc97"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/gru_baseline/latent_stats_finger.json",
+          "sha256": "511601403b60ab345fe23e21b4d554fd2528128a4e9ac119884bbb9bcce5c7a8"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/gru_baseline/latent_stats_ball_in_cup.json",
+          "sha256": "78b2d5a44b6da9f1a5abb21a6dd95d2d5d942af5c6813da33f23f569d8c8e3f2"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G4",
+      "model": "lewm_baseline_v2",
+      "metrics": {
+        "divergence": {
+          "mean": 0.3778464266063582,
+          "std": 0.18473251515063036,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 113.54427294475178,
+          "std": 221.59056250545262,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.4189102014612891,
+          "std": 0.39729237037681037,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/lewm_baseline_v2/latent_stats_cheetah.json",
+          "sha256": "2dc670bb1622470657c8a7a136806deea52d1b6018d8edc88a49aeb0e7383bd3"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/lewm_baseline_v2/latent_stats_walker.json",
+          "sha256": "5c660bf8bbdb53e05ff1fb7a165c627ca81fc94642cc7d22a8c3d3edee77c7eb"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/lewm_baseline_v2/latent_stats_humanoid.json",
+          "sha256": "2bae1a3a60a48d94b290b0094619e25f5782dad31109bbb29c3874aadab36f38"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/lewm_baseline_v2/latent_stats_cartpole_2d.json",
+          "sha256": "8a143e9e1f492bb40dad9f633d4864a266c5a591a3d3e4b0b4cf0d734be2bc4a"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/lewm_baseline_v2/latent_stats_pendulum_2d.json",
+          "sha256": "fc12f9629885fc8f8f5907eadea2d0ad648ec692541e7e0988d69632278005ba"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/lewm_baseline_v2/latent_stats_finger.json",
+          "sha256": "cfab875be8cf47aa76109f3661408f8c3a44cb020dd71b8104051e841f6648b6"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/lewm_baseline_v2/latent_stats_ball_in_cup.json",
+          "sha256": "723861ddf89ea9ee759be13d7658eaa623749bf7feecb48cfc6c7380706d60c5"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G4",
+      "model": "mlp_baseline",
+      "metrics": {
+        "divergence": {
+          "mean": 3.867535484392231e-08,
+          "std": 2.745816191818799e-08,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 3.770458080789109e-05,
+          "std": 7.695586210588996e-05,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.12208412688970054,
+          "std": 0.23789141048308618,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/mlp_baseline/latent_stats_cheetah.json",
+          "sha256": "c10dbe03adf2e2473d81afe1fcfed2a76ad724f5609e2b82fea530bec0e9a23d"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/mlp_baseline/latent_stats_walker.json",
+          "sha256": "fbc027a84e1ad632b6583a7e6335cd2cb7a596427f54ea63eb9d33ac1069e809"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/mlp_baseline/latent_stats_humanoid.json",
+          "sha256": "87af4edd77b2b6bb56c75ea716a6a2ef66724f8b719c82694e08055e1aef5733"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/mlp_baseline/latent_stats_cartpole_2d.json",
+          "sha256": "12956e945b6fda4ee4e38588261d2686547c887b802a58249f8f14ae6997f364"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/mlp_baseline/latent_stats_pendulum_2d.json",
+          "sha256": "c058b2e7fdbcf11571e78c11ac28f0d277e022c01121507433ea0624b7649c68"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/mlp_baseline/latent_stats_finger.json",
+          "sha256": "52a7e0b423ed0b738a26f49e9caf9d45715be25db91d756c4ba8c45220c791f9"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/mlp_baseline/latent_stats_ball_in_cup.json",
+          "sha256": "0686fc2be17b09d57a8706f7e780c4e304422712fd78701576cc596669271131"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G4",
+      "model": "stacked_lif_free",
+      "metrics": {
+        "divergence": {
+          "mean": 0.13081602263283554,
+          "std": 0.037520258754894203,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 820.9395989651441,
+          "std": 1634.8262236459648,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.01779372868362833,
+          "std": 0.14078228240407492,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stacked_lif_free/latent_stats_cheetah.json",
+          "sha256": "bf923f540c7f0dde5dc4bcc143b95c236ec718a409405120e522aa1f4d477ba2"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stacked_lif_free/latent_stats_walker.json",
+          "sha256": "0d24abc0f41da678b16d97ed2543c581283cc41382f896d97ca41c72c93b1892"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stacked_lif_free/latent_stats_humanoid.json",
+          "sha256": "f883f366029c9898a40336e1c7a7ce36879a6ff0906eb1f9d8d48ad0be327461"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stacked_lif_free/latent_stats_cartpole_2d.json",
+          "sha256": "2687d5b2742fbeea9d4d7b4104c4954e50ecd0b2904bdb1021739bdf8410dc37"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stacked_lif_free/latent_stats_pendulum_2d.json",
+          "sha256": "920e17a693038cc8e42e97eb7426cfef5da44e94f277e06e9882dc340f415180"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stacked_lif_free/latent_stats_finger.json",
+          "sha256": "6d9366ababa71b88ee9e6c8818d80f00c940c83a642a95985038d0f33b0377fd"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stacked_lif_free/latent_stats_ball_in_cup.json",
+          "sha256": "24bda2b3ac25892068dce3e7f486fd3cedba3a0fafa94e2746a9d04884eb10de"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G4",
+      "model": "stacked_lif_trace",
+      "metrics": {
+        "divergence": {
+          "mean": 0.0,
+          "std": 0.0,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 0.0,
+          "std": 0.0,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": null,
+          "std": null,
+          "n_expected": 7,
+          "n_defined": 0,
+          "n_undefined": 7
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stacked_lif_trace/latent_stats_cheetah.json",
+          "sha256": "f9003a1f359c0766792b7f4c0e9d5407ece06b6d899ee66fe38f34c2f1a931b4"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stacked_lif_trace/latent_stats_walker.json",
+          "sha256": "dc6847855ea4bac7490bebe3155b5f4a2524cab9b5e3fe0ec5b0be9fc63244dc"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stacked_lif_trace/latent_stats_humanoid.json",
+          "sha256": "7d8d3c9155ab9603ab8424b912322323e055e87ca7cbb9eebfee65adc3b79e59"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stacked_lif_trace/latent_stats_cartpole_2d.json",
+          "sha256": "7103eeda97354c5589c75c52f88f7e4d5ff138216d417fb77b85ecfe463bc615"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stacked_lif_trace/latent_stats_pendulum_2d.json",
+          "sha256": "a0630bdadd350d26743f465f1311e499f2967d6ffb68643618136d5c85f5a28d"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stacked_lif_trace/latent_stats_finger.json",
+          "sha256": "9cb6e0b5ce3ff622d96710f2ad5e793d97e9b014bbb7c388a6c93e40f0028464"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stacked_lif_trace/latent_stats_ball_in_cup.json",
+          "sha256": "ccd7f8d4f407c7af4c3171978b7ee62a0f8aa4b2639e6a0c1858cf2aa8d88d83"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G4",
+      "model": "stjewm_hidden_leak",
+      "metrics": {
+        "divergence": {
+          "mean": 0.3261253785856704,
+          "std": 0.2666091177595853,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 119.45604167678822,
+          "std": 225.31354907119527,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.19629950392467985,
+          "std": 0.17542440748015664,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_hidden_leak/latent_stats_cheetah.json",
+          "sha256": "72a77788aac43126a6888008cc81c5627fd6f210158469a418ac07c0a75be4e5"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_hidden_leak/latent_stats_walker.json",
+          "sha256": "85e03a3a6f755c557e7f664d6ef7c79e1bcb357f34d16581145f775805381d6a"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_hidden_leak/latent_stats_humanoid.json",
+          "sha256": "5a7ffa3b16eefa438841bc622f778e3135f0c80e13b58456c0d055f62dab6ec2"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_hidden_leak/latent_stats_cartpole_2d.json",
+          "sha256": "be9dfd7de7674168e205b61cb1ab93969e6d56c2a5688dd4457e1e22768cf0bd"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_hidden_leak/latent_stats_pendulum_2d.json",
+          "sha256": "b9b2062481fffd43b13563a1402564aced954a7a64011cff5d31be655566df0a"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_hidden_leak/latent_stats_finger.json",
+          "sha256": "b1b8d8ac35f8ad3901cfe83666a724c4c41ab9ae6178ab60700f9255cb139504"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_hidden_leak/latent_stats_ball_in_cup.json",
+          "sha256": "c0259fd2ca15e852ce2fdfa2989311471042b0d57424f1c27e118ae05b04cc6d"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G4",
+      "model": "stjewm_membrane_readout",
+      "metrics": {
+        "divergence": {
+          "mean": 0.32614425732745334,
+          "std": 0.27319612462543974,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 119.70479405585603,
+          "std": 229.75105638586385,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.1490109309902516,
+          "std": 0.1810006177628784,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_membrane_readout/latent_stats_cheetah.json",
+          "sha256": "b23f654b17702643179512b851be9e387838f459ae899716dfd2e9b968607f2b"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_membrane_readout/latent_stats_walker.json",
+          "sha256": "b4a0cd0c46da32fe8e2cb354f54ce981977969d64c2877775b7a64051624799a"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_membrane_readout/latent_stats_humanoid.json",
+          "sha256": "cb8720a5b2c2f14594a790442e8c826c7e4de9b206865cb981d1d00294b1fb2c"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_membrane_readout/latent_stats_cartpole_2d.json",
+          "sha256": "8a5ed6636d878aae7524449707467656e8b4a3570f501af5aa4294c82850a393"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_membrane_readout/latent_stats_pendulum_2d.json",
+          "sha256": "a7f59b94d0333dfc870959191b3fc3cafcb0dd833810677c0ed92c2405cb046c"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_membrane_readout/latent_stats_finger.json",
+          "sha256": "732efc96e25f1f4ad9e550be1cd4e29bb3389f00cb62f6f50da2eea09ef2cf52"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_membrane_readout/latent_stats_ball_in_cup.json",
+          "sha256": "29dcb20dec98f0a52a008f2fbe9aa1b0ac0ffa49fab1970024a3f54c95fe4993"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G4",
+      "model": "stjewm_no_trace",
+      "metrics": {
+        "divergence": {
+          "mean": 0.32614425732745334,
+          "std": 0.27319612462543974,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 119.70479405585603,
+          "std": 229.75105638586385,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.1490109309902516,
+          "std": 0.1810006177628784,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_no_trace/latent_stats_cheetah.json",
+          "sha256": "eb8422f79d683b1142bdb2cbcdbf07099b832ac36d8a09a048c4bfcbda39a80b"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_no_trace/latent_stats_walker.json",
+          "sha256": "6d4336300361912b5888ece3f98bc4686134d00757ec52b8c104e16e5f03d4c8"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_no_trace/latent_stats_humanoid.json",
+          "sha256": "02c42ed8ea6605f041e62298def256d340cc6b191ad5a9713a5ec09483a4506e"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_no_trace/latent_stats_cartpole_2d.json",
+          "sha256": "6ea0ebcc4af90d8032f60717e7b1d11cf225ea1504779ff7cb7c1b62ceaa2ea7"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_no_trace/latent_stats_pendulum_2d.json",
+          "sha256": "04c216cd17f889150604781e453262b82920614293531a8a6167f0f94166702f"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_no_trace/latent_stats_finger.json",
+          "sha256": "261e054545019d0d2060d2cd06a311a9a0986cd03092f999c763c4b73800748a"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_no_trace/latent_stats_ball_in_cup.json",
+          "sha256": "fbf2f5d298583176285f675734726fe00f61c0839cbbf80030c0155c913c63a1"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G4",
+      "model": "stjewm_rate_only",
+      "metrics": {
+        "divergence": {
+          "mean": 0.004402061932473991,
+          "std": 0.0031079731024567458,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 25.78278286011878,
+          "std": 56.52413375995536,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.06759337215447361,
+          "std": 0.20753533474367702,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_rate_only/latent_stats_cheetah.json",
+          "sha256": "dcb5250898aa060770c1858572ae2e825d0c5a018a311479c96936b6c24d6778"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_rate_only/latent_stats_walker.json",
+          "sha256": "df2a87250a6c0af0337296004d8ba5838cac0ae2090c22bfd0a1286e95715d07"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_rate_only/latent_stats_humanoid.json",
+          "sha256": "247f0a2a3b77d43410569b22e875a610a26871d50fbd1f62192c4a0b0d5b0ec1"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_rate_only/latent_stats_cartpole_2d.json",
+          "sha256": "17cb1270f530c895b0af220a8062c493ed1e94caaa57ecdcbb56bfb091505fb1"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_rate_only/latent_stats_pendulum_2d.json",
+          "sha256": "5dfbd8768cf247d2976aafd1cde5d266fac26531c5a9b4f4f129299c1848c454"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_rate_only/latent_stats_finger.json",
+          "sha256": "d5c78ee4560a02f262e223d6a8f76a41c093a09c0a5d9789cc90dbec389790a8"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_rate_only/latent_stats_ball_in_cup.json",
+          "sha256": "dbbfc22db8fc1f71d455296438ccf1ddafd43652fc0bf3a02edaf93082e0d6e0"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G4",
+      "model": "stjewm_spike_only",
+      "metrics": {
+        "divergence": {
+          "mean": 0.030182569849597666,
+          "std": 0.02114701910829516,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 90.82734111780977,
+          "std": 179.3421162019122,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.10601785217610578,
+          "std": 0.20705635153620844,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_spike_only/latent_stats_cheetah.json",
+          "sha256": "b52719d801f761d689cc464f572ffd802c2b3ac583a56e9c4a930c0631cf629b"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_spike_only/latent_stats_walker.json",
+          "sha256": "ae81d16ab7ec1d0d2388387b6c4ae5d54a11c112720192751d5a6e4d7d19d0a7"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_spike_only/latent_stats_humanoid.json",
+          "sha256": "942a6dfc2b4def9d8aac860460e39d26ab19f02025c94e297e688ffcf6401e0b"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_spike_only/latent_stats_cartpole_2d.json",
+          "sha256": "a6bf4e6c0fa99b35bd6e03e86366e873fbb552afa43e0cbb1b5424a724527dc0"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_spike_only/latent_stats_pendulum_2d.json",
+          "sha256": "7489eb6257f6d9026edfc289b5a39a8143e0d290fedbb55880933b66d8b7d5da"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_spike_only/latent_stats_finger.json",
+          "sha256": "1b75580bd8633411f245944dec4a4a6c9dc184595c3af849acd0fa5e8a10e4d7"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_spike_only/latent_stats_ball_in_cup.json",
+          "sha256": "bbec86c3dcb7a373782ac28bdcc98f701fdf1e91ad5e948d329e8a2b1f6febf1"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G4",
+      "model": "stjewm_trace_only",
+      "metrics": {
+        "divergence": {
+          "mean": 0.00024827675459046435,
+          "std": 3.4039234671770186e-05,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 0.7657092393345821,
+          "std": 1.6042287639321025,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.09816285834336275,
+          "std": 0.09854947779448975,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_trace_only/latent_stats_cheetah.json",
+          "sha256": "1c2d2f0dc082b47dd74293f41cdf740643989946b8fdd5b20980b4f889d90c9a"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_trace_only/latent_stats_walker.json",
+          "sha256": "2d4a3b29584499eeb310984edcb562c52c33ac8812863c2ce9e0b51c760760cd"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_trace_only/latent_stats_humanoid.json",
+          "sha256": "3e76af24bd915d195bfbad1c7d1b5dd9b891fcf86db05b74807aafe78b1a1b9c"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_trace_only/latent_stats_cartpole_2d.json",
+          "sha256": "5a47f36c8de95705213c90cd65189066345a01c8e2235e19c6339bbb5186abe8"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_trace_only/latent_stats_pendulum_2d.json",
+          "sha256": "ba222bc555aa3aca07932d0da3801f34933e00f6a09a6677e54274e4f5e586ab"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_trace_only/latent_stats_finger.json",
+          "sha256": "45881c2218f70db482d26784d6cd035b9aa4f24f4bbf2e38dd679ac0e972042c"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G4_stats/generalist_G4/stjewm_trace_only/latent_stats_ball_in_cup.json",
+          "sha256": "1b539f83a0a6cf659a398530c8b01dd761924cf806874334514a485054c7e9ff"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G8",
+      "model": "alif_timecell_baseline",
+      "metrics": {
+        "divergence": {
+          "mean": 0.052957386461398616,
+          "std": 0.03566986913003046,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 9.900109622870406,
+          "std": 18.939596825970764,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.3890240978703451,
+          "std": 0.3209937811660009,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/alif_timecell_baseline/latent_stats_cheetah.json",
+          "sha256": "979ce4f3f0e60d20fe923eec9eb0bd193a2019ca952991ab2011eeb23a95934e"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/alif_timecell_baseline/latent_stats_walker.json",
+          "sha256": "9c18582def1c984911dd4ec60045eb2f8028a60ebc94b070139b246a94f64a5e"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/alif_timecell_baseline/latent_stats_humanoid.json",
+          "sha256": "c43fd1d8e269a73454baa98ecfa5da784cbec9f2979eff4eb8f22572aa797bf7"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/alif_timecell_baseline/latent_stats_cartpole_2d.json",
+          "sha256": "34e6e1e567e20829ab5efb932593687fc41e97550d8cedf3d0deb070fd4dd9c8"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/alif_timecell_baseline/latent_stats_pendulum_2d.json",
+          "sha256": "f2b92278c10e73b08e2419932e729b15741577a5ca335de59dff3944be193960"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/alif_timecell_baseline/latent_stats_finger.json",
+          "sha256": "3f42456aff616dd520ad59808031417fcbbd7f7ce82ae5208a4b675dc3a1b8ec"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/alif_timecell_baseline/latent_stats_ball_in_cup.json",
+          "sha256": "7d99fe072fa272988a98e01843276d4b330c8da10e8dc5be991e352fdb4a01ef"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G8",
+      "model": "gru_baseline",
+      "metrics": {
+        "divergence": {
+          "mean": 0.5268726175523722,
+          "std": 0.2898770474382667,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 352.1547164720877,
+          "std": 773.0639747335002,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.20371221392600963,
+          "std": 0.24074604611588465,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/gru_baseline/latent_stats_cheetah.json",
+          "sha256": "e0eb10dd20c5f277e1089bdb33c9c89a1f4a9f356071eb85ee399049eaa8ab91"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/gru_baseline/latent_stats_walker.json",
+          "sha256": "087a8702ce1f27bce2c1409e0d81904187d15061e206c84ecc275a175a60619d"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/gru_baseline/latent_stats_humanoid.json",
+          "sha256": "f3e1a92f8a6c0ab8d046730148b35d460a4ca6bca8bdf34fabbb71c9739593d7"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/gru_baseline/latent_stats_cartpole_2d.json",
+          "sha256": "1788151aa9cdacaa205ce625ff9d57a2befb6e6ed942ca87796cfe7d52e9035f"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/gru_baseline/latent_stats_pendulum_2d.json",
+          "sha256": "e5ce90c776a9f7c6f208a588bddcd46bd89a4ab1ab66cb925880655929954892"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/gru_baseline/latent_stats_finger.json",
+          "sha256": "bae04ab2f1b8c42000972b4266c558d980d0b582951e4be658fab5046ede4c2d"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/gru_baseline/latent_stats_ball_in_cup.json",
+          "sha256": "be0e4505bd1fe1ae1f0476d2d66abd3a39ee56a00e0d603ca080cdddc5352b14"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G8",
+      "model": "lewm_baseline_v2",
+      "metrics": {
+        "divergence": {
+          "mean": 0.39755418849664415,
+          "std": 0.20426568308331805,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 54.92510690971294,
+          "std": 92.25133363973744,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.5264874222861904,
+          "std": 0.3642544853649893,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/lewm_baseline_v2/latent_stats_cheetah.json",
+          "sha256": "1c1b383cf55635aa94ff2b60f1fad194dae7c0afef05a7dd0049f24dfd7ac080"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/lewm_baseline_v2/latent_stats_walker.json",
+          "sha256": "c91d4ceb01eb6b545f541545a0a345185837469fcd99fbc1765d0c4ca5aadc21"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/lewm_baseline_v2/latent_stats_humanoid.json",
+          "sha256": "ad55311ae900e5f26b2b969ed867398c54bd1337c2dd13dd8842874d824474b8"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/lewm_baseline_v2/latent_stats_cartpole_2d.json",
+          "sha256": "b24ccc160e076a8ccdc7474f1044412510c25f30e0c67e6e1e36979008db0a82"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/lewm_baseline_v2/latent_stats_pendulum_2d.json",
+          "sha256": "8b1dff27a32e15f4c0fdad3f7297b69727ef1789db8e6dc2ac6c6fcc478fe8b9"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/lewm_baseline_v2/latent_stats_finger.json",
+          "sha256": "6a4d699dedb5a0db5c12065c870643bf98f188f166d4162e6b82fe51a3b3a285"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/lewm_baseline_v2/latent_stats_ball_in_cup.json",
+          "sha256": "06637afdce0ade54655c0602dc878f6f6f7fe7b5abd322aefe19bc7686406e96"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G8",
+      "model": "mlp_baseline",
+      "metrics": {
+        "divergence": {
+          "mean": 4.3511530284147395e-08,
+          "std": 2.9616811074030857e-08,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 3.773663813751234e-05,
+          "std": 7.63722400494494e-05,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.17745509875142437,
+          "std": 0.2500768626127844,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/mlp_baseline/latent_stats_cheetah.json",
+          "sha256": "f5890cc01335dccb37c9ebc73c0fce65de2664bc4ce0224348b1e391782eb75e"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/mlp_baseline/latent_stats_walker.json",
+          "sha256": "be8781e4212d28096ca5fb467e472d27e12ad0e7429ac7907f4baaa41cdc3ad3"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/mlp_baseline/latent_stats_humanoid.json",
+          "sha256": "dab13e81ae1d9e1f74069b4de647fa7534b6ece50fd4b8c58e33313f9bb7dc5e"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/mlp_baseline/latent_stats_cartpole_2d.json",
+          "sha256": "11f337815d4b46db088aa1eb099f5db94f2108fcdb88134d9fa6a1a82791fd7b"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/mlp_baseline/latent_stats_pendulum_2d.json",
+          "sha256": "2b8f163500b599453ac86a35b1739a8902c0ed77603b13c9b5c4cd4ec2ad0be7"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/mlp_baseline/latent_stats_finger.json",
+          "sha256": "1b1da404cc837c950db5873d7584465baf7b2e40194f0e9897c6a3e175920cba"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/mlp_baseline/latent_stats_ball_in_cup.json",
+          "sha256": "4f1d005e29dfd220952e16283167c5b41f4722696419b9e83b3a371be1f4427c"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G8",
+      "model": "stacked_lif_free",
+      "metrics": {
+        "divergence": {
+          "mean": 0.09909890515813048,
+          "std": 0.03807447104347891,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 574.8402492890914,
+          "std": 1191.943215314712,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": -0.013805112138544486,
+          "std": 0.06504363639002195,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stacked_lif_free/latent_stats_cheetah.json",
+          "sha256": "faaec40f31338b1d89be0b6426004bb19e458149f4227ed4bdae515c8a12d94e"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stacked_lif_free/latent_stats_walker.json",
+          "sha256": "ad4d4ac9eda109792ae457e620bce8c157ed05c13dbd9d5e9ca868c2207862ea"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stacked_lif_free/latent_stats_humanoid.json",
+          "sha256": "dfa38aedd6b9e04fa2972a32a53fa69c7cbdd6ed8eb49ef1c2eeb89bd9e5a2d2"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stacked_lif_free/latent_stats_cartpole_2d.json",
+          "sha256": "98e292a85458c95ff264d3bc3a42fe099f9a36cc3ba8e84792872d54efd259ee"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stacked_lif_free/latent_stats_pendulum_2d.json",
+          "sha256": "3dd33e7104f0054b6e0de08aaf83ebabdab05f90583ed8aafc368c4e8e384bdd"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stacked_lif_free/latent_stats_finger.json",
+          "sha256": "2bde5bcd9269efa3d4265111a3ce457486ac59b9fb0750d9d538fc71ca9bd4b2"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stacked_lif_free/latent_stats_ball_in_cup.json",
+          "sha256": "d1e2ce4a71511a1d69af4dbfa54fe66c880675fa297c64745e8ef558d276d6e4"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G8",
+      "model": "stacked_lif_trace",
+      "metrics": {
+        "divergence": {
+          "mean": 0.0,
+          "std": 0.0,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 0.0,
+          "std": 0.0,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": null,
+          "std": null,
+          "n_expected": 7,
+          "n_defined": 0,
+          "n_undefined": 7
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stacked_lif_trace/latent_stats_cheetah.json",
+          "sha256": "392523a309aa29d24efd7b66fb369c3b9d5fe718d21c23b4d3ac4ea348c26be3"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stacked_lif_trace/latent_stats_walker.json",
+          "sha256": "802b661914a747940f309137b0dd443cda71d1289b591a7e18ec808a5d019237"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stacked_lif_trace/latent_stats_humanoid.json",
+          "sha256": "5d3ef53c9790c7506294cb2b316bdf3797642e87458a2bd273d3519b330eff5a"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stacked_lif_trace/latent_stats_cartpole_2d.json",
+          "sha256": "246038d4fd0bf985a07d2cc8f1c05b8606c2d44e6ad327bda540f3b2e1b1037b"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stacked_lif_trace/latent_stats_pendulum_2d.json",
+          "sha256": "392cc90a748111b440e101bfe2550efb8f8fda2551834f38d9b756570bd244e1"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stacked_lif_trace/latent_stats_finger.json",
+          "sha256": "53b15fd43f7ddf4d0e3e10d2446fb7efa3ce62823314ba418799db15105126c1"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stacked_lif_trace/latent_stats_ball_in_cup.json",
+          "sha256": "9f61ea9f61bd6d1d3996008153ecc5d9007670d096fb8f6704d3d912af473077"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G8",
+      "model": "stjewm_hidden_leak",
+      "metrics": {
+        "divergence": {
+          "mean": 0.3204311131460916,
+          "std": 0.20295825503597487,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 149.8052378491401,
+          "std": 319.3464202419648,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.27135089055484407,
+          "std": 0.25642759861696246,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_hidden_leak/latent_stats_cheetah.json",
+          "sha256": "c85296b5f53854cc428ecff49b0d2201c37f065efdbeaa64fa4e398301be3039"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_hidden_leak/latent_stats_walker.json",
+          "sha256": "442af3ae0c8db12eeed6acd091c04492d83f4ab7584e2932ae9a698e13e8c493"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_hidden_leak/latent_stats_humanoid.json",
+          "sha256": "7f0037aa2d0464d8116ee4d9ac6338114950dcc05becc579133aeb641b3da6e3"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_hidden_leak/latent_stats_cartpole_2d.json",
+          "sha256": "d44281b10c44d0630ab50c3a4f11136528736751a79d7697efcd25a8098609d8"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_hidden_leak/latent_stats_pendulum_2d.json",
+          "sha256": "9acc1519234ef9b729ad46c085981c9c46d00ad732855b9e28fe5d8fe07b5527"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_hidden_leak/latent_stats_finger.json",
+          "sha256": "6de2d351b0e35a77f3810c10883db84aef544f6e9a6a32f7558cc13e68da03ee"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_hidden_leak/latent_stats_ball_in_cup.json",
+          "sha256": "5ffa3e9cdd7dd02f3c9648af8e2e6089024bc61dd1cdf7e73f644b89c455c97c"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G8",
+      "model": "stjewm_membrane_readout",
+      "metrics": {
+        "divergence": {
+          "mean": 0.322018709018422,
+          "std": 0.21653777472530908,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 80.91795021693248,
+          "std": 145.46516067261416,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.21363128381602237,
+          "std": 0.3566870626583636,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_membrane_readout/latent_stats_cheetah.json",
+          "sha256": "f11cddcd8037c35d4c2d70991efd807189d3405fb9024cb7ba55cda045661993"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_membrane_readout/latent_stats_walker.json",
+          "sha256": "8b732c3f83a167216bd81dbb163c1b23ebf19dd40f9ffef5e340d44f7a15fd8c"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_membrane_readout/latent_stats_humanoid.json",
+          "sha256": "8af314950700f5bae9bfcdd3597a2f9a3157c274f251ddc51f74df8f860e1b42"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_membrane_readout/latent_stats_cartpole_2d.json",
+          "sha256": "361bff21c33974077a99e11f611ad5f543e665ca856587e392331531598e6ec1"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_membrane_readout/latent_stats_pendulum_2d.json",
+          "sha256": "36a74ef609f48bef6b8180640c607263b6a78c03347608f25fb66e4b827b7688"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_membrane_readout/latent_stats_finger.json",
+          "sha256": "e4b86754052f9b2cb6713f2386f2b26068f831d4082a2b89babae325c7e488ce"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_membrane_readout/latent_stats_ball_in_cup.json",
+          "sha256": "a6cbf66ac7f066004e9e8f246169b5af03fd4adfcd3dc4f1f5c7a64b3be60e07"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G8",
+      "model": "stjewm_no_trace",
+      "metrics": {
+        "divergence": {
+          "mean": 0.322018709018422,
+          "std": 0.21653777472530908,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 80.91795021693248,
+          "std": 145.46516067261416,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.21363128381602237,
+          "std": 0.3566870626583636,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_no_trace/latent_stats_cheetah.json",
+          "sha256": "d9b76e84a2d054bc39b644794a314207227100c52c80144337afcb3166aad092"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_no_trace/latent_stats_walker.json",
+          "sha256": "20099c24ff491a005da24dc13704a407f5ddf176a45183f60688c41514832783"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_no_trace/latent_stats_humanoid.json",
+          "sha256": "dbc875254c25eb97eea5591ac8f955b7e77c7018758a5b93c52e1c819ac21c56"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_no_trace/latent_stats_cartpole_2d.json",
+          "sha256": "1f9c89caf0fda7fb7cf81eb907de7f2a7c9e79f2a7bd631f3fca02935a113d8b"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_no_trace/latent_stats_pendulum_2d.json",
+          "sha256": "cc4a1420c3844b1543d7251211bf4352ab62e87b74cde4e78d3c8e2eae121a31"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_no_trace/latent_stats_finger.json",
+          "sha256": "3d3ba79896e5128a537b062168afb034c88e8fecba24704c0275f9e69d70bdcd"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_no_trace/latent_stats_ball_in_cup.json",
+          "sha256": "5a75fe260b50c0a787e4fb24e91b17f136e625e3ae421a731bbeba9697fb2df1"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G8",
+      "model": "stjewm_rate_only",
+      "metrics": {
+        "divergence": {
+          "mean": 0.009190548042356785,
+          "std": 0.006581563316422678,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 31.979620095332514,
+          "std": 68.37274540320242,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.20702899570494432,
+          "std": 0.18121361412089917,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_rate_only/latent_stats_cheetah.json",
+          "sha256": "786701e19457cd55169109439d15a9d6247938464923b97815bbf0e636b90d76"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_rate_only/latent_stats_walker.json",
+          "sha256": "8111523eb200e82128dc8ea92a4f23b0a87291c0a79f0877c22c875cf9c4c45c"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_rate_only/latent_stats_humanoid.json",
+          "sha256": "70199ebe238abb94e7421109f7a3c96d61b6e8f95cfeae96d4847fc48f7dc8aa"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_rate_only/latent_stats_cartpole_2d.json",
+          "sha256": "1b979c05a9cc3d62fc1f1ecde0dbe7c611f736b8f68743a076c12f864a3475a4"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_rate_only/latent_stats_pendulum_2d.json",
+          "sha256": "13f4900b0a670a33b8f61472e2d6c61af913a21b65494cf2c286f64adbb66614"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_rate_only/latent_stats_finger.json",
+          "sha256": "2e2f8d0ebf5beb89890174e846ff3043ae67d678f3c72f0110fef290712a0f59"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_rate_only/latent_stats_ball_in_cup.json",
+          "sha256": "cc8a3fdb30133ebe996bad3f15a10901d4acce41e96f848242e47be86f45dab2"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G8",
+      "model": "stjewm_spike_only",
+      "metrics": {
+        "divergence": {
+          "mean": 0.020592619523840974,
+          "std": 0.015584979874845799,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 60.60206252896188,
+          "std": 113.2338697549002,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.11341409326690695,
+          "std": 0.14258752642111297,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_spike_only/latent_stats_cheetah.json",
+          "sha256": "f2aa4311ce31fb8be0a2638e465b6f6962b709896a9bd3337c294eb93d297a48"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_spike_only/latent_stats_walker.json",
+          "sha256": "f13baf786687d39ec592f3ed7ba4b2185bf825dc1d7aff9bd13cf2c2f28aef2e"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_spike_only/latent_stats_humanoid.json",
+          "sha256": "ec256488da9cd9c461ad12533dec547f60c19fa441a03c40f83417bb327b1008"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_spike_only/latent_stats_cartpole_2d.json",
+          "sha256": "f0d048c8c7defe7c0c3c27e5224d551d8407ec6e91a97eaf91a3873f720faa98"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_spike_only/latent_stats_pendulum_2d.json",
+          "sha256": "be727a84075d0906e299bdc9ccbfc173ef28b348190772164db0f943d22e737e"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_spike_only/latent_stats_finger.json",
+          "sha256": "6704e8f627a3fc68a75ef3fa26a9bc683ec2af46d92f31d4f6c48cb7983b77b7"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_spike_only/latent_stats_ball_in_cup.json",
+          "sha256": "5dc2e6dc6dcfb8f74028b1224fefdc31c1450dae908e1e0a114604c0a7823846"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G8",
+      "model": "stjewm_trace_only",
+      "metrics": {
+        "divergence": {
+          "mean": 0.00018490265577061327,
+          "std": 3.623335139619165e-05,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 0.5656386498583071,
+          "std": 1.2098374402945404,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": -0.03206199025372243,
+          "std": 0.1324271730276028,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_trace_only/latent_stats_cheetah.json",
+          "sha256": "a63d8d677101777fd5852ea2ac5c4f13b46f2a03aa3d10bcf764c60047217776"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_trace_only/latent_stats_walker.json",
+          "sha256": "af22284d124f2d246ed161f6936b7bd7d14086c5d307bcc15e03485dd5d169e8"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_trace_only/latent_stats_humanoid.json",
+          "sha256": "0948f236a43d91d47e56a700bc61636d7d744904c490576d4175ae0e83610b3a"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_trace_only/latent_stats_cartpole_2d.json",
+          "sha256": "de39e7575fe493a57b4927d070a8b14309dc8abe1b6f68a338ded1b48d12af3c"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_trace_only/latent_stats_pendulum_2d.json",
+          "sha256": "d904fa06a94466802ae47d3d4fb8e7cc643fe8ee97091790c852eb6c72318026"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_trace_only/latent_stats_finger.json",
+          "sha256": "87a1acee10b7e7321a9b8e0737165da03191cf1a5d1b7036bfa5a4c152ffec22"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G8_stats/generalist_G8/stjewm_trace_only/latent_stats_ball_in_cup.json",
+          "sha256": "5d5a06a25ef97aefc87028b15f4d8d8f85de428f5c539b5aaa2b03cd96c3fcc5"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G16",
+      "model": "alif_timecell_baseline",
+      "metrics": {
+        "divergence": {
+          "mean": 0.49780043760272186,
+          "std": 0.08772746702399893,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 1937.889301434222,
+          "std": 4064.88214929253,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.018248741877034697,
+          "std": 0.10752060273805704,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/alif_timecell_baseline/latent_stats_cheetah.json",
+          "sha256": "117712f1f551f2d06e013ce31f194dc570a3e9962d0abfb57b9020712226c45c"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/alif_timecell_baseline/latent_stats_walker.json",
+          "sha256": "92f2e2283b927d127ce1b11b49284a1e40201cfea20c3375aac93fed28b2812c"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/alif_timecell_baseline/latent_stats_humanoid.json",
+          "sha256": "a9dd9b017d88cc80866678eb7fa364cc759b2612648391107bde26e5978f2c9d"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/alif_timecell_baseline/latent_stats_cartpole_2d.json",
+          "sha256": "f9e9644e2c8ab8517e625e994fa1e87adb662fa2984b562dae0c7863f21214c9"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/alif_timecell_baseline/latent_stats_pendulum_2d.json",
+          "sha256": "38619e22efa88de7803b49311c350cb27ba0052ad33c0237e0fd195775e136e6"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/alif_timecell_baseline/latent_stats_finger.json",
+          "sha256": "dda858895087d02ab49c90029d70430407b9059ae11860064f241d5e282e71bf"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/alif_timecell_baseline/latent_stats_ball_in_cup.json",
+          "sha256": "6933c0c505d6a6996ee24475919462d31224799a3190f4e98ae0c17864c208a3"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G16",
+      "model": "gru_baseline",
+      "metrics": {
+        "divergence": {
+          "mean": 0.7192753600147985,
+          "std": 0.3293631805081767,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 411.8424210169764,
+          "std": 903.9445886641658,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.2266850272095785,
+          "std": 0.3484682246762552,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/gru_baseline/latent_stats_cheetah.json",
+          "sha256": "e3f82a5dc4636ee68f9aeab558259b4a1a4e94757276308ef0159d30c9de90ca"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/gru_baseline/latent_stats_walker.json",
+          "sha256": "102959f6ecacb5329625f01a25f4b9d2744629b9004863f0e7431f7bd822c14f"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/gru_baseline/latent_stats_humanoid.json",
+          "sha256": "9677823731bc686a4f1b89bfbd07f688bdf1a4c4ae56d02eba4dd6ada4c642b9"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/gru_baseline/latent_stats_cartpole_2d.json",
+          "sha256": "9dc2ba4b1e1a321ea8b9224fd60bcf66a006a376f4544f39095f70f41c770a25"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/gru_baseline/latent_stats_pendulum_2d.json",
+          "sha256": "e3bbc2deebd34f63cbb9635efc827bb5e8a5c7a5563001b47b76e10986c9b95f"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/gru_baseline/latent_stats_finger.json",
+          "sha256": "824a5e5a0a097cdf9e065e484e46460a54068db238d2daba1a743515bfb68ff9"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/gru_baseline/latent_stats_ball_in_cup.json",
+          "sha256": "ad354063d696e955446f5d5500c84f4bd85f0bd9061ba87edc9ebdb8668b1461"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G16",
+      "model": "lewm_baseline_v2",
+      "metrics": {
+        "divergence": {
+          "mean": 0.35711034991513657,
+          "std": 0.1340208761767969,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 68.7217020970216,
+          "std": 132.5198845887115,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.5121223789382022,
+          "std": 0.27811748649598583,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/lewm_baseline_v2/latent_stats_cheetah.json",
+          "sha256": "3e9a33497ee11e7c9b0568b75093e59597afbd5d63391e4b903dd35e2c870d2b"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/lewm_baseline_v2/latent_stats_walker.json",
+          "sha256": "3bc21a997e0f0512ca433155ecb182a05d48bd5efba37547fd8569266b53b833"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/lewm_baseline_v2/latent_stats_humanoid.json",
+          "sha256": "14ddee8adab1b8a5d7afa3c095fa9ab6e7b37af2a0f4791d239878b8d4420ac4"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/lewm_baseline_v2/latent_stats_cartpole_2d.json",
+          "sha256": "cfaabb9b6a551a7d4a8ebbe64c82f208aa03c83de6c70659640b858c0035ad83"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/lewm_baseline_v2/latent_stats_pendulum_2d.json",
+          "sha256": "97c40a51d019da88b9376a0e8552a7df946352e721255cc2126f8a8ec37ff454"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/lewm_baseline_v2/latent_stats_finger.json",
+          "sha256": "95a84add5681c60f0e1f266283c8f8da4129472f1d6528fe018d1f367cbe517f"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/lewm_baseline_v2/latent_stats_ball_in_cup.json",
+          "sha256": "d89346ac2782398faa51a611672c0160f9b9fd1f896273c08a00bc07a92307aa"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G16",
+      "model": "mlp_baseline",
+      "metrics": {
+        "divergence": {
+          "mean": 144018598.09601662,
+          "std": 220032411.94393727,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 5934076050.072669,
+          "std": 7142306372.776769,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.16125852929539708,
+          "std": 0.41957062178483856,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/mlp_baseline/latent_stats_cheetah.json",
+          "sha256": "5e5fe810747c412fe5df3ad97a33cd150f7a4056e19ad60f5d0ee5c640611f43"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/mlp_baseline/latent_stats_walker.json",
+          "sha256": "8f0a30100c2e504b9932ccc484d8f5a3912d00e0e7282d57e941c215cf207bf1"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/mlp_baseline/latent_stats_humanoid.json",
+          "sha256": "09f6de65eff469076b73d3d36080c2a4ecee8882ebf3e6ba8180546b4f77c079"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/mlp_baseline/latent_stats_cartpole_2d.json",
+          "sha256": "1f2000954fc43f5b065ff63e47f73cfaf4be06a6ec99070deeec78e3f2807af0"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/mlp_baseline/latent_stats_pendulum_2d.json",
+          "sha256": "6be6636cb67246e714a46d83d8104ae8fc4a0b158d5f0ba4c791af0b9b7457c5"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/mlp_baseline/latent_stats_finger.json",
+          "sha256": "8af1de6d1cbfa01ae8d6c48d2f8f3b1338c32fa2573987d6e25fea7de4b0a2f0"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/mlp_baseline/latent_stats_ball_in_cup.json",
+          "sha256": "c30c031db005d0020acf6011e90dd115e87663f76562d75b85b7c2a882efca11"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G16",
+      "model": "stacked_lif_free",
+      "metrics": {
+        "divergence": {
+          "mean": 0.9366826059630137,
+          "std": 0.9178957067801929,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 319.2291807238447,
+          "std": 594.3770305832709,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.3847178321615084,
+          "std": 0.38334374125498727,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stacked_lif_free/latent_stats_cheetah.json",
+          "sha256": "367c38b4533a209a54318ea30bb0359ea5951fb1bb8dd7754c3779acab51a13f"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stacked_lif_free/latent_stats_walker.json",
+          "sha256": "ca5359b008e3ef3a78a2636bc6805fced222e3b213391d45dc6675a6b1f5261a"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stacked_lif_free/latent_stats_humanoid.json",
+          "sha256": "b7f32e906d2806336126d72f39088532ed3119c2fa44b221245c4d95605e9780"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stacked_lif_free/latent_stats_cartpole_2d.json",
+          "sha256": "caebfb79806d8b188f8f1e4d2ed04e43c978a3bfb975d1928959ed57c4590eb0"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stacked_lif_free/latent_stats_pendulum_2d.json",
+          "sha256": "37c1f3d6f032b2388f26cf3076eb2a65d7d9dc21b50691199ee641fe5f7f7fbe"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stacked_lif_free/latent_stats_finger.json",
+          "sha256": "ee87dd451081c968a4e18781778ca2249f25d9a804e2fadf5ebe93e7bc808511"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stacked_lif_free/latent_stats_ball_in_cup.json",
+          "sha256": "85c40766c577c6237961d9923d0b825a40676e69fc6aba49879df0f75280d9fe"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G16",
+      "model": "stacked_lif_trace",
+      "metrics": {
+        "divergence": {
+          "mean": 0.021983761243317707,
+          "std": 0.01421060176013515,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 73.23808851951581,
+          "std": 156.84058006998708,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.03908674966511129,
+          "std": 0.2803268819096254,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stacked_lif_trace/latent_stats_cheetah.json",
+          "sha256": "270e90a652c73cdbea88ce3804824d39a8b35bd6aed0941dba7bf91dda6f05ac"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stacked_lif_trace/latent_stats_walker.json",
+          "sha256": "b1d763fbe51b9b2c0cc464ed4dfdeb9af096a6845f86513126e4c13a85fe6890"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stacked_lif_trace/latent_stats_humanoid.json",
+          "sha256": "25a25b0b1005607d40fa7fe84ee98254a1c91e4d708a81d3db52a61e48109fcc"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stacked_lif_trace/latent_stats_cartpole_2d.json",
+          "sha256": "62f6a61e89be88812c33fbccfd4b6d59bd26ce29a03c19392a330e759cb24711"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stacked_lif_trace/latent_stats_pendulum_2d.json",
+          "sha256": "4bbd628ef78a8ba87ba6060a16b9cf90f1fa83e9a6e2624a6d7a39dbd91ca573"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stacked_lif_trace/latent_stats_finger.json",
+          "sha256": "bb2f234008abcce94c78475dd8d5af35aa5af5bf1132455687b576c0d59b00bf"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stacked_lif_trace/latent_stats_ball_in_cup.json",
+          "sha256": "2351a4beb5d83a1a95b0a17f7f92703fa1976afe82b1157f5804285dc4f6685d"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G16",
+      "model": "stjewm_hidden_leak",
+      "metrics": {
+        "divergence": {
+          "mean": 0.2327724316434466,
+          "std": 0.15829637638316862,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 15.36093108846861,
+          "std": 21.989045346333643,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.721902419548842,
+          "std": 0.36820248218364604,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_hidden_leak/latent_stats_cheetah.json",
+          "sha256": "9e5875aac2b3d6972c695cad81ddc5765ddee1fb17dbdd6e9d814fed15669562"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_hidden_leak/latent_stats_walker.json",
+          "sha256": "248fc5c751edbbf59eefccf937984e8647d75993ed00417394a7dc0233f4e5af"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_hidden_leak/latent_stats_humanoid.json",
+          "sha256": "8de255c0ad7087d121a96553c3269fab71ac88fd4d42526a7f4039994c4c0a69"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_hidden_leak/latent_stats_cartpole_2d.json",
+          "sha256": "1117ab8d9441684e57e8b86064b53b8d5e666a14d35b92a4df95ff78e8e8cc68"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_hidden_leak/latent_stats_pendulum_2d.json",
+          "sha256": "f62644f7eb6323c9c617de68fc2d188c5a886f110838859ce0c53f5dbe5b5c45"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_hidden_leak/latent_stats_finger.json",
+          "sha256": "c06099a545410286ca229f1b19f6f3c4162c2202b2e614dddeb124f2595e9761"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_hidden_leak/latent_stats_ball_in_cup.json",
+          "sha256": "3f1f98ce30630189ad6b11cb6d87cb498903daabe4ca5e3b64ea39f62c8f6817"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G16",
+      "model": "stjewm_membrane_readout",
+      "metrics": {
+        "divergence": {
+          "mean": 0.23681919311198368,
+          "std": 0.1643255982774251,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 15.971565204702586,
+          "std": 23.501152014314183,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.7115547181219861,
+          "std": 0.36759598826610557,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_membrane_readout/latent_stats_cheetah.json",
+          "sha256": "2fe7cd0488e92a60213ae6f1e8b0fad774d8d6a6878abbcb300e98cf1fb1529d"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_membrane_readout/latent_stats_walker.json",
+          "sha256": "e2a063698e7a4dd98608bb6da26c52336006c0c2111a812205f4d3863e21755a"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_membrane_readout/latent_stats_humanoid.json",
+          "sha256": "8aec7617fd5edbdb1baadf0ed7a6353ccb10b5a8125b6f1f6ea8e1081ebaf528"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_membrane_readout/latent_stats_cartpole_2d.json",
+          "sha256": "ef39aa7cd58a23272d5fa38a2a1999c2f8bc648ddadc81189300211dbb62c90d"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_membrane_readout/latent_stats_pendulum_2d.json",
+          "sha256": "f4e6ce0ccc9e5962bc1cc94901a2f751851b6c35d4a13c0fcd6be230fc933523"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_membrane_readout/latent_stats_finger.json",
+          "sha256": "99b89321bf670c1af54d35fc3940ac9dd995cd93fd12d7f816c7f19b1033eea2"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_membrane_readout/latent_stats_ball_in_cup.json",
+          "sha256": "abe02476921b93ed93a6bb1eb55238dd4339cd6f3bb5e15d105413e415995d91"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G16",
+      "model": "stjewm_no_trace",
+      "metrics": {
+        "divergence": {
+          "mean": 0.23681919311198368,
+          "std": 0.1643255982774251,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 15.971565204702586,
+          "std": 23.501152014314183,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.7115547181219861,
+          "std": 0.36759598826610557,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_no_trace/latent_stats_cheetah.json",
+          "sha256": "cedad1708841b4b29a7726dae4d93cf9a37ffd4fb7959efce72b80469f8d645c"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_no_trace/latent_stats_walker.json",
+          "sha256": "7eddf6088642fc68d5ebea43425c064d96bd8ed3a8225b6e6f0c4763a9e80229"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_no_trace/latent_stats_humanoid.json",
+          "sha256": "5070ce15ef1fa0c73383294a57e9eadc5c14223c598fe2d73cefd27f8e92efb4"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_no_trace/latent_stats_cartpole_2d.json",
+          "sha256": "9c0080f80df29d6bb9744a4531b87a4ed9ffc72a10d363cdbf577d4414e90512"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_no_trace/latent_stats_pendulum_2d.json",
+          "sha256": "3bf6d0418af0178877c8a189ad6b3ee20e185b601d9fb4d3f446e1cf6ad9bd46"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_no_trace/latent_stats_finger.json",
+          "sha256": "81a960b70b1feb441681acb7071f5b088c033f859871194d1382332a80feadb7"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_no_trace/latent_stats_ball_in_cup.json",
+          "sha256": "9dbbab462fae702291216fff503cc705ef8bcb289702c515c1d4c699e252bb70"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G16",
+      "model": "stjewm_rate_only",
+      "metrics": {
+        "divergence": {
+          "mean": 0.06439284757338865,
+          "std": 0.033226086272065095,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 112.67856069300912,
+          "std": 239.5261625174669,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": -0.020989598807978807,
+          "std": 0.21807435945424647,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_rate_only/latent_stats_cheetah.json",
+          "sha256": "24a32be7b28181315bd8fd1b27bc061bcfa4f18ceed10cfbfe4b4491ff6c04ef"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_rate_only/latent_stats_walker.json",
+          "sha256": "14e0e69b26cedb52447ff0fd8dde597e62f9ed1f7a8225016fbfed90450c48cd"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_rate_only/latent_stats_humanoid.json",
+          "sha256": "32c016f9020df47e64f907ce90a68d0817e7fc26a50a7cc185954df3f3f3167e"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_rate_only/latent_stats_cartpole_2d.json",
+          "sha256": "287bf88235ae924487dde87965e874ab2e5196ed547cae8a1bfcae9f8efb0777"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_rate_only/latent_stats_pendulum_2d.json",
+          "sha256": "e51aaad7310f23efd9f0f0038007e36ebaca5613ac315334909d85647fcd4b13"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_rate_only/latent_stats_finger.json",
+          "sha256": "7f27a8d67e71852dbbabb8d269bb9f0f8785fb11e73ca770fc41e08b9f28b222"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_rate_only/latent_stats_ball_in_cup.json",
+          "sha256": "01d7148756f7af68895e430a36436f7d72dd8f54177a4bcfef3a26d38007fe90"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G16",
+      "model": "stjewm_spike_only",
+      "metrics": {
+        "divergence": {
+          "mean": 0.024667186654045378,
+          "std": 0.015567718708445592,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 68.93793291265057,
+          "std": 134.860307389285,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.1472495204478728,
+          "std": 0.21366886334715834,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_spike_only/latent_stats_cheetah.json",
+          "sha256": "74455e6aa6d74fa74483c87bdc93bbb0a92486fdfe05acec1067240ed624b00e"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_spike_only/latent_stats_walker.json",
+          "sha256": "0689a2341a950222c0b37bd44c4f07a1cfc039a129fd691c7ddcfc0312012639"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_spike_only/latent_stats_humanoid.json",
+          "sha256": "e7e0624bf3351da219109b0f42e25751858d6704be5efc1e5209190c9a451a78"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_spike_only/latent_stats_cartpole_2d.json",
+          "sha256": "091e7775b65b519c387a4094f145910bd49ae769c5b91bdaa2f19adc247e900d"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_spike_only/latent_stats_pendulum_2d.json",
+          "sha256": "3e572f02d873b4f33aac60ca55864d8e880ad910fe6581051b22c214d2b3850c"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_spike_only/latent_stats_finger.json",
+          "sha256": "b5fa6a0faef5e253c14d18a826b4611a530d5f668eeb810d0b5779b8da0fd161"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_spike_only/latent_stats_ball_in_cup.json",
+          "sha256": "ac61683e0a1b4eb205a564d74baee5b8e70e61bbcd983505e8264fac96157eed"
+        }
+      ]
+    },
+    {
+      "family": "generalist_G16",
+      "model": "stjewm_trace_only",
+      "metrics": {
+        "divergence": {
+          "mean": 0.0001484846719374468,
+          "std": 0.00032783621971999846,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "responsiveness": {
+          "mean": 0.06173169586970261,
+          "std": 0.11074956920944913,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        },
+        "event_rho": {
+          "mean": 0.08785073212558232,
+          "std": 0.1588056354420743,
+          "n_expected": 7,
+          "n_defined": 7,
+          "n_undefined": 0
+        }
+      },
+      "sources": [
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_trace_only/latent_stats_cheetah.json",
+          "sha256": "1497ff636fec30beba575582dc3bcfe2c85d8f12ebaf923053a694093ce19b6f"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_trace_only/latent_stats_walker.json",
+          "sha256": "be9b4e37b2677a09f3b484b1e2895088705095e0c67de82f988d2f4b78ae1ad4"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_trace_only/latent_stats_humanoid.json",
+          "sha256": "f697f2839bf523cb3e2e9ae3975677595deb215bf70db5da427196bfbe0fecb7"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_trace_only/latent_stats_cartpole_2d.json",
+          "sha256": "5a43f8045a63275f105173c9ff37b28e0ea060b255a56fc20d574e226f262a99"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_trace_only/latent_stats_pendulum_2d.json",
+          "sha256": "d1a3b9f11c96fd8c763a383a7ee6bbb25169b58f548fa7e25d2d1fb2ff666075"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_trace_only/latent_stats_finger.json",
+          "sha256": "44bf6928fec9c3ccef2cff5495a68ddadf3a896a2c2f330c14ce236c4cc76553"
+        },
+        {
+          "path": "/data/lx/tmp/results/generalist_G16_stats/generalist_G16/stjewm_trace_only/latent_stats_ball_in_cup.json",
+          "sha256": "f8cc11617473c4dae5399c64f3cb35a7bc0b651f70330823f02f04bc052874dd"
+        }
+      ]
+    }
+  ]
+}
