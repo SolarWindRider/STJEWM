@@ -63,9 +63,10 @@ claims_evidence.md §1 的分级表已含审计要求的全部降级/删除项(e
 ## 遗留待办(2026-11-23 更新)
 
 1. ~~Fig.1–5 逐 panel `source_data.csv`~~ → 已由审计包逐窗/逐 cell 源表覆盖;
-2. ~~E4 held-out 逐模型表~~ → `verification_bundle/e4_heldout_cells.csv`(546 cells);聚合 CI 仍未算;
-3. G5/B2 汇总从库外 `agg_final/` -f 入库(小文件,**仍未执行**);
-4. ~~E9 逐条件表~~ → 审计包 `e9_per_condition.csv`;扩样仍未做;
-5. 审计包的关键汇总表(per_seed_summary、lambda_vs_control_bootstrap、probe_control_comparison 等)**尚未入库**——目前只在 `/home/lx/audit_20261120/` 与 OBS;如需进仓库需确认(包内不含 NMI 正文,但含论文数值,按惯例先问)。
+2. ~~E4 held-out 逐模型表~~ → `verification_bundle/e4_heldout_cells.csv`(546 cells);聚合 CI 已出(见第 6 条);
+3. ~~G5/B2 汇总从库外 `agg_final/` -f 入库~~ → 2026-11-23 已完成(`results/journal_prep/agg_final/`,commit 8e196da);
+4. ~~E9 逐条件表~~ → 审计包 `e9_per_condition.csv`;扩样已于 2026-11-23 完成(4 envs × 50 eps,`e9_expanded_per_condition.csv`);
+5. ~~审计包关键汇总表入库~~ → 2026-11-23 已完成(`verification_bundle/audit_20261120/`;逐窗大表与 raw JSON 仍只在审计包/OBS)。
+6. E4 逐模型 CI 表已出(`e4_per_model_ci.csv`,排除 26 个泄漏 cells);seed 不确定性(单 seed)仍无。
 
 > 本文件的图号沿用 2026-10 旧初稿编号(Fig.2 = 现 Fig.3,Fig.3 = 现 Fig.4/5);现行编号见 `claims_evidence.md` §6。
