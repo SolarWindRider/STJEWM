@@ -6,7 +6,7 @@
 
 | 主张 | 级别 | 证据 |
 |---|---|---|
-| 膜电位禁用协议下,trace 状态可支撑闭环控制且优于连续基线 | **A** | E1(1300 cells)+ E2(3-seed 0 翻转)+ E13(逐 env 配对)+ E14(三规模)+ E3(pixel) |
+| 膜电位禁用协议下,trace 状态可支撑闭环控制且优于连续基线(GRU/LeWM) | **A**(对 GRU/LeWM)/ **B**(对 LIF-Tx 仅"相当") | E1(1300 cells;100-cell env-SR trace 0.310 = 全场最高)+ 37-cell 三训练 seed 配对(Trace−GRU +10.8~+14.6 pp、Trace−LeWM +12.4~+13.0 pp,三 seed 全正;**Trace−LIF-Tx −1.6/−0.5/+1.1 方向翻转**)+ E13 + E14 + E3(pixel env-SR trace 0.172 vs LeWM 0.091;但 MLP 0.178、spike 0.177 同级) |
 | 传统表征指标(可解码性/预测精度)与控制效用不共线 | **A** | E8(position-R² vs env-SR 反例)+ E1(cos 可被塌缩平凡取得)+ E7(λ=0:cos 0.005 但 env-SR 平)+ E9(窗口消融不动成败) |
 | trace 读出的动力学是"慢迹不变性":对瞬时扰动长尾持续,对持续输入正常响应 | **A** | M4(d_peak 极小 + nr100% + 持续对照 0.044≫0.017)+ S3(action 27× LeWM)+ 位置敏感性(全窗口 0.23–1.27) |
 | 塌缩在 pixel 与 λ=0 维度上是**分级**现象,单指标隐藏之 | **A** | E3(1690 cells 连续谱 0.003–0.177)+ E7 |
@@ -16,6 +16,9 @@
 | event synchronization 高 ρ 是 STJEWM 优势 | **VOID——勘误** | G1 终值:readout ρ 0.004–0.527,trace 0.034 属最低档;**此主张必须删除**(README §3 勘误) |
 | "仅替换 readout 即翻转动力学" | **C(降级)** | readout 家族是**分别训练**的 ckpt(stjewm_trace/spike/rate/no_trace/hidden_leak/membrane)→ 只支持"读出设计与动力学共变",**不支持单变量因果**;仓库中不存在固定权重换 readout 的干预实验(E9 是窗口/掩码消融,不是 readout 交换) |
 | CSR→success 是普遍设计原理 | **C** | n=8 架构(非独立样本)+ 部分近常数 latent + CSR 分母(obs 敏感度)极小;只能写 "cross-architecture association" |
+| trace/GRU 动力学差异(都衰减;输入响应不对称)跨训练 seed 复现 | **A**(oodc_F1 同 split,3 seeds)+ B(cross_benchmark_F1 补充) | pooled c20 trace<gru 3/3;trace g_a≫g_o、GRU 反向 3/3(numbers.md);**环境依赖**:cheetah trace<gru 3/3、cartpole trace≥gru 3/3——不得写成"每环境同向",非因果机制 |
+| trace 对历史位置的输入掩码更敏感 | **B**(representation displacement;无闭环) | 剂量匹配遮蔽:同总元素数下 scatter25/last25 位移比 Trace 2.2–3.2×;GRU/LeWM 对 27× 剂量不敏感(C/A≈1.0);cartpole 仅置零 1 维、cheetah 2 维 |
+| "辅助解码目标使规划下降" | **C(限定)** | 相对原 ckpt 三臂 −4.0/−8.6/−5.6 pp,但 matched control 本身 −5.0 pp;**以 control 为主对照仅 λ=1 额外下降 −3.6 pp [−5.8, −1.2]**;无单调剂量效应、单训练 seed;独立 probe 的线性可访问性增益小且非单调(R² ≤0.10) |
 
 ## 2. 两套中心论点的证据归属(回应审稿人"论点 A vs 论点 B")
 
@@ -27,7 +30,7 @@
 
 ### 3.1 "trace 优越性是否只是 latent collapse?"——不是;非退化证据包(8 条)
 
-1. **闭环有效**:env-SR 0.31 tied-best(E1);cartpole G4/G8/G16 恒 1.00(E14)——常数 latent 无法引导控制;
+1. **闭环有效**:env-SR 0.310(100-cell seed0 全场最高,与 LIF-Tx 0.308 并列;E1);37-cell 三 seed 0.263±0.011;cartpole G4/G8/G16 恒 1.00(E14)——常数 latent 无法引导控制;
 2. **动作响应真实存在**:位置敏感性全窗口 0.23–1.27(真权重,imag_position_sensitivity.json);
 3. **对持续输入正常响应**(M4 持续对照 0.044–0.048 ≫ 瞬态残差 0.017–0.028)→ 是"慢"不是"死";
 4. **S3**:g_a 相对 LeWM ≈27×,且跨窗口持续;
@@ -44,17 +47,17 @@
 
 ### 3.3 "CSR↔success 普适?"——只能作关联
 
-Spearman ρ≈0.90 的 n=8 是八种架构(高度非独立,共享训练管线/数据);部分模型近常数。措辞:"across the eight architecturally distinct models we observe a strong rank association (ρ≈0.90)";**禁止** "general principle / universal law"。若要因果,需新实验(预注册多架构多任务),本文不做此主张。
+Spearman ρ≈0.90 的 n=8 是八种架构(**n = 模型配置数,不是 episode 数**;高度非独立,共享训练管线/数据);部分模型近常数。措辞:"across the eight architecturally distinct models we observe a strong rank association (ρ≈0.90)";**禁止** "general principle / universal law"。若要因果,需新实验(预注册多架构多任务),本文不做此主张。
+**CSR 必须并列两种口径**(2026-11-20 核定):CSR_env = mean_e[g_a,e/(g_o,e+1e-8)](逐 env 比值再平均,Fig.5b 所绘)与 CSR_pooled = mean(g_a)/(mean(g_o)+1e-8)(Fig.4a 坐标比值)。ρ 对口径稳健:+0.905 / +0.929(去 SLIF-trace +0.893)。**SLIF-trace 的 CSR_env=2.81e4 是伪影**(cheetah g_o=0 触 1e-8 加数;均值比口径 4.65),Fig.5b 该点须标 floor;MLP(g_o、g_a 均 <1e-6)为 degenerate。
 
-## 4. 逐图问题与可用修复数据(审稿人 §一 表格)
-
+## 4. 逐图问题与可用修复数据(2026-10 旧初稿图号;⚠️ 现行图号为 §6 的 v2 五图结构,旧新映射见 experiments.md)
 | 草稿位置 | 问题 | 修复数据(已存在) |
 |---|---|---|
 | Fig.1 | capability 结论依赖 env-SR 语义 | protocol.md §2.3 澄清 + E1 cos-vs-envSR 反差(塌缩模型 cos 低 env-SR 高) |
 | Fig.2 标题不符 | 说三维 regime map 实为 PCA 组合 | 重画:div/resp/ρ 三轴 = E6/E12 数据(`FULL_METRIC_MATRIX.md`、`LATENT_ROLLOUT_SUMMARY.md`);现有 PCA/contraction 面板移至 Extended Data |
 | Fig.2c readout-flip | 分别训练的 ckpt 不能作因果 | 降级措辞(§1 表);或补固定权重干预实验(**不存在**,不得虚构) |
 | Fig.3d 文图不符 | 说 success 实为位移 | 两套数据都有:M4/S 系列(位移)+ E1/E9(success)→ 并列展示 |
-| Fig.4c 缺闭环指标 | 只有 probe score | probe = E8 `g2_summary.json`;闭环 = E1 → 同图双轴即可 |
+| Fig.4c(旧)= 新 Fig.2c:decoder 强度 | v1 只有(非 held-out 的)decoder score | **已补闭环**:λ=0/0.1/1/10 + matched control 的 100-cell 配对(§7);独立 probe 见 numbers.md |
 | Fig.3/4 caption 为 "Caption" | 未写 | 依 §1/§3 素材补写 |
 | Methods 重复(式 22/23、goal 节) | 排版 | 以 protocol.md §2.2 为唯一版本 |
 
@@ -63,11 +66,11 @@ Spearman ρ≈0.90 的 n=8 是八种架构(高度非独立,共享训练管线/�
 | Abstract 声称 | 数据位置 |
 |---|---|
 | variance regularization 作用 | E7 `SIGREG_SWEEP.md` |
-| trace content causality | E9 + M4(重测版) |
+| trace content causality | E9(每条件 10 episodes,**探索性**)+ M4(重测版);剂量匹配遮蔽(仅 representation) |
 | pixel 泛化 | E3(1690 cells) |
 | G4/G8/G16 规模 | E5 + E14 |
 | held-out 环境 | E4(546 cells) |
-| seed 稳健性 | E2(G5/B2) |
+| seed 稳健性 | E2(G5/B2)cos 簇;37-cell env-SR 三 seed 配对(numbers.md) |
 
 **唯一必须删除的 Abstract 内容**:event synchronization 优势主张(G1 勘误)。
 
@@ -101,5 +104,21 @@ Spearman ρ≈0.90 的 n=8 是八种架构(高度非独立,共享训练管线/�
 
 ### 两条措辞边界(已写入图注)
 
-- **Fig.2c(旧 4c)**:只展示"辅助解码器得分上升 + 收缩因子改变",**不含规划成功率**——可写"可读性↑伴随动力学改变",**不得**写"提高可读性使规划性能下降"(无同模型干预 + 无闭环指标,Q5=VOID)。
+- **Fig.2c(旧 4c)**:闭环数据已补(2026-11-22~23)。**正确表述**:"相对匹配的继续训练对照,仅 λ=1 伴随额外成功率下降(−3.6 pp,95% CI [−5.8, −1.2]);继续训练本身对应 −5.0 pp([−8.2, −2.0]);λ=0.1/10 与对照不可区分;单训练 seed,无单调剂量效应。"**不得写**:"提高可读性导致控制下降"、"下降全由继续训练解释"。上子图的 decoder score 来自共训 head 的训练尾(非 held-out),须改注或换独立 probe。
 - **Fig.5**:n=8 描述性关联(ρ=−0.19 p=0.65 ns;ρ=+0.905 p=0.002),**禁止** causal/universal 措辞(§3.3 不变)。
+
+## 7. 2026-11-20~23 审计轮结论(写作阶段的硬约束;原始数据在审计包)
+
+**可写**
+1. 性能:37-cell 配对三 seed 上 Trace 优于 GRU/LeWM(+10.8~+14.6 pp);LIF-Transformer 与 Trace 相近(100-cell seed0 0.310 vs 0.308;37-cell 三 seed 0.263±0.011 vs 0.267±0.008);100-cell 主图仍是 seed 0。
+2. 动力学:oodc_F1 中 Trace/GRU 的 pooled c20 与输入响应差异跨 seed 复现;**不是每环境同向**(cartpole 3/3 trace≥gru),不构成因果机制。
+3. 预测精度:Trace seed2 的 E_lat 极值是归一化尺度问题(z* 分母塌缩),**不写成预测发散**。
+4. 解码干预:相对原模型各辅助条件下降;matched control 后 **λ=1 仍有额外下降**;线性可访问性以独立 probe 为准(小且非单调)。
+5. Masking:支持"对历史位置的不同响应",**不是**"历史记忆造成规划提升";同数量置零 ≠ 同输入变化幅度(本例 A/B 的 ΔL2 相近,已核)。
+6. 收缩与成功率:ρ(c20, env-SR)=−0.19(ns);收缩不是充分条件;控制对表示塌缩不敏感(E7 λ=0)。
+
+**禁写**:SNN 天然不坍缩;Trace 优于 LIF-Tx;CSR 普适/因果;SLIF CSR=2.8e4 为真实敏感度;state 为 receding-horizon MPC;"10 splits × 10 envs";E9 作必要性结论;n=8 当作 episode 数;跨 split 结果写成同 split 的 seed replication;episode 数当训练 seed 数。
+
+**图注须改**:Fig.1b(100 cells = 10 splits、每 split 2–16 envs);Fig.1c("teacher-forced latent rollout relative L2",非 one-step prediction error);Fig.2c(协议/checkpoint/训练状态说明 + 上子图 decoder score 口径);Fig.4b(64 窗/env × 2 env = 128 窗;h=5 用直接池化增益 → 用 v3 面板 `figs/fig4b_panel_v3.*`);Fig.5b(SLIF 点 floor 标记 → 用 v2 面板;两种 CSR 公式、ε、估计单位=模型配置)。
+
+**面板文件**:`/home/lx/figs_nmi/20261120/`(fig1a–fig5b;fig4b_panel_v3、fig5b_panel_v2 为现行版);审计包 `/home/lx/audit_20261120/`(OBS `obs://lixiang01/STJEWM_NMI/audit/20261120/`)。

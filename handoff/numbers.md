@@ -15,12 +15,12 @@
 | Stacked-LIF-free | 0.030±0.002 | 同上 |
 
 - seed 翻转:0(簇结构 seed 稳定)(⚠️库外 `agg_final/g5_multiseed.json`;**G5/B2 汇总不在 journal_prep**)
-- trace env-SR 0.31 tied-best;readout ρ 0.034;div ~1e-4;resp 0.26(G1/E1)
+- trace env-SR **0.310**(100-cell,train seed 0)= 全场最高,与 LIF-Transformer **0.308** 并列(差 −0.2 pp;次高 stacked_lif_trace 0.282、rate 0.264;GRU 0.158、LeWM 0.154);readout ρ 0.034;div ~1e-4;resp 0.26(G1/E1;审计包 results.csv)
 - **pooled cos 口径 = 冻结协议闭环终局 cos_dist**(split×env×seed cells 合并),≠ teacher-forced 单步预测精度,两者不可互换
 
 ## Fig.2/3 机制数字(mech_0917_b 批次,2026-09-17 最终权重,库内被忽略目录)
 
-c(20) pooled(`results/mech_0917_b/rollout/rollout_summary.md`,ckpt=最终代际 ✓):trace **0.032**、membrane **6.966**、gru **0.040**、lewm **0.205**、mlp 0.000、slif_trace 0.169、spike 16.852、hidden_leak 6.143
+c(20) pooled(`results/mech_0917_b/rollout/rollout_summary.md`,ckpt=最终代际 ✓):trace **0.032**、membrane **6.966**、gru **0.040**、lewm **0.205**、mlp 0.000、slif_trace 0.169、spike 16.852、hidden_leak 6.143。逐 env(trace:cartpole 0.0498 / cheetah 0.0140;gru:0.0146 / 0.0660)——**cartpole 上 trace 的 c20 高于 gru,pooled 排序由 cheetah 驱动**。
 CSR↔env-SR Spearman:**+0.905(p=0.002)**(`results/mech_0917_b/scaling/scaling_summary.md:40`;n=8 架构,只作关联)
 逐模型绝对 gain(g_obs / g_a 含量纲):`results/mech_0917_b/gain/gain_summary.md`(写作时与 CSR 并列)
 
@@ -40,7 +40,7 @@ LIF-Tx 1.00(cos 0.000)、ALIF 0.95、SLIF-trace 0.94、MLP 0.88、trace 0.37(REA
 
 ## SIGReg(E7)
 
-λ=0:cos 0.252→0.005,LeWM-SR 0.37→0.99,env-SR 持平(SIGREG_SWEEP.md)
+λ=0(cross_benchmark_F1,15 cells):cos **0.101→0.005**,LeWM-SR 0.37→0.99,env-SR 0.35→0.32;oodc_F2:cos 0.178→0.063,env-SR 0.00→0.03。**两 split 合并 21 cells**:λ=0 cos 0.022 / env-SR 0.238,vs λ=0.09 0.123 / 0.248、λ=0.01 0.109 / 0.276、λ=0.001 0.141 / 0.248(paired t=+1.31 ns)→ **表示层塌缩但控制不变**;不得写"SNN 天然不坍缩"(SIGREG_SWEEP.md + 审计包 e7_sigreg_cells.csv)
 
 ## 能效代理(G3/P11)
 
@@ -58,21 +58,22 @@ trace 3.37;SLIF-free 3.66;SLIF-trace 5.05;GRU/MLP/LeWM 9.76–10.24 MFLOP-equiv/
 
 严格子树加载 82–96 tensors、7.23–7.48M 参数、12 tasks;within-episode ρ 0.10–0.84(spiking_wm_final_20260916/ ⚠️库外)
 
-## Trace 消融(E9,最终 ckpt × {cartpole, cheetah})
+## Trace 消融(E9,最终 ckpt × {cartpole, cheetah};每条件每环境 **10 episodes**,探索性)
 
-| 模式 | cartpole envSR | cartpole cos |
-|---|---|---|
-| baseline | 0.60 | 0.240 |
-| event_window | 0.60 | 0.237 |
-| non_event_window | 0.60 | 0.237 |
-| random_window | 0.70 | 0.205 |
-| ablate_all | 0.70 | 0.205 |
+| 模式 | cartpole envSR | cartpole cos | cheetah envSR | cheetah cos |
+|---|---|---|---|---|
+| baseline | 0.60 | 0.240 | 0.00 | 0.095 |
+| event_window | 0.60 | 0.227 | 0.00 | 0.096 |
+| non_event_window | 0.70 | 0.231 | 0.10 | 0.089 |
+| random_window | 0.70 | 0.221 | 0.00 | 0.086 |
+| ablate_all | 0.70 | 0.205 | 0.00 | 0.075 |
+| cem_rollout_ablation | 0.70 | 0.205 | 0.00 | 0.075 |
 
-(cheetah 全模式 envSR 0.00–0.10;`trace_ablation_final/` ⚠️库外)
+(干预仅作用于 CEM 候选评分中的 `model.predict` 通路,见 protocol.md §2.6;样本量不足以证必要性/非必要性;`trace_ablation_final/` ⚠️库外,逐条件表在审计包 `e9_per_condition.csv`)
 
 ## 协议常数(数字审稿人会问)
 
-pad_obs 128 / action_dim 56 / history_size 1 / horizon 25 / budget 50 / goal_offset 25 / CEM 300-30-10(pusht 30)/ embed 192 / 状态 128 维(零填充)
+pad_obs 128 / action_dim 56 / history_size 1 / horizon 25 / budget 50 / goal_offset 25 / CEM 300-30-10(pusht 30)/ embed 192 / 状态 128 维(零填充)/ **trace stack n_layers=4**(protocol.md §1)/ state 每 episode 2 次 planning;pixel H5 first-action、50 次 planning
 **参数(2026-10-21 实测)**:state trace 总 10.523M = 冻结 ViT 5.459M + 可训练 **5.064M**;pixel trace 10.461M / 5.002M;基线全可训练 lewm 4.970M、gru 5.132M、mlp 5.001M;5M 口径 = 可训练参数(4.97–5.13M)
 
 ## 主图 Fig.5 相关系数(2026-10-22 从 scaling_summary.json 直接复算)
@@ -83,3 +84,65 @@ pad_obs 128 / action_dim 56 / history_size 1 / horizon 25 / budget 50 / goal_off
 | ρ(CSR, env-SR) | **+0.905** | +0.886 | 0.002 | 同上 spearman_n8.csr / spearman_n6_no_mlp_slif.csr |
 
 写作口径:小样本描述性关联,禁 causal/universal(claims_evidence §3.3、§6)。
+
+## 37-cell 三训练 seed 配对闭环(2026-11-20;审计包 per_seed_summary.csv / paired_episodes.csv)
+
+网格 = cross_benchmark_F1(15)+ generalist_16env(16)+ oodc_F2(6)= 37 cells;三 seed 共用同一评测流(eval seed 0,episode_idx/init 逐位一致)。**只代表该 37-cell 网格;Fig.1b 的 100-cell 仅 seed 0。**
+
+| 模型 | seed0 | seed1 | seed2 | 均值±sd |
+|---|---|---|---|---|
+| Trace | 0.2595 | 0.2541 | 0.2757 | 0.263±0.011 |
+| LIF-Tx | 0.2757 | 0.2595 | 0.2649 | 0.267±0.008 |
+| LeWM | 0.1297 | 0.1297 | 0.1514 | 0.137±0.013 |
+| GRU | 0.1135 | 0.1459 | 0.1459 | 0.135±0.019 |
+
+配对差(pp,胜/平/负):Trace−GRU **+14.6(9/27/1)/+10.8(8/29/0)/+13.0(13/22/2)**;Trace−LeWM **+13.0(8/29/0)/+12.4(10/26/1)/+12.4(12/23/2)**;Trace−LIF-Tx **−1.6(2/29/6)/−0.5(4/29/4)/+1.1(4/31/2)**(方向翻转 → 只能写"相当")。
+
+## λ 辅助解码器:matched continued-training control(2026-11-22~23;审计包 lambda_*.csv)
+
+E1 同 100 cells 逐 episode 配对(5 条件 episode_idx/init/goal 100/100 一致)。control = 同日程 312 步继续训练、λ_decode=0。
+
+| 条件 | env-SR | vs 原 ckpt | **vs control**(cell bootstrap 95% CI,20k,seed 0) |
+|---|---|---|---|
+| λ=0(原 ckpt) | 0.310 | — | — |
+| λ=0 继续训练 control | 0.260 | −5.0 [−8.2, −2.0] | — |
+| λ=0.1 | 0.270 | −4.0 [−8.0, −0.2] | +1.0 [−1.2, +3.4] |
+| **λ=1** | 0.224 | −8.6 [−12.2, −5.2] | **−3.6 [−5.8, −1.2]** |
+| λ=10 | 0.254 | −5.6 [−9.6, −2.0] | −0.6 [−2.2, +1.0] |
+
+split-cluster bootstrap(10 splits):+1.0 [0.0, +2.0] / −3.6 [−4.5, −2.6] / −0.6 [−2.0, +0.3]。**只有 λ=1 相对 control 有额外下降;无单调剂量效应;单训练 seed。**
+
+c20(dose 协议):原 1.36e-4 / control **2.4e-7**(继续训练保持收缩)/ λ=0.1 34.7 / λ=1 46.3 / λ=10 20.8(三臂翻转为放大)。
+
+**独立 probe(冻结 latent,同划分,episode 级 75/25;审计包 probe_control_comparison.csv)**:
+
+| ckpt | linear ridge R² | MLP R²(3 probe seeds) |
+|---|---|---|
+| orig | −1.828 | −0.231±0.089 |
+| control | 0.013 | −0.171±0.391 |
+| λ=0.1 | −0.085 | 0.104±0.021 |
+| λ=1 | 0.103 | 0.236±0.039 |
+| λ=10 | −0.102 | 0.260±0.012 |
+
+线性可访问性增益**小且非单调**;共训 decoder head 的 receipt 分(0.094/0.304/0.331)**非 held-out**(验证尾在训练 shuffle 内),不得作可访问性证据。
+
+## oodc_F1 同 split 三训练 seed 动力学(2026-11-23;4 层 trace;审计包 oodc_F1_dynamics_summary.csv)
+
+pooled c20:trace **0.0319 / 0.0164 / 0.0185** vs GRU **0.0403 / 0.0293 / 0.0887**(trace<gru 3/3);逐 env:cheetah trace<gru 3/3(0.0140/0.0162/0.0083 vs 0.0660/0.0485/0.1483),**cartpole trace≥gru 3/3**(0.0498/0.0165/0.0288 vs 0.0146/0.0102/0.0290)——排序是环境依赖的,非因果机制。不对称:trace g_a/g_o = 30/20/83×;GRU 反向 329/573/245×(3/3)。seed0 与已发表值逐位一致。
+
+## 剂量匹配遮蔽(2026-11-22;审计包 maskdose_*.csv)
+
+同总元素数(0.25D,四舍五入≥1:cartpole 1 维、cheetah 2 维):scatter25/last25 位移比 Trace **2.23 / 3.20**(cartpole/cheetah)、GRU 0.09/0.06、LeWM 0.06/0.03、Membrane 0.25/0.55;win25(27× 剂量)/last25:Trace 4.3/4.6,GRU 1.1/1.0,LeWM 1.0/1.0。输入 ΔL2%:A≈B(−1.2/−0.9;−0.4/−0.4),win25 −37.2/−13.0。**仅 representation displacement,未做闭环。**
+
+## CSR 两口径、floor 与 Fig.4b 口径(2026-11-20)
+
+CSR_env(逐 env 比值再平均,Fig.5b)vs CSR_pooled(均值比,Fig.4a 坐标):trace 32.5 / 30.2;GRU 0.00292 / 0.00304;**SLIF-trace 2.81e4 / 4.65**(cheetah 的 g_o=0 → 逐 env 比值 2.3e5,1e-8 加数伪影,**不是真实有限敏感度**)。ρ(CSR, env-SR):+0.905(原)/ +0.929(均值比)/ +0.893(去 SLIF);ρ(c20, env-SR) −0.190(p=0.65)。n=8 = 模型配置数。
+Fig.4b 统计单位 = 64 窗/env × 2 env = **128 窗**(± 为每窗两分支);h=5 用直接池化增益(v3 面板,SLIF obs h5 = 1.9e-4 实测;v1 的 17.9 为占位)。
+
+## 像素 env-SR(E3;与 state 执行协议不同)
+
+Trace 0.172 / spike-only 0.177 / MLP 0.178 / LeWM 0.091(pixel 为 first-action MPC,不得与 state 的分段开环混报)。
+
+## Fig.1c 相关复算(2026-11-20)
+
+teacher-forced rollout 相对 L2(h=1)vs env-SR:ρ=+0.238(全 8)/+0.886(去空心);线性 probe R² vs env-SR:**ρ=−0.786**(全 8)/−0.943(去空心)→ 解离核心成立。

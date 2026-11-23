@@ -53,16 +53,19 @@ claims_evidence.md §1 的分级表已含审计要求的全部降级/删除项(e
 | 审计要求 | 状态 |
 |---|---|
 | 1. journal_prep 原表入库 | ✅ commit bbacd08(EXP_Report v4.0 + MAIN×2 + E13/E14 等);G5/B2 汇总在 ⚠️库外 `agg_final/`(路径已在 numbers.md 标注) |
-| 2. Fig source_data + 逐 panel 出处 | 部分:mech_0917_b 表(本日入库)+ scaling provenance 链 ✅;**逐 panel source_data.csv 未成** —— Fig.1-5 由 `make_fig{1,2}.py`/`make_nmi_figures.py` 生成,重跑即得;列入待办 |
+| 2. Fig source_data + 逐 panel 出处 | ✅ mech_0917_b 表入库;逐窗源表在审计包(`fd_perwindow_oodcF1_seed0.csv`、`oodc_F1_dynamics_per_window.csv`、`maskdose_per_window.csv` 等);面板生成脚本随包 |
 | 3. 代码文件 | ✅ 全部在库(README Experiment→code map;strict-load 模式已写入 Conventions) |
 | 4. 参数拆分表 | ✅ 本文件 P0.1(state+pixel;组件级前缀统计) |
-| 5. 配对 success/cos 原始数据 | cell JSON 在 ⚠️库外 state_final_corrected_20260916/(audit/aggregated_state_cells.json);journal_prep 表已入库;**逐 cell CSV 化未做**(列入待办) |
+| 5. 配对 success/cos 原始数据 | ✅ 逐 cell CSV:`verification_bundle/*.csv`(入库);逐 episode:`e1_per_episode.csv`(6500 行)、`paired_episodes.csv`、`lambda_episodes.csv`(审计包) |
 | 6. Fig.2 c20 / Fig.3 ρ 代际声明 | ✅ 本文件 P0.3(最终代际,可由 mech_0917_b + 脚本复现) |
 | 7. E9 干预路径说明 | ✅ protocol.md §2.6 |
 
-## 遗留待办(P2 未尽项)
+## 遗留待办(2026-11-23 更新)
 
-1. Fig.1–5 逐 panel `source_data.csv` 生成(驱动图脚本已有,需一次重跑落盘);
-2. E4 held-out 逐模型效果量/置信区间表(546 cells 在 ⚠️库外,未聚合入 journal_prep);
-3. G5/B2 汇总从库外 `agg_final/` -f 入库(小文件,待确认后执行);
-4. E9 逐 cell paired 表从 `trace_ablation_final/` 聚合入库。
+1. ~~Fig.1–5 逐 panel `source_data.csv`~~ → 已由审计包逐窗/逐 cell 源表覆盖;
+2. ~~E4 held-out 逐模型表~~ → `verification_bundle/e4_heldout_cells.csv`(546 cells);聚合 CI 仍未算;
+3. G5/B2 汇总从库外 `agg_final/` -f 入库(小文件,**仍未执行**);
+4. ~~E9 逐条件表~~ → 审计包 `e9_per_condition.csv`;扩样仍未做;
+5. 审计包的关键汇总表(per_seed_summary、lambda_vs_control_bootstrap、probe_control_comparison 等)**尚未入库**——目前只在 `/home/lx/audit_20261120/` 与 OBS;如需进仓库需确认(包内不含 NMI 正文,但含论文数值,按惯例先问)。
+
+> 本文件的图号沿用 2026-10 旧初稿编号(Fig.2 = 现 Fig.3,Fig.3 = 现 Fig.4/5);现行编号见 `claims_evidence.md` §6。

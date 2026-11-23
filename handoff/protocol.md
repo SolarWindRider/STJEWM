@@ -7,6 +7,7 @@
 - 入口:`code/train/train.py`(单 cell 驱动:`code/scripts/generalist_v0_7_5_5m/train_one_5m.sh`);批量重训:`repair_training.py --manifest .../training_final_repair_manifest.json --execute`(371/371)。
 - 损失:**三段式 JEPA**(非重建):`pred MSE + sigreg + goal`(`code/train/native_losses.py::stjewm_loss`;预测头在表示空间预测未来 latent,stop-grad 目标)。
 - 5M 对齐:**口径 = 可训练参数**(排除 STJEWM 冻结的 ImageNet ViT-Tiny 编码器)。实测(2026-10-21,按 ckpt 逐张量统计):state trace 总 10.523M = 冻结 encoder 5.459M + 可训练 5.064M;pixel trace 总 10.461M / 冻结 5.459M / 可训练 5.002M;基线全可训练 lewm 4.970M、gru 5.132M、mlp 5.001M → 全部落在 4.97–5.13M(±3.2%)。**论文的 "5.06M trainable" 与此一致;写作时必须声明 STJEWM 额外携带 5.46M 冻结编码器,不计入匹配预算。**
+- 深度:**STJEWM 的 spiking stack 为 4 层**(`n_layers=4`,stack 4.732M;已发表 seed0 与 G5/B2 的 seed1/2 ckpt 均为 4 层,2026-11-23 逐 ckpt 核对)。⚠️ `G5/B2_multiseed_launcher.sh` 文本中的 `--n-layers 2` 对 stjewm 具误导性(实际 ckpt 是修复重训的 4 层代际);**任何新训 trace 必须 `--n-layers 4`**——2026-11-23 曾因照抄该参数训出 2 层 oodc_F1 seed1/2(8.16M),已作废并以 4 层重训。
 - 数据:DMC 250k 离线轨迹(npz,低维本体感知态);pusht/tworoom 用 LeWM h5(绝对路径 `/home/lx/LeWM/data/…`);窗口 53 帧,目标位动作零填充。
 - G 规模轴:嵌套 union(G4⊂G8⊂G16),env 数 4/8/16,每 env 窗口 2000/2000/10000(**规模轴同时混杂两个因子,报告 §12.9 有明确警示,写作须保留**)。
 
@@ -78,6 +79,8 @@
 state H=25×2 段 vs pixel H=5×10 段:跨模态差异同时受视觉输入与控制协议影响。跨模态陈述限定为"协议内重复观察",不得写成受控对比;若需单因素结论须补同协议对照(**未做**)。
 
 
+## 3. 机制探针协议(27 帧窗口)
+
 全部经 `mech0917_multistep.load_model`(严格加载)。窗口 27 帧、pad 128/act 56。关键常数:
 
 | 探针 | 设计 | 脚本 |
@@ -88,3 +91,18 @@ state H=25×2 段 vs pixel H=5×10 段:跨模态差异同时受视觉输入与�
 | 位置敏感性 | 单动作于窗口位置 p,测 predict 末位相对响应 | `imag_position_sensitivity.py`(2026-10-02 新增) |
 
 位置敏感性结论(真权重):trace 全位置响应 0.23–1.27;LeWM 仅末位 0.018、其余 1.5e-4 → **官方闭环协议(history_size=1)不存在"失明"问题**(候选动作永远在唯一读出位);该诊断只用于解释 S 系列 27 窗口协议下的现象。
+
+## 4. 诊断协议常数(2026-11-20~23 审计核定,全部从脚本核对)
+
+| 协议 | 窗口 | 扰动 | 量 | 脚本 |
+|---|---|---|---|---|
+| S1 rollout 稳定性(Fig.3b/3c/5a 的 c20) | 128 窗/env,`default_rng(0)`,27 帧真实窗 | 末位上下文 latent `z_t += ε·u`,ε=0.05×mean‖z*‖(warm 全 episode),u 单位随机方向;paired twin rollout,教师强制 recorded actions,H=20 | c(h)=mean‖ẑ_pert−ẑ‖/ε;c20=c(20) | `stab0917_rollout.py` |
+| FD 增益(Fig.4a/4b/5b) | **64 窗/env × 2 env = 128 窗**(`SEED_WIN=0`) | paired ±0.1×per-dim std,作用于**末位上下文帧**;action 改 a[-1],obs 改 o[-1] 后**重编码整窗**;后续用 recorded actions 做 latent rollout,H=5 | g(h)=mean‖z₊−z₋‖/(‖z_base(h)‖+1e-8) | `cls0917_scaling.py` |
+| CSR | 同上 | — | **CSR_env = mean_e[g_a,e/(g_o,e+1e-8)]**(逐 env 取比值再平均,Fig.5b 口径);**CSR_pooled = mean(g_a)/(mean(g_o)+1e-8)**(Fig.4a 坐标比值) | 同上 |
+| Fig.4b h=5 格 | 同上 | — | **直接池化 g(5)**(v3 面板);v1 用 g(1)×mean-dz(5)/mean-dz(1),对 SLIF obs h5 产生 per-env 聚合伪影 | `make_fig4b_v3.py` |
+| dose c20(Fig.2c) | 32 窗/env(128 窗取样的前 32) | `ctx[:,-1] += ε·u`,ε=0.05×**std(z*)** | c20=disp(20)/ε | `access_eval.py` |
+| 遮蔽位移(Fig.4c) | 128 窗/env × 3 mask seed | 置零(非噪声):last25=末帧 0.25D 维;win25=27 帧每帧同 25% 维(27× 剂量) | rel_l2=‖Δz‖/(‖z_clean‖+1e-8) | `stab0917_maskobs.py` |
+| 剂量匹配遮蔽(P0-4) | 64 窗/env × 3 mask seed | A last25(末帧 0.25D 个元素)vs B scatter25(**同总元素数**随机散布 27 帧)vs C win25(27× 参考);0.25D 四舍五入且≥1 → cartpole 1 维、cheetah 2 维 | 同上 + 输入 ΔL2、绝对位移 | `export_maskdose.py`(审计包) |
+
+**跨模型尺度警示**:trace 的 clean latent norm ≈0.01,比 GRU/LeWM/membrane(12–32)小约 1000×——相对位移比由小分母放大,跨模型比较须用绝对量或注明尺度。
+**口径警示**:S1 的 E_lat(1) 是 teacher-forced latent rollout 相对 L2(非开环单步预测误差);其分母 ‖z*‖ 在个别 ckpt 上可塌缩(trace seed2@cross_benchmark_F1:21–70% 窗口 <1e-3),此时该指标不可解释(errata.md)。
