@@ -1,0 +1,14 @@
+model,env_sr_active,n_cells,diff_vs_random_floor_pp,cells_above_random,cells_below_random
+stjewm_trace_only,0.0395,81,+0.85,12,22
+lif_transformer_baseline,0.0494,81,+1.84,13,22
+stacked_lif_trace,0.0395,81,+0.85,9,25
+stjewm_spike_only,0.0395,81,+0.85,7,27
+stjewm_rate_only,0.0494,81,+1.84,13,21
+mlp_baseline,0.0494,81,+1.84,13,21
+stacked_lif_free,0.0222,81,-0.88,6,28
+alif_timecell_baseline,0.0444,81,+1.34,11,23
+stjewm_membrane_readout,0.0272,81,-0.39,6,29
+stjewm_no_trace,0.0272,81,-0.39,6,29
+stjewm_hidden_leak,0.0123,81,-1.87,5,30
+gru_baseline,0.0148,81,-1.62,4,30
+lewm_baseline_v2,0.0123,81,-1.87,5,29

@@ -71,6 +71,9 @@ def parse_args():
     p.add_argument("--n-episodes", type=int, default=5)
     p.add_argument("--device", default="cuda:0")
     p.add_argument("--envs", default="", help="comma list to restrict env_ids")
+    p.add_argument("--active-goal-disp", type=float, default=None,
+                   help="Active-motion goal protocol (same filter as closed_loop --active-goal-disp).")
+    p.add_argument("--active-goal-cache", default="/data/lx/tmp/results/active_goal_20261123/_cache")
     return p.parse_args()
 
 
@@ -97,6 +100,8 @@ def main() -> int:
         out_dir = Path(args.out_root) / split_name / Path(args.ckpt).parts[-3] / "seed_0"
         tag = (f"random_r{args.repeats}" if args.mode == "random"
                else "zero_action" if args.mode == "zero" else f"dose_g{args.gamma:g}")
+        if args.active_goal_disp is not None:
+            tag += "_active"
         out_json = out_dir / f"eval_{label}__{tag}.json"
         if out_json.exists():
             print(f"[skip] {label}", flush=True)
@@ -128,7 +133,8 @@ def main() -> int:
                     a[..., :env.spec.action_dim] = _g * a[..., :env.spec.action_dim]
                     return model_.predict(ctx_emb_, a)
                 CEM.plan = original_plan
-            res = CL.eval_closed_loop(
+            try:
+                res = CL.eval_closed_loop(
                 model, env, data_path,
                 n_episodes=args.n_episodes, n_seeds=1,
                 cem_samples=300, cem_elites=30, cem_iters=10,
@@ -136,7 +142,13 @@ def main() -> int:
                 horizon=25, eval_budget=50, device=args.device,
                 split="in_dist", pad_obs_to=pad_obs, model_action_dim=pad_act,
                 cem_predict_hook=hook,
-            )
+                active_goal_disp=args.active_goal_disp,
+                active_goal_cache=args.active_goal_cache if args.active_goal_disp is not None else None,
+                )
+            except ValueError as ex:
+                CEM.plan = original_plan
+                print(f"[skip] {label}: {str(ex)[:140]}", flush=True)
+                continue
             CEM.plan = original_plan
             d = asdict(res)
             d["mode"] = args.mode
@@ -147,6 +159,8 @@ def main() -> int:
             d["cell_seed"] = cell_seed if args.mode == "random" else None
             d["protocol"]["checkpoint"] = str(Path(args.ckpt).resolve())
             per_rep.append(d)
+        if not per_rep:
+            continue  # no qualifying episode set for this env under the active-goal filter
         out_json.parent.mkdir(parents=True, exist_ok=True)
         with open(out_json, "x") as f:
             json.dump(per_rep if args.mode == "random" else per_rep[0], f, indent=2, allow_nan=False)

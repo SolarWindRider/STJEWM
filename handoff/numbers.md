@@ -198,3 +198,21 @@ Trace contact/high/low = 0.583/0.572/0.569;GRU 0.589/0.585/0.568;LeWM 0.623/0.61
 ## E4 held-out(排除 26 个泄漏 cells;`e4_per_model_ci.csv`)
 
 Trace 0.305 [0.19, 0.43];stacked_lif_trace 0.295;LIF-Tx 0.275;SLIF-free/MLP 0.255;GRU 0.170;LeWM 0.160(n=40 cells/模型,CI 重叠)。
+
+## 主动运动目标协议 AGR(2026-11-24;`active_goal_summary.csv`、`active_goal_paired_vs_trace.csv`、`active_goal_per_env.csv`)
+
+实例:目标 ≥2×成功容差 且 零动作 50 步不可达;13 模型 × 81 cells(12 DMC envs)× 5 eps;零动作地板 **0.0000**(78/78,有效性检查);**随机地板 0.031**(78 cells × 50 eps)。
+
+| 模型 | AGR env-SR | vs 随机 |
+|---|---|---|
+| LIF-Tx / rate-only / MLP | 0.049 | +1.84 |
+| ALIF | 0.044 | +1.34 |
+| Trace / spike-only / SLIF-trace | 0.040 | +0.85 |
+| membrane / no_trace | 0.027 | −0.39 |
+| SLIF-free | 0.022 | −0.88 |
+| GRU | 0.015 | −1.62 |
+| LeWM / hidden_leak | 0.012 | −1.87 |
+
+Trace 配对差:vs GRU +2.47 [+0.49, +4.69];vs LeWM +2.72 [+0.99, +4.69];vs hidden_leak +2.72 [+0.74, +4.94];vs LIF-Tx −0.99 [−4.20, +1.98];vs SLIF-trace/spike 0.00;vs rate/MLP −0.99;vs ALIF −0.49;vs membrane/no_trace +1.23 [−1.23, +3.70];vs SLIF-free +1.73 [−0.49, +3.95]。每模型 405 episodes,SR≈0.04 时 SE≈1 pp。
+逐环境(Trace):cartpole 0.23(随机 0.08)、finger 0.11(0.09)、walker 0.06(0.08)、hopper 0.03、cheetah 0.00(0.08);dog/fish/humanoid/humanoid_CMU/pendulum/quadruped 全模型 0.00。
+各环境合格目标数:200(finger 102);ball_in_cup 0。

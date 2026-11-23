@@ -29,6 +29,8 @@
 | E9 "探索性 10 episodes" 版数字 | **被扩样版取代** | 4 envs × 6 模式 × 50 eps:`e9_expanded_per_condition.csv`;finger ablate_all **+40 pp [+24,+56]** |
 | "G2 事件 AUROC / P13 多 epoch / utility 4 driver / P22 未跑" | **已全部补跑(2026-11-23)** | G2 676 probes;P13 3 epochs;utility 四项(含新训 6 预算 ckpt + 12 G14 ckpt);P22 以零动作参照操作化;见 experiments.md |
 | E4 "546 cells 均为 held-out" | **更正** | 26 cells(oodc_F3/oodc_F2F3 训练的模型评 cheetah)为 spec 泄漏,排除后 520 cells;`e4_leaked_cell_ids.json` |
+| "ST-JEWM(或任一基线)具备闭环目标到达/规划控制能力" | **VOID(AGR,2026-11-24)** | 主动运动目标协议下随机地板 0.031,全部模型 0.012–0.049;零动作地板 0.0000(构造性检查通过)。原协议的 0.31 等数字仅为"被动可达目标上的成功率",不得解释为控制 |
+| "AGR 是新协议所以旧数字仍可用" | **错误** | 旧协议数字须始终标注"dataset-derived goal reaching(可被动满足)"并与零动作/随机地板并列 |
 
 ## 2. 随机权重事故史(写作时防止同类错误,也可作为 rigor 叙述素材)
 

@@ -457,3 +457,36 @@ finger 上把想象期 trace 置零使成功率**翻三倍**(CI 不含 0;event_w
 - **改写为**:"在该协议下 Trace 的成功率高于 GRU/LeWM(三 seed),但所有模型均低于不动地板;差异反映偏离地板的程度"。
 - **撤回**:"λ=1 相对 control 额外下降"(单 seed,未复现);"历史记忆造成规划提升"。
 - **保留**:表示层结论(动力学、可访问性、dose-matched masking、seed 稳健的性能排序、E_lat 分母塌缩定性)。
+
+---
+
+# v8 主动运动目标协议(AGR,2026-11-24)——【完成;决定性】
+
+## 协议
+原协议全部不变,只替换评测实例集合:窗口合格 ⇔ (1) 目标离起点 ≥ **2×成功容差**(环境自身度量)**且** (2) 从起点零动作走满 50 步**不**成功。合格集合与模型无关、带缓存,所有模型与地板共用(`protocol.md` §6;`code/eval/closed_loop.py --active-goal-disp 2`)。13 模型 × 各自 E1 ckpt × 81 cells(12 个 DMC 环境;ball_in_cup 无任何主动目标,delayed_t_maze/pusht/tworoom/reacher 无标量容差,均不纳入)= 1053 cells × 5 episodes。**有效性检查:零动作地板 = 0.0000(78/78 cells)**。
+
+## 结果(`active_goal_summary.csv`、`active_goal_paired_vs_trace.csv`、`active_goal_per_env.csv`)
+
+| 模型 | AGR env-SR | vs 随机地板 |
+|---|---|---|
+| **随机动作地板** | **0.031** | — |
+| LIF-Tx / rate-only / MLP | 0.049 | +1.84 pp |
+| ALIF | 0.044 | +1.34 |
+| **Trace** / spike-only / SLIF-trace | **0.040** | +0.85 |
+| SLIF-free | 0.022 | −0.88 |
+| membrane / no_trace | 0.027 | −0.39 |
+| GRU | 0.015 | −1.62 |
+| LeWM / hidden_leak | 0.012 | −1.87 |
+
+Trace 对基线的配对差(81 cells,cell bootstrap):vs GRU **+2.47 [+0.49, +4.69]**、vs LeWM **+2.72 [+0.99, +4.69]**、vs hidden_leak +2.72 [+0.74, +4.94];vs LIF-Tx −0.99 [−4.20, +1.98]、SLIF-trace 0.00、spike 0.00、rate −0.99、MLP −0.99、ALIF −0.49(均含 0)。
+逐环境:成功仅出现在 cartpole(0.14–0.29,随机 0.08)、finger(0.06–0.20,随机 0.09)、cheetah(0–0.11,随机 0.08)、walker(0–0.06)、hopper/stacker(≤0.05);dog、fish、humanoid、humanoid_CMU、pendulum、quadruped **所有模型 0.00**。
+
+## 结论
+1. **当目标真正需要运动时,全部 13 个模型的闭环成功率坍缩到随机地板附近(0.012–0.049 vs 随机 0.031)**;每模型 405 episodes,SR≈0.04 的标准误≈1 pp——所有模型与随机的差 ≤1.8 pp。
+2. 原协议的 0.31(以及全部模型间"优势")来自被动可达的目标;AGR 下 Trace 仅剩对 GRU/LeWM/hidden_leak 的 **≤2.7 pp** 残差,对 LIF-Tx/SLIF-trace/spike/rate/MLP 为 0。
+3. **在该评测框架下,没有任何模型(包括 ST-JEWM)表现出目标到达控制能力**。论文不能主张闭环控制;可保留的是表示层结论,以及"Trace 的规划器比 GRU/LeWM 扰动更小"这一行为描述。
+4. 诊断性含义:CEM 在 latent 空间的候选优化未转化为物理目标到达(与潜-物理梯度不对齐、剂量响应不敏感、E9 finger 置零反而更好互证)。问题在规划/目标表示链路,而非某个读出。
+
+## 可写 / 不可写
+- 可写:"在 dataset-derived goal-reaching 协议下成功率受不动地板主导;在要求主动运动的 AGR 协议下所有模型≈随机(≤5%)。"
+- 不可写:任何"world model 支撑规划/控制"的结论;把原协议的模型排序解释为控制能力差异。

@@ -114,3 +114,17 @@ state H=25×2 段 vs pixel H=5×10 段:跨模态差异同时受视觉输入与�
 - **可复现性**:同一会话(同 GPU/库环境)内闭环评测逐 episode 确定;跨会话存在偏移(9 月 E1 vs 11 月:agreement 0.909,+0.82 pp)。**跨会话的配对比较须用同会话基线**。
 - **E4 held-out 单位更正**:546 cells 中 520 为未见环境;26 cells(oodc_F3/oodc_F2F3 训练的模型评 cheetah)为 spec 泄漏,须排除。
 - **新训 ckpt 的配方**:trace 一律 `--n-layers 4`;预算实验用 `max_windows` 5000/20000 的 G16 spec;G14 用 `configs/generalist_G16_minus_walker_humanoid.json`。这些 ckpt 不在冻结 training manifest 内(post-freeze),只能经独立评估使用,不得走 manifest 门控的官方 driver。
+
+## 6. 主动运动目标协议(active-motion goal reaching,AGR;2026-11-23)
+
+**动机**:原协议的成功判据可被"保持不动"满足(零动作 0.477 > 随机 0.356 > 全部模型)。原协议下各环境目标-起点距离(以成功容差为单位)的中位数:ball_in_cup 0.11、stacker 0.22、fish 0.38、finger 0.53、humanoid_CMU 0.70、cartpole 0.93、cheetah 1.42——多数目标本就在 1–2 个容差内。
+
+**定义**(`code/eval/closed_loop.py --active-goal-disp 2 --active-goal-cache <dir>`):在原协议全部不变(同数据、goal_offset 25、goal=真实轨迹 t+25 记录态、H25×2 段、50 步预算、环境原生终点判据、CEM 300/30/10、eval seed 0)的前提下,只替换评测实例集合——一个窗口**合格**当且仅当:
+1. **距离判据**:起点到目标的距离 ≥ **2×成功容差**(环境自身度量;`check_success(init, goal)` 的距离 / `_success_tol`);
+2. **零动作判据**:从起点以零动作执行完整 50 步预算后**不**满足成功(排除靠被动动力学即可到达的目标)。
+
+合格集合与模型无关,按数据集顺序取前 200 个(或扫描满 4000 个通过距离判据的候选为止),缓存于 `_cache/`(键 = env_id+data+goal_offset+history+阈值+预算)。所有模型与地板使用**同一合格集合**。零动作地板按构造为 0(作为有效性检查运行);**随机动作地板**是唯一的无规划参照。
+
+**覆盖**:12 个 DMC 环境有 ≥102 个合格目标;**ball_in_cup 为 0**(该数据中不存在主动运动目标);delayed_t_maze / pusht / tworoom / reacher 无标量成功容差,不纳入。各环境"零动作即可成功"的候选占比(距离判据通过者中):cartpole 216/416、fish 459/659、cheetah 62/262、humanoid_CMU 67/267、pendulum 42/242、walker 32/232;dog/humanoid 0/200。
+
+**写作要求**:AGR 下的 env-SR 必须与随机地板并列;原协议结果须标注为"dataset-derived goal reaching(可被动满足)",不得再作为控制能力的证据。

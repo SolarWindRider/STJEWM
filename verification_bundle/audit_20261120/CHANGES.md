@@ -26,3 +26,5 @@
 25. E9 扩样(4 envs × 50 eps):finger ablate_all +40 pp [+24,+56];无一处显著下降。
 26. P13 多 epoch、G2 事件 AUROC(676 probes)、utility 4 driver(含新训 6 预算 + 12 G14 ckpt)、P22(零动作操作化)、E4 审计(26 cells 泄漏)全部完成。
 27. utility latent_env_grad 修复 cuDNN RNN backward 模式 bug(code/scripts/utility/latent_env_grad.py)。
+28. (2026-11-24) 主动运动目标协议 AGR:目标 ≥2×成功容差且零动作 50 步不可达;closed_loop.py 新增 --active-goal-disp/--active-goal-cache。
+    13 模型 × 81 cells × 5 eps;零动作地板 0.0000(有效性检查);随机 0.031;全部模型 0.012–0.049 → 无控制能力证据。

@@ -18,6 +18,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 import time
@@ -154,6 +155,8 @@ def eval_closed_loop(
     step_predict_hook=None,
     cem_predict_hook=None,
     seed_start: int = 0,
+    active_goal_disp: Optional[float] = None,
+    active_goal_cache: Optional[str] = None,
 ) -> ClosedLoopResult:
     """Plan from observed states; evaluate physical goals in native units."""
     if min(n_episodes, n_seeds, horizon, eval_budget, history_size) < 1:
@@ -216,6 +219,80 @@ def eval_closed_loop(
                     return obs[key]
             return env.get_state()
         return obs
+    # ------------------------------------------------------------------
+    # Active-motion goal protocol (2026-11-23). A window qualifies only if
+    #   (i)  the goal is at least `active_goal_disp` success tolerances away
+    #        from the init state (env-native metric on the native state), and
+    #   (ii) the ZERO-ACTION policy rolled out from the init state for the full
+    #        eval budget does NOT already satisfy success.
+    # Staying still therefore fails by construction; the remaining baselines
+    # that can succeed without planning are measured separately (random).
+    # The qualifying index set is model independent and cached on disk.
+    active_goal_info = None
+    if active_goal_disp is not None:
+        pe = physical_env
+        tol = getattr(pe, "_success_tol", None)
+        if tol is None:
+            raise ValueError(f"{env.spec.env_id}: no scalar success tolerance; active-goal protocol unsupported")
+        native_obs_dim = native_state_dim
+
+        def _native(vec):
+            return np.asarray(vec, dtype=np.float32).reshape(-1)[:native_obs_dim] * state_scale
+
+        cache_file = None
+        if active_goal_cache:
+            key_src = json.dumps([env.spec.env_id, str(data_path), int(effective_goal_offset),
+                                  int(history_size), float(active_goal_disp), int(eval_budget)])
+            cache_file = Path(active_goal_cache) / (hashlib.md5(key_src.encode()).hexdigest()[:16] + ".json")
+            if cache_file.exists():
+                cached = json.loads(cache_file.read_text())
+                qualifying = [int(i) for i in cached["qualifying"]]
+                ds = torch.utils.data.Subset(ds, qualifying)
+                active_goal_info = {k: v for k, v in cached.items() if k != "qualifying"}
+                active_goal_info["n_qualifying"] = len(qualifying)
+                active_goal_info["cache"] = str(cache_file)
+        if active_goal_info is None:
+            n_cand = len(ds)
+            qualifying, n_d0, n_zero_ok = [], 0, 0
+            zero_action = np.zeros(action_dim, dtype=np.float32)
+            for i in range(n_cand):
+                item = ds[i]
+                s0 = _native(item["init_state"])
+                g0 = _native(item["goal_state"])
+                if float(pe.check_success(s0, g0)[1]) < active_goal_disp * tol:
+                    continue
+                n_d0 += 1
+                env.reset(seed=int(i))
+                _set_env_state(env, s0, sim_state=item.get("sim_state"))
+                for _ in range(eval_budget):
+                    obs, reward, done, info = env.step(zero_action)
+                    if done:
+                        break
+                if pe.check_success(physical_state(), g0)[0]:
+                    n_zero_ok += 1
+                    continue
+                qualifying.append(i)
+                if len(qualifying) >= 200 or n_d0 >= 4000:
+                    break
+            active_goal_info = {
+                "protocol": "active_motion_goal_v1",
+                "min_goal_displacement_tol": float(active_goal_disp),
+                "success_tolerance": float(tol),
+                "zero_action_budget": int(eval_budget),
+                "n_candidates": int(n_cand),
+                "n_displacement_passing_scanned": int(n_d0),
+                "n_zero_action_already_success": int(n_zero_ok),
+                "n_qualifying": len(qualifying),
+            }
+            if cache_file is not None:
+                cache_file.parent.mkdir(parents=True, exist_ok=True)
+                cache_file.write_text(json.dumps({**active_goal_info, "qualifying": qualifying}, indent=1))
+                active_goal_info["cache"] = str(cache_file)
+            ds = torch.utils.data.Subset(ds, qualifying)
+        if len(ds) < n_episodes:
+            raise ValueError(
+                f"{env.spec.env_id}: only {len(ds)} active-motion goals available < n_episodes={n_episodes} "
+                f"({active_goal_info})")
 
     current_env_step = 0
 
@@ -413,6 +490,8 @@ def eval_closed_loop(
             "goal_masked": False,
             "physical_success_uses": "unmasked native state and goal",
         }
+    if active_goal_info is not None:
+        protocol["active_goal_filter"] = active_goal_info
     return ClosedLoopResult(
         env_id=env.spec.env_id, n_episodes=len(per_episode_all), n_seeds=n_seeds,
         cem_samples=cem_samples, cem_elites=cem_elites, cem_iters=cem_iters,
@@ -672,6 +751,12 @@ def parse_args():
                    help="Override delayed_t_maze corridor length (default 50).")
     p.add_argument("--cue-visibility", type=int, default=None,
                    help="Override delayed_t_maze cue visibility (default 3).")
+    p.add_argument("--active-goal-disp", type=float, default=None,
+                   help="Active-motion goal protocol: keep only windows whose goal is at least this many "
+                        "success tolerances from the init state AND which the zero-action policy does "
+                        "not already solve within the eval budget.")
+    p.add_argument("--active-goal-cache", default=None,
+                   help="Directory for caching the model-independent qualifying window indices.")
     return p.parse_args()
 
 
@@ -747,6 +832,8 @@ def main():
         split=args.split,
         pad_obs_to=state_dim,
         model_action_dim=action_dim,
+        active_goal_disp=args.active_goal_disp,
+        active_goal_cache=args.active_goal_cache,
     )
     # Save
     result.protocol["checkpoint"] = str(Path(args.ckpt).resolve())
