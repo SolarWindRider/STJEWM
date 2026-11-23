@@ -76,3 +76,14 @@
 | 剂量匹配遮蔽(P0-4) | 4 模型 × 2 env × 3 mask seed × 3 条件 × 64 窗 | `export_maskdose.py` | `maskdose_per_window.csv`(4608,含输入范数/绝对位移)/`_summary.csv` | trace B/A 2.2–3.2×;GRU/LeWM 对 27× 剂量不敏感(C/A≈1.0) |
 | FD 同源逐窗重导 | oodc_F1 seed0 8 模型(Fig.4b provenance) | 内联脚本 | `fd_perwindow_oodcF1_seed0.csv`(10240)/`fd_perenv.csv` | 与 scaling 表逐位一致;Fig.4b n=128 |
 | E1/E2/E4/E7 逐 cell/逐 episode 导出 | 1300+962+546+84 cells;E1 6500 episodes | `build_verification_bundle.py`(repo) | `verification_bundle/*.csv`;审计包 `e1_per_episode.csv` | 每 episode 含 episode_idx/init/goal/planning_calls=2 |
+| 随机动作 / 零动作参照(2026-11-23) | E1 全网格;随机 10 seeds × 5 eps/cell,零动作 5 eps/cell | `code/scripts/extra_closed_loop_evals.py --mode random|zero`(替换 `CEM.plan`,同实例 manifest) | 审计包 `random_baseline_per_cell.csv`、`zero_action_per_env.csv` | 零动作 0.477 > 随机 0.356 > Trace 0.311;Trace 在 33/99 cells 低于零动作 |
+| 动作通路剂量响应 | γ ∈ {1, 0.75, 0.5} × 97 cells(`cem_predict_hook` 内 a′=γ·a,环境执行原始序列) | 同上 `--mode dose` | `dose_response_summary.csv` | +0.41 / +2.89 pp(CI 含 0);γ=1 sham 与同日重跑逐 episode 一致 |
+| 评测可复现性 | 同配置 4 次重跑 vs 9 月 E1 | `eval_one.sh` | `rerun_noise_summary.json` | 同会话确定;跨会话偏移 +0.82 pp |
+| λ 多训练 seed | trace seed1/2(4 层)各微调 λ=0/0.1/1/10(8 ckpt)+ 原 ckpt,共 10 × 100 cells 闭环 + 独立 probe | `train_accessibility.py`(base 覆盖)、`eval_one.sh`、`export_independent_probes_multiseed.py` | `lambda_multiseed_summary.csv`、`probe_control_comparison_multiseed.csv` | 对 control 无跨 seed 一致效应;可访问性变化三 seed 一致 |
+| E9 扩样 | cartpole/cheetah/pendulum/finger × 6 模式 × 50 eps | `event_window_ablation.py`(经 `/tmp/e9_expand.py` 扩 env) | `e9_expanded_per_condition.csv`;⚠️库外 `e9_expanded_20261123/` | finger ablate_all +40 pp [+24,+56];无一处显著下降 |
+| P13 多 epoch | trace(4 层)/GRU/LeWM × 3 epochs(oodc_F1)→ 97 cells | `train.py --epochs 3`、`eval_one.sh` | 仓库内 `results/p13_epochs3/`;`p13_multiepoch_summary.csv` | Trace −0.8 pp;GRU +4.7;LeWM +0.8 |
+| G2 事件类型 AUROC | 13 模型 × 17 envs × 事件目标 = 676 probes(52 skipped) | `probe.py --probe-target event_*`(worklist 见审计包) | ⚠️库外 `g2_event_auroc_20261123/`;`g2_event_auroc_summary.csv` | Trace 0.57–0.58 < LeWM/LIF-Tx;MLP≈0.5 |
+| utility:sample_efficiency / latent_env_grad | 最终 manifest 驱动 | `run_sample_efficiency.py`、`run_latent_env_grad.py`(修复 cuDNN RNN backward) | ⚠️库外 `utility_final_gen/` | Trace 1%≈100%;潜-物理梯度 signed 相关 ≤0 |
+| utility:budget_scaling | 新训 6 ckpt(trace/spike/MLP × 0.5×/2× G16)+ 独立评估(6 envs) | `train.py`(spec `/tmp/specs/…`)、`eval_one.sh` | ⚠️库外 `generalist_G16_compression/`、`budget_scaling_20261123/`;`budget_scaling_summary.csv` | Trace 无清晰预算效应 |
+| utility:cross_env_gen | 新训 12 ckpt(G14 = G16 minus walker/humanoid)+ 两 regime × 7 envs 评估 | 同上 | ⚠️库外 `generalist_G16_minus_walker_humanoid/`、`cross_env_gen_20261123/`;`cross_env_gen_summary.csv` | walker/humanoid 全模型 0.00,不可测 |
+| E4 held-out 审计 | 546 cells → 520 clean | — | `e4_per_model_ci.csv`、`e4_leaked_cell_ids.json` | 26 cells spec 泄漏;Trace 0.305 [0.19,0.43] |

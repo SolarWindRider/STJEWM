@@ -50,8 +50,8 @@
 
 三轮外部审计(11-20 / 11-22 / 11-23)后的状态:
 
-- **已核实并可直接写**:Trace 对 GRU/LeWM 的 env-SR 优势在 37-cell 配对网格上跨三训练 seed 复现;oodc_F1 同 split 上 pooled c20 与输入响应不对称跨 seed 复现(环境依赖:cartpole 3/3 反向);剂量匹配后 Trace 对历史位置掩码更敏感(仅 representation)。
-- **结论已改写**:"辅助解码伤规划"不成立——matched control 本身 −5.0 pp;仅 λ=1 有额外 −3.6 pp(CI 不含 0)。独立 probe 的线性可访问性增益小且非单调。
-- **已撤回**:"预测发散但控制成功"(实为 z* 分母塌缩)、"SNN 天然不坍缩"、"Trace 优于 LIF-Tx"、"SLIF CSR=2.8e4 为真实敏感度"。
-- **仍未做(VOID)**:随机动作参照、动作通路剂量响应、E9 扩样、λ 多 seed、Pixel/Held-out 调参独立性证据(`errata.md` §3)。
-- **面板现行版**:`/home/lx/figs_nmi/20261120/` 的 `fig4b_panel_v3.*` 与 `fig5b_panel_v2.*`;其余面板沿用。
+- **最关键(2026-11-23)**:该 goal-reaching 协议的成功判据主要被"保持不动"满足——**零动作 0.477 > 随机 0.356 > Trace 0.311**;所有"闭环控制能力"类措辞撤回,改写为"相对 GRU/LeWM 更少偏离不动地板";Fig.1b 须叠加两条地板(`claims_evidence.md` §8、`numbers.md` 参照地板节)。
+- **已核实并可写**:Trace 对 GRU/LeWM 的 env-SR 排序在 37-cell 配对网格跨三训练 seed 复现;oodc_F1 同 split 动力学(pooled c20、输入响应不对称)跨 seed 复现(环境依赖);剂量匹配后 Trace 对历史位置掩码更敏感(仅 representation);λ 辅助目标改变表示(可访问性、收缩)但对成功率无跨 seed 一致效应。
+- **已撤回**:"预测发散但控制成功"(实为 z* 分母塌缩)、"SNN 天然不坍缩"、"Trace 优于 LIF-Tx"、"SLIF CSR=2.8e4 为真实敏感度"、"λ=1 相对 control 额外下降"(未跨 seed 复现)。
+- **全部遗留实验已于 2026-11-23 补齐**(随机/零动作参照、剂量响应、E9 扩样、λ 多 seed、P13 多 epoch、G2 事件 AUROC、utility 4 driver 含 18 个新训 ckpt、P22 零动作操作化、E4 审计),清单见 `experiments.md` 末表;仍不存在的只有"需主动运动的 goal 协议"与"固定权重 readout 交换"(`errata.md` §3)。
+- **面板现行版**:`/home/lx/figs_nmi/20261120/` 的 `fig4b_panel_v3.*` 与 `fig5b_panel_v2.*`;其余面板沿用;审计汇总表入库副本在 `verification_bundle/audit_20261120/`。

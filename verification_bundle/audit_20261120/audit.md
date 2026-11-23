@@ -297,3 +297,163 @@ oodc_F1 seed1/2 权重原不存在(已如实报告)→ 按 G5 原配方(train.py
 
 ## 写作阶段约束(与复核一致)
 性能:37-cell 三 seed Trace 优于 GRU/LeWM,LIF-Tx 与 Trace 相近;100-cell 主图 seed 0。动力学:oodc_F1 pooled c20 与输入响应差异跨 seed 复现,非每环境同向,非因果机制。预测精度:seed2 E_lat 极值为归一化尺度问题。解码干预:相对原模型各辅助条件下降,matched control 后 **λ=1 仍有额外下降(−3.6 pp,CI 不含 0)**;线性可访问性以独立 probe 为准(小且非单调)。Masking:支持对历史位置的不同响应,非"历史记忆→规划提升"。
+
+---
+
+# v7(2026-11-23 补齐全部未完成实验;第一批结果)
+
+## A. 随机动作参照(P1-2)——【完成;改变对绝对成功率的解释】
+
+同一 E1 实例 manifest(eval seed 0)、同 action box、同 50 步预算与终点判据;每 cell 10 个随机种子 × 5 episodes(`code/scripts/extra_closed_loop_evals.py --mode random`;`random_baseline_per_cell.csv`)。
+
+- **随机动作 pooled env-SR = 0.358 > Trace 0.311**(97 cells + 3 masked-cheetah cells);**58/97 cells 上随机 ≥ 全部 13 个模型**。
+- 逐环境随机 SR:ball_in_cup 1.00、cartpole **0.99**、fish 0.985、stacker 0.80、finger 0.61、delayed_t_maze 0.53、humanoid_CMU 0.41、cheetah 0.25(模型全为 0.00)、pendulum 0.20、hopper 0.15、tworoom 0.12;walker/reacher/pusht/humanoid/quadruped/dog ≈ 0。
+- **结论**:该 dataset-derived goal-reaching 协议的成功判据在多数环境可被随机动作满足(25 步目标态与起点相近);env-SR 的绝对水平(0.31)**低于随机地板(0.36)**。因此:(i) env-SR 绝对值不能证明控制能力;(ii) 模型间差异应表述为"相对随机地板的增减",且多数模型在多数环境上**劣于随机**;(iii) Fig.1b 必须叠加随机地板,正文须改写"closed-loop competence"的措辞。
+
+## B. 动作通路剂量响应(P1-1)——【完成;无显著效应】
+
+`cem_predict_hook` 内 a′ = ā + γ(a − ā),ā = 0(CEM 初始均值);环境执行原始 25 步序列;100 cells(`dose_response_summary.csv`)。
+
+| γ | env-SR | 相对 γ=1 配对差 | cell bootstrap 95% CI |
+|---|---|---|---|
+| 1(sham) | 0.303 | — | — |
+| 0.75 | 0.307 | +0.41 pp | [−2.68, +3.71] |
+| 0.5 | 0.332 | +2.89 pp | [−0.62, +6.19] |
+
+把 planner 看到的动作差异减半**不降低**成功率(点估计反而升高,ns)→ 与 E9、随机地板一致:该协议下成功与否对候选动作的精细区分依赖很弱。模型本身未改,g_a/g_o/E_lat 不变(冻结权重)。
+
+## C. 闭环评测的 run-to-run 可复现性——【新发现,影响所有配对结论的误差界】
+
+γ=1 sham 与 E1 基线(同 ckpt、同实例、同 seed、同代码路径)逐 episode 对比:**成功一致率 441/485 = 90.9%**(24 次 T→F、20 次 F→T);90% 的 episode 终点距离不同(32% 相差 >0.1);cell 级 SR 平均差 5.4 pp(21/97 cells 不同);总体 0.311 → 0.303。原因:GPU 非确定性核 + CEM 精英选择对微小数值差敏感。
+→ **所有单次运行的配对差都带有这一噪声底**;已追加 3 次基线重跑(sham_rerun_1-3)以估计总体 SR 的 run-to-run 分布(结果见 v7 续)。
+
+## D. Held-out 与 Pixel 协议审计(P1-4)——【完成;发现 26 cells 的 spec 泄漏】
+
+- **评测 manifest 共享**:E1 的 13 个模型在同一 cell 上 (episode_idx, init) 完全一致;pixel 的 13 个模型在 cross_benchmark_F1 与 oodc_F2 全部 13 envs 上 (episode_seeds, goal_state, episode ids) 完全一致。
+- **Pixel 协议**(eval_summary.protocol):H=5、`replan_every=1`(first-action)、frame_skip 1、episode_seeds/planner_seeds=[0..4];与 state(H25 分段、2 次规划)**不同**,须分别报告。
+- **E4 held-out 单位**:546 cells 中 **520 = 未见环境**(评测 env ∉ 该模型训练 split 的 env 集);**26 cells 为 spec 泄漏**(oodc_F3 / oodc_F2F3 训练的模型被评 `cheetah`,而 cheetah 在其训练 split 内)——`e4_leaked_cell_ids.json`。排除后(`e4_per_model_ci.csv`,n=40):Trace **0.305 [0.19, 0.43]**、stacked_lif_trace 0.295、LIF-Tx 0.275、MLP 0.255、GRU 0.170、LeWM 0.160;CI 重叠。
+- **调参独立性**:超参固定(1 epoch/batch 32/lr 3e-4,LeWM 协议),`train.py` 无验证集早停或 checkpoint 选择(取 final);E7/λ 扫描只用 in-dist split(oodc_F1/cross_benchmark_F1/oodc_F2)。可证明"无脚本化的 held-out 调参";**无法证明**不存在非脚本化的人工选择。
+
+## E. λ 多训练 seed(P0-3 续)——【完成,三 seed × 100 cells】`lambda_multiseed_summary.csv`
+
+| 训练 seed | orig | control | λ=0.1 | λ=1 | λ=10 |
+|---|---|---|---|---|---|
+| 0 | 0.310 | 0.260 | 0.270 | 0.224 | 0.254 |
+| 1 | 0.266 | 0.258 | 0.298 | 0.272 | 0.306 |
+| 2 | 0.322 | 0.260 | 0.258 | 0.256 | 0.312 |
+
+对 matched control 的配对差(cell bootstrap 95% CI):
+
+| 臂 | seed 0 | seed 1 | seed 2 |
+|---|---|---|---|
+| λ=0.1 | +1.0 [−1.2, +3.4] | **+4.0 [+2.2, +5.8]** | −0.2 [−3.8, +3.4] |
+| **λ=1** | **−3.6 [−5.8, −1.2]** | **+1.4 [+0.4, +2.4]** | −0.4 [−4.4, +3.6] |
+| λ=10 | −0.6 [−2.2, +1.0] | **+4.8 [+2.4, +7.4]** | **+5.2 [+2.8, +8.0]** |
+
+**结论**:seed 0 的"λ=1 相对 control 额外下降"**不跨训练 seed 复现**(seed 1 方向相反);辅助解码目标对闭环成功率**没有跨 seed 一致的效应**(三 seed 中方向不一致)。继续训练 control 相对 orig:−5.0 / −0.8 / −6.2 pp。原 ckpt 自身的跨 seed 波动 0.266–0.322。此前"仅 λ=1 存在额外下降"须再收窄为"单 seed 观察,未复现"。
+
+**独立 probe(冻结 latent,同划分;`probe_control_comparison_multiseed.csv`)**:
+
+| | orig linear / MLP | control | λ=0.1 | λ=1 | λ=10 |
+|---|---|---|---|---|---|
+| seed 0 | −1.83 / −0.23 | 0.01 / −0.17 | −0.09 / 0.10 | 0.10 / 0.24 | −0.10 / 0.26 |
+| seed 1 | −30.1 / −9.9 | −4.76 / −0.32 | 0.17 / 0.18 | 0.06 / 0.30 | 0.10 / 0.34 |
+| seed 2 | −2.13 / −0.47 | −0.78 / 0.11 | 0.03 / 0.17 | 0.03 / 0.24 | −0.29 / 0.22 |
+
+→ 三 seed 一致:辅助目标把线性可访问性从强负拉到 ≈0(≤0.17,非单调),非线性(MLP)R² 到 0.10–0.34;**可访问性变化可复现,闭环成功率变化不可复现**。
+
+## F. 可复现性的进一步澄清(同日重跑)
+
+今日的 3 次同配置运行(sham γ=1、rerun1、rerun2)**逐 episode 完全一致**(agreement 1.000,aggregate 0.3031);9 月的 E1 原始运行与今日运行 agreement 0.909(0.3113 vs 0.3031)。即评测在**同一环境内是确定性的**,差异来自 9 月与当前环境之间的偏移(GPU/驱动/库状态),约 −0.8 pp 总体、9% episode 翻转。E1 的 13 模型比较在同一次会话内完成,内部一致。以"今日重跑"为 seed0 基线重算 λ 配对差,结论不变(`lambda_seed0_vs_session_baseline.csv`:control −4.12 [−7.84, −0.62];λ=1 −7.22 [−11.96, −3.09])。
+
+## G. 零动作参照(P22 "cheetah edge" 的可操作化)——【完成;最关键】
+
+同 manifest、同预算,`CEM.plan` 恒返回零动作(`--mode zero`;`zero_action_per_env.csv`,99 cells):
+
+| | pooled env-SR |
+|---|---|
+| **零动作(保持不动)** | **0.477** |
+| 随机动作 | 0.356 |
+| Trace(CEM) | 0.311 |
+
+| env | 零动作 | 随机 | Trace |
+|---|---|---|---|
+| ball_in_cup / cartpole / fish / humanoid_CMU | 1.00 / 1.00 / 1.00 / **1.00** | 1.00 / 0.99 / 0.985 / 0.41 | 1.00 / 1.00 / 0.90 / **0.11** |
+| cheetah | **0.80** | 0.26 | **0.07** |
+| finger / hopper / reacher | 0.80 / 0.60 / 0.20 | 0.61 / 0.15 / 0.01 | 0.54 / 0.14 / 0.00 |
+| delayed_t_maze / tworoom | 0.00 / 0.00 | 0.53 / 0.12 | 0.53 / 0.00 |
+
+**结论**:该协议的成功判据(到达轨迹 t+25 的记录态,容差 ‖Δqpos‖/√nq ≤ 0.1)在多数环境可由**保持不动**满足;Trace 在 **33/99 cells 低于零动作**。因此:
+1. env-SR 的绝对水平与多数模型间差异反映的是"控制器把系统扰动离目标态的程度",不是控制能力;GRU/LeWM 的 0.16/0.15 远低于不动地板 0.48——它们主动偏离目标。
+2. 仅 delayed_t_maze(Trace 0.53 vs 零动作 0.00)显示明确高于地板的行为。
+3. **论文主张须重述**:Fig.1b 必须叠加零动作与随机地板;"Trace 支撑闭环控制"改为"在该 goal-reaching 协议下 Trace 相对 GRU/LeWM 的优势表现为更少偏离不动地板";所有基于 env-SR 绝对值的"competence"措辞撤回。
+4. "cheetah edge"的解释:零动作 0.80、模型 ~0.00–0.07 → cheetah 地板来自 CEM 主动把系统推离目标态,与"潜空间-物理梯度不对齐"(I 节)一致。
+
+## H. P13 多 epoch(3 vs 1,oodc_F1 训练,97 cells;`p13_multiepoch_summary.csv`)
+
+Trace 0.303 vs 0.311(−0.8 pp,等于今日 1-epoch 重跑 0.303 → 无增益);GRU **0.210 vs 0.163(+4.7 pp)**;LeWM 0.167 vs 0.159(+0.8)。更多训练对 Trace 无效,对 GRU 有改善但仍低于 Trace。
+
+## I. utility 4 driver(最终代际 manifest;`utility_final_gen/`)
+
+- **sample_efficiency**(冻结编码器+线性策略,4 envs,1%→100% 数据):Trace 0.392→0.417(+2.5 pp,平台);LeWM 0.159→0.400(**+24.2**)、MLP +12.5、SLIF-free +10.0、GRU +6.7;其余 SNN 读出 ±2 pp(`utility_sample_efficiency_summary.csv`)。
+- **latent_env_grad**(潜代价梯度 vs 物理目标梯度的相关,4 envs 均值):Trace −0.135、GRU −0.064、ALIF −0.035、LeWM **−0.633**、no_trace/membrane/leak −0.48(`utility_latent_env_grad_summary.csv`;修复了 cuDNN RNN backward 需 train 模式的 bug)→ 潜空间优化方向与物理目标不对齐甚至反向,与 G 节互证。
+- **budget_scaling / cross_env_gen**:官方 driver 要求 0.5×/2× 预算 ckpt 与 G14(minus walker/humanoid)ckpt——最终代际从未训练。已补训(6 + 12 个)并以独立评估完成(见 v7 续)。
+
+## J. G2 事件类型 AUROC(最终代际 oodc_F1 ckpt,676 probes,52 skipped;`g2_event_auroc_summary.csv`)
+
+Trace:contact 0.583、high-motion 0.572、low-motion 0.569(略高于 0.5);GRU 0.589/0.585/0.568;LeWM 0.623/0.610/0.593;LIF-Tx 0.654/0.618/0.602;MLP 0.502/0.509/0.496(塌缩签名)。delayed_t_maze cue_state:Trace 0.198、GRU 0.881、LeWM 0.945。→ Trace 的事件类型线性可解码性**低于连续基线**;"event synchronization 优势"勘误维持。
+
+## K. E9 扩样(50 episodes/条件;`e9_expanded_per_condition.csv`)
+
+cartpole(H5 协议 baseline 0.68):全部消融模式 0.70–0.72,无下降;cheetah(baseline 0.14):−2~−8 pp,CI 全含 0;pendulum(baseline 0.08):≥ baseline。**5 倍样本后结论不变且更稳:规划期想象中的 trace 内容不是成功的必要条件。**
+
+## L. 训练数据预算(0.5×/1×/2×,G16,6 envs × 5 eps;`budget_scaling_summary.csv`)——【完成;新训 6 ckpt】
+
+| 模型 | 0.5× | 1.0× | 2.0× |
+|---|---|---|---|
+| Trace | 0.500 | 0.433 | 0.467 |
+| Spike-only | 0.267 | 0.333 | 0.467 |
+| MLP | 0.467 | 0.400 | 0.500 |
+
+Trace 无清晰预算效应(差异为单 cell 翻转量级);Spike-only 随数据单调上升。每点仅 30 episodes,只作描述。新 ckpt:`/data/lx/tmp/results/generalist_G16_compression/<model>/<frac>/seed_0/`(post-freeze,非 manifest 内)。
+
+## M. 零样本跨环境(G14 = G16 minus walker/humanoid,12 模型;`cross_env_gen_summary.csv`)——【完成;新训 12 ckpt】
+
+held-out envs(walker、humanoid)**全部模型、两种 regime 均 0.00**(零动作地板亦为 0.00)→ 无可测的零样本外推信号,该比较不具信息量(floor effect)。G14 的 in-domain(5 envs)env-SR:Trace 0.56、rate 0.56、spike 0.52、SLIF-trace 0.48、LeWM 0.40、GRU/MLP/SLIF-free 0.32、hidden_leak 0.24。
+
+## N. E9 扩样终表(4 envs × 6 模式 × 50 episodes;`e9_expanded_per_condition.csv`)
+
+| env | baseline | ablate_all | Δ [95% CI] |
+|---|---|---|---|
+| cartpole_2d | 0.68 | 0.72 | +4 [0, +10] |
+| cheetah | 0.14 | 0.10 | −4 [−14, +6] |
+| pendulum_2d | 0.08 | 0.12 | +4 [−4, +12] |
+| **finger** | **0.20** | **0.60** | **+40 [+24, +56]** |
+
+finger 上把想象期 trace 置零使成功率**翻三倍**(CI 不含 0;event_window +16、non_event +24 亦显著)。四环境合并:**规划期想象中的 trace 内容不是成功的必要条件,在 finger 上反而有害**——与其零动作地板(0.80)一致:带 trace 的候选评分让 CEM 把系统推离目标态,消融后候选评分退化、动作趋近于零。该结论限定于 CEM 候选评分通路(`model.predict`)。
+
+---
+
+# v7 总综合:本轮对论文主张的影响(2026-11-23)
+
+## 观察(全部可复算)
+1. **不动地板 0.477 > 随机 0.356 > Trace 0.311**:协议成功判据主要被"保持不动"满足;Trace 在 33/99 cells 低于零动作;仅 delayed_t_maze(0.53 vs 0)高于地板。
+2. Trace 相对 GRU/LeWM 的 env-SR 优势跨三训练 seed 复现(+10.8~+14.6 pp),相对 LIF-Tx 相当;但所有模型均低于不动地板。
+3. 动作差异减半(γ=0.5)不降低成功率(+2.9 pp,ns);想象期 trace 置零在 finger 上 +40 pp。
+4. 潜空间代价梯度与物理目标梯度不对齐(signed corr ≤0;LeWM −0.63)。
+5. 同会话评测确定性一致;与 9 月 E1 存在 +0.8 pp 的环境偏移。
+6. λ 辅助解码:线性可访问性从强负→≈0(三 seed 一致),闭环 SR 无跨 seed 一致效应。
+7. 动力学(oodc_F1 三 seed)、剂量匹配遮蔽、E_lat 分母塌缩等结论见 v5/v6,不变。
+
+## 解释(与观察一致但不唯一)
+- 该 dataset-derived goal-reaching 协议下,CEM 在潜空间的候选优化没有转化为物理目标达成;成功主要取决于"少动"。Trace 的"优势"= 其候选评分比 GRU/LeWM 产生更小的偏离;消融/减半动作通路使其更接近"不动",因而在部分环境提升成功率。
+- 因此动力学差异(c20、输入响应不对称)是真实的、可跨 seed 复现的**表示性质**,但不能解释为"更好的控制机制"。
+
+## 推测(需新实验,不得入正文)
+- 若换成需要主动运动的 goal 构造(目标态远离起点)或更长的 budget,模型间排序可能改变;验证需新协议(未做)。
+
+## 写作硬约束(覆盖此前所有版本)
+- **撤回**:"Trace 支撑闭环控制 / closed-loop competence"作为绝对主张;Fig.1b 必须叠加零动作与随机地板。
+- **改写为**:"在该协议下 Trace 的成功率高于 GRU/LeWM(三 seed),但所有模型均低于不动地板;差异反映偏离地板的程度"。
+- **撤回**:"λ=1 相对 control 额外下降"(单 seed,未复现);"历史记忆造成规划提升"。
+- **保留**:表示层结论(动力学、可访问性、dose-matched masking、seed 稳健的性能排序、E_lat 分母塌缩定性)。

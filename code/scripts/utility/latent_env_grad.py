@@ -68,10 +68,18 @@ def measure_grad_corr(model, env, ckpt_args, env_kind, n_steps=200, device="cpu"
         # Only native controls vary; padded model controls stay exactly zero.
         a0 = torch.zeros(1, 1, env_action_dim, device=device, requires_grad=True)
         a_model = F.pad(a0, (0, action_dim - env_action_dim))
+        # cuDNN RNN backward is only allowed in training mode. Single-layer RNNs carry no
+        # dropout, so their forward is identical in both modes; toggle only those modules.
+        rnn_modules = [m for m in model.modules() if isinstance(m, torch.nn.RNNBase)]
+        rnn_was_training = [m.training for m in rnn_modules]
+        for m in rnn_modules:
+            m.train()
         z_t1 = model.predict(z_init.unsqueeze(0).unsqueeze(0), a_model)
         z_t1 = z_t1.squeeze(0).squeeze(0)
         cost = latent_cost(z_t1, z_goal)
         grad_lat = torch.autograd.grad(cost, a0, retain_graph=False)[0].reshape(-1).detach().cpu().numpy()
+        for m, was in zip(rnn_modules, rnn_was_training):
+            m.train(was)
 
         native_init = init_state_np[:env.spec.obs_dim]
         native_goal = goal_state_np[:env.spec.obs_dim]

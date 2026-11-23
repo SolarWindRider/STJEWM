@@ -106,3 +106,11 @@ state H=25×2 段 vs pixel H=5×10 段:跨模态差异同时受视觉输入与�
 
 **跨模型尺度警示**:trace 的 clean latent norm ≈0.01,比 GRU/LeWM/membrane(12–32)小约 1000×——相对位移比由小分母放大,跨模型比较须用绝对量或注明尺度。
 **口径警示**:S1 的 E_lat(1) 是 teacher-forced latent rollout 相对 L2(非开环单步预测误差);其分母 ‖z*‖ 在个别 ckpt 上可塌缩(trace seed2@cross_benchmark_F1:21–70% 窗口 <1e-3),此时该指标不可解释(errata.md)。
+
+## 5. 参照策略与可复现性(2026-11-23)
+
+- **零动作 / 随机动作参照**:`code/scripts/extra_closed_loop_evals.py --mode zero|random`——在 `eval_closed_loop` 内把 `CEM.plan` 替换为零序列 / 均匀随机(native box),其余(实例 manifest、init/goal、50 步预算、2 次规划、终点判据)与主协议完全相同。写作时任何 env-SR 都必须与这两条地板并列。
+- **动作通路剂量响应**:`--mode dose --gamma γ`,经 `cem_predict_hook` 在候选评分内把动作改为 a′ = γ·a(参考动作 ā=0),环境执行原始序列;γ=1 为 sham。
+- **可复现性**:同一会话(同 GPU/库环境)内闭环评测逐 episode 确定;跨会话存在偏移(9 月 E1 vs 11 月:agreement 0.909,+0.82 pp)。**跨会话的配对比较须用同会话基线**。
+- **E4 held-out 单位更正**:546 cells 中 520 为未见环境;26 cells(oodc_F3/oodc_F2F3 训练的模型评 cheetah)为 spec 泄漏,须排除。
+- **新训 ckpt 的配方**:trace 一律 `--n-layers 4`;预算实验用 `max_windows` 5000/20000 的 G16 spec;G14 用 `configs/generalist_G16_minus_walker_humanoid.json`。这些 ckpt 不在冻结 training manifest 内(post-freeze),只能经独立评估使用,不得走 manifest 门控的官方 driver。

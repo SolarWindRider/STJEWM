@@ -146,3 +146,55 @@ Trace 0.172 / spike-only 0.177 / MLP 0.178 / LeWM 0.091(pixel 为 first-action M
 ## Fig.1c 相关复算(2026-11-20)
 
 teacher-forced rollout 相对 L2(h=1)vs env-SR:ρ=+0.238(全 8)/+0.886(去空心);线性 probe R² vs env-SR:**ρ=−0.786**(全 8)/−0.943(去空心)→ 解离核心成立。
+
+## 参照地板(2026-11-23;同 E1 实例 manifest;`zero_action_per_env.csv`、`random_baseline_per_cell.csv`)
+
+| 策略 | pooled env-SR |
+|---|---|
+| **零动作(保持不动 50 步)** | **0.477**(99 cells) |
+| 随机均匀动作(10 seeds × 5 eps/cell) | 0.356(97 cells) |
+| Trace(CEM,E1) | 0.311 |
+
+零动作逐 env:ball_in_cup/cartpole/fish/humanoid_CMU 1.00;cheetah/finger/stacker 0.80;hopper 0.60;reacher/pendulum 0.20;其余 0.00(delayed_t_maze、tworoom 0.00)。随机逐 env:cartpole 0.99、ball_in_cup 1.00、fish 0.985、stacker 0.80、finger 0.61、delayed_t_maze 0.53、cheetah 0.25。**Trace 在 33/99 cells 低于零动作;58/97 cells 随机 ≥ 全部模型。**
+
+## 动作通路剂量响应(γ 缩放 planner 可见的动作差异;`dose_response_summary.csv`)
+
+γ=1(sham)0.303;γ=0.75 0.307(+0.41 pp [−2.68, +3.71]);γ=0.5 0.332(+2.89 pp [−0.62, +6.19])。
+
+## 可复现性(`rerun_noise_summary.json`)
+
+同会话 4 次同配置运行逐 episode 一致(agreement 1.000,aggregate 0.3031);9 月 E1 原始运行 0.3113,与今日运行 agreement 0.909(偏移 +0.82 pp)。
+
+## λ 多训练 seed(`lambda_multiseed_summary.csv`;每 seed 100 cells)
+
+| seed | orig | control | λ=0.1 | λ=1 | λ=10 |
+|---|---|---|---|---|---|
+| 0 | 0.310 | 0.260 | 0.270 | 0.224 | 0.254 |
+| 1 | 0.266 | 0.258 | 0.298 | 0.272 | 0.306 |
+| 2 | 0.322 | 0.260 | 0.258 | 0.256 | 0.312 |
+
+对 control 的配对差:λ=1 −3.6 [−5.8,−1.2] / +1.4 [+0.4,+2.4] / −0.4 [−4.4,+3.6];λ=10 −0.6 / +4.8 [+2.4,+7.4] / +5.2 [+2.8,+8.0];λ=0.1 +1.0 / +4.0 [+2.2,+5.8] / −0.2。
+独立 probe 线性 R²(orig/control/λ臂):seed0 −1.83/0.01/−0.09~0.10;seed1 −30.1/−4.76/0.06~0.17;seed2 −2.13/−0.78/−0.29~0.03;MLP R²(λ臂)0.10–0.34。
+
+## E9 扩样(4 envs × 6 模式 × 50 eps;`e9_expanded_per_condition.csv`)
+
+baseline → ablate_all:cartpole 0.68→0.72(+4 [0,+10]);cheetah 0.14→0.10(−4 [−14,+6]);pendulum 0.08→0.12(+4 [−4,+12]);**finger 0.20→0.60(+40 [+24,+56])**。
+
+## P13 多 epoch(3 vs 1,97 cells;`p13_multiepoch_summary.csv`)
+
+Trace 0.303 vs 0.311(−0.8);GRU 0.210 vs 0.163(+4.7);LeWM 0.167 vs 0.159(+0.8)。
+
+## utility(最终代际;`utility_final_gen/`;摘要 `utility_*_summary.csv`)
+
+- 样本效率(1%→100% 数据,4 envs):Trace 0.392→0.417;LeWM 0.159→0.400;MLP 0.000→0.125;GRU 0.150→0.217;spike 0.392→0.383;rate 0.342→0.359。
+- 潜-物理梯度 signed 相关(4 envs 均值):Trace −0.135;spike −0.125;rate +0.027;no_trace/membrane −0.477;hidden_leak −0.486;ALIF −0.035;SLIF-trace −0.027;SLIF-free +0.054;LeWM −0.633;GRU −0.064;MLP −0.260。
+- 数据预算(6 envs × 5 eps):Trace 0.500/0.433/0.467(0.5×/1×/2×);spike 0.267/0.333/0.467;MLP 0.467/0.400/0.500。
+- 零样本跨环境(G14 → walker/humanoid):全部模型 0.00(full-G16 亦 0.00;零动作 0.00)。
+
+## G2 事件类型 AUROC(676 probes;`g2_event_auroc_summary.csv`)
+
+Trace contact/high/low = 0.583/0.572/0.569;GRU 0.589/0.585/0.568;LeWM 0.623/0.610/0.593;LIF-Tx 0.654/0.618/0.602;MLP 0.502/0.509/0.496;delayed_t_maze cue_state:Trace 0.198、GRU 0.881、LeWM 0.945。
+
+## E4 held-out(排除 26 个泄漏 cells;`e4_per_model_ci.csv`)
+
+Trace 0.305 [0.19, 0.43];stacked_lif_trace 0.295;LIF-Tx 0.275;SLIF-free/MLP 0.255;GRU 0.170;LeWM 0.160(n=40 cells/模型,CI 重叠)。

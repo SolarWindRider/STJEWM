@@ -1,0 +1,4 @@
+model,epochs,env_sr,n_cells,one_epoch_sr_same_cells,diff_pp
+stjewm_trace_only,3,0.3031,97,0.3113,-0.82
+gru_baseline,3,0.2103,97,0.1629,+4.74
+lewm_baseline_v2,3,0.1670,97,0.1588,+0.82

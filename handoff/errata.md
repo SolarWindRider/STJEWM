@@ -24,6 +24,11 @@
 | E9 表旧版(non_event_window 0.60、缺 cem_rollout_ablation 行) | **作废** | numbers.md 新表:non_event 0.70,6 模式齐全 |
 | oodc_F1 trace seed1/2 首次补训(2 层,8.16M) | **作废(已归档)** | 误用 `--n-layers 2`;已以 4 层(10.52M)重训,2 层版在 `<dir>__2L_wrong_archive` |
 | handoff 旧文"E1 = 10 splits × 10 envs(均)" / "E2 = F1 13env + oodc_F2 7env + generalist 17env" | **作废** | E1 每 split 2–16 envs;E2 = cross_benchmark_F1 15 + generalist_16env 16 + oodc_F2 6 = 37 |
+| "Trace 支撑闭环控制 / closed-loop competence / 可支撑 goal-reaching"(2026-11-23 零动作与随机参照) | **作废(绝对主张)** | 零动作 pooled env-SR **0.477** > 随机 **0.356** > Trace 0.311;Trace 在 33/99 cells 低于零动作;仅 delayed_t_maze(0.53 vs 0)高于地板。改写为"相对 GRU/LeWM 更少偏离不动地板";Fig.1b 须叠加两条地板(numbers.md) |
+| "λ=1 相对 matched control 额外下降 −3.6 pp(可写)" | **更正(三 seed)** | seed0 −3.6 [−5.8,−1.2] / seed1 +1.4 [+0.4,+2.4] / seed2 −0.4 [−4.4,+3.6] → 不跨 seed 复现,无一致效应 |
+| E9 "探索性 10 episodes" 版数字 | **被扩样版取代** | 4 envs × 6 模式 × 50 eps:`e9_expanded_per_condition.csv`;finger ablate_all **+40 pp [+24,+56]** |
+| "G2 事件 AUROC / P13 多 epoch / utility 4 driver / P22 未跑" | **已全部补跑(2026-11-23)** | G2 676 probes;P13 3 epochs;utility 四项(含新训 6 预算 ckpt + 12 G14 ckpt);P22 以零动作参照操作化;见 experiments.md |
+| E4 "546 cells 均为 held-out" | **更正** | 26 cells(oodc_F3/oodc_F2F3 训练的模型评 cheetah)为 spec 泄漏,排除后 520 cells;`e4_leaked_cell_ids.json` |
 
 ## 2. 随机权重事故史(写作时防止同类错误,也可作为 rigor 叙述素材)
 
@@ -33,16 +38,16 @@
 
 ## 3. 未完成/未运行(VOID,不得写入任何主张)
 
-- G2 事件类型 AUROC(本文 E8 position probe 是其替代)
-- P13 多 epoch、P22 cheetah
-- utility 4 drivers:sample_efficiency / latent_env_grad / cross_env_gen / budget_scaling(代码在,标记 pending)
+- ~~G2 事件类型 AUROC~~ → 2026-11-23 已在最终代际完成(676 probes,52 skipped;`g2_event_auroc_summary.csv`)
+- ~~P13 多 epoch、P22 cheetah~~ → 已完成(P13:3 epochs vs 1;P22 以零动作/随机参照操作化)
+- ~~utility 4 drivers(sample_efficiency / latent_env_grad / cross_env_gen / budget_scaling)~~ → 已在最终代际完成(官方 driver 的 manifest 门控要求的 6 个预算 ckpt 与 12 个 G14 ckpt 已补训;后两项以独立评估完成)
 - 16 个早期 single-env ckpt(数字存档 `docs/single_env_historical_eval.md`,非最终代际)
-- 固定权重 readout 交换干预(不存在;若审稿要求只能列为 future work)
 - P12 是**公开重建**(原始数据丢失,作者确认按规格重建),必须标注
-- **随机动作 / goal-shuffle / 常数预测器参照**(解释 0.31 绝对水平所需;全仓不存在)
-- 动作通路剂量响应(γ 缩放候选动作差异;仅计划,未跑)
-- E9 扩样(现为每条件每环境 10 episodes,只能作探索性)
-- λ 各臂的多训练 seed(现单 seed)与 Pixel/Held-out 调参独立性的书面证据
+- ~~随机动作 / 剂量响应 / E9 扩样 / λ 多 seed~~ → 2026-11-23 已全部完成(experiments.md)
+- **需主动运动的 goal 构造或更长 budget 的协议**(检验模型排序是否随地板结构改变)——未做,相关推测不得入正文
+- 固定权重 readout 交换干预(不存在;future work)
+- Pixel/Held-out "无非脚本化人工调参"不可证明(只能证明无脚本化调参)
+- E4 逐模型效果量的 seed 不确定性(单 seed)
 
 ## 4. 代际纪律
 

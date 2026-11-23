@@ -1,0 +1,13 @@
+model,heldout_env_sr_full_G16,heldout_env_sr_G14_zero_shot,zero_shot_gap_pp,in_domain_sr_G14,in_domain_sr_full
+stjewm_trace_only,0.000,0.000,+0.0,0.560,0.520
+stjewm_spike_only,0.000,0.000,+0.0,0.520,0.400
+stjewm_rate_only,0.000,0.000,+0.0,0.560,0.440
+stjewm_no_trace,0.000,0.000,+0.0,0.320,0.360
+stjewm_hidden_leak,0.000,0.000,+0.0,0.240,0.400
+stjewm_membrane_readout,0.000,0.000,+0.0,0.320,0.360
+alif_timecell_baseline,0.000,0.000,+0.0,0.440,0.320
+gru_baseline,0.000,0.000,+0.0,0.320,0.240
+lewm_baseline_v2,0.000,0.000,+0.0,0.400,0.360
+stacked_lif_trace,0.000,0.000,+0.0,0.480,0.520
+stacked_lif_free,0.000,0.000,+0.0,0.320,0.400
+mlp_baseline,0.000,0.000,+0.0,0.320,0.480

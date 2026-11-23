@@ -20,3 +20,9 @@
 19. R2:probe_control_comparison.csv + probe_predictions.npz(独立冻结 latent probe);decoder_score_reconciliation.csv(receipt 值为训练尾、非 held-out)。
 20. R3:checkpoint_manifest_oodcF1_new.csv(含 SHA256);trace oodc_F1 seed1/2 由 2 层重训为 4 层(首训误用 n-layers 2,已归档);P0-1 数值以 4 层重测为准;lambda_episodes.csv(100/100 配对核验);lambda_arm_checkpoints.csv。
 21. R4:maskdose_per_window.csv v2 增输入范数/clean latent norm/绝对位移;cartpole 1 维、cheetah 2 维说明。
+22. (2026-11-23 补齐全部未完成实验)随机/零动作参照:零动作 0.477 > 随机 0.356 > Trace 0.311 → "闭环控制能力"绝对主张撤回。
+23. 动作通路剂量响应(γ=1/0.75/0.5):无显著效应;sham 揭示同会话确定、跨会话偏移 +0.82 pp(rerun_noise_summary.json)。
+24. λ 多训练 seed(8 新 ckpt + 10 × 100 cells):对 control 无跨 seed 一致效应;独立 probe 三 seed 一致。
+25. E9 扩样(4 envs × 50 eps):finger ablate_all +40 pp [+24,+56];无一处显著下降。
+26. P13 多 epoch、G2 事件 AUROC(676 probes)、utility 4 driver(含新训 6 预算 + 12 G14 ckpt)、P22(零动作操作化)、E4 审计(26 cells 泄漏)全部完成。
+27. utility latent_env_grad 修复 cuDNN RNN backward 模式 bug(code/scripts/utility/latent_env_grad.py)。

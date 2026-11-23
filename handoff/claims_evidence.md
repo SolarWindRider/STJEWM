@@ -6,7 +6,7 @@
 
 | 主张 | 级别 | 证据 |
 |---|---|---|
-| 膜电位禁用协议下,trace 状态可支撑闭环控制且优于连续基线(GRU/LeWM) | **A**(对 GRU/LeWM)/ **B**(对 LIF-Tx 仅"相当") | E1(1300 cells;100-cell env-SR trace 0.310 = 全场最高)+ 37-cell 三训练 seed 配对(Trace−GRU +10.8~+14.6 pp、Trace−LeWM +12.4~+13.0 pp,三 seed 全正;**Trace−LIF-Tx −1.6/−0.5/+1.1 方向翻转**)+ E13 + E14 + E3(pixel env-SR trace 0.172 vs LeWM 0.091;但 MLP 0.178、spike 0.177 同级) |
+| trace 读出在该 goal-reaching 协议下的成功率高于连续基线(GRU/LeWM) | **A**(排序:三训练 seed 复现)/ **不得写成"闭环控制能力"** | 37-cell 三 seed 配对(Trace−GRU +10.8~+14.6 pp、Trace−LeWM +12.4~+13.0 pp);100-cell seed0 trace 0.310 = 全场最高。**但零动作参照 pooled env-SR = 0.477、随机 = 0.356,均高于 Trace 0.311;Trace 在 33/99 cells 低于零动作;仅 delayed_t_maze(0.53 vs 0)高于地板** → 模型间差异 = "偏离不动地板的程度",不是控制能力(2026-11-23,`zero_action_per_env.csv`/`random_baseline_per_cell.csv`)。Trace−LIF-Tx 方向翻转,只能写"相当" |
 | 传统表征指标(可解码性/预测精度)与控制效用不共线 | **A** | E8(position-R² vs env-SR 反例)+ E1(cos 可被塌缩平凡取得)+ E7(λ=0:cos 0.005 但 env-SR 平)+ E9(窗口消融不动成败) |
 | trace 读出的动力学是"慢迹不变性":对瞬时扰动长尾持续,对持续输入正常响应 | **A** | M4(d_peak 极小 + nr100% + 持续对照 0.044≫0.017)+ S3(action 27× LeWM)+ 位置敏感性(全窗口 0.23–1.27) |
 | 塌缩在 pixel 与 λ=0 维度上是**分级**现象,单指标隐藏之 | **A** | E3(1690 cells 连续谱 0.003–0.177)+ E7 |
@@ -18,7 +18,7 @@
 | CSR→success 是普遍设计原理 | **C** | n=8 架构(非独立样本)+ 部分近常数 latent + CSR 分母(obs 敏感度)极小;只能写 "cross-architecture association" |
 | trace/GRU 动力学差异(都衰减;输入响应不对称)跨训练 seed 复现 | **A**(oodc_F1 同 split,3 seeds)+ B(cross_benchmark_F1 补充) | pooled c20 trace<gru 3/3;trace g_a≫g_o、GRU 反向 3/3(numbers.md);**环境依赖**:cheetah trace<gru 3/3、cartpole trace≥gru 3/3——不得写成"每环境同向",非因果机制 |
 | trace 对历史位置的输入掩码更敏感 | **B**(representation displacement;无闭环) | 剂量匹配遮蔽:同总元素数下 scatter25/last25 位移比 Trace 2.2–3.2×;GRU/LeWM 对 27× 剂量不敏感(C/A≈1.0);cartpole 仅置零 1 维、cheetah 2 维 |
-| "辅助解码目标使规划下降" | **C(限定)** | 相对原 ckpt 三臂 −4.0/−8.6/−5.6 pp,但 matched control 本身 −5.0 pp;**以 control 为主对照仅 λ=1 额外下降 −3.6 pp [−5.8, −1.2]**;无单调剂量效应、单训练 seed;独立 probe 的线性可访问性增益小且非单调(R² ≤0.10) |
+| "辅助解码目标使规划下降" | **C(限定)→ 三 seed 后:无一致效应** | 相对原 ckpt:seed0 三臂 −4.0/−8.6/−5.6,seed1 +3.2/+0.6/+4.0,seed2 −6.4/−6.6/−1.0;对 matched control:λ=1 为 −3.6 [−5.8,−1.2] / **+1.4 [+0.4,+2.4]** / −0.4 [−4.4,+3.6] → **不跨 seed 复现**。独立 probe:线性 R² 从强负(orig −1.8/−30/−2.1)→ ≈0(≤0.17,非单调),MLP 0.10–0.34(三 seed 一致) |
 
 ## 2. 两套中心论点的证据归属(回应审稿人"论点 A vs 论点 B")
 
@@ -30,7 +30,7 @@
 
 ### 3.1 "trace 优越性是否只是 latent collapse?"——不是;非退化证据包(8 条)
 
-1. **闭环有效**:env-SR 0.310(100-cell seed0 全场最高,与 LIF-Tx 0.308 并列;E1);37-cell 三 seed 0.263±0.011;cartpole G4/G8/G16 恒 1.00(E14)——常数 latent 无法引导控制;
+1. **env-SR 非常数 latent 可达**(排除"常数 latent 即可得同样分数"):Trace 100-cell seed0 env-SR 0.310(全场最高,与 LIF-Tx 0.308 并列;MLP 等常数/塌缩 latent 0.20–0.28);37-cell 三 seed 0.263±0.011;cartpole G4/G8/G16 恒 1.00(E14)。**但这不是控制能力的证据**:零动作地板 0.477、随机 0.356 均高于全部模型(§8)——本条只用于反驳"trace 与常数 latent 无差别",不得引申为"闭环有效";
 2. **动作响应真实存在**:位置敏感性全窗口 0.23–1.27(真权重,imag_position_sensitivity.json);
 3. **对持续输入正常响应**(M4 持续对照 0.044–0.048 ≫ 瞬态残差 0.017–0.028)→ 是"慢"不是"死";
 4. **S3**:g_a 相对 LeWM ≈27×,且跨窗口持续;
@@ -110,15 +110,23 @@ Spearman ρ≈0.90 的 n=8 是八种架构(**n = 模型配置数,不是 episode 
 ## 7. 2026-11-20~23 审计轮结论(写作阶段的硬约束;原始数据在审计包)
 
 **可写**
-1. 性能:37-cell 配对三 seed 上 Trace 优于 GRU/LeWM(+10.8~+14.6 pp);LIF-Transformer 与 Trace 相近(100-cell seed0 0.310 vs 0.308;37-cell 三 seed 0.263±0.011 vs 0.267±0.008);100-cell 主图仍是 seed 0。
-2. 动力学:oodc_F1 中 Trace/GRU 的 pooled c20 与输入响应差异跨 seed 复现;**不是每环境同向**(cartpole 3/3 trace≥gru),不构成因果机制。
+1. 性能排序:37-cell 配对三 seed 上 Trace 高于 GRU/LeWM(+10.8~+14.6 pp);LIF-Transformer 与 Trace 相近(100-cell seed0 0.310 vs 0.308);100-cell 主图仍是 seed 0。**所有模型均低于不动地板(0.477)与随机地板(0.356)**,Fig.1b 必须叠加两条地板。
+2. 动力学:oodc_F1 中 Trace/GRU 的 pooled c20 与输入响应差异跨 seed 复现;**不是每环境同向**(cartpole 3/3 trace≥gru),不构成因果机制,亦**不得解释为更好的控制**。
 3. 预测精度:Trace seed2 的 E_lat 极值是归一化尺度问题(z* 分母塌缩),**不写成预测发散**。
-4. 解码干预:相对原模型各辅助条件下降;matched control 后 **λ=1 仍有额外下降**;线性可访问性以独立 probe 为准(小且非单调)。
-5. Masking:支持"对历史位置的不同响应",**不是**"历史记忆造成规划提升";同数量置零 ≠ 同输入变化幅度(本例 A/B 的 ΔL2 相近,已核)。
-6. 收缩与成功率:ρ(c20, env-SR)=−0.19(ns);收缩不是充分条件;控制对表示塌缩不敏感(E7 λ=0)。
+4. 解码干预:辅助目标改变表示(线性可访问性强负→≈0;收缩翻转),闭环成功率**无跨 seed 一致效应**。
+5. Masking:支持"对历史位置的不同响应",**不是**"历史记忆造成规划提升"。
+6. 规划通路:想象期 trace 置零在 4 envs × 50 eps 下无一处显著下降,finger 上 **+40 pp [+24,+56]**;planner 可见动作差异减半(γ=0.5)+2.9 pp(ns)→ 规划期候选评分对 trace/动作差异的依赖很弱。
+7. 可复现性:同一会话内闭环评测逐 episode 确定(4 次重跑一致);9 月 E1 与当前环境相差 +0.82 pp(9% episode 翻转)——跨会话比较须注明。
+8. utility:冻结编码器线性策略的样本效率 Trace 1%≈100%(+2.5 pp),LeWM +24.2 pp;潜代价梯度与物理梯度 signed 相关 ≤0(Trace −0.135,LeWM −0.633);数据预算 0.5×→2× 对 Trace 无清晰效应;walker/humanoid 对所有模型为 0.00(零样本外推不可测)。
+9. 事件类型 AUROC:Trace 0.57–0.58,低于 LeWM/LIF-Tx(0.59–0.65),MLP≈0.5。
 
-**禁写**:SNN 天然不坍缩;Trace 优于 LIF-Tx;CSR 普适/因果;SLIF CSR=2.8e4 为真实敏感度;state 为 receding-horizon MPC;"10 splits × 10 envs";E9 作必要性结论;n=8 当作 episode 数;跨 split 结果写成同 split 的 seed replication;episode 数当训练 seed 数。
+**禁写**:"Trace 支撑闭环控制 / closed-loop competence"(绝对主张);"SNN 天然不坍缩";"Trace 优于 LIF-Tx";CSR 普适/因果;SLIF CSR=2.8e4 为真实敏感度;state 为 receding-horizon MPC;"10 splits × 10 envs";"λ=1 相对 control 额外下降";"历史记忆→规划提升";E9 作必要性结论;n=8 当作 episode 数;跨 split 结果写成同 split 的 seed replication;episode 数当训练 seed 数。
 
-**图注须改**:Fig.1b(100 cells = 10 splits、每 split 2–16 envs);Fig.1c("teacher-forced latent rollout relative L2",非 one-step prediction error);Fig.2c(协议/checkpoint/训练状态说明 + 上子图 decoder score 口径);Fig.4b(64 窗/env × 2 env = 128 窗;h=5 用直接池化增益 → 用 v3 面板 `figs/fig4b_panel_v3.*`);Fig.5b(SLIF 点 floor 标记 → 用 v2 面板;两种 CSR 公式、ε、估计单位=模型配置)。
+**图注须改**:Fig.1b(叠加零动作/随机地板;100 cells = 10 splits、每 split 2–16 envs);Fig.1c("teacher-forced latent rollout relative L2",非 one-step prediction error);Fig.2c(协议/checkpoint/训练状态说明;上子图 decoder score 口径;三 seed 结果);Fig.4b(64 窗/env × 2 env = 128 窗;h=5 用直接池化增益 → 用 v3 面板 `figs/fig4b_panel_v3.*`);Fig.5b(SLIF 点 floor 标记 → 用 v2 面板;两种 CSR 公式、ε、估计单位=模型配置)。
 
-**面板文件**:`/home/lx/figs_nmi/20261120/`(fig1a–fig5b;fig4b_panel_v3、fig5b_panel_v2 为现行版);审计包 `/home/lx/audit_20261120/`(OBS `obs://lixiang01/STJEWM_NMI/audit/20261120/`)。
+**面板文件**:`/home/lx/figs_nmi/20261120/`(fig1a–fig5b;fig4b_panel_v3、fig5b_panel_v2 为现行版);审计包 `/home/lx/audit_20261120/`(OBS `obs://lixiang01/STJEWM_NMI/audit/20261120/`),入库副本 `verification_bundle/audit_20261120/`。
+
+## 8. 2026-11-23 补齐实验后新增的作废/改写(优先级高于 §7)
+
+- **"闭环控制能力"类措辞全部撤回**;中心论点须从"Trace 支撑控制"改为"表示性质差异(动力学/可访问性)+ 在地板主导的协议下更少偏离不动地板"。
+- **推测(不入正文)**:需主动运动的 goal 构造或更长 budget 下排序可能改变——验证需新协议(未做)。
