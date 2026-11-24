@@ -13,6 +13,13 @@ The planner reads only the trace — the **membrane-forbidden protocol**.
 **Status: final repaired generation (2026-09-17) — 371-checkpoint retrain + full
 grid re-evaluation complete; see `results/journal_prep/EXP_Report.md` (v4.0).**
 
+> **⚠️ 冻结声明(2026-11-24,LeWM 核查)**:本 README 中**全部闭环 env-SR 数字**及一切以 **LeWM 为对照**的排序已冻结,不得引用(`handoff/errata.md` 第 34–39 行、`handoff/claims_evidence.md` §10、`handoff/protocol.md` §7)。
+> 原因:(1) 表里的 "LeWM" 是只训了 1 epoch / 5,000 步 / 16 环境共享 16 万样本的自写状态版,不是论文的 LeWM——13 个模型在 PushT 上的单步 latent 预测 R² 全为负;
+> (2) 我们的 CEM 在原生动作空间按 N(0,1) 提议,官方在标准化动作空间;(3) DMC 只在末态判成功;(4) DMC 数据无速度 → 初态速度清零,运动环境 80–99% 的目标不可达。
+> 已验证正确的部分:环境封装 / 状态恢复 / 成功判定 / episode 循环(官方权重 + 官方规划器走我们的循环得 88%);忠实状态版 LeWM(官方预测器模块 / 损失 / 动作块 / CEM)训 2 万步即 77%。
+> 表示层度量(div/resp/ρ、probe、rollout、SIGReg sweep)的数值本身不受影响,但其 LeWM 对照需重做后重新比较。
+
+
 ---
 
 ## Headline results (final repaired generation, 2026-09-16)
