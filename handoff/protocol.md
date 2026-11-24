@@ -128,3 +128,17 @@ state H=25×2 段 vs pixel H=5×10 段:跨模态差异同时受视觉输入与�
 **覆盖**:12 个 DMC 环境有 ≥102 个合格目标;**ball_in_cup 为 0**(该数据中不存在主动运动目标);delayed_t_maze / pusht / tworoom / reacher 无标量成功容差,不纳入。各环境"零动作即可成功"的候选占比(距离判据通过者中):cartpole 216/416、fish 459/659、cheetah 62/262、humanoid_CMU 67/267、pendulum 42/242、walker 32/232;dog/humanoid 0/200。
 
 **写作要求**:AGR 下的 env-SR 必须与随机地板并列;原协议结果须标注为"dataset-derived goal reaching(可被动满足)",不得再作为控制能力的证据。
+
+## 7. 已知缺陷(2026-11-24 LeWM 核查;修复并重跑前,§1–§6 的全部闭环数字冻结)
+
+与官方 LeWM(`stable-worldmodel` 评测 + `lucas-maes/le-wm` 训练)逐项对照后确认:
+
+1. **预测目标对齐(已修)**:因果 `predict` 的位置 k 输出"第 k+1 帧",训练目标必须是帧 1..T_pred;旧代码用 `emb[:, H:H+T_pred]`,H=1 时等价,H>1 时错位。现由 `train.py::prediction_terms` 统一,并有回归测试。
+2. **CEM 提议分布**:我们在**原生**动作单位按 N(0,1) 提议并硬截断到动作边界;官方在 StandardScaler 标准化空间提议(初始 std=1 ↔ 数据集动作的尺度),执行前逆变换。对照:直接动力学模型在 PushT 上 20% → 36%。规划变量也应按官方组织为"每 5 个原始动作一个块"。
+3. **成功判定**:我们的 DMC 环境 `step()` 不因到达而终止,`eval_closed_loop` 只在第 50 步**末态**判定;官方为预算内**任一时刻** `terminated`。
+4. **初态**:DMC 数据集只存 qpos,`_set_env_state` 把速度清零;目标却是带真实速度的轨迹 25 步之后的 qpos。结果:运动环境里多数目标不可达,另一批环境里多数目标起点即已成功(数字见 `audit.md` v9 §4)。需要带 qvel 的数据。
+5. **规划时的滚动结构**:我们逐环境步做 25 次 latent 转移(单步监督、history 1、开环);官方每个 latent 转移覆盖 5 个环境步,25 步规划只有 5 次转移。
+6. **LeWM 基线结构**:`code/lewm_transformer_baseline.py` 的编码器尾部与预测器共用同一组权重,AdaLN 条件是状态嵌入,动作嵌入进入残差流,SIGReg 加在 `emb_pre`。官方:独立预测器、动作只经 AdaLN、SIGReg 与预测/规划用同一个嵌入。→ 我们的版本学不到动力学(单步 latent 预测 R²<0)。
+7. **已验证正确**:环境封装、状态恢复、目标设定、成功判定与 episode 循环(官方权重 + 官方规划器走我们的 `PushTEnv` 循环 86–90%,官方循环 88%)。
+
+**指标出处**:论文只报告环境原生成功率;"LeWM-SR = cos_dist<0.1" 是本机复现代理自创,不得归于 LeWM。

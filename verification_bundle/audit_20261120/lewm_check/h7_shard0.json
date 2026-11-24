@@ -1,0 +1,296 @@
+{
+ "stjewm_trace_only/cartpole": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 1.0629,
+  "tol": 0.5
+ },
+ "stjewm_trace_only/finger": {
+  "n": 10,
+  "final": 0.3,
+  "any": 0.4,
+  "median_min_dist": 0.3658,
+  "tol": 0.3
+ },
+ "stjewm_trace_only/walker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.196,
+  "tol": 0.1
+ },
+ "stjewm_trace_only/fish": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.8,
+  "median_min_dist": 0.0784,
+  "tol": 0.1
+ },
+ "stjewm_trace_only/humanoid": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.355,
+  "tol": 0.1
+ },
+ "stjewm_trace_only/stacker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.2439,
+  "tol": 0.1
+ },
+ "stjewm_rate_only/cartpole": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 1.0638,
+  "tol": 0.5
+ },
+ "stjewm_rate_only/finger": {
+  "n": 10,
+  "final": 0.1,
+  "any": 0.3,
+  "median_min_dist": 0.4281,
+  "tol": 0.3
+ },
+ "stjewm_rate_only/walker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.2086,
+  "tol": 0.1
+ },
+ "stjewm_rate_only/fish": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.8,
+  "median_min_dist": 0.0784,
+  "tol": 0.1
+ },
+ "stjewm_rate_only/humanoid": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.3537,
+  "tol": 0.1
+ },
+ "stjewm_rate_only/stacker": {
+  "n": 10,
+  "final": 0.1,
+  "any": 0.1,
+  "median_min_dist": 0.2524,
+  "tol": 0.1
+ },
+ "stjewm_no_trace/cartpole": {
+  "n": 10,
+  "final": 0.1,
+  "any": 0.1,
+  "median_min_dist": 1.05,
+  "tol": 0.5
+ },
+ "stjewm_no_trace/finger": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.3,
+  "median_min_dist": 0.3287,
+  "tol": 0.3
+ },
+ "stjewm_no_trace/walker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.212,
+  "tol": 0.1
+ },
+ "stjewm_no_trace/fish": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.1278,
+  "tol": 0.1
+ },
+ "stjewm_no_trace/humanoid": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.3489,
+  "tol": 0.1
+ },
+ "stjewm_no_trace/stacker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.2501,
+  "tol": 0.1
+ },
+ "alif_timecell_baseline/cartpole": {
+  "n": 10,
+  "final": 0.2,
+  "any": 0.2,
+  "median_min_dist": 1.0345,
+  "tol": 0.5
+ },
+ "alif_timecell_baseline/finger": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.2,
+  "median_min_dist": 0.513,
+  "tol": 0.3
+ },
+ "alif_timecell_baseline/walker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.19,
+  "tol": 0.1
+ },
+ "alif_timecell_baseline/fish": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.7,
+  "median_min_dist": 0.0953,
+  "tol": 0.1
+ },
+ "alif_timecell_baseline/humanoid": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.3648,
+  "tol": 0.1
+ },
+ "alif_timecell_baseline/stacker": {
+  "n": 10,
+  "final": 0.2,
+  "any": 0.2,
+  "median_min_dist": 0.2439,
+  "tol": 0.1
+ },
+ "stacked_lif_trace/cartpole": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 1.0638,
+  "tol": 0.5
+ },
+ "stacked_lif_trace/finger": {
+  "n": 10,
+  "final": 0.2,
+  "any": 0.2,
+  "median_min_dist": 0.4458,
+  "tol": 0.3
+ },
+ "stacked_lif_trace/walker": {
+  "n": 10,
+  "final": 0.1,
+  "any": 0.1,
+  "median_min_dist": 0.2064,
+  "tol": 0.1
+ },
+ "stacked_lif_trace/fish": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.8,
+  "median_min_dist": 0.0815,
+  "tol": 0.1
+ },
+ "stacked_lif_trace/humanoid": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.3535,
+  "tol": 0.1
+ },
+ "stacked_lif_trace/stacker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.2525,
+  "tol": 0.1
+ },
+ "gru_baseline/cartpole": {
+  "n": 10,
+  "final": 0.1,
+  "any": 0.1,
+  "median_min_dist": 1.0063,
+  "tol": 0.5
+ },
+ "gru_baseline/finger": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.3,
+  "median_min_dist": 0.5101,
+  "tol": 0.3
+ },
+ "gru_baseline/walker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.2097,
+  "tol": 0.1
+ },
+ "gru_baseline/fish": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.3,
+  "median_min_dist": 0.1204,
+  "tol": 0.1
+ },
+ "gru_baseline/humanoid": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.3912,
+  "tol": 0.1
+ },
+ "gru_baseline/stacker": {
+  "n": 10,
+  "final": 0.1,
+  "any": 0.1,
+  "median_min_dist": 0.2534,
+  "tol": 0.1
+ },
+ "lewm_baseline_v2/cartpole": {
+  "n": 10,
+  "final": 0.1,
+  "any": 0.1,
+  "median_min_dist": 0.9477,
+  "tol": 0.5
+ },
+ "lewm_baseline_v2/finger": {
+  "n": 10,
+  "final": 0.3,
+  "any": 0.5,
+  "median_min_dist": 0.3189,
+  "tol": 0.3
+ },
+ "lewm_baseline_v2/walker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.2101,
+  "tol": 0.1
+ },
+ "lewm_baseline_v2/fish": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.3,
+  "median_min_dist": 0.1193,
+  "tol": 0.1
+ },
+ "lewm_baseline_v2/humanoid": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.371,
+  "tol": 0.1
+ },
+ "lewm_baseline_v2/stacker": {
+  "n": 10,
+  "final": 0.1,
+  "any": 0.2,
+  "median_min_dist": 0.2443,
+  "tol": 0.1
+ }
+}

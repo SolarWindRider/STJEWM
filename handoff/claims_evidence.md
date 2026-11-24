@@ -138,3 +138,12 @@ Spearman ρ≈0.90 的 n=8 是八种架构(**n = 模型配置数,不是 episode 
 - **Trace 相对 GRU/LeWM 的 env-SR 排序(原协议三 seed 复现;AGR 下 ≤2.7 pp 残差)**只能作为行为描述,且必须与随机地板并列。
 - **论文标题/摘要不得出现** control、planning competence、goal-reaching capability 类措辞;Fig.1b 的定位从"闭环能力"改为"地板主导的成功率 + AGR 下的坍缩"。
 - 仍属推测、不得入正文:换用其他规划器(非 CEM)、更长训练、或 goal 表示学习后是否能恢复控制——均未验证。
+
+## 10. LeWM 核查(2026-11-24;优先级高于 §7–§9;细节 `audit.md` v9、`errata.md` 第 34–39 行)
+
+- **"LeWM" 基线无效**:论文的 LeWM 是每任务单独训练的 18M 像素模型(10 epoch),只在 Two-Room / Reacher / PushT / Cube 上验证(87 / 86 / 78–96 / 79%),从未在 DMC 上评测。我们的 `lewm_baseline_v2` 是自写的状态输入版(3 层、4.97M、1 epoch、5,000 步、16 环境共享 16 万窗口),结构上编码器尾部与预测器共用权重。**任何"Trace 高于 LeWM"及以 LeWM 为对照的排序一律禁写。**
+- **全部闭环 env-SR 冻结**:§7–§9 引用的 Fig.1b、E1/E4/E13/E14、AGR、utility 成功率项、SpWM 对比的 ST env-SR 列,都建立在"13 个模型的单步 latent 预测 R² 全为负 + CEM 提议分布失配 + DMC 目标一半平凡一半不可达 + 只在末态判成功"的评测上。§9 的"所有模型 ≈ 随机"不能单独归因于模型,是评测失败模式的混合结果。
+- **已验证正确的部分(可写)**:环境封装、状态恢复、目标设定、成功判定与 episode 循环——官方权重 + 官方规划器走我们的 `PushTEnv` 循环得 86–90%,官方循环 88%;官方栈在本机复现 PushT 44/50、TwoRoom 44/50。
+- **已修**:`train.py` 在 `history_size>1` 时的预测目标错位(`prediction_terms`);H=1 的全部基准结果不变。
+- **不受影响的数值**:表示层度量(div/resp/ρ、probe、rollout、SIGReg sweep)本身;但其 LeWM 对照需在基线重做后重新比较。
+- **待用户决定**:是否 (a) 以忠实结构重做状态版 LeWM 与全部基线,(b) 把 CEM 提议改到标准化动作空间,(c) DMC 改为任一时刻成功并采集带速度的数据,(d) 全量重跑闭环评测。在此之前闭环章节不得定稿。

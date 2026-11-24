@@ -89,6 +89,18 @@ def source_sha256(relative_paths) -> dict:
     }
 
 
+def prediction_terms(model, emb, action, history_size, t_pred):
+    """One-step-ahead (prediction, target) pair for the JEPA loss.
+
+    `model.predict` is causal, so its output at position k is the prediction of frame k+1 --
+    the convention the CEM planner relies on. Positions 0..t_pred-1 are therefore supervised
+    against frames 1..t_pred. (`emb[:, history_size : history_size + t_pred]` would be an
+    H-step-ahead target for H > 1, which the planner then misreads.)
+    """
+    pred = model.predict(emb[:, :history_size], action[:, :history_size])[:, :t_pred]
+    return pred, emb[:, 1:1 + t_pred]
+
+
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--model", choices=["stjewm", "lewm_baseline", "gru_baseline", "mlp_baseline",
@@ -391,11 +403,8 @@ def train(
                 out = model(state, action)
                 emb = out["emb"]
                 emb_pre = out["emb_pre_cell"]
-                # Context: first H steps; predict next T_pred
-                ctx_emb = emb[:, :H]
-                ctx_act = action[:, :H]
-                pred_emb = model.predict(ctx_emb, ctx_act)
-                tgt_emb = emb[:, H:H + T_pred]
+                # JEPA prediction term: one-step-ahead targets (see prediction_terms).
+                pred_emb, tgt_emb = prediction_terms(model, emb, action, H, T_pred)
                 pred_loss = F.mse_loss(pred_emb, tgt_emb)
 
                 # ============== Native-loss dispatch ==============

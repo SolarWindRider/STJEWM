@@ -1,0 +1,12 @@
+{
+ "task": "pusht",
+ "policy": "lewm",
+ "num_eval": 50,
+ "seed": 42,
+ "cem_steps": 30,
+ "goal_offset": 25,
+ "budget": 50,
+ "success_rate": 88.0,
+ "n_success": 44,
+ "wall_sec": 41.9
+}

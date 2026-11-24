@@ -56,6 +56,26 @@ class PredictiveTrainingTests(unittest.TestCase):
             full_prefix = model._readout(hidden, spikes, trace)[:, :1]
             torch.testing.assert_close(full_prefix, prefix)
 
+    def test_jepa_targets_are_the_next_frames_for_every_history_length(self):
+        """The CEM planner reads `predict` as one-step-ahead; the loss must supervise it that way."""
+        from code.train.train import prediction_terms
+
+        class _OracleNextFrameModel:
+            def __init__(self, frames):
+                self.frames = frames
+
+            def predict(self, ctx_emb, ctx_act):  # true frame k+1 at every position k
+                return self.frames[:, 1:1 + ctx_emb.shape[1]]
+
+        frames = torch.randn(2, 8, 4)
+        actions = torch.randn(2, 8, 2)
+        for history_size, t_pred in ((1, 1), (3, 1), (3, 3), (4, 2)):
+            with self.subTest(history_size=history_size, t_pred=t_pred):
+                pred, target = prediction_terms(
+                    _OracleNextFrameModel(frames), frames, actions, history_size, t_pred)
+                self.assertEqual(tuple(pred.shape), (2, t_pred, 4))
+                torch.testing.assert_close(pred, target)
+
 
 if __name__ == "__main__":
     unittest.main()

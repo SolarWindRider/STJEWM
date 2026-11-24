@@ -1,0 +1,12 @@
+{
+ "task": "pusht",
+ "policy": "random",
+ "num_eval": 5,
+ "seed": 42,
+ "cem_steps": 30,
+ "goal_offset": 25,
+ "budget": 50,
+ "success_rate": 20.0,
+ "n_success": 1,
+ "wall_sec": 0.7
+}

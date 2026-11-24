@@ -216,3 +216,17 @@ Trace 0.305 [0.19, 0.43];stacked_lif_trace 0.295;LIF-Tx 0.275;SLIF-free/MLP 0.25
 Trace 配对差:vs GRU +2.47 [+0.49, +4.69];vs LeWM +2.72 [+0.99, +4.69];vs hidden_leak +2.72 [+0.74, +4.94];vs LIF-Tx −0.99 [−4.20, +1.98];vs SLIF-trace/spike 0.00;vs rate/MLP −0.99;vs ALIF −0.49;vs membrane/no_trace +1.23 [−1.23, +3.70];vs SLIF-free +1.73 [−0.49, +3.95]。每模型 405 episodes,SR≈0.04 时 SE≈1 pp。
 逐环境(Trace):cartpole 0.23(随机 0.08)、finger 0.11(0.09)、walker 0.06(0.08)、hopper 0.03、cheetah 0.00(0.08);dog/fish/humanoid/humanoid_CMU/pendulum/quadruped 全模型 0.00。
 各环境合格目标数:200(finger 102);ball_in_cup 0。
+
+## LeWM 核查(2026-11-24;`audit.md` v9;`lewm_check/`)
+
+**论文 LeWM**(arXiv 2603.19312v1):4 个像素任务、每任务单独训练 18.03M 模型(编码器 5.50M + 预测器 10.79M)、10 个 epoch。成功率 Two-Room 87 / Reacher 86 / Push-T 78(Fig. 6;Table 5 三 seed 96.0±2.83)/ Cube 79;随机 0 / 10 / 2 / 48。
+**本机官方栈复现**:PushT 44/50 = 88%(随机 1–2/50);TwoRoom 44/50 = 88%(随机 11/50)。
+**官方权重 + 官方规划器 × 我们的环境循环**(PushT,同 50 个 episode):我们的 `_set_env_state` + 渲染首帧 88%;我们的初始化 + 数据集首帧 86%;官方 `_set_state` 90% / 90%。
+**忠实状态版 LeWM**(官方预测器模块/损失/动作块/CEM,MLP 状态编码器,12.69M):2 万步 → **37/48 = 77.1%**;3 万步 → 36/48 = 75.0%;单步误差 2.2 vs 不动 107;25 步开环终点/起始距离 0.049–0.051。
+**回放专家动作(无模型)**:47/48。
+**我们的基线架构**(PushT 单环境分布内):基准配置 5k/10k/20k/40k/60k/90k 步 → 0.06/0.04/0.02/0.00/0.04/0.00;论文式配置(history 3,目标对齐已修)5k/10k/20k/40k → 0.04/0/0/0;25 步开环终点/起始距离 1.10(5k)→ 1.50(20k);`lewm_baseline_v2` 1.90。
+**基准训练配置**:1 epoch、batch 32、5,000 步、16 环境 × 10,000 窗口 = 160,000 样本;`lewm_baseline_v2` 3 层、embed 288、4.97M。
+**13 个 `generalist_16env` 模型在 PushT 上的单步 latent 预测 R²**:全部为负(LeWM-v2 −0.44、GRU −2.88、membrane/no_trace −0.37、LIF-Tx −169、SLIF-trace −1622、MLP −1.4e7;ST-JEWM 系 latent 范数≈1e-3,尺度敏感)。
+**CEM 提议分布对照**(直接状态动力学 MLP,我们的 CEM):σ=1.0 → 20%,σ=0.21(= 数据动作 std)→ 36%;执行动作平均幅值 0.65 vs 0.20。
+**DMC 末态 vs 任一时刻成功**(AGR 目标,13 模型 × 6 环境 × 10 eps):Trace 3/60 → 12/60;LeWM-v2 5/60 → 11/60;LIF-Tx 2/60 → 14/60;MLP 4/60 → 13/60。fish 0 → 0.3–0.9;finger → 0.1–0.5;cartpole / walker / humanoid 不变。
+**DMC 零速度初态**(记录动作从静止重放 25 步,落入容差的比例;起点即已在容差内的比例):walker 17%(9%)/ hopper 21%(14%)/ quadruped 11%(2%)/ humanoid 0.5%(0%)/ cheetah 86%(13%)/ cartpole 49%(49%)/ pendulum 31%(24%)/ humanoid_cmu 88%(82%)/ finger 80%(69%)/ fish 93%(89%)/ stacker 86%(84%)/ ball_in_cup 100%(100%)。

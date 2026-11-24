@@ -28,3 +28,7 @@
 27. utility latent_env_grad 修复 cuDNN RNN backward 模式 bug(code/scripts/utility/latent_env_grad.py)。
 28. (2026-11-24) 主动运动目标协议 AGR:目标 ≥2×成功容差且零动作 50 步不可达;closed_loop.py 新增 --active-goal-disp/--active-goal-cache。
     13 模型 × 81 cells × 5 eps;零动作地板 0.0000(有效性检查);随机 0.031;全部模型 0.012–0.049 → 无控制能力证据。
+29. (2026-11-24) LeWM 核查(audit v9):论文只验证了 4 个像素任务;本机官方栈复现 PushT 88%、TwoRoom 88%;官方权重×官方规划器走我们的环境循环 86–90% → 环境侧正确。
+    我们的 LeWM 基线 = 1 epoch/5,000 步/16 环境共享 16 万样本的自写状态版,13 模型单步 latent 预测 R² 全负;忠实状态版 LeWM 训 2 万步即 77%,我们的架构分布内 9 万步仍 0%。
+    修复 train.py 在 history_size>1 时的预测目标错位(H=1 不变);发现 CEM 提议分布、DMC 末态判定、DMC 零速度初态三项协议缺陷。全部闭环 env-SR 与 LeWM 相关排序冻结。
+    脚本与原始结果:`lewm_check/`。H9 脚本内嵌 env_success_anytime 读数作废(目标未除 500),以 h10 修正评测为准。

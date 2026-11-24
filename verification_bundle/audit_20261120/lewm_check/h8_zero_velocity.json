@@ -1,0 +1,134 @@
+{
+ "cartpole": {
+  "tol": 0.5,
+  "n": 400,
+  "start_within_tol": 0.4925,
+  "stay25_within_tol": 0.4875,
+  "replay25_from_standstill_within_tol": 0.4925,
+  "replay50_from_standstill_within_tol": 0.6525,
+  "stay50_within_tol": 0.655,
+  "median_d_start_over_tol": 1.0611443547755144,
+  "median_d_replay25_over_tol": 1.025065008723097
+ },
+ "pendulum": {
+  "tol": 0.5,
+  "n": 400,
+  "start_within_tol": 0.2375,
+  "stay25_within_tol": 0.3,
+  "replay25_from_standstill_within_tol": 0.3125,
+  "replay50_from_standstill_within_tol": 0.1625,
+  "stay50_within_tol": 0.18,
+  "median_d_start_over_tol": 3.253656268119812,
+  "median_d_replay25_over_tol": 2.0493701696395874
+ },
+ "cheetah": {
+  "tol": 0.1,
+  "n": 400,
+  "start_within_tol": 0.1325,
+  "stay25_within_tol": 0.445,
+  "replay25_from_standstill_within_tol": 0.855,
+  "replay50_from_standstill_within_tol": 0.205,
+  "stay50_within_tol": 0.4425,
+  "median_d_start_over_tol": 1.4714456101258595,
+  "median_d_replay25_over_tol": 0.39742879569530487
+ },
+ "walker": {
+  "tol": 0.1,
+  "n": 400,
+  "start_within_tol": 0.0925,
+  "stay25_within_tol": 0.1175,
+  "replay25_from_standstill_within_tol": 0.1725,
+  "replay50_from_standstill_within_tol": 0.11,
+  "stay50_within_tol": 0.16,
+  "median_d_start_over_tol": 2.0758983492851257,
+  "median_d_replay25_over_tol": 1.8074548244476318
+ },
+ "hopper": {
+  "tol": 0.1,
+  "n": 400,
+  "start_within_tol": 0.1375,
+  "stay25_within_tol": 0.1725,
+  "replay25_from_standstill_within_tol": 0.21,
+  "replay50_from_standstill_within_tol": 0.1825,
+  "stay50_within_tol": 0.25,
+  "median_d_start_over_tol": 2.1788234776153974,
+  "median_d_replay25_over_tol": 1.8475298970677376
+ },
+ "quadruped": {
+  "tol": 0.1,
+  "n": 400,
+  "start_within_tol": 0.0225,
+  "stay25_within_tol": 0.0775,
+  "replay25_from_standstill_within_tol": 0.1075,
+  "replay50_from_standstill_within_tol": 0.0575,
+  "stay50_within_tol": 0.085,
+  "median_d_start_over_tol": 1.9910577877048596,
+  "median_d_replay25_over_tol": 1.7518662660327595
+ },
+ "humanoid": {
+  "tol": 0.1,
+  "n": 400,
+  "start_within_tol": 0.0,
+  "stay25_within_tol": 0.0,
+  "replay25_from_standstill_within_tol": 0.005,
+  "replay50_from_standstill_within_tol": 0.0,
+  "stay50_within_tol": 0.0,
+  "median_d_start_over_tol": 4.118600176134138,
+  "median_d_replay25_over_tol": 2.7644888636333196
+ },
+ "humanoid_cmu": {
+  "tol": 0.1,
+  "n": 400,
+  "start_within_tol": 0.8225,
+  "stay25_within_tol": 0.865,
+  "replay25_from_standstill_within_tol": 0.8775,
+  "replay50_from_standstill_within_tol": 0.865,
+  "stay50_within_tol": 0.875,
+  "median_d_start_over_tol": 0.7210938904485592,
+  "median_d_replay25_over_tol": 0.34262671787042087
+ },
+ "finger": {
+  "tol": 0.3,
+  "n": 400,
+  "start_within_tol": 0.6925,
+  "stay25_within_tol": 0.6925,
+  "replay25_from_standstill_within_tol": 0.7975,
+  "replay50_from_standstill_within_tol": 0.715,
+  "stay50_within_tol": 0.6925,
+  "median_d_start_over_tol": 0.636058829582816,
+  "median_d_replay25_over_tol": 0.10768702897112703
+ },
+ "fish": {
+  "tol": 0.1,
+  "n": 400,
+  "start_within_tol": 0.8875,
+  "stay25_within_tol": 0.935,
+  "replay25_from_standstill_within_tol": 0.9325,
+  "replay50_from_standstill_within_tol": 0.92,
+  "stay50_within_tol": 0.9225,
+  "median_d_start_over_tol": 0.4075761514014182,
+  "median_d_replay25_over_tol": 0.07520372442427134
+ },
+ "stacker": {
+  "tol": 0.1,
+  "n": 400,
+  "start_within_tol": 0.8375,
+  "stay25_within_tol": 0.8575,
+  "replay25_from_standstill_within_tol": 0.86,
+  "replay50_from_standstill_within_tol": 0.855,
+  "stay50_within_tol": 0.855,
+  "median_d_start_over_tol": 0.25052810249510893,
+  "median_d_replay25_over_tol": 0.184201491757022
+ },
+ "ball_in_cup": {
+  "tol": 0.1,
+  "n": 400,
+  "start_within_tol": 1.0,
+  "stay25_within_tol": 1.0,
+  "replay25_from_standstill_within_tol": 1.0,
+  "replay50_from_standstill_within_tol": 1.0,
+  "stay50_within_tol": 1.0,
+  "median_d_start_over_tol": 0.123981898650527,
+  "median_d_replay25_over_tol": 0.07239055121317506
+ }
+}

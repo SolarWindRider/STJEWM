@@ -1,0 +1,254 @@
+{
+ "stjewm_spike_only/cartpole": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 1.0353,
+  "tol": 0.5
+ },
+ "stjewm_spike_only/finger": {
+  "n": 10,
+  "final": 0.1,
+  "any": 0.3,
+  "median_min_dist": 0.4001,
+  "tol": 0.3
+ },
+ "stjewm_spike_only/walker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.2,
+  "median_min_dist": 0.213,
+  "tol": 0.1
+ },
+ "stjewm_spike_only/fish": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.7,
+  "median_min_dist": 0.09,
+  "tol": 0.1
+ },
+ "stjewm_spike_only/humanoid": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.3479,
+  "tol": 0.1
+ },
+ "stjewm_spike_only/stacker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.2526,
+  "tol": 0.1
+ },
+ "stjewm_membrane_readout/cartpole": {
+  "n": 10,
+  "final": 0.1,
+  "any": 0.1,
+  "median_min_dist": 1.05,
+  "tol": 0.5
+ },
+ "stjewm_membrane_readout/finger": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.3,
+  "median_min_dist": 0.3287,
+  "tol": 0.3
+ },
+ "stjewm_membrane_readout/walker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.212,
+  "tol": 0.1
+ },
+ "stjewm_membrane_readout/fish": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.1278,
+  "tol": 0.1
+ },
+ "stjewm_membrane_readout/humanoid": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.3489,
+  "tol": 0.1
+ },
+ "stjewm_membrane_readout/stacker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.2501,
+  "tol": 0.1
+ },
+ "stjewm_hidden_leak/cartpole": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.9815,
+  "tol": 0.5
+ },
+ "stjewm_hidden_leak/finger": {
+  "n": 10,
+  "final": 0.1,
+  "any": 0.3,
+  "median_min_dist": 0.3724,
+  "tol": 0.3
+ },
+ "stjewm_hidden_leak/walker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.2085,
+  "tol": 0.1
+ },
+ "stjewm_hidden_leak/fish": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.3,
+  "median_min_dist": 0.1173,
+  "tol": 0.1
+ },
+ "stjewm_hidden_leak/humanoid": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.3906,
+  "tol": 0.1
+ },
+ "stjewm_hidden_leak/stacker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.2535,
+  "tol": 0.1
+ },
+ "lif_transformer_baseline/cartpole": {
+  "n": 10,
+  "final": 0.1,
+  "any": 0.1,
+  "median_min_dist": 1.0585,
+  "tol": 0.5
+ },
+ "lif_transformer_baseline/finger": {
+  "n": 10,
+  "final": 0.1,
+  "any": 0.3,
+  "median_min_dist": 0.4425,
+  "tol": 0.3
+ },
+ "lif_transformer_baseline/walker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.1615,
+  "tol": 0.1
+ },
+ "lif_transformer_baseline/fish": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.9,
+  "median_min_dist": 0.0873,
+  "tol": 0.1
+ },
+ "lif_transformer_baseline/humanoid": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.3346,
+  "tol": 0.1
+ },
+ "lif_transformer_baseline/stacker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.2525,
+  "tol": 0.1
+ },
+ "stacked_lif_free/cartpole": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 1.0349,
+  "tol": 0.5
+ },
+ "stacked_lif_free/finger": {
+  "n": 10,
+  "final": 0.1,
+  "any": 0.1,
+  "median_min_dist": 0.4387,
+  "tol": 0.3
+ },
+ "stacked_lif_free/walker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.2101,
+  "tol": 0.1
+ },
+ "stacked_lif_free/fish": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.6,
+  "median_min_dist": 0.0864,
+  "tol": 0.1
+ },
+ "stacked_lif_free/humanoid": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.3904,
+  "tol": 0.1
+ },
+ "stacked_lif_free/stacker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.2,
+  "median_min_dist": 0.244,
+  "tol": 0.1
+ },
+ "mlp_baseline/cartpole": {
+  "n": 10,
+  "final": 0.2,
+  "any": 0.2,
+  "median_min_dist": 1.0351,
+  "tol": 0.5
+ },
+ "mlp_baseline/finger": {
+  "n": 10,
+  "final": 0.1,
+  "any": 0.1,
+  "median_min_dist": 0.4377,
+  "tol": 0.3
+ },
+ "mlp_baseline/walker": {
+  "n": 10,
+  "final": 0.1,
+  "any": 0.1,
+  "median_min_dist": 0.2008,
+  "tol": 0.1
+ },
+ "mlp_baseline/fish": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.9,
+  "median_min_dist": 0.0825,
+  "tol": 0.1
+ },
+ "mlp_baseline/humanoid": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.3915,
+  "tol": 0.1
+ },
+ "mlp_baseline/stacker": {
+  "n": 10,
+  "final": 0.0,
+  "any": 0.0,
+  "median_min_dist": 0.2524,
+  "tol": 0.1
+ }
+}

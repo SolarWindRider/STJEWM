@@ -1,0 +1,12 @@
+{
+ "task": "tworoom",
+ "policy": "random",
+ "num_eval": 50,
+ "seed": 42,
+ "cem_steps": 10,
+ "goal_offset": 25,
+ "budget": 50,
+ "success_rate": 22.0,
+ "n_success": 11,
+ "wall_sec": 9.2
+}
