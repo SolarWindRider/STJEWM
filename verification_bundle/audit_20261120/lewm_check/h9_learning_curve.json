@@ -1,0 +1,26 @@
+{
+ "what": "H9 faithful state-input LeWM: official predictor/Embedder/BatchNorm-MLP modules, official loss (pred MSE + 0.09*SIGReg on the same embedding), 5-step action blocks, official CEMSolver (300/30/30, N(0,1) in standardised action space); only the ViT is replaced by an MLP state encoder (12.69M params). Trained on the official PushT state data; evaluated with h10_expert_replay.py in OUR env loop (PushTEnv + _set_env_state + check_success), 48 held-out episodes, goal offset 25, budget 50 (2 plans), any-time success. Official pixel weights in the same loop: 44/50 = 88%.",
+ "n_episodes": 48,
+ "random_policy": "1-2/50",
+ "expert_action_replay_no_model": "47/48",
+ "lr5e-5": {
+  "step": [20000, 40000, 60000, 80000, 100000, 120000, 140000, 160000],
+  "success": [0.7708, 0.8333, 0.7708, 0.8750, 0.8125, 0.8333, 0.9167, 0.8958],
+  "median_cem_latent_cost": [1.386, 1.131, 1.253, 1.139, 1.121, 1.109, 1.129, 1.163],
+  "median_recorded_plan_latent_cost": [6.110, 5.056, 3.916, 3.613, 3.011, 3.589, 3.006, 2.704],
+  "median_zero_plan_latent_cost": [294.1, 299.7, 279.3, 289.8, 296.7, 295.5, 296.9, 284.9],
+  "mean_abs_planned_action": [0.150, 0.153, 0.154, 0.145, 0.145, 0.141, 0.148, 0.150],
+  "final_train_pred_loss": 0.00654
+ },
+ "lr2e-4": {
+  "step": [30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000],
+  "success": [0.7500, 0.7500, 0.8125, 0.8750, 0.8333, 0.8750, 0.8958, 0.8750],
+  "median_cem_latent_cost": [1.479, 1.246, 1.196, 1.202, 1.299, 1.316, 1.418, 1.593],
+  "median_recorded_plan_latent_cost": [7.241, 4.995, 4.024, 3.579, 4.138, 3.328, 3.698, 3.820],
+  "median_zero_plan_latent_cost": [283.2, 289.3, 269.8, 276.5, 289.8, 290.2, 282.8, 286.7],
+  "mean_abs_planned_action": [0.151, 0.158, 0.149, 0.147, 0.161, 0.148, 0.149, 0.151],
+  "final_train_pred_loss": 0.00688
+ },
+ "recorded_expert_mean_abs_action": 0.135,
+ "invalid_readings": "env_success_anytime printed inside h9_run*.out (2-6%) used a goal state that was not divided by 500; see h9_bisect.py"
+}

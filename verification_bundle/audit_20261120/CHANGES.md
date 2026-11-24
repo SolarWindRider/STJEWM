@@ -32,3 +32,5 @@
     我们的 LeWM 基线 = 1 epoch/5,000 步/16 环境共享 16 万样本的自写状态版,13 模型单步 latent 预测 R² 全负;忠实状态版 LeWM 训 2 万步即 77%,我们的架构分布内 9 万步仍 0%。
     修复 train.py 在 history_size>1 时的预测目标错位(H=1 不变);发现 CEM 提议分布、DMC 末态判定、DMC 零速度初态三项协议缺陷。全部闭环 env-SR 与 LeWM 相关排序冻结。
     脚本与原始结果:`lewm_check/`。H9 脚本内嵌 env_success_anytime 读数作废(目标未除 500),以 h10 修正评测为准。
+30. (2026-11-24) 对照收尾:忠实状态版 LeWM 训满 16 万步(≈ 论文 10 epoch,lr 5e-5)= 43/48 = 89.6%(2 万步即 77.1%);lr 2e-4 10 万步 = 87.5%。
+    我们的 LeWM 基线架构两种配置(history 1 / history 3)PushT 单环境分布内各训 9 万步 = 0%。曲线与代价:`lewm_check/h9_learning_curve.json`。
